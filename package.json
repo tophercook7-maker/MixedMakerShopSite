@@ -1,0 +1,10 @@
+{
+  "name": "mixedmakershop",
+  "version": "1.0.0",
+  "description": "MixedMakerShop website",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "stripe": "^16.12.0",
+    "twilio": "^4.23.0"
+  }
+}
