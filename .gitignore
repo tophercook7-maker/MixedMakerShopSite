@@ -1,0 +1,9 @@
+# Local Netlify folder
+.netlify
+node_modules
+
+# Next.js
+next-app/.next
+next-app/.env.local
+.env.local
+.env*.local
