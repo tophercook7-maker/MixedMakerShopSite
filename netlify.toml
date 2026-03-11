@@ -1,11 +1,10 @@
-# Netlify configuration for MixedMakerShop (Next.js app in next-app/)
-
 [build]
   base = "next-app"
   command = "npm run build"
-  publish = ".next"
 
-# Security headers
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [[headers]]
   for = "/*"
   [headers.values]
