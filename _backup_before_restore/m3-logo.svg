@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  width="128"
+  height="128"
+  viewBox="0 0 128 128"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Colors -->
+  <defs>
+    <linearGradient id="m3-border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7c878" />
+      <stop offset="28%" stop-color="#f49b1a" />
+      <stop offset="65%" stop-color="#10412a" />
+      <stop offset="100%" stop-color="#020905" />
+    </linearGradient>
+
+    <linearGradient id="m3-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b2f20" />
+      <stop offset="40%" stop-color="#10412a" />
+      <stop offset="100%" stop-color="#020905" />
+    </linearGradient>
+
+    <linearGradient id="m3-text-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8c66b" />
+      <stop offset="50%" stop-color="#f49b1a" />
+      <stop offset="100%" stop-color="#c86f00" />
+    </linearGradient>
+
+    <filter id="m3-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow
+        dx="0"
+        dy="8"
+        stdDeviation="8"
+        flood-color="rgba(0,0,0,0.55)"
+      />
+    </filter>
+  </defs>
+
+  <!-- Outer rounded square with orange border -->
+  <rect
+    x="8"
+    y="8"
+    width="112"
+    height="112"
+    rx="22"
+    fill="none"
+    stroke="url(#m3-border-grad)"
+    stroke-width="10"
+    filter="url(#m3-shadow)"
+  />
+
+  <!-- Inner dark square -->
+  <rect
+    x="22"
+    y="22"
+    width="84"
+    height="84"
+    rx="18"
+    fill="url(#m3-inner)"
+    stroke="rgba(0,0,0,0.4)"
+    stroke-width="1.5"
+  />
+
+  <!-- M³ text with orange gradient -->
+  <!-- Base M -->
+  <text
+    x="42"
+    y="82"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="52"
+    font-weight="800"
+    fill="url(#m3-text-grad)"
+  >
+    M
+  </text>
+
+  <!-- Superscript 3 -->
+  <text
+    x="82"
+    y="48"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-size="26"
+    font-weight="800"
+    fill="url(#m3-text-grad)"
+  >
+    3
+  </text>
+</svg>

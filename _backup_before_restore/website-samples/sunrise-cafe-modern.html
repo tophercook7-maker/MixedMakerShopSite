@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sunrise Café • Modern Coffee Bar</title>
+<meta name="description" content="Sunrise Café — vibrant modern coffee bar with neon accents, espresso, pastries, and late-night vibes." />
+<meta name="theme-color" content="#0f172a" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
+
+body { font-family: 'Outfit', sans-serif; }
+
+.neon-text {
+  text-shadow: 0 0 8px rgba(255,0,150,.8),
+               0 0 16px rgba(255,0,150,.6),
+               0 0 32px rgba(255,0,150,.4);
+}
+
+.glass {
+  backdrop-filter: blur(18px);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.hero-bg {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,0,150,.35), transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(0,255,255,.25), transparent 40%),
+    linear-gradient(180deg, #0f172a 0%, #020617 100%);
+}
+
+.fade { opacity:0; transform:translateY(20px); transition:.7s ease; }
+.fade.in { opacity:1; transform:none; }
+
+@media (prefers-reduced-motion: reduce){
+  .fade { opacity:1; transform:none; transition:none; }
+}
+
+.back-link{
+  display:inline-block;
+  margin:16px 16px 0;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.back-link:hover{
+  text-decoration:underline;
+}
+</style>
+</head>
+
+<body class="bg-slate-950 text-white overflow-x-hidden">
+<a href="https://mixedmakershop.com/" class="back-link">← Back to MixedMakerShop</a>
+
+<!-- NAV -->
+<header class="sticky top-0 z-50 glass">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div>
+      <h1 class="text-xl font-extrabold tracking-widest neon-text">SUNRISE CAFÉ</h1>
+      <p class="text-xs uppercase tracking-[0.3em] text-pink-400">Coffee • Beats • Late Nights</p>
+    </div>
+
+    <nav class="hidden md:flex gap-8 text-sm uppercase tracking-widest">
+      <a href="#menu" class="hover:text-pink-400 transition">Menu</a>
+      <a href="#pastries" class="hover:text-pink-400 transition">Pastries</a>
+      <a href="#events" class="hover:text-pink-400 transition">Events</a>
+      <a href="#visit" class="hover:text-pink-400 transition">Visit</a>
+    </nav>
+
+    <button id="openOrder" class="hidden md:block px-5 py-2 bg-pink-500 hover:bg-pink-400 rounded-full text-sm font-semibold transition">
+      Order Now
+    </button>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="hero-bg min-h-[95vh] flex items-center">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <div class="max-w-2xl fade">
+      <h2 class="text-5xl md:text-6xl font-extrabold leading-tight neon-text">
+        Bright Coffee.<br>Big Energy.
+      </h2>
+      <p class="mt-6 text-lg text-slate-300">
+        Sunrise Café is a high-energy downtown coffee bar concept —
+        neon glow, glass cards, digital menu feel, and bold modern branding.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="#menu" class="px-6 py-3 bg-cyan-400 text-black rounded-full font-bold hover:bg-cyan-300 transition">
+          View Menu
+        </a>
+        <a href="#events" class="px-6 py-3 border border-white/30 rounded-full font-semibold hover:bg-white/10 transition">
+          Upcoming Events
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu" class="py-20">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="fade">
+      <h3 class="text-4xl font-extrabold mb-10 neon-text">Menu</h3>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="glass rounded-3xl p-8 fade">
+        <h4 class="uppercase tracking-widest text-cyan-400 font-bold mb-4">Espresso</h4>
+        <div class="flex justify-between mb-2"><span>Latte</span><span>$5.75</span></div>
+        <div class="flex justify-between mb-2"><span>Flat White</span><span>$5.95</span></div>
+        <div class="flex justify-between mb-2"><span>Americano</span><span>$3.95</span></div>
+        <div class="flex justify-between mb-2"><span>Mocha</span><span>$6.25</span></div>
+      </div>
+
+      <div class="glass rounded-3xl p-8 fade">
+        <h4 class="uppercase tracking-widest text-pink-400 font-bold mb-4">Cold Bar</h4>
+        <div class="flex justify-between mb-2"><span>Nitro Cold Brew</span><span>$5.95</span></div>
+        <div class="flex justify-between mb-2"><span>Iced Latte</span><span>$5.75</span></div>
+        <div class="flex justify-between mb-2"><span>Energy Matcha</span><span>$6.50</span></div>
+      </div>
+
+      <div class="glass rounded-3xl p-8 fade">
+        <h4 class="uppercase tracking-widest text-yellow-400 font-bold mb-4">Flavors</h4>
+        <div class="flex justify-between mb-2"><span>Vanilla</span><span>+$0.75</span></div>
+        <div class="flex justify-between mb-2"><span>Caramel</span><span>+$0.75</span></div>
+        <div class="flex justify-between mb-2"><span>Hazelnut</span><span>+$0.75</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PASTRIES -->
+<section id="pastries" class="py-20 bg-slate-900">
+  <div class="max-w-6xl mx-auto px-6">
+    <h3 class="text-4xl font-extrabold mb-10 neon-text">Pastries & Snacks</h3>
+
+    <div class="grid md:grid-cols-4 gap-6 text-sm">
+
+      <div class="glass rounded-2xl p-6 fade">
+        <h4 class="font-bold mb-3 text-cyan-400">Croissants</h4>
+        <p>Butter — $4.25</p>
+        <p>Almond — $4.95</p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 fade">
+        <h4 class="font-bold mb-3 text-pink-400">Cookies</h4>
+        <p>Chocolate Chunk — $3.25</p>
+        <p>Salted Caramel — $3.50</p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 fade">
+        <h4 class="font-bold mb-3 text-yellow-400">Breakfast</h4>
+        <p>Avocado Toast — $8.25</p>
+        <p>Granola Bowl — $6.75</p>
+      </div>
+
+      <div class="glass rounded-2xl p-6 fade">
+        <h4 class="font-bold mb-3 text-green-400">Late Night</h4>
+        <p>Loaded Bagel — $7.50</p>
+        <p>Protein Muffin — $4.95</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events" class="py-20">
+  <div class="max-w-6xl mx-auto px-6">
+    <h3 class="text-4xl font-extrabold mb-10 neon-text">Events</h3>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass rounded-3xl p-6 fade">
+        <h4 class="font-bold text-cyan-400 mb-3">Open Mic Fridays</h4>
+        <p class="text-sm text-slate-300">Local artists, live music, and late-night espresso.</p>
+      </div>
+
+      <div class="glass rounded-3xl p-6 fade">
+        <h4 class="font-bold text-pink-400 mb-3">DJ Saturdays</h4>
+        <p class="text-sm text-slate-300">House beats + cold brew cocktails.</p>
+      </div>
+
+      <div class="glass rounded-3xl p-6 fade">
+        <h4 class="font-bold text-yellow-400 mb-3">Study Sundays</h4>
+        <p class="text-sm text-slate-300">Extended hours + student discounts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section id="visit" class="py-20 bg-slate-900">
+  <div class="max-w-6xl mx-auto px-6 text-center fade">
+    <h3 class="text-4xl font-extrabold neon-text">Visit Us</h3>
+    <p class="mt-6 text-slate-300">
+      221 Downtown Ave<br>
+      Mon–Fri 7am–11pm<br>
+      Sat–Sun 8am–Midnight
+    </p>
+  </div>
+</section>
+
+<footer class="py-10 text-center text-sm text-slate-400">
+  © <span id="year"></span> Sunrise Café — Portfolio Mockup
+</footer>
+
+</main>
+
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+const els = document.querySelectorAll(".fade");
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting) e.target.classList.add("in");
+  });
+},{threshold:0.15});
+els.forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>

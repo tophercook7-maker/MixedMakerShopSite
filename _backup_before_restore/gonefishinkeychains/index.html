@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GoneFishin Keychains – Handmade Vintage & 3D Printed Fishing Lure Keychains</title>
+  <meta name="description" content="Handmade vintage fishing lure keychains from retired/disabled lures, regular lure keychains, and custom 3D printed fishing trip items. Made with care for anglers and fishing enthusiasts." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fredoka+One&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root {
+      /* MixedMakerShop-inspired palette with fishing theme */
+      --gf-green-dark: #0b2f20;
+      --gf-green: #10412a;
+      --gf-teal: #0d7377;
+      --gf-water: #14a085;
+      --gf-orange: #f49b1a;
+      --gf-cream: #f3e9d9;
+      --gf-cream-deep: #e6d4be;
+      --gf-ink: #101418;
+      
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.28);
+      --shadow-subtle: 0 10px 25px rgba(0, 0, 0, 0.18);
+      --transition-fast: 0.16s ease-out;
+      --transition-med: 0.24s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0d7377 0, #10412a 30%, #0b2f20 60%, #020905 100%);
+      color: var(--gf-cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    main {
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .shell {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    .shell-wide {
+      width: min(1240px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to bottom, rgba(3, 9, 5, 0.98), rgba(3, 9, 5, 0.92), rgba(3, 9, 5, 0.72));
+      border-bottom: 1px solid rgba(243, 233, 217, 0.1);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-block: 0.65rem;
+      gap: 1rem;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #14a085 0%, #0d7377 50%, #10412a 100%);
+      border: 2px solid rgba(244, 155, 26, 0.6);
+      box-shadow: 0 0 20px rgba(20, 160, 133, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-icon::before {
+      content: "🐟";
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-text-main {
+      font-family: "Fredoka One", cursive;
+      font-weight: 400;
+      font-size: 1.2rem;
+      letter-spacing: 0.02em;
+      color: var(--gf-cream);
+      line-height: 1.1;
+    }
+
+    .logo-text-sub {
+      font-size: 0.65rem;
+      color: rgba(243, 233, 217, 0.6);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .nav-link {
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      color: rgba(243, 233, 217, 0.75);
+      transition: all var(--transition-fast);
+    }
+
+    .nav-link:hover {
+      background: rgba(243, 233, 217, 0.07);
+      border-color: rgba(243, 233, 217, 0.16);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+      background: rgba(20, 160, 133, 0.18);
+      border-color: rgba(20, 160, 133, 0.7);
+      color: #fff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: var(--radius-pill);
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--transition-med);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gf-orange) 0%, #f7a531 100%);
+      color: #1b0c00;
+      box-shadow: 0 8px 24px rgba(244, 155, 26, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(244, 155, 26, 0.6);
+      background: linear-gradient(135deg, #f7a531 0%, var(--gf-orange) 100%);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(243, 233, 217, 0.35);
+      color: var(--gf-cream);
+    }
+
+    .btn-outline:hover {
+      background: rgba(243, 233, 217, 0.06);
+      border-color: rgba(243, 233, 217, 0.6);
+    }
+
+    /* Mobile nav */
+    .nav-toggle {
+      display: none;
+      border-radius: 999px;
+      border: 1px solid rgba(243, 233, 217, 0.35);
+      background: rgba(4, 10, 6, 0.9);
+      color: var(--gf-cream);
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.15rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-toggle {
+        display: flex;
+      }
+      .nav-center {
+        display: none;
+      }
+    }
+
+    /* Hero */
+    .hero {
+      padding: 3rem 0 4rem;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    .hero-content h1 {
+      font-family: "Fredoka One", cursive;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--gf-cream) 0%, #fff 50%, var(--gf-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-content p {
+      font-size: 1.1rem;
+      color: rgba(243, 233, 217, 0.85);
+      margin-bottom: 1.5rem;
+      max-width: 32rem;
+    }
+
+    .hero-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-pill);
+      background: rgba(20, 160, 133, 0.15);
+      border: 1px solid rgba(20, 160, 133, 0.4);
+      font-size: 0.85rem;
+      color: var(--gf-cream);
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+
+    .hero-visual-card {
+      border-radius: 24px;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(13, 115, 119, 0.3) 0%, rgba(20, 160, 133, 0.2) 50%, rgba(16, 65, 42, 0.3) 100%);
+      border: 2px solid rgba(243, 233, 217, 0.2);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-visual-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(20, 160, 133, 0.1) 0%, transparent 70%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -30px) rotate(120deg); }
+      66% { transform: translate(-30px, 30px) rotate(240deg); }
+    }
+
+    .product-placeholder {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.15) 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed rgba(243, 233, 217, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-placeholder::after {
+      content: "🎣";
+      font-size: 4rem;
+      opacity: 0.5;
+    }
+
+    /* Sections */
+    section {
+      scroll-margin-top: 90px;
+      padding-block: 3rem;
+    }
+
+    .section-panel {
+      border-radius: 24px;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(8, 39, 23, 0.94), rgba(3, 16, 10, 0.98));
+      border: 1px solid rgba(243, 233, 217, 0.12);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .section-title {
+      font-family: "Fredoka One", cursive;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--gf-cream);
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      color: rgba(243, 233, 217, 0.78);
+      margin-bottom: 2rem;
+    }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .product-card {
+      border-radius: 20px;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(13, 115, 119, 0.15) 0%, rgba(16, 65, 42, 0.2) 100%);
+      border: 1px solid rgba(243, 233, 217, 0.15);
+      transition: all var(--transition-med);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-soft);
+      border-color: rgba(20, 160, 133, 0.5);
+      background: linear-gradient(135deg, rgba(13, 115, 119, 0.25) 0%, rgba(16, 65, 42, 0.3) 100%);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%);
+      border: 2px dashed rgba(243, 233, 217, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-image::after {
+      content: "🎣";
+      opacity: 0.4;
+    }
+
+    .product-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gf-cream);
+      margin-bottom: 0.25rem;
+    }
+
+    .product-description {
+      font-size: 0.9rem;
+      color: rgba(243, 233, 217, 0.7);
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gf-orange);
+      margin-top: auto;
+    }
+
+    .product-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(244, 155, 26, 0.2);
+      border: 1px solid rgba(244, 155, 26, 0.5);
+      color: var(--gf-orange);
+      margin-bottom: 0.5rem;
+    }
+
+    /* About Section */
+    .about-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .about-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Contact Section */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .contact-card {
+      padding: 1.5rem;
+      background: rgba(13, 115, 119, 0.1);
+      border: 1px solid rgba(243, 233, 217, 0.15);
+      border-radius: 16px;
+    }
+
+    .contact-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--gf-cream);
+    }
+
+    .contact-card p {
+      color: rgba(243, 233, 217, 0.8);
+      font-size: 0.95rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 2rem 0;
+      border-top: 1px solid rgba(243, 233, 217, 0.1);
+      margin-top: 4rem;
+      text-align: center;
+      color: rgba(243, 233, 217, 0.6);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--gf-orange);
+      text-decoration: underline;
+    }
+
+    /* Gallery Section */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .gallery-item {
+      background: linear-gradient(135deg, rgba(13, 115, 119, 0.15) 0%, rgba(16, 65, 42, 0.2) 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(243, 233, 217, 0.15);
+      transition: all var(--transition-med);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-soft);
+      border-color: rgba(20, 160, 133, 0.5);
+      background: linear-gradient(135deg, rgba(13, 115, 119, 0.25) 0%, rgba(16, 65, 42, 0.3) 100%);
+    }
+
+    .gallery-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      border: 2px solid rgba(243, 233, 217, 0.1);
+      background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%);
+    }
+
+    .gallery-item-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--gf-cream);
+      margin-bottom: 0.5rem;
+    }
+
+    .gallery-item-description {
+      font-size: 0.9rem;
+      color: rgba(243, 233, 217, 0.7);
+      line-height: 1.5;
+    }
+
+    /* Contact Form */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .contact-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .contact-form {
+      display: grid;
+      gap: 0.8rem;
+      font-size: 0.86rem;
+    }
+
+    .field-group {
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: rgba(243, 233, 217, 0.9);
+    }
+
+    input,
+    textarea,
+    select {
+      border-radius: 12px;
+      border: 1px solid rgba(243, 233, 217, 0.3);
+      padding: 0.55rem 0.65rem;
+      background: rgba(3, 11, 7, 0.94);
+      color: rgba(243, 233, 217, 0.96);
+      font-family: inherit;
+      font-size: 0.86rem;
+      outline: none;
+      resize: vertical;
+      min-height: 2.35rem;
+      transition: all var(--transition-fast);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(244, 155, 26, 0.8);
+      box-shadow: 0 0 0 1px rgba(244, 155, 26, 0.7);
+    }
+
+    textarea {
+      min-height: 120px;
+    }
+
+    .contact-note {
+      font-size: 0.8rem;
+      color: rgba(243, 233, 217, 0.7);
+      margin-top: 0.5rem;
+    }
+
+    .form-message {
+      font-size: 0.9rem;
+      padding: 1.2rem 1.4rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      font-weight: 500;
+      line-height: 1.5;
+      animation: slideIn 0.3s ease-out;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-message.success {
+      background: linear-gradient(135deg, rgba(63, 212, 123, 0.2), rgba(46, 160, 93, 0.2));
+      border: 1px solid rgba(63, 212, 123, 0.5);
+      color: rgba(232, 250, 241, 0.98);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .form-message.error {
+      background: linear-gradient(135deg, rgba(244, 67, 54, 0.2), rgba(198, 40, 40, 0.2));
+      border: 1px solid rgba(244, 67, 54, 0.5);
+      color: rgba(255, 235, 238, 0.98);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .contact-meta-cards {
+      display: grid;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <nav class="nav">
+        <div class="nav-left">
+          <div class="logo-container">
+            <div class="logo-icon"></div>
+            <div class="logo-text">
+              <div class="logo-text-main">GoneFishin</div>
+              <div class="logo-text-sub">Keychains</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-center">
+          <a href="#home" class="nav-link active">Home</a>
+          <a href="#products" class="nav-link">Products</a>
+          <a href="#gallery" class="nav-link">Gallery</a>
+          <a href="#about" class="nav-link">About</a>
+          <a href="#contact" class="nav-link">Contact</a>
+        </div>
+        <div class="nav-right">
+          <a href="https://mixedmakershop.com/shop.html" class="btn btn-outline" target="_blank">Shop</a>
+        </div>
+        <button class="nav-toggle" aria-label="Menu">☰</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="shell">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <div class="hero-badge-row">
+              <span class="badge">🎣 Handmade</span>
+              <span class="badge">✨ Unique</span>
+              <span class="badge">🌊 Fishing Themed</span>
+            </div>
+            <h1>GoneFishin Keychains</h1>
+            <p>Handcrafted vintage fishing lure keychains from retired and disabled lures, plus regular lure keychains and custom 3D printed fishing trip memorabilia. Made with care for anglers and fishing enthusiasts.</p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <a href="#products" class="btn btn-primary">View Products</a>
+              <a href="#contact" class="btn btn-outline">Get in Touch</a>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-visual-card">
+              <div class="product-placeholder"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products">
+      <div class="shell">
+        <div class="section-panel">
+          <h2 class="section-title">Our Products</h2>
+          <p class="section-sub">Each keychain is carefully handcrafted, making every piece unique. Perfect for anglers, fishing enthusiasts, and anyone who loves the water.</p>
+          
+          <div class="products-grid">
+            <!-- Vintage Lure Keychains -->
+            <div class="product-card">
+              <div class="product-image"></div>
+              <div>
+                <span class="product-badge">Vintage</span>
+                <h3 class="product-title">Vintage Lure Keychains</h3>
+                <p class="product-description">Handmade keychains from retired or disabled-from-active-duty fishing lures. Each piece has a story and unique character from years on the water. Preserved and transformed into functional art.</p>
+                <div class="product-price">$18.99</div>
+              </div>
+            </div>
+
+            <!-- Regular Lure Keychains -->
+            <div class="product-card">
+              <div class="product-image"></div>
+              <div>
+                <span class="product-badge">New</span>
+                <h3 class="product-title">Regular Lure Keychains</h3>
+                <p class="product-description">Fresh keychains made from new fishing lures. High-quality materials, bright colors, and ready for your keys. Perfect for everyday use or as a gift for the angler in your life.</p>
+                <div class="product-price">$12.99</div>
+              </div>
+            </div>
+
+            <!-- 3D Printed Items -->
+            <div class="product-card">
+              <div class="product-image"></div>
+              <div>
+                <span class="product-badge">Custom</span>
+                <h3 class="product-title">3D Printed Keychains</h3>
+                <p class="product-description">Custom 3D printed items of water or fishing trip catch items. Personalized designs based on your fishing adventures. Unique shapes, colors, and memories preserved in keychain form.</p>
+                <div class="product-price">$8.99</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery">
+      <div class="shell">
+        <div class="section-panel">
+          <h2 class="section-title">Things I've Made</h2>
+          <p class="section-sub">See some of the keychains I've crafted. Each piece is unique and made with care.</p>
+          
+          <div class="gallery-grid">
+            <!-- Keychain Item -->
+            <div class="gallery-item">
+              <img 
+                src="img/things/keychain1.png"
+                alt="Fishing Lure Keychain"
+                class="gallery-image"
+                onerror="this.style.display='none'; this.parentElement.querySelector('.image-placeholder').style.display='flex';"
+              >
+              <div class="image-placeholder" style="display: none; width: 100%; aspect-ratio: 1; border-radius: 12px; background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%); border: 2px dashed rgba(243, 233, 217, 0.3); align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem;">🎣</div>
+              <h3 class="gallery-item-title">Fishing-Lure Keychain</h3>
+              <p class="gallery-item-description">
+                Test keychain style — available only on request.
+              </p>
+            </div>
+
+            <!-- Add more gallery items here as you create them -->
+            <!-- Example placeholder items -->
+            <div class="gallery-item">
+              <div style="width: 100%; aspect-ratio: 1; border-radius: 12px; background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%); border: 2px dashed rgba(243, 233, 217, 0.3); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem;">🎣</div>
+              <h3 class="gallery-item-title">More Coming Soon</h3>
+              <p class="gallery-item-description">
+                Check back soon for more unique keychain creations.
+              </p>
+            </div>
+
+            <div class="gallery-item">
+              <div style="width: 100%; aspect-ratio: 1; border-radius: 12px; background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%); border: 2px dashed rgba(243, 233, 217, 0.3); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem;">🎣</div>
+              <h3 class="gallery-item-title">More Coming Soon</h3>
+              <p class="gallery-item-description">
+                Check back soon for more unique keychain creations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+      <div class="shell">
+        <div class="section-panel">
+          <h2 class="section-title">About GoneFishin Keychains</h2>
+          <p class="section-sub">Passion for fishing meets craftsmanship</p>
+          
+          <div class="about-content">
+            <div>
+              <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--gf-cream);">Our Story</h3>
+              <p style="color: rgba(243, 233, 217, 0.85); line-height: 1.7; margin-bottom: 1rem;">
+                GoneFishin Keychains started from a love of fishing and the desire to preserve those special lures that have served their time on the water. We transform retired and disabled fishing lures into functional, beautiful keychains that carry the memories of countless casts and catches.
+              </p>
+              <p style="color: rgba(243, 233, 217, 0.85); line-height: 1.7;">
+                Each vintage keychain is carefully cleaned, preserved, and mounted with quality hardware, ensuring your fishing memories last for years to come. We also create regular lure keychains from new materials and custom 3D printed items that celebrate your fishing adventures.
+              </p>
+            </div>
+            <div>
+              <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--gf-cream);">Why Choose Us</h3>
+              <ul style="color: rgba(243, 233, 217, 0.85); line-height: 2; list-style: none; padding-left: 0;">
+                <li>✨ <strong>Handcrafted Quality</strong> – Every piece is made with care and attention to detail</li>
+                <li>🎣 <strong>Unique Items</strong> – Vintage lures with character and history</li>
+                <li>🌊 <strong>Fishing Enthusiast Made</strong> – Created by anglers, for anglers</li>
+                <li>💎 <strong>Durable</strong> – Built to last with quality materials</li>
+                <li>🎁 <strong>Perfect Gifts</strong> – Ideal for the fisherman in your life</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <div class="shell">
+        <div class="section-panel">
+          <h2 class="section-title">Get in Touch</h2>
+          <p class="section-sub">Have questions, custom orders, or just want to chat about fishing? We'd love to hear from you!</p>
+          
+          <div class="contact-layout">
+            <form
+              name="contact"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              class="contact-form"
+              netlify
+            >
+              <!-- Honeypot field for spam protection -->
+              <input type="hidden" name="form-name" value="contact" />
+              <p style="display: none;">
+                <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+              </p>
+
+              <div class="field-group">
+                <label for="name">Name *</label>
+                <input id="name" name="name" type="text" placeholder="Your name" required />
+              </div>
+
+              <div class="field-group">
+                <label for="email">Email *</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  required
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="topic">What is this about?</label>
+                <select id="topic" name="topic">
+                  <option value="">Choose one…</option>
+                  <option value="vintage-lure">Vintage Lure Keychain</option>
+                  <option value="regular-lure">Regular Lure Keychain</option>
+                  <option value="3d-printed">3D Printed Keychain</option>
+                  <option value="custom-order">Custom Order</option>
+                  <option value="question">Question</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="message">Tell me more *</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  placeholder="Tell me about your order, question, or what you're looking for..."
+                  required
+                ></textarea>
+              </div>
+
+              <div class="field-group">
+                <button class="btn btn-primary" type="submit">
+                  Send Message
+                  <span style="font-size: 1rem;">➜</span>
+                </button>
+                <div id="form-message" class="form-message" style="display:none;"></div>
+                <p class="contact-note" id="form-note">
+                  Submit this form and you'll receive a confirmation. We'll get back to you via email.
+                </p>
+              </div>
+            </form>
+
+            <aside class="contact-meta-cards">
+              <div class="contact-card">
+                <h3>📧 Email</h3>
+                <p><a href="mailto:Topher@mixedmakershop.com?subject=Website%20Design%20Inquiry">Topher@mixedmakershop.com</a></p>
+              </div>
+              <div class="contact-card">
+                <h3>📞 Phone</h3>
+                <p><a href="tel:5013852446">(501) 385-2446</a></p>
+              </div>
+              <div class="contact-card">
+                <h3>📍 Location</h3>
+                <p>136 Red Cardinal Ln.<br />Lonsdale, AR 72087</p>
+              </div>
+              <div class="contact-card">
+                <h3>🛒 Shop</h3>
+                <p><a href="https://mixedmakershop.com/shop.html" target="_blank">Visit MixedMakerShop.com Shop</a> to request a quote.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell">
+      <p>© 2024 GoneFishin Keychains. Part of <a href="https://mixedmakershop.com">MixedMakerShop</a>.</p>
+      <p style="margin-top: 0.5rem;">Handcrafted with care for fishing enthusiasts everywhere.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // Active nav link highlighting
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (scrollY >= sectionTop - 150) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${current}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Contact form submission handler
+    const form = document.querySelector('form[name="contact"]');
+    const formMessage = document.getElementById('form-message');
+    const formNote = document.getElementById('form-note');
+
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.innerHTML;
+
+        // Hide previous messages and note
+        formMessage.style.display = 'none';
+        if (formNote) formNote.style.display = 'none';
+
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span>Sending message...</span> ⏳';
+        submitButton.style.opacity = '0.7';
+
+        try {
+          // Encode form data properly for Netlify
+          const formDataEncoded = new URLSearchParams();
+          for (const [key, value] of formData.entries()) {
+            formDataEncoded.append(key, value);
+          }
+
+          const response = await fetch('/', {
+            method: 'POST',
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formDataEncoded.toString()
+          });
+
+          if (!response.ok) {
+            throw new Error(`Form submission failed: ${response.status}`);
+          }
+
+          // Success!
+          formMessage.className = 'form-message success';
+          formMessage.innerHTML = '✓ Message sent! I\'ll get back to you via email soon.';
+          formMessage.style.display = 'flex';
+          formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Reset form
+          form.reset();
+
+          // Reset button after a moment
+          setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonText;
+            submitButton.style.opacity = '1';
+          }, 2000);
+
+        } catch (error) {
+          console.error('Form submission error:', error);
+          formMessage.className = 'form-message error';
+          formMessage.innerHTML = '✗ Something went wrong. Please try again or email directly.';
+          formMessage.style.display = 'flex';
+          formMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Reset button
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalButtonText;
+          submitButton.style.opacity = '1';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

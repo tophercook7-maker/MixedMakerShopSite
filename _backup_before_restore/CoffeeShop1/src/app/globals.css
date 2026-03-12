@@ -1,0 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.logo-font {
+  font-family: "Playfair Display", serif;
+}
+
+.section-header {
+  position: relative;
+  display: inline-block;
+}
+
+.section-header::after {
+  content: "";
+  position: absolute;
+  width: 64px;
+  height: 3px;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  background: #d97706;
+}
+
+.menu-card {
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px -16px rgba(0, 0, 0, 0.2);
+}
+
+.skip-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-120%);
+  background: #111827;
+  color: #fff;
+  padding: 0.65rem 1rem;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  transform: translateY(0%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .menu-card {
+    transition: none;
+  }
+
+  .menu-card:hover {
+    transform: none;
+  }
+}

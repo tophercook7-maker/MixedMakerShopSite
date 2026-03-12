@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#waterGradient)" stroke="#f49b1a" stroke-width="3"/>
+  
+  <!-- Water Gradient -->
+  <defs>
+    <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d7377;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#14a085;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10412a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Fish Gradient -->
+    <linearGradient id="fishGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3e9d9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e6d4be;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fishing Hook -->
+  <path d="M 80 120 Q 75 100 85 85 Q 95 70 110 75 Q 125 80 130 95" 
+        fill="none" stroke="#f49b1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 130 95 L 140 105" 
+        fill="none" stroke="#f49b1a" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="140" cy="105" r="4" fill="#f49b1a"/>
+  
+  <!-- Fish Body -->
+  <ellipse cx="145" cy="140" rx="25" ry="15" fill="url(#fishGradient)" stroke="#0b2f20" stroke-width="2"/>
+  
+  <!-- Fish Tail -->
+  <path d="M 170 140 Q 185 135 190 140 Q 185 145 170 140" 
+        fill="url(#fishGradient)" stroke="#0b2f20" stroke-width="2"/>
+  
+  <!-- Fish Eye -->
+  <circle cx="150" cy="137" r="4" fill="#0b2f20"/>
+  <circle cx="151" cy="136" r="1.5" fill="#f3e9d9"/>
+  
+  <!-- Fish Fin (top) -->
+  <path d="M 155 125 Q 160 115 165 125 Q 160 120 155 125" 
+        fill="url(#fishGradient)" stroke="#0b2f20" stroke-width="2"/>
+  
+  <!-- Fish Fin (bottom) -->
+  <path d="M 155 155 Q 160 165 165 155 Q 160 160 155 155" 
+        fill="url(#fishGradient)" stroke="#0b2f20" stroke-width="2"/>
+  
+  <!-- Fish Scale Pattern -->
+  <path d="M 135 135 Q 145 140 155 135" fill="none" stroke="#0b2f20" stroke-width="1" opacity="0.3"/>
+  <path d="M 137 145 Q 147 150 157 145" fill="none" stroke="#0b2f20" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Water Ripples -->
+  <ellipse cx="100" cy="100" rx="85" ry="85" fill="none" stroke="#14a085" stroke-width="1" opacity="0.3"/>
+  <ellipse cx="100" cy="100" rx="75" ry="75" fill="none" stroke="#14a085" stroke-width="1" opacity="0.2"/>
+  
+  <!-- Text: "GFK" (GoneFishin Keychains) -->
+  <text x="100" y="185" font-family="Arial, sans-serif" font-size="24" font-weight="bold" 
+        text-anchor="middle" fill="#f49b1a" opacity="0.9">GFK</text>
+</svg>
+

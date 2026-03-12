@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#2f4f3f"/>
+  
+  <text x="50%" y="50%" 
+        dominant-baseline="middle" 
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="56"
+        font-weight="bold"
+        fill="#cc5500">
+    MixedMakerShop
+  </text>
+</svg>

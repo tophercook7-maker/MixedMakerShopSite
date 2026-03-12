@@ -1,0 +1,16 @@
+{
+  "name": "mixedmakershop",
+  "version": "1.0.0",
+  "description": "MixedMakerShop website",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "stripe": "^14.21.0",
+    "twilio": "^4.19.0"
+  },
+  "devDependencies": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

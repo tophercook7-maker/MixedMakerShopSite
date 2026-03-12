@@ -1,0 +1,14 @@
+# Local Netlify folder
+.netlify
+
+# Dependencies
+node_modules/
+
+# Environment variables (if using .env files locally)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*

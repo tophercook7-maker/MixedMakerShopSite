@@ -1,0 +1,19 @@
+HOW TO ADD YOUR KEYCHAIN IMAGES:
+
+1. Place your keychain photo in this folder (img/things/)
+2. Name it: keychain1.png (or .jpg, .jpeg, or .webp)
+3. The image will automatically appear on the website
+
+Supported formats: PNG, JPG, JPEG, WEBP
+
+Example filenames:
+- keychain1.png
+- keychain1.jpg
+- keychain2.png
+- etc.
+
+IMPORTANT: After adding images, you need to:
+1. Re-upload the entire gonefishinkeychains folder to Netlify
+2. Or update just the img/things/ folder if you know how
+
+The image will show automatically once uploaded!

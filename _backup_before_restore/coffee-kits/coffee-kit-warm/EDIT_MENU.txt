@@ -1,0 +1,11 @@
+EDIT_MENU (Only change the menu below)
+======================================
+
+Paste your menu in this simple format:
+
+<h3>Espresso</h3>
+<div class="item"><span>Latte</span><strong>$4.75</strong></div>
+<div class="item"><span>Cappuccino</span><strong>$4.50</strong></div>
+
+<h3>Pastries</h3>
+<div class="item"><span>Croissant</span><strong>$3.25</strong></div>

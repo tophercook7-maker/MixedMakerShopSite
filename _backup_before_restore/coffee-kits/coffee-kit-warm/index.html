@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>__BUSINESS_NAME__ • __TAGLINE__</title>
+  <meta name="description" content="__BUSINESS_NAME__ — __TAGLINE__. Drinks, pastries, and good vibes." />
+  <meta name="theme-color" content="#ff4d6d" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#fff6e8;
+      --ink:#141414;
+      --card:#ffffff;
+      --pink:#ff4d6d;
+      --orange:#ff8a3d;
+      --mint:#22d3b5;
+      --purple:#7c4dff;
+      --stroke: 2px solid rgba(0,0,0,.14);
+      --shadow: 0 18px 40px rgba(0,0,0,.12);
+      --r: 26px;
+    }
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(255,77,109,.20), transparent 40%),
+        radial-gradient(circle at 90% 10%, rgba(34,211,181,.18), transparent 45%),
+        radial-gradient(circle at 60% 0%, rgba(124,77,255,.14), transparent 45%),
+        var(--bg);
+      overflow-x:hidden;
+    }
+    h1,h2,h3{ font-family: Fredoka, system-ui, sans-serif; margin:0; }
+    a{ color:inherit; text-decoration:none; }
+    .wrap{ width:min(1160px, 92vw); margin:0 auto; }
+
+    /* nav */
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(12px);
+      background: rgba(255,246,232,.72);
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .nav{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0;
+      gap:12px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; }
+    .logo{
+      width:44px; height:44px; border-radius:16px;
+      background: linear-gradient(135deg, var(--orange), var(--pink));
+      border: var(--stroke);
+      box-shadow: var(--shadow);
+      display:grid; place-items:center;
+      font-size:22px;
+    }
+    .pill{
+      border: var(--stroke);
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 10px 22px rgba(0,0,0,.09);
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:700;
+      display:inline-flex; align-items:center; gap:10px;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+    .pill:hover{ transform: translateY(-2px); box-shadow: 0 14px 28px rgba(0,0,0,.12); }
+    .links{ display:flex; gap:10px; flex-wrap:wrap; }
+    .cta{ background: var(--ink); color:#fff; }
+    .mobileBtn{ display:none; }
+    @media (max-width: 860px){
+      .links{ display:none; }
+      .mobileBtn{ display:inline-flex; }
+    }
+
+    /* hero */
+    .hero{
+      padding:56px 0 26px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){ .hero{ grid-template-columns:1fr; } }
+    .card{
+      border: var(--stroke);
+      background: rgba(255,255,255,.82);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+    }
+    .heroLeft{ padding:28px; position:relative; overflow:hidden; }
+    .kicker{ font-weight:800; letter-spacing:.12em; text-transform:uppercase; font-size:12px; opacity:.8; }
+    .headline{ font-size: clamp(42px, 5.2vw, 68px); line-height:1.0; margin-top:12px; }
+    .sub{ margin-top:12px; font-size:18px; opacity:.86; max-width:56ch; }
+    .actionRow{ margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; }
+    .stickerRow{ margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; }
+    .sticker{
+      border: var(--stroke);
+      background:#fff;
+      border-radius:999px;
+      padding:10px 12px;
+      display:inline-flex; align-items:center; gap:8px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.09);
+      font-size:13px;
+      font-weight:700;
+    }
+    .dot{ width:10px; height:10px; border-radius:999px; border:1px solid rgba(0,0,0,.18); }
+    .dot.pink{ background: var(--pink); }
+    .dot.mint{ background: var(--mint); }
+    .dot.purp{ background: var(--purple); }
+
+    .heroRight{ padding:16px; display:grid; gap:12px; }
+    .photo{
+      height:240px;
+      border-radius: 20px;
+      border: var(--stroke);
+      box-shadow: 0 14px 30px rgba(0,0,0,.12);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.06)),
+        url("https://picsum.photos/id/1066/1400/900") center/cover no-repeat;
+    }
+    .mini{ padding:16px; }
+    .mini h3{ font-size:20px; }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .chip{
+      font-size:12px; font-weight:800;
+      padding:8px 10px; border-radius:999px;
+      border: var(--stroke); background:#fff;
+    }
+
+    /* sections */
+    section{ padding:26px 0 54px; }
+    .sectionTitle{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      margin: 14px 0 14px;
+    }
+    .sectionTitle h2{ font-size:36px; }
+    .note{ font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; opacity:.7; }
+
+    .grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; }
+    .grid2{ display:grid; grid-template-columns: repeat(2, 1fr); gap:14px; }
+    @media (max-width: 900px){ .grid3, .grid2{ grid-template-columns:1fr; } }
+
+    .menuCard{ padding:18px; }
+    .menuCard h3{ font-size:22px; }
+    .item{ display:flex; justify-content:space-between; padding:10px 0; border-bottom: 1px dashed rgba(0,0,0,.22); }
+    .item:last-child{ border-bottom:none; }
+
+    .banner{
+      padding:18px;
+      background: linear-gradient(135deg, rgba(255,138,61,.20), rgba(255,77,109,.18), rgba(34,211,181,.16));
+    }
+
+    /* modal */
+    .modalWrap{
+      position:fixed; inset:0; z-index:80;
+      display:none;
+      place-items:center;
+      padding:24px;
+    }
+    .modalWrap.open{ display:grid; }
+    .overlay{ position:absolute; inset:0; background: rgba(0,0,0,.55); }
+    .modal{
+      position:relative;
+      width:min(720px, 96vw);
+      border-radius: 24px;
+      background: #fff;
+      border: var(--stroke);
+      box-shadow: 0 30px 70px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:16px 18px;
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      background: linear-gradient(135deg, var(--orange), var(--pink));
+      color:#fff;
+    }
+    .modalBody{ padding:18px; display:grid; gap:12px; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 700px){ .row{ grid-template-columns:1fr; } }
+    label{ font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; opacity:.72; }
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border: 2px solid rgba(0,0,0,.14);
+      border-radius: 14px;
+      font-size:14px;
+      outline:none;
+    }
+    .btn{
+      border:none;
+      border-radius: 999px;
+      padding:12px 16px;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      cursor:pointer;
+    }
+    .btnPrimary{ background: var(--ink); color:#fff; }
+    .btnGhost{ background:#fff; border: var(--stroke); }
+
+    footer{ padding:44px 0 52px; font-size:14px; opacity:.75; text-align:center; }
+
+    .back-link{
+      display:inline-block;
+      margin:16px 16px 0;
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    .back-link:hover{
+      text-decoration:underline;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top">
+        <div class="logo">☀️</div>
+        <div>
+          <div style="font-family:Fredoka; font-size:22px;">__BUSINESS_NAME__</div>
+          <div style="font-size:12px; opacity:.75; letter-spacing:.12em; text-transform:uppercase;">__TAGLINE__</div>
+        </div>
+      </a>
+
+      <nav class="links">
+        <a class="pill" href="#menu">Menu</a>
+        <a class="pill" href="#pastries">Pastries</a>
+        <a class="pill" href="#vibes">Vibes</a>
+        <a class="pill" href="#visit">Visit</a>
+      </nav>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a class="pill cta" href="#menu">Order Pickup</a>
+        <button class="pill mobileBtn" id="mobileBtn" type="button">Menu</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="wrap">
+    <div class="hero">
+      <div class="card heroLeft">
+        <div class="kicker">Portfolio mockup • loud & poppin</div>
+        <h1 class="headline">Bright coffee.<br/>Big energy.</h1>
+        <p class="sub">
+          This one is built to feel modern, fun, and “viral café” — stickers, bold colors,
+          punchy sections, and a real-looking pickup modal.
+        </p>
+
+        <div class="actionRow">
+          <a class="pill cta" href="#menu">See Menu →</a>
+          <button class="pill" id="openPickup" type="button">Quick Pickup (demo)</button>
+          <a class="pill" href="#visit">Find Us</a>
+        </div>
+
+        <div class="stickerRow">
+          <span class="sticker"><span class="dot mint"></span> Oat + almond milk</span>
+          <span class="sticker"><span class="dot pink"></span> Fresh pastries daily</span>
+          <span class="sticker"><span class="dot purp"></span> Study + hangout seats</span>
+        </div>
+      </div>
+
+      <div class="heroRight">
+        <div class="photo card" aria-label="Coffee photo"></div>
+
+        <div class="card mini">
+          <h3>Flavor options (small list)</h3>
+          <div class="note" style="margin-top:6px;">no huge flavor wall — just enough</div>
+          <div class="chips">
+            <span class="chip">Vanilla</span>
+            <span class="chip">Caramel</span>
+            <span class="chip">Hazelnut</span>
+            <span class="chip">Cinnamon</span>
+            <span class="chip">Mocha</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="banner card">
+      <div class="sectionTitle" style="margin:0;">
+        <h2 style="font-size:28px;">New: “Sunrise Sips” Rewards</h2>
+        <div class="note">fake feature • real polish</div>
+      </div>
+      <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:10px;">
+        <span class="pill">Buy 8 → get 1 free</span>
+        <span class="pill">Birthday drink</span>
+        <span class="pill">Text promos</span>
+        <span class="pill cta">Join (demo)</span>
+      </div>
+    </section>
+
+    <section id="menu">
+      <div class="sectionTitle">
+        <h2>Menu</h2>
+        <div class="note">mock prices • portfolio use</div>
+      </div>
+
+      <div class="grid3">
+        <div class="card menuCard">
+          <h3>Espresso</h3>
+          <div class="item"><span>Latte</span><strong>$5.25</strong></div>
+          <div class="item"><span>Cappuccino</span><strong>$4.95</strong></div>
+          <div class="item"><span>Americano</span><strong>$3.75</strong></div>
+          <div class="item"><span>Mocha</span><strong>$5.75</strong></div>
+          <div class="item"><span>Matcha Latte</span><strong>$5.95</strong></div>
+        </div>
+
+        <div class="card menuCard">
+          <h3>Cold + Sparkly</h3>
+          <div class="item"><span>Cold Brew</span><strong>$4.50</strong></div>
+          <div class="item"><span>Iced Latte</span><strong>$5.25</strong></div>
+          <div class="item"><span>Strawberry Lemon Fizz</span><strong>$4.75</strong></div>
+          <div class="item"><span>Peach Iced Tea</span><strong>$3.95</strong></div>
+          <div class="item"><span>Vanilla Nitro</span><strong>$5.95</strong></div>
+        </div>
+
+        <div class="card menuCard">
+          <h3>Snacks</h3>
+          <div class="item"><span>Protein box</span><strong>$7.95</strong></div>
+          <div class="item"><span>Yogurt + granola</span><strong>$5.50</strong></div>
+          <div class="item"><span>Trail mix cup</span><strong>$3.25</strong></div>
+          <div class="item"><span>Chocolate chip cookie</span><strong>$2.95</strong></div>
+          <div class="item"><span>Banana bread slice</span><strong>$3.50</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pastries">
+      <div class="sectionTitle">
+        <h2>Pastries</h2>
+        <div class="note">small list • big vibe</div>
+      </div>
+
+      <div class="grid2">
+        <div class="card menuCard">
+          <h3>Baked daily</h3>
+          <div class="item"><span>Butter croissant</span><strong>$4.25</strong></div>
+          <div class="item"><span>Almond croissant</span><strong>$4.95</strong></div>
+          <div class="item"><span>Cinnamon roll</span><strong>$4.75</strong></div>
+          <div class="item"><span>Blueberry muffin</span><strong>$3.95</strong></div>
+        </div>
+        <div class="card menuCard">
+          <h3>Toast + bagels</h3>
+          <div class="item"><span>Everything bagel</span><strong>$3.95</strong></div>
+          <div class="item"><span>Bagel + cream cheese</span><strong>$4.95</strong></div>
+          <div class="item"><span>Avocado toast</span><strong>$7.95</strong></div>
+          <div class="item"><span>PB + banana toast</span><strong>$6.95</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vibes">
+      <div class="sectionTitle">
+        <h2>Vibes</h2>
+        <div class="note">poppin sections sell value</div>
+      </div>
+
+      <div class="grid3">
+        <div class="card menuCard">
+          <h3>Events</h3>
+          <p style="margin-top:10px; opacity:.85;">
+            Open mic Thursdays • Latte art Saturdays • Study nights Sunday.
+          </p>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <span class="pill">Open Mic</span>
+            <span class="pill">Live DJ (mock)</span>
+          </div>
+        </div>
+
+        <div class="card menuCard">
+          <h3>Instagrammable</h3>
+          <p style="margin-top:10px; opacity:.85;">
+            Bright corners, neon sign, plants, and a photo wall (all mock).
+          </p>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <span class="pill">#SunriseSips</span>
+            <span class="pill">Photo Wall</span>
+          </div>
+        </div>
+
+        <div class="card menuCard">
+          <h3>Catering</h3>
+          <p style="margin-top:10px; opacity:.85;">
+            Coffee travelers + pastry trays for offices and events.
+          </p>
+          <button class="pill cta" style="margin-top:12px;" id="openPickup2" type="button">Request (demo)</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="visit">
+      <div class="sectionTitle">
+        <h2>Visit</h2>
+        <div class="note">mock location</div>
+      </div>
+
+      <div class="grid3">
+        <div class="card menuCard">
+          <h3>Address</h3>
+          <p style="margin-top:10px; opacity:.85;">__ADDRESS1__<br/>__ADDRESS2__</p>
+        </div>
+        <div class="card menuCard">
+          <h3>Hours</h3>
+          <p style="margin-top:10px; opacity:.85;">__HOURS__</p>
+        </div>
+        <div class="card menuCard">
+          <h3>Contact</h3>
+          <p style="margin-top:10px; opacity:.85;">__PHONE__<br/>__EMAIL__</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>© <span id="year"></span> __BUSINESS_NAME__</footer>
+  </main>
+
+  <!-- PICKUP MODAL -->
+  <div class="modalWrap" id="modalWrap" aria-hidden="true">
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Pickup order">
+      <div class="modalHead">
+        <div>
+          <div style="font-weight:900; letter-spacing:.12em; text-transform:uppercase; font-size:12px;">Pickup (demo)</div>
+          <div style="font-family:Fredoka; font-size:22px;">Build your order</div>
+        </div>
+        <button class="btn btnGhost" id="closeModal" type="button">Close</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="row">
+          <div>
+            <label>Drink</label>
+            <select>
+              <option>Latte</option>
+              <option>Mocha</option>
+              <option>Cold Brew</option>
+              <option>Matcha Latte</option>
+              <option>Strawberry Lemon Fizz</option>
+            </select>
+          </div>
+          <div>
+            <label>Milk</label>
+            <select>
+              <option>Whole</option>
+              <option>Oat</option>
+              <option>Almond</option>
+              <option>None</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Flavor</label>
+            <select>
+              <option>None</option>
+              <option>Vanilla</option>
+              <option>Caramel</option>
+              <option>Hazelnut</option>
+              <option>Cinnamon</option>
+              <option>Mocha</option>
+            </select>
+          </div>
+          <div>
+            <label>Pastry / Snack</label>
+            <select>
+              <option>None</option>
+              <option>Butter croissant</option>
+              <option>Cinnamon roll</option>
+              <option>Cookie</option>
+              <option>Yogurt + granola</option>
+              <option>Protein box</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input placeholder="Your name" />
+          </div>
+          <div>
+            <label>Pickup time</label>
+            <input placeholder="e.g. 10:30am" />
+          </div>
+        </div>
+
+        <div>
+          <label>Notes</label>
+          <textarea rows="3" placeholder="Anything we should know?"></textarea>
+        </div>
+
+        <button class="btn btnPrimary" type="button">Place order (demo)</button>
+        <div style="font-size:12px; opacity:.65; font-weight:700;">Mock modal for portfolio polish — wire up later if needed.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const modalWrap = document.getElementById("modalWrap");
+    const overlay = document.getElementById("overlay");
+    const open1 = document.getElementById("openPickup");
+    const open2 = document.getElementById("openPickup2");
+    const close = document.getElementById("closeModal");
+
+    function openModal(){
+      modalWrap.classList.add("open");
+      modalWrap.setAttribute("aria-hidden","false");
+    }
+    function closeModal(){
+      modalWrap.classList.remove("open");
+      modalWrap.setAttribute("aria-hidden","true");
+    }
+    [open1, open2].forEach(btn => btn && btn.addEventListener("click", openModal));
+    close.addEventListener("click", closeModal);
+    overlay.addEventListener("click", closeModal);
+    window.addEventListener("keydown", (e)=>{ if(e.key === "Escape") closeModal(); });
+
+    // mobile menu (simple jump list)
+    const mobileBtn = document.getElementById("mobileBtn");
+    mobileBtn.addEventListener("click", ()=>{
+      const links = document.querySelector(".links");
+      const showing = links.style.display === "flex";
+      links.style.display = showing ? "none" : "flex";
+      links.style.marginTop = showing ? "0" : "10px";
+    });
+  </script>
+</body>
+</html>

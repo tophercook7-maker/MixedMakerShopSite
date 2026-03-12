@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bean Bliss • Coffee Shop</title>
+  <meta
+    name="description"
+    content="Bean Bliss is a modern coffee shop landing page with handcrafted drinks, cozy vibes, and fast loading performance."
+  />
+  <meta name="theme-color" content="#3C2F2F" />
+  <meta property="og:title" content="Bean Bliss • Coffee Shop" />
+  <meta property="og:description" content="Fresh beans • Handcrafted drinks • Cozy vibes" />
+  <meta property="og:type" content="website" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap");
+    :root {
+      --coffee: #3c2f2f;
+      color-scheme: light;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .tail-container {
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
+    .logo-font {
+      font-family: "Playfair Display", serif;
+    }
+
+    .hero-bg {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)),
+        url("https://picsum.photos/id/1015/2000/1200");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .menu-card {
+      transition: transform 300ms ease, box-shadow 300ms ease;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -4px;
+      left: 0;
+      background-color: #d97706;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .section-header {
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-header::after {
+      content: "";
+      position: absolute;
+      width: 60px;
+      height: 3px;
+      background: #d97706;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .skip-link {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translateY(-120%);
+      background: #111827;
+      color: #fff;
+      padding: 0.65rem 1rem;
+      z-index: 60;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .menu-card {
+        transition: none;
+      }
+
+      .menu-card:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body class="tail-container overflow-x-hidden bg-stone-50 text-stone-800 dark:bg-stone-950 dark:text-stone-100">
+  <a href="#content" class="skip-link">Skip to content</a>
+
+  <nav class="sticky top-0 z-50 bg-[#3C2F2F] text-white shadow-lg">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+      <a href="#home" class="flex items-center gap-x-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-3xl shadow-inner">☕</div>
+        <span class="logo-font text-3xl font-bold tracking-tighter">Bean Bliss</span>
+      </a>
+
+      <div class="hidden items-center gap-x-8 text-lg md:flex">
+        <a href="#home" class="nav-link font-medium hover:text-amber-400 transition">Home</a>
+        <a href="#menu" class="nav-link font-medium hover:text-amber-400 transition">Menu</a>
+        <a href="#about" class="nav-link font-medium hover:text-amber-400 transition">About</a>
+        <a href="#visit" class="nav-link font-medium hover:text-amber-400 transition">Visit Us</a>
+      </div>
+
+      <div class="flex items-center gap-x-3">
+        <button
+          id="themeBtn"
+          class="rounded-full border border-white/20 px-3 py-2 text-sm transition hover:border-white/40 hover:bg-white/10"
+          type="button"
+          aria-label="Toggle dark mode"
+        >
+          Dark
+        </button>
+        <button
+          onclick="document.querySelector('#visit').scrollIntoView({behavior:'smooth'})"
+          class="hidden items-center gap-x-2 rounded-3xl bg-amber-500 px-6 py-3 font-semibold text-coffee transition hover:bg-amber-400 md:flex"
+        >
+          Order
+        </button>
+        <button id="mobileBtn" class="text-2xl md:hidden" aria-expanded="false" aria-controls="mobileMenu" aria-label="Open menu">
+          ☰
+        </button>
+      </div>
+    </div>
+
+    <div id="mobileMenu" class="hidden border-t border-white/10 bg-[#332727] md:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 text-lg">
+        <a href="#home" class="nav-link font-medium hover:text-amber-400 transition">Home</a>
+        <a href="#menu" class="nav-link font-medium hover:text-amber-400 transition">Menu</a>
+        <a href="#about" class="nav-link font-medium hover:text-amber-400 transition">About</a>
+        <a href="#visit" class="nav-link font-medium hover:text-amber-400 transition">Visit Us</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="content">
+    <section id="home" class="hero-bg relative flex min-h-screen items-center">
+      <div class="mx-auto max-w-4xl px-6 py-24 text-center text-white">
+        <p class="mb-3 text-sm font-medium uppercase tracking-[4px] text-amber-300">Est. 2023 • Hot Springs, AR</p>
+        <h1 class="logo-font mb-6 text-6xl font-bold leading-none md:text-8xl">
+          Good days<br />start with<br />great coffee
+        </h1>
+        <p class="mx-auto mb-10 max-w-md text-xl text-amber-100 md:text-3xl">
+          Fresh beans • Handcrafted drinks • Cozy vibes
+        </p>
+
+        <div class="flex flex-col justify-center gap-4 sm:flex-row">
+          <a href="#menu" class="flex items-center justify-center gap-x-3 rounded-3xl bg-white px-10 py-5 text-xl font-semibold text-[#3C2F2F] transition hover:bg-amber-100">
+            Browse Menu
+          </a>
+          <a href="#visit" class="rounded-3xl border-2 border-white px-10 py-5 text-xl font-semibold transition hover:bg-white/10">
+            Find Us
+          </a>
+        </div>
+      </div>
+
+      <div class="absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-wrap justify-center gap-4 px-6 text-sm">
+        <div class="flex items-center gap-x-2 rounded-3xl bg-white/90 px-5 py-2 text-stone-800 shadow">
+          <span>4.9 • 842 reviews</span>
+        </div>
+        <div class="flex items-center gap-x-2 rounded-3xl bg-white/90 px-5 py-2 text-stone-800 shadow">
+          <span>Ethically sourced beans</span>
+        </div>
+        <div class="flex items-center gap-x-2 rounded-3xl bg-white/90 px-5 py-2 text-stone-800 shadow">
+          <span>Oat, almond, whole milk</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="menu" class="py-20">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="mb-12 text-center">
+          <h2 class="section-header logo-font text-5xl font-bold">Menu</h2>
+          <p class="mt-6 text-lg text-stone-600">Favorites + a few seasonal flavors.</p>
+        </div>
+
+        <div class="grid gap-8 md:grid-cols-3">
+          <div class="menu-card rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-2xl font-bold">Espresso Classics</h3>
+            <p class="mb-6 text-stone-600">Simple. Strong. Perfect.</p>
+            <ul class="space-y-3">
+              <li class="flex justify-between"><span>Latte</span><span class="font-semibold">$5.25</span></li>
+              <li class="flex justify-between"><span>Cappuccino</span><span class="font-semibold">$4.95</span></li>
+              <li class="flex justify-between"><span>Americano</span><span class="font-semibold">$3.75</span></li>
+              <li class="flex justify-between"><span>Mocha</span><span class="font-semibold">$5.75</span></li>
+            </ul>
+          </div>
+          <div class="menu-card rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-2xl font-bold">Cold &amp; Smooth</h3>
+            <p class="mb-6 text-stone-600">Chilled stuff that still hits.</p>
+            <ul class="space-y-3">
+              <li class="flex justify-between"><span>Cold Brew</span><span class="font-semibold">$4.50</span></li>
+              <li class="flex justify-between"><span>Iced Latte</span><span class="font-semibold">$5.25</span></li>
+              <li class="flex justify-between"><span>Nitro (when available)</span><span class="font-semibold">$5.95</span></li>
+              <li class="flex justify-between"><span>Iced Mocha</span><span class="font-semibold">$5.95</span></li>
+            </ul>
+          </div>
+          <div class="menu-card rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-2xl font-bold">Seasonal Flavors</h3>
+            <p class="mb-6 text-stone-600">A few rotating picks.</p>
+            <ul class="space-y-3">
+              <li class="flex justify-between"><span>Vanilla Bean</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Caramel</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Hazelnut</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Brown Sugar Cinnamon</span><span class="font-semibold">+$0.75</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="bg-white py-20">
+      <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 md:grid-cols-2">
+        <div>
+          <h2 class="section-header logo-font text-5xl font-bold">About</h2>
+          <p class="mt-6 text-lg leading-relaxed text-stone-600">
+            Bean Bliss is a cozy neighborhood spot built around great espresso, friendly service, and a calm place to land.
+            This version is accessibility-forward, fast to load, and easy to extend.
+          </p>
+        </div>
+        <div class="overflow-hidden rounded-3xl shadow-lg">
+          <img
+            src="https://picsum.photos/id/1060/1200/900"
+            alt="Coffee shop interior"
+            loading="lazy"
+            width="1200"
+            height="900"
+            class="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section id="visit" class="py-20">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="mb-12 text-center">
+          <h2 class="section-header logo-font text-5xl font-bold">Visit Us</h2>
+          <p class="mt-6 text-lg text-stone-600">Mock location + hours for portfolio.</p>
+        </div>
+        <div class="grid gap-8 md:grid-cols-3">
+          <div class="rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-xl font-bold">Address</h3>
+            <p class="text-stone-600">101 Central Ave<br />Hot Springs, AR 71901</p>
+          </div>
+          <div class="rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-xl font-bold">Hours</h3>
+            <p class="text-stone-600">Mon–Fri: 7am–6pm<br />Sat–Sun: 8am–5pm</p>
+          </div>
+          <div class="rounded-3xl bg-white p-8 shadow">
+            <h3 class="mb-2 text-xl font-bold">Contact</h3>
+            <p class="text-stone-600">(501) 555-0199<br />hello@beanbliss.coffee</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#3C2F2F] py-10 text-white">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
+      <p class="text-white/80">© <span id="year"></span> Bean Bliss — Portfolio Mockup</p>
+      <div class="flex gap-3">
+        <a href="#" class="rounded-full border border-white/20 px-3 py-1.5 hover:border-amber-300 hover:text-amber-300">Instagram</a>
+        <a href="#" class="rounded-full border border-white/20 px-3 py-1.5 hover:border-amber-300 hover:text-amber-300">Facebook</a>
+        <a href="#" class="rounded-full border border-white/20 px-3 py-1.5 hover:border-amber-300 hover:text-amber-300">X</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+
+    const btn = document.getElementById("mobileBtn");
+    const menu = document.getElementById("mobileMenu");
+    btn.addEventListener("click", () => {
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!expanded));
+      btn.textContent = expanded ? "☰" : "×";
+      menu.classList.toggle("hidden");
+    });
+
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        btn.setAttribute("aria-expanded", "false");
+        btn.textContent = "☰";
+        menu.classList.add("hidden");
+      });
+    });
+
+    const navLinks = document.querySelectorAll("nav .nav-link");
+    const sections = ["home", "menu", "about", "visit"].map((id) => document.getElementById(id));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          navLinks.forEach((link) => {
+            link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id);
+          });
+        });
+      },
+      { rootMargin: "-40% 0px -40% 0px", threshold: 0.1 }
+    );
+    sections.forEach((section) => section && observer.observe(section));
+
+    const themeBtn = document.getElementById("themeBtn");
+    const savedTheme = localStorage.getItem("bb_theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      themeBtn.textContent = "Light";
+    }
+    themeBtn.addEventListener("click", () => {
+      const darkEnabled = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("bb_theme", darkEnabled ? "dark" : "light");
+      themeBtn.textContent = darkEnabled ? "Light" : "Dark";
+    });
+  </script>
+</body>
+</html>

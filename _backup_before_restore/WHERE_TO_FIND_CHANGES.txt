@@ -1,0 +1,47 @@
+WHERE TO FIND THE CHANGES
+=========================
+
+The changes were made to the "What I Make" section (also called "Makes" section).
+
+LOCATION IN YOUR FILE:
+----------------------
+1. Scroll to the section with heading "What I make" 
+   - Look for: "3D prints, keychains, and tiny problem-solvers"
+   - This is around line 2506 in index.html
+
+2. In that section, find the large card on the RIGHT SIDE that shows:
+   - A large emoji/image (🏷️)
+   - Below it, a box with text about "visual anchor"
+
+WHAT CHANGED:
+-------------
+The box that says "A visual anchor for anything that ships out of the studio, from prints to lures"
+
+BEFORE: 
+- It was positioned OVER the image (absolute positioning)
+- It looked like it was hiding content
+- Small text, hard to read
+
+AFTER:
+- It now sits BELOW the image (static positioning)  
+- Much more visible and readable
+- Has an orange title "MixedMakerShop Product Tag"
+- Better spacing and styling
+
+TO SEE THE CHANGES:
+-------------------
+1. Open index.html in your browser (double-click the file)
+2. Scroll down to the "What I make" section
+3. Look at the RIGHT SIDE - you should see a card with:
+   - Image/emoji at top
+   - Information box below it (NOT overlapping)
+
+If you're looking at the LIVE WEBSITE (mixedmakershop.com):
+- You won't see changes until you upload/deploy the updated file
+- The changes are only in your local file right now
+
+EXACT LINE NUMBERS IN index.html:
+----------------------------------
+- CSS changes: Lines 1366-1390 (the .makes-image-caption styles)
+- HTML changes: Lines 2648-2668 (the actual box content)
+

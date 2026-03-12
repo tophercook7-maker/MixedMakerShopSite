@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ✅ FINAL SITE: ROUTE 66 COFFEE -->
+  <title>Route 66 Coffee • Vintage Diner Café</title>
+
+  <meta name="description" content="Route 66 Coffee — vintage diner café concept with espresso, shakes, pastries, and all-day breakfast." />
+  <meta name="theme-color" content="#e11d48" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Inter:wght@400;600;800&display=swap");
+    :root{
+      --red:#e11d48;
+      --cream:#fff7e6;
+      --ink:#111827;
+      --teal:#14b8a6;
+    }
+    body{ font-family: Inter, system-ui, sans-serif; background: var(--cream); color: var(--ink); }
+    .display{ font-family: "Luckiest Guy", system-ui; letter-spacing: .04em; }
+    .checkers{
+      background:
+        linear-gradient(45deg, rgba(0,0,0,.06) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(0,0,0,.06) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(0,0,0,.06) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(0,0,0,.06) 75%);
+      background-size: 26px 26px;
+      background-position: 0 0, 0 13px, 13px -13px, -13px 0px;
+    }
+    .shine{ background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,0)); }
+    .fade{ opacity:0; transform: translateY(14px); transition: opacity .7s ease, transform .7s ease; }
+    .fade.in{ opacity:1; transform:none; }
+    @media (prefers-reduced-motion: reduce){ .fade{ opacity:1; transform:none; transition:none; } }
+  </style>
+</head>
+
+<body class="overflow-x-hidden">
+  <!-- TOP STRIP -->
+  <div class="bg-[color:var(--red)] text-white">
+    <div class="max-w-6xl mx-auto px-6 py-2 flex flex-wrap gap-3 justify-between text-xs uppercase tracking-[0.25em]">
+      <span>Vintage Diner Café • Since “’59” (mock)</span>
+      <span>Breakfast all day • Pastries • Shakes</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 bg-[color:var(--cream)] border-b border-black/10">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-white border border-black/10 shadow-sm grid place-items-center">
+          <span class="text-xl">☕</span>
+        </div>
+        <div>
+          <div class="display text-2xl text-[color:var(--red)] leading-none">Route 66 Coffee</div>
+          <div class="text-xs uppercase tracking-[0.28em] opacity-70">Vintage Diner Café</div>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-7 text-sm uppercase tracking-[0.25em]">
+        <a href="#menu" class="hover:text-[color:var(--red)]">Menu</a>
+        <a href="#pastries" class="hover:text-[color:var(--red)]">Pastries</a>
+        <a href="#shakes" class="hover:text-[color:var(--red)]">Shakes</a>
+        <a href="#events" class="hover:text-[color:var(--red)]">Events</a>
+        <a href="#visit" class="hover:text-[color:var(--red)]">Visit</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <button id="openOrder" class="hidden sm:inline-flex px-5 py-2 rounded-full bg-[color:var(--red)] text-white font-semibold hover:opacity-90 transition">
+          Order (demo)
+        </button>
+        <button id="mobileBtn" class="md:hidden px-3 py-2 rounded-full border border-black/20 bg-white/70" aria-expanded="false" aria-controls="mobileMenu">
+          Menu
+        </button>
+      </div>
+    </div>
+
+    <div id="mobileMenu" class="hidden md:hidden border-t border-black/10 bg-white/70">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-4 text-sm uppercase tracking-[0.25em]">
+        <a href="#menu">Menu</a>
+        <a href="#pastries">Pastries</a>
+        <a href="#shakes">Shakes</a>
+        <a href="#events">Events</a>
+        <a href="#visit">Visit</a>
+        <button id="openOrder2" class="text-left px-4 py-3 rounded-xl bg-[color:var(--red)] text-white hover:opacity-90 transition">
+          Order (demo)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="relative">
+      <div class="absolute inset-0 checkers opacity-60"></div>
+      <div class="absolute inset-0 shine"></div>
+
+      <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+        <div class="fade">
+          <p class="text-xs uppercase tracking-[0.35em] opacity-70">chrome • neon • booth seats (mock)</p>
+          <h1 class="display text-5xl md:text-6xl text-[color:var(--red)]">
+            Coffee &<br/>Good Times
+          </h1>
+          <p class="mt-5 text-lg opacity-85 max-w-xl">
+            A portfolio-grade vintage diner café: bold typography, checkerboard energy, “menu board” sections,
+            shakes + pastries, events, and a demo order modal.
+          </p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="#menu" class="px-6 py-3 rounded-full bg-[color:var(--ink)] text-white font-semibold hover:opacity-90 transition">
+              View Menu
+            </a>
+            <a href="#visit" class="px-6 py-3 rounded-full border border-black/20 bg-white/70 font-semibold hover:bg-white transition">
+              Find Us
+            </a>
+            <button id="openOrder3" class="px-6 py-3 rounded-full bg-[color:var(--teal)] text-white font-semibold hover:opacity-90 transition">
+              Order Pickup (demo)
+            </button>
+          </div>
+
+          <div class="mt-10 grid sm:grid-cols-3 gap-3 text-sm">
+            <div class="bg-white/70 border border-black/10 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-[0.25em] opacity-70">Breakfast</div>
+              <div class="mt-2 font-bold">All day</div>
+            </div>
+            <div class="bg-white/70 border border-black/10 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-[0.25em] opacity-70">Pastries</div>
+              <div class="mt-2 font-bold">Fresh daily</div>
+            </div>
+            <div class="bg-white/70 border border-black/10 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-[0.25em] opacity-70">Flavors</div>
+              <div class="mt-2 font-bold">Small list</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fade">
+          <div class="rounded-3xl overflow-hidden border border-black/10 shadow-sm bg-white/60">
+            <img src="https://picsum.photos/id/1040/1600/1200" class="w-full h-[520px] object-cover" alt="Diner vibe" loading="lazy">
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="px-3 py-2 rounded-full bg-white/70 border border-black/10 text-xs uppercase tracking-[0.25em]">Neon sign</span>
+            <span class="px-3 py-2 rounded-full bg-white/70 border border-black/10 text-xs uppercase tracking-[0.25em]">Booth seats</span>
+            <span class="px-3 py-2 rounded-full bg-white/70 border border-black/10 text-xs uppercase tracking-[0.25em]">Jukebox nights</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENU -->
+    <section id="menu" class="py-20">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="fade flex items-end justify-between flex-wrap gap-6">
+          <h2 class="display text-4xl text-[color:var(--ink)]">Menu Board</h2>
+          <p class="text-sm uppercase tracking-[0.25em] opacity-70">Mock pricing • portfolio</p>
+        </div>
+
+        <div class="mt-10 grid md:grid-cols-3 gap-7">
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7 shadow-sm">
+            <h3 class="text-sm uppercase tracking-[0.25em] font-bold text-[color:var(--red)]">Coffee</h3>
+            <ul class="mt-5 space-y-3">
+              <li class="flex justify-between"><span>Drip</span><span class="font-semibold">$3.00</span></li>
+              <li class="flex justify-between"><span>Latte</span><span class="font-semibold">$5.50</span></li>
+              <li class="flex justify-between"><span>Mocha</span><span class="font-semibold">$6.00</span></li>
+              <li class="flex justify-between"><span>Cold Brew</span><span class="font-semibold">$4.75</span></li>
+            </ul>
+          </div>
+
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7 shadow-sm">
+            <h3 class="text-sm uppercase tracking-[0.25em] font-bold text-[color:var(--teal)]">Breakfast</h3>
+            <ul class="mt-5 space-y-3">
+              <li class="flex justify-between"><span>Egg + cheese bagel</span><span class="font-semibold">$6.95</span></li>
+              <li class="flex justify-between"><span>Avocado toast</span><span class="font-semibold">$7.95</span></li>
+              <li class="flex justify-between"><span>Granola bowl</span><span class="font-semibold">$6.75</span></li>
+              <li class="flex justify-between"><span>Breakfast burrito</span><span class="font-semibold">$8.95</span></li>
+            </ul>
+          </div>
+
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7 shadow-sm">
+            <h3 class="text-sm uppercase tracking-[0.25em] font-bold text-[color:var(--ink)]">Flavors (small list)</h3>
+            <p class="mt-3 text-sm opacity-80">Keep it simple — no giant flavors page.</p>
+            <ul class="mt-5 space-y-3">
+              <li class="flex justify-between"><span>Vanilla</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Caramel</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Hazelnut</span><span class="font-semibold">+$0.75</span></li>
+              <li class="flex justify-between"><span>Cinnamon</span><span class="font-semibold">+$0.75</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PASTRIES -->
+    <section id="pastries" class="py-20 bg-white/60 border-y border-black/10">
+      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+        <div class="fade">
+          <h2 class="display text-4xl text-[color:var(--red)]">Pastries</h2>
+          <p class="mt-5 text-lg opacity-80">Diner sweets + café classics.</p>
+
+          <div class="mt-8 space-y-3">
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-2xl p-4">
+              <div><div class="font-bold">Butter croissant</div><div class="text-sm opacity-70">flaky + golden</div></div>
+              <div class="font-semibold">$4.25</div>
+            </div>
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-2xl p-4">
+              <div><div class="font-bold">Cinnamon roll</div><div class="text-sm opacity-70">classic swirl</div></div>
+              <div class="font-semibold">$4.75</div>
+            </div>
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-2xl p-4">
+              <div><div class="font-bold">Slice of pie</div><div class="text-sm opacity-70">seasonal (mock)</div></div>
+              <div class="font-semibold">$5.25</div>
+            </div>
+            <div class="flex items-center justify-between bg-white/80 border border-black/10 rounded-2xl p-4">
+              <div><div class="font-bold">Chocolate chip cookie</div><div class="text-sm opacity-70">baked daily</div></div>
+              <div class="font-semibold">$2.95</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fade rounded-3xl overflow-hidden border border-black/10 shadow-sm">
+          <img src="https://picsum.photos/id/1080/1600/1200" class="w-full h-[520px] object-cover" alt="Pastries" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- SHAKES -->
+    <section id="shakes" class="py-20">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="fade flex items-end justify-between flex-wrap gap-6">
+          <h2 class="display text-4xl text-[color:var(--ink)]">Milkshakes</h2>
+          <p class="text-sm uppercase tracking-[0.25em] opacity-70">“poppin” add-on section</p>
+        </div>
+
+        <div class="mt-10 grid md:grid-cols-3 gap-7 text-sm">
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Classic</div>
+            <div class="mt-2 font-bold text-xl">Vanilla Shake</div>
+            <div class="mt-2 opacity-80">whip • cherry • sprinkles</div>
+            <div class="mt-4 font-semibold">$6.50</div>
+          </div>
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Fan favorite</div>
+            <div class="mt-2 font-bold text-xl">Chocolate Malt</div>
+            <div class="mt-2 opacity-80">malt • cocoa • whip</div>
+            <div class="mt-4 font-semibold">$6.95</div>
+          </div>
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Seasonal</div>
+            <div class="mt-2 font-bold text-xl">Strawberry Dream</div>
+            <div class="mt-2 opacity-80">berry swirl • crunch topping</div>
+            <div class="mt-4 font-semibold">$6.95</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTS + TESTIMONIALS -->
+    <section id="events" class="py-20 bg-white/60 border-y border-black/10">
+      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12">
+        <div class="fade">
+          <h2 class="display text-4xl text-[color:var(--red)]">Events</h2>
+          <div class="mt-6 space-y-4 text-sm">
+            <div class="bg-white/80 border border-black/10 rounded-2xl p-5">
+              <div class="font-bold">Jukebox Nights</div>
+              <div class="opacity-70 mt-1">Fridays 7–10pm • diner classics (mock)</div>
+            </div>
+            <div class="bg-white/80 border border-black/10 rounded-2xl p-5">
+              <div class="font-bold">Classic Car Sunday</div>
+              <div class="opacity-70 mt-1">Parking lot meetup + coffee (mock)</div>
+            </div>
+            <div class="bg-white/80 border border-black/10 rounded-2xl p-5">
+              <div class="font-bold">Pie & Coffee Happy Hour</div>
+              <div class="opacity-70 mt-1">Weekdays 2–4pm (mock)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fade">
+          <div class="bg-white/80 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">What folks say</div>
+            <div class="mt-5 space-y-4 text-sm">
+              <div class="bg-white border border-black/10 rounded-2xl p-5">
+                “This place feels like a time machine — and the cold brew is perfect.”
+                <div class="mt-3 text-xs uppercase tracking-[0.25em] opacity-70">— Alex P.</div>
+              </div>
+              <div class="bg-white border border-black/10 rounded-2xl p-5">
+                “The shakes are wild. The vibe is even wilder.”
+                <div class="mt-3 text-xs uppercase tracking-[0.25em] opacity-70">— Morgan T.</div>
+              </div>
+              <div class="bg-white border border-black/10 rounded-2xl p-5">
+                “Pastries are small list but every item hits.”
+                <div class="mt-3 text-xs uppercase tracking-[0.25em] opacity-70">— Jamie R.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 bg-white/80 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Newsletter</div>
+            <div class="mt-2 font-bold text-xl">Get specials + event nights</div>
+            <form class="mt-4 flex gap-3">
+              <input class="w-full border border-black/20 bg-white px-4 py-3 rounded-2xl" placeholder="Email address" type="email" required>
+              <button class="px-5 py-3 rounded-2xl bg-[color:var(--red)] text-white font-semibold hover:opacity-90 transition" type="submit">
+                Join
+              </button>
+            </form>
+            <div class="mt-2 text-xs opacity-60">Mock form — connect later.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISIT + FAQ -->
+    <section id="visit" class="py-20">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="fade flex items-end justify-between flex-wrap gap-6">
+          <h2 class="display text-4xl text-[color:var(--ink)]">Visit</h2>
+          <button id="openOrder4" class="px-5 py-3 rounded-full bg-[color:var(--teal)] text-white font-semibold hover:opacity-90 transition">
+            Order pickup (demo)
+          </button>
+        </div>
+
+        <div class="mt-10 grid md:grid-cols-3 gap-6">
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Address</div>
+            <div class="mt-2 font-bold">66 Highway Blvd</div>
+            <div class="text-sm opacity-70">Anywhere, USA</div>
+          </div>
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Hours</div>
+            <div class="mt-2 font-bold">Mon–Fri 7–7</div>
+            <div class="text-sm opacity-70">Sat–Sun 8–8</div>
+          </div>
+          <div class="fade bg-white/70 border border-black/10 rounded-3xl p-7">
+            <div class="text-xs uppercase tracking-[0.25em] opacity-70">Contact</div>
+            <div class="mt-2 font-bold">hello@route66coffee.com</div>
+            <div class="text-sm opacity-70">(555) 010-6600</div>
+          </div>
+        </div>
+
+        <div class="mt-10 fade bg-white/70 border border-black/10 rounded-3xl p-7">
+          <div class="text-xs uppercase tracking-[0.25em] opacity-70">FAQ</div>
+          <div class="mt-4 grid md:grid-cols-2 gap-6 text-sm">
+            <div><div class="font-bold">Do you have decaf?</div><div class="opacity-70 mt-1">Yep — espresso drinks available decaf.</div></div>
+            <div><div class="font-bold">Do you offer dairy-free?</div><div class="opacity-70 mt-1">Oat + almond available.</div></div>
+            <div><div class="font-bold">Order ahead?</div><div class="opacity-70 mt-1">This mock includes an order modal (demo).</div></div>
+            <div><div class="font-bold">Do you do catering?</div><div class="opacity-70 mt-1">Travelers + pastry trays (demo inquiry).</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="py-10 border-t border-black/10 bg-white/60">
+      <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-4 justify-between items-center text-sm opacity-70">
+        <p>© <span id="year"></span> Route 66 Coffee — Portfolio Mockup</p>
+        <p class="uppercase tracking-[0.25em] text-xs">Vintage diner style</p>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ORDER MODAL -->
+  <div id="modal" class="hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative max-w-xl mx-auto mt-20 bg-[color:var(--cream)] border border-black/20 rounded-3xl p-6 md:p-8">
+      <div class="flex items-start justify-between gap-6">
+        <div>
+          <div class="text-xs uppercase tracking-[0.25em] opacity-70">Order (demo)</div>
+          <h3 class="display text-3xl mt-2 text-[color:var(--red)]">Pickup Order</h3>
+          <p class="mt-2 text-sm opacity-80">Portfolio modal — hook up later if needed.</p>
+        </div>
+        <button id="closeModal" class="px-3 py-2 rounded-full border border-black/20 bg-white/70 hover:bg-[color:var(--ink)] hover:text-white transition">Close</button>
+      </div>
+
+      <form class="mt-6 grid gap-4">
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="text-sm">
+            <span class="block text-xs uppercase tracking-[0.25em] opacity-70 mb-2">Drink</span>
+            <select class="w-full border border-black/20 bg-white px-4 py-3 rounded-2xl text-sm">
+              <option>Latte</option><option>Mocha</option><option>Cold Brew</option><option>Drip</option>
+            </select>
+          </label>
+          <label class="text-sm">
+            <span class="block text-xs uppercase tracking-[0.25em] opacity-70 mb-2">Flavor</span>
+            <select class="w-full border border-black/20 bg-white px-4 py-3 rounded-2xl text-sm">
+              <option>None</option><option>Vanilla</option><option>Caramel</option><option>Hazelnut</option><option>Cinnamon</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <label class="text-sm">
+            <span class="block text-xs uppercase tracking-[0.25em] opacity-70 mb-2">Pastry / Snack</span>
+            <select class="w-full border border-black/20 bg-white px-4 py-3 rounded-2xl text-sm">
+              <option>None</option><option>Butter croissant</option><option>Cookie</option><option>Slice of pie</option><option>Breakfast burrito</option>
+            </select>
+          </label>
+          <label class="text-sm">
+            <span class="block text-xs uppercase tracking-[0.25em] opacity-70 mb-2">Name</span>
+            <input class="w-full border border-black/20 bg-white px-4 py-3 rounded-2xl text-sm" placeholder="Your name" />
+          </label>
+        </div>
+
+        <button type="button" class="mt-2 px-6 py-3 rounded-full bg-[color:var(--red)] text-white font-semibold hover:opacity-90 transition">
+          Place order (demo)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = String(new Date().getFullYear());
+
+    // mobile menu
+    const mobileBtn = document.getElementById("mobileBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    mobileBtn?.addEventListener("click", () => {
+      const expanded = mobileBtn.getAttribute("aria-expanded") === "true";
+      mobileBtn.setAttribute("aria-expanded", String(!expanded));
+      mobileMenu.classList.toggle("hidden");
+    });
+    mobileMenu?.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+      mobileMenu.classList.add("hidden");
+      mobileBtn.setAttribute("aria-expanded","false");
+    }));
+
+    // modal
+    const modal = document.getElementById("modal");
+    const closeModal = document.getElementById("closeModal");
+    const openIds = ["openOrder","openOrder2","openOrder3","openOrder4"];
+    openIds.forEach(id => document.getElementById(id)?.addEventListener("click", () => modal.classList.remove("hidden")));
+    closeModal?.addEventListener("click", () => modal.classList.add("hidden"));
+    modal?.addEventListener("click", (e)=> { if(e.target === modal) modal.classList.add("hidden"); });
+
+    // reveal
+    const els = document.querySelectorAll(".fade");
+    const io = new IntersectionObserver((entries)=>entries.forEach(en=> en.isIntersecting && en.target.classList.add("in")), {threshold:0.15});
+    els.forEach(el=> io.observe(el));
+  </script>
+</body>
+</html>

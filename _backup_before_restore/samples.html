@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Samples — MixedMakerShop</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <div class="brand-badge"></div>
+      <div>MixedMakerShop</div>
+    </a>
+    <nav class="nav-links">
+      <a href="websites.html">Websites</a>
+      <a href="3d-printing.html">3D Printing</a>
+      <a href="samples.html">Samples</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="section">
+  <div class="container">
+    <div class="kicker"><span class="kdot"></span> Samples hub</div>
+    <h1 class="h1" style="font-size:clamp(30px, 4vw, 50px);">Pick a style. Click a demo.</h1>
+    <p class="subhead">Want one customized? Tell us what you need and we'll build it right.</p>
+
+    <div class="btn-row">
+      <a class="btn primary" href="contact.html">Start a Project</a>
+      <a class="btn" href="3d-printing.html">3D Printing Hub</a>
+    </div>
+
+    <hr class="sep" />
+
+    <section class="card">
+      <h2 style="margin:0 0 8px;">Church website demos</h2>
+      <p>Warm, modern, and traditional — same strong structure underneath.</p>
+
+      <div class="grid-2" style="margin-top:14px;">
+        <a class="big-link" href="demos/church-warm.html"><div>Warm & Welcoming</div><span>→</span></a>
+        <a class="big-link" href="demos/church-modern.html"><div>Modern & Minimal</div><span>→</span></a>
+        <a class="big-link" href="demos/church-traditional.html"><div>Traditional & Trustworthy</div><span>→</span></a>
+      </div>
+
+      <div class="btn-row" style="margin-top:14px;">
+        <a class="btn" href="contact.html">Request a Church Quote</a>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section id="business" class="card">
+      <h2 style="margin:0 0 8px;">Service business demos</h2>
+      <p>Next up. (We'll add these after the church demos are live.)</p>
+    </section>
+
+    <hr class="sep" />
+
+    <section id="creator" class="card">
+      <h2 style="margin:0 0 8px;">Creator / portfolio demos</h2>
+      <p>Next up. (We'll add these after business demos.)</p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="card">
+      <h2 style="margin:0 0 8px;">3D printing samples</h2>
+      <p>Custom prints, prototypes, and parts — local pickup or shipped nationwide.</p>
+      <div class="btn-row">
+        <a class="btn primary" href="3d-printing.html">3D Printing Hub</a>
+        <a class="btn" href="contact.html">Request a Print Quote</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="small">© <span id="y"></span> MixedMakerShop</div>
+  </div>
+</footer>
+
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

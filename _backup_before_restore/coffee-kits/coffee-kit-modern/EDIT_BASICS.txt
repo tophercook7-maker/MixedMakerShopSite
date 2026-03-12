@@ -1,0 +1,25 @@
+EDIT_BASICS (Only change the info below)
+========================================
+
+BUSINESS NAME:
+Coffee House
+
+TAGLINE:
+Fresh coffee • Cozy vibe
+
+PHONE:
+(501) 555-0123
+
+EMAIL:
+hello@yourcoffeehouse.com
+
+ADDRESS LINE 1:
+123 Main Street
+
+ADDRESS LINE 2:
+Your Town, AR 71901
+
+HOURS (one per line):
+Mon–Fri: 6:30am – 4:00pm
+Sat: 7:00am – 3:00pm
+Sun: Closed

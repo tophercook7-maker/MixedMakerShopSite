@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Southern Diner Concept — Portfolio Demo</title>
+  <meta name="description" content="Concept redesign demo — clean southern charm layout for a family-owned diner. Built as a portfolio sample." />
+
+  <style>
+    :root{
+      --bg: #f2e3cf;            /* warm cream */
+      --paper: #fff7ea;         /* warm paper */
+      --ink: #1f2328;
+      --muted: rgba(31,35,40,.72);
+
+      --accent: #c25c1e;        /* copper */
+      --accent2: #2b6f64;       /* teal */
+      --accent3: #7a2f1a;       /* deep rust */
+
+      --line: rgba(31,35,40,.12);
+      --shadow: 0 16px 55px rgba(31,35,40,.14);
+      --radius: 18px;
+      --max: 1080px;
+
+      --card: #fff3df;          /* warmer cards */
+      --card2: #fffaf1;         /* lighter card alt */
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 20% -10%, #ffffff 0%, var(--bg) 50%, #e8cfaa 100%);
+      line-height: 1.45;
+    }
+    a{ color:inherit; }
+
+    .topbar{
+      position: sticky; top:0; z-index: 50;
+      background: rgba(251,246,237,.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 10px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .back{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      text-decoration:none;
+      font-weight: 650;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .badge{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 18px 14px 56px;
+    }
+
+    .hero{
+      border-radius: calc(var(--radius) + 6px);
+      overflow:hidden;
+      background: #fff;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 0;
+    }
+    .hero-photo{
+      min-height: 380px;
+      background:
+        linear-gradient(110deg, rgba(194,92,30,.35), rgba(43,111,100,.18)),
+        url("hero.jpg");
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .hero-photo:after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(0,0,0,.40) 0%, rgba(0,0,0,.16) 55%, rgba(0,0,0,0) 100%);
+    }
+    .hero-copy{
+      padding: 26px 22px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap: 14px;
+    }
+
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .dot{
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(179,90,31,.14);
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(28px, 3.8vw, 44px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
+    }
+    .sub{
+      margin:0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 52ch;
+    }
+
+    .cta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      text-decoration:none;
+      font-weight: 700;
+      min-width: 160px;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, var(--accent), var(--accent3));
+      color: #fff;
+      border-color: rgba(0,0,0,.06);
+      box-shadow: 0 14px 30px rgba(194,92,30,.22);
+    }
+    .btn.primary:hover{ filter: brightness(1.02); }
+    .btn:hover{ transform: translateY(-1px); transition: .15s; }
+
+    .quick{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .card{
+      background: var(--card2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(31,35,40,.06);
+    }
+    .card h3{
+      margin:0 0 6px;
+      font-size: 14px;
+      letter-spacing: .02em;
+    }
+    .card p{
+      margin:0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .section-title{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .section-title h2{
+      margin:0;
+      font-size: 20px;
+      letter-spacing: -.01em;
+    }
+    .section-title span{
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .menu-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .menu-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(31,35,40,.18);
+    }
+    .menu-item:last-child{ border-bottom:none; }
+    .menu-item b{ font-size: 15px; }
+    .price{
+      font-weight: 800;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    .note{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .gallery{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .shot{
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(120deg, rgba(179,90,31,.12), rgba(43,111,100,.10));
+      min-height: 140px;
+      position: relative;
+      overflow:hidden;
+    }
+    .shot span{
+      position:absolute;
+      left: 12px; bottom: 12px;
+      background: rgba(255,255,255,.85);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 12px;
+    }
+    iframe{
+      width:100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 320px;
+      background:#fff;
+    }
+
+    .footer{
+      margin-top: 22px;
+      text-align:center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 18px 0 0;
+    }
+
+    /* Mobile */
+    @media (max-width: 920px){
+      .hero-grid{ grid-template-columns: 1fr; }
+      .quick{ grid-template-columns: 1fr; }
+      .menu-grid{ grid-template-columns: 1fr; }
+      .gallery{ grid-template-columns: 1fr; }
+      .split{ grid-template-columns: 1fr; }
+      .btn{ width: 100%; min-width: unset; }
+    }
+
+    .divider{
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(194,92,30,.35), rgba(43,111,100,.22));
+      border: 1px solid rgba(31,35,40,.10);
+      margin: 18px 0 6px;
+    }
+
+    /* ALIVE MODE */
+    @keyframes floatIn { from { opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
+    @keyframes shimmer { 0% {transform: translateX(-40%);} 100% {transform: translateX(140%);} }
+    @keyframes pulseDot { 0%,100%{transform:scale(1); opacity:.85;} 50%{transform:scale(1.35); opacity:1;} }
+    @keyframes slideMarquee { 0%{ transform: translateX(0);} 100%{ transform: translateX(-50%);} }
+
+    .hero{
+      position: relative;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:-30px;
+      background: radial-gradient(600px 240px at 20% 20%, rgba(194,92,30,.18), transparent 65%),
+                  radial-gradient(520px 260px at 75% 25%, rgba(43,111,100,.14), transparent 68%);
+      pointer-events:none;
+      filter: blur(2px);
+    }
+
+    .btn{ transition: transform .16s ease, box-shadow .16s ease, filter .16s ease; }
+    .btn:hover{ transform: translateY(-2px); box-shadow: 0 16px 34px rgba(31,35,40,.16); }
+
+    .card{ transition: transform .18s ease, box-shadow .18s ease; }
+    .card:hover{ transform: translateY(-2px); box-shadow: 0 16px 36px rgba(31,35,40,.12); }
+
+    .kicker{
+      animation: floatIn .35s ease both;
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(31,35,40,.12);
+      background: rgba(255,250,241,.86);
+      color: rgba(31,35,40,.78);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .chip .dotLive{
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: var(--accent2);
+      box-shadow: 0 0 0 6px rgba(43,111,100,.12);
+      animation: pulseDot 1.4s ease-in-out infinite;
+    }
+
+    .marquee{
+      margin-top: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(31,35,40,.12);
+      background: rgba(255,250,241,.78);
+      overflow:hidden;
+      position: relative;
+    }
+    .marquee:after{
+      content:"";
+      position:absolute; top:0; bottom:0; left:0;
+      width: 35%;
+      background: linear-gradient(90deg, rgba(255,250,241,1), rgba(255,250,241,0));
+      pointer-events:none;
+    }
+    .marquee:before{
+      content:"";
+      position:absolute; top:0; bottom:0; right:0;
+      width: 35%;
+      background: linear-gradient(270deg, rgba(255,250,241,1), rgba(255,250,241,0));
+      pointer-events:none;
+    }
+    .marqueeTrack{
+      display:flex;
+      gap: 28px;
+      padding: 10px 14px;
+      width: max-content;
+      animation: slideMarquee 16s linear infinite;
+    }
+    .marqueeItem{
+      white-space: nowrap;
+      font-size: 12px;
+      color: rgba(31,35,40,.76);
+    }
+    .marqueeItem b{ color: var(--accent3); }
+
+    .section{ animation: floatIn .35s ease both; }
+    .section:nth-of-type(1){ animation-delay: .02s; }
+    .section:nth-of-type(2){ animation-delay: .06s; }
+    .section:nth-of-type(3){ animation-delay: .10s; }
+    .section:nth-of-type(4){ animation-delay: .14s; }
+
+    /* CHALKBOARD SPECIAL */
+    .chalkboard-special{
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.06), transparent 40%),
+                  radial-gradient(circle at 70% 70%, rgba(255,255,255,.04), transparent 50%),
+                  #1f2a24;
+      border: 6px solid #8c5a2b;
+      border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+      color: #f5f5f5;
+      position: relative;
+      padding: 20px;
+    }
+
+    .chalkboard-special h3{
+      font-family: "Georgia", serif;
+      letter-spacing: .05em;
+      font-size: 18px;
+      text-transform: uppercase;
+      color: #f3f3f3;
+    }
+
+    .chalkboard-special .price{
+      color: #ffdc8a;
+      font-size: 20px;
+    }
+
+    .chalkboard-special .chalk-text{
+      font-family: "Trebuchet MS", cursive;
+      font-size: 16px;
+      opacity: .95;
+    }
+
+    .chalkboard-special:before{
+      content:"Today's Special";
+      position:absolute;
+      top:-14px;
+      left:18px;
+      background:#8c5a2b;
+      color:white;
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:6px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="back" href="../index.html">← Back to Website Samples</a>
+      <span class="badge">Portfolio concept demo • clean southern charm</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-grid">
+        <div class="hero-photo" aria-label="Hero photo"></div>
+
+        <div class="hero-copy">
+          <div class="kicker"><span class="dot"></span> Family-owned diner concept</div>
+          <h1>Southern Diner Concept</h1>
+          <p class="sub">
+            A clean, mobile-friendly layout that makes it easy for customers to find the menu, hours, and phone number in seconds.
+          </p>
+
+          <div class="chips">
+            <span class="chip"><span class="dotLive"></span> Open & serving</span>
+            <span class="chip">Fast, friendly service</span>
+            <span class="chip">Home-style plates</span>
+            <span class="chip">Daily specials</span>
+          </div>
+
+          <div class="marquee" aria-label="Now serving marquee">
+            <div class="marqueeTrack">
+              <div class="marqueeItem"><b>Now serving:</b> breakfast plates • pancakes • biscuits & gravy • daily lunch specials</div>
+              <div class="marqueeItem"><b>Quick info:</b> tap to call • hours up front • menu easy on mobile</div>
+              <div class="marqueeItem"><b>Today:</b> updated specials in seconds (demo)</div>
+
+              <div class="marqueeItem"><b>Now serving:</b> breakfast plates • pancakes • biscuits & gravy • daily lunch specials</div>
+              <div class="marqueeItem"><b>Quick info:</b> tap to call • hours up front • menu easy on mobile</div>
+              <div class="marqueeItem"><b>Today:</b> updated specials in seconds (demo)</div>
+            </div>
+          </div>
+
+          <div class="cta-row">
+            <!-- No fluff: two taps to what people want -->
+            <a class="btn primary" href="#menu">View Menu</a>
+            <a class="btn" href="tel:5015550000">Call (501) 555-0000</a>
+            <a class="btn" href="#" id="openUpdater">Try the Menu Updater</a>
+          </div>
+
+          <div class="quick">
+            <div class="card">
+              <h3>Hours</h3>
+              <p>Mon–Fri: 7:00am–6:00pm<br/>Sat–Sun: 7:00am–2:30pm</p>
+            </div>
+            <div class="card">
+              <h3>Location</h3>
+              <p>2900 Central Ave<br/>Hot Springs, AR</p>
+            </div>
+            <div class="chalkboard-special">
+              <h3>Today's Special</h3>
+              <p><span id="specialName">Lunch Special</span> — <span id="specialPrice">$9.99</span><br/><span id="specialDesc" class="chalk-text">Ask about daily plates</span></p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px;">
+            <h3 style="margin:0 0 6px;">Why this feels more modern</h3>
+            <p style="margin:0;color:var(--muted);font-size:14px;">
+              Mobile-first layout • tap-to-call • readable menu blocks • cleaner spacing • less scrolling to find what matters.
+            </p>
+          </div>
+
+          <p class="note">
+            Replace the placeholder phone/address/photos with real info when pitching a specific business.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section" id="menu">
+      <div class="section-title">
+        <h2>Menu Highlights</h2>
+        <span>Easy to read on mobile</span>
+      </div>
+
+      <div class="menu-grid">
+        <div class="card">
+          <h3>Breakfast Favorites</h3>
+          <div class="menu-item"><b>Two-Egg Breakfast</b><span class="price">$7.99</span></div>
+          <div class="menu-item"><b>Biscuits & Gravy</b><span class="price">$6.99</span></div>
+          <div class="menu-item"><b>Pancake Stack</b><span class="price">$8.49</span></div>
+          <div class="note">Tip: keep "top 6 items" here and link to a full menu page if needed.</div>
+        </div>
+
+        <div class="card">
+          <h3>Lunch Special — $9.99</h3>
+          <div class="menu-item"><b>Mon — Lasagna</b><span class="price">$9.99</span></div>
+          <div class="menu-item"><b>Tue — Meatloaf</b><span class="price">$9.99</span></div>
+          <div class="menu-item"><b>Wed — Chicken & Dumplings</b><span class="price">$9.99</span></div>
+          <div class="menu-item"><b>Thu — Country Fried Steak</b><span class="price">$9.99</span></div>
+          <div class="menu-item"><b>Fri–Sun — Hamburger Steak</b><span class="price">$9.99</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <h2>Warm, Real Photos</h2>
+        <span>Food + dining room</span>
+      </div>
+
+      <div class="gallery">
+        <div class="shot"><span>Dining Room</span></div>
+        <div class="shot"><span>Breakfast Plate</span></div>
+        <div class="shot"><span>Daily Special</span></div>
+      </div>
+
+      <p class="note">
+        For a real pitch: use 3–6 high-quality photos (Facebook posts can help, but always ask permission before reusing).
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <h2>What Customers Say</h2>
+        <span>Clean social proof</span>
+      </div>
+
+      <div class="menu-grid">
+        <div class="card">
+          <h3>⭐ "Best comfort food in town."</h3>
+          <p>Fast service, friendly staff, and the breakfast is always solid.</p>
+        </div>
+        <div class="card">
+          <h3>⭐ "Worth the wait."</h3>
+          <p>Feels like home. Great specials and generous portions.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <h2>Find Us Fast</h2>
+        <span>Map + tap-to-call</span>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <h3>Address</h3>
+          <p>2900 Central Ave, Hot Springs, AR</p>
+          <h3 style="margin-top:12px;">Phone</h3>
+          <p><a href="tel:5015550000">(501) 555-0000</a></p>
+          <h3 style="margin-top:12px;">Quick Note</h3>
+          <p class="note">On a real build, this section drives calls and directions from Google traffic.</p>
+        </div>
+
+        <iframe
+          title="Map"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=Hot%20Springs%20AR&output=embed">
+        </iframe>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><b>Portfolio concept demo</b> — created by Topher / MixedMakerShop</p>
+      <p>This is a sample layout used to demonstrate what a refreshed diner site could look like.</p>
+    </div>
+  </div>
+
+  <!-- Menu Updater Demo Modal -->
+  <div id="updaterModal" style="display:none; position:fixed; inset:0; z-index:9999;">
+    <div id="updaterOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,.55);"></div>
+    <div style="position:relative; max-width:520px; margin:8vh auto; background:#fff; border-radius:18px; border:1px solid rgba(0,0,0,.12); box-shadow:0 18px 60px rgba(0,0,0,.25); padding:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <h3 style="margin:0;">Menu Updater (Demo)</h3>
+        <button id="closeUpdater" type="button" style="border:1px solid rgba(0,0,0,.12); background:#fff; border-radius:12px; padding:8px 10px; cursor:pointer;">Close</button>
+      </div>
+      <p style="margin:8px 0 14px; color:rgba(31,35,40,.72); font-size:14px;">
+        This shows how simple updates can be. In a real client site, updates can be done for you (monthly) or via a simple editor.
+      </p>
+
+      <label style="display:block; font-size:13px; opacity:.8; margin-bottom:6px;">Special name</label>
+      <input id="inSpecialName" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.18); margin-bottom:10px;" placeholder="e.g., Lunch Special" />
+
+      <label style="display:block; font-size:13px; opacity:.8; margin-bottom:6px;">Price</label>
+      <input id="inSpecialPrice" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.18); margin-bottom:10px;" placeholder="$9.99" />
+
+      <label style="display:block; font-size:13px; opacity:.8; margin-bottom:6px;">Short description</label>
+      <input id="inSpecialDesc" style="width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.18); margin-bottom:14px;" placeholder="e.g., Meatloaf + 2 sides" />
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="saveUpdater" type="button" style="flex:1; min-width:180px; padding:12px 14px; border-radius:14px; border:1px solid rgba(0,0,0,.12); background:#1f2328; color:#fff; font-weight:800; cursor:pointer;">Save Update</button>
+        <button id="resetUpdater" type="button" style="flex:1; min-width:180px; padding:12px 14px; border-radius:14px; border:1px solid rgba(0,0,0,.12); background:#fff; color:#1f2328; font-weight:800; cursor:pointer;">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function(){
+  const modal = document.getElementById("updaterModal");
+  const overlay = document.getElementById("updaterOverlay");
+  const openBtn = document.getElementById("openUpdater");
+  const closeBtn = document.getElementById("closeUpdater");
+  const saveBtn = document.getElementById("saveUpdater");
+  const resetBtn = document.getElementById("resetUpdater");
+
+  const specialName = document.getElementById("specialName");
+  const specialPrice = document.getElementById("specialPrice");
+  const specialDesc = document.getElementById("specialDesc");
+
+  const inName = document.getElementById("inSpecialName");
+  const inPrice = document.getElementById("inSpecialPrice");
+  const inDesc = document.getElementById("inSpecialDesc");
+
+  const defaults = {
+    name: specialName?.innerText || "Lunch Special",
+    price: specialPrice?.innerText || "$9.99",
+    desc: specialDesc?.innerText || "Ask about daily plates"
+  };
+
+  function openUpdaterModal(e){
+    if (e) e.preventDefault();
+    if (!modal) return;
+    if (inName) inName.value = specialName?.innerText || defaults.name;
+    if (inPrice) inPrice.value = specialPrice?.innerText || defaults.price;
+    if (inDesc) inDesc.value = specialDesc?.innerText || defaults.desc;
+    modal.style.display = "block";
+  }
+
+  function closeUpdaterModal(){
+    if (!modal) return;
+    modal.style.display = "none";
+  }
+
+  function saveUpdate(){
+    if (specialName && inName) specialName.innerText = inName.value.trim() || defaults.name;
+    if (specialPrice && inPrice) specialPrice.innerText = inPrice.value.trim() || defaults.price;
+    if (specialDesc && inDesc) specialDesc.innerText = inDesc.value.trim() || defaults.desc;
+    try {
+      localStorage.setItem("dinerSpecial", JSON.stringify({
+        name: specialName.innerText, price: specialPrice.innerText, desc: specialDesc.innerText
+      }));
+    } catch(e){}
+    closeUpdaterModal();
+  }
+
+  function resetUpdate(){
+    if (specialName) specialName.innerText = defaults.name;
+    if (specialPrice) specialPrice.innerText = defaults.price;
+    if (specialDesc) specialDesc.innerText = defaults.desc;
+    try { localStorage.removeItem("dinerSpecial"); } catch(e){}
+  }
+
+  try {
+    const saved = localStorage.getItem("dinerSpecial");
+    if (saved) {
+      const s = JSON.parse(saved);
+      if (specialName && s.name) specialName.innerText = s.name;
+      if (specialPrice && s.price) specialPrice.innerText = s.price;
+      if (specialDesc && s.desc) specialDesc.innerText = s.desc;
+    }
+  } catch(e){}
+
+  if (openBtn) openBtn.addEventListener("click", openUpdaterModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeUpdaterModal);
+  if (overlay) overlay.addEventListener("click", closeUpdaterModal);
+  window.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeUpdaterModal(); });
+  if (saveBtn) saveBtn.addEventListener("click", saveUpdate);
+  if (resetBtn) resetBtn.addEventListener("click", resetUpdate);
+})();
+  </script>
+</body>
+</html>

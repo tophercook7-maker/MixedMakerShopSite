@@ -1,0 +1,31 @@
+Paste your full menu below.
+You do NOT need to format it perfectly.
+
+Example:
+
+<h3>Espresso</h3>
+<div class="item"><span>Latte</span><strong>$4.75</strong></div>
+<div class="item"><span>Cappuccino</span><strong>$4.50</strong></div>
+
+<h3>Pastries</h3>
+<div class="item"><span>Croissant</span><strong>$3.25</strong></div>
+
+---
+
+YOUR MENU (paste below this line):
+---
+
+<h3>Espresso</h3>
+<div class="item"><span>Latte</span><strong>$4.75</strong></div>
+<div class="item"><span>Cappuccino</span><strong>$4.50</strong></div>
+<div class="item"><span>Americano</span><strong>$3.25</strong></div>
+
+<h3>House Favorites</h3>
+<div class="item"><span>Vanilla Cold Brew</span><strong>$4.95</strong></div>
+<div class="item"><span>Honey Cinnamon Latte</span><strong>$5.25</strong></div>
+<div class="item"><span>Chai</span><strong>$4.75</strong></div>
+
+<h3>Pastries</h3>
+<div class="item"><span>Croissant</span><strong>$3.25</strong></div>
+<div class="item"><span>Muffin</span><strong>$3.00</strong></div>
+<div class="item"><span>Scone</span><strong>$3.50</strong></div>

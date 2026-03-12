@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  width="1200"
+  height="400"
+  viewBox="0 0 1200 400"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="banner-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#184c31" />
+      <stop offset="45%" stop-color="#061710" />
+      <stop offset="100%" stop-color="#020905" />
+    </linearGradient>
+
+    <!-- Orange accent gradient -->
+    <linearGradient id="banner-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7c878" />
+      <stop offset="50%" stop-color="#f49b1a" />
+      <stop offset="100%" stop-color="#c86f00" />
+    </linearGradient>
+
+    <!-- Green accent gradient -->
+    <linearGradient id="banner-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10412a" />
+      <stop offset="100%" stop-color="#0b2f20" />
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <radialGradient id="banner-glow" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#f49b1a" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#f49b1a" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Pattern for texture -->
+    <pattern id="banner-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1" fill="#f49b1a" opacity="0.1" />
+    </pattern>
+
+    <!-- Shadow filter -->
+    <filter id="banner-shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="rgba(0,0,0,0.5)" />
+    </filter>
+
+    <!-- Text shadow filter -->
+    <filter id="text-shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="rgba(0,0,0,0.7)" />
+    </filter>
+
+    <!-- Overlay background gradient -->
+    <linearGradient id="overlay-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(16, 65, 42, 0.7)" />
+      <stop offset="100%" stop-color="rgba(2, 9, 5, 0.85)" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#banner-bg)" />
+
+  <!-- Pattern overlay -->
+  <rect width="1200" height="400" fill="url(#banner-pattern)" opacity="0.3" />
+
+  <!-- Glow circles for depth -->
+  <circle cx="200" cy="100" r="120" fill="url(#banner-glow)" opacity="0.3" />
+  <circle cx="1000" cy="300" r="100" fill="url(#banner-glow)" opacity="0.2" />
+
+  <!-- Geometric shapes - 3D printing inspired -->
+  <!-- Large hexagon -->
+  <polygon
+    points="150,200 200,150 300,150 350,200 300,250 200,250"
+    fill="none"
+    stroke="url(#banner-orange)"
+    stroke-width="3"
+    opacity="0.4"
+    transform="rotate(15 250 200)"
+  />
+
+  <!-- Medium hexagon -->
+  <polygon
+    points="1000,150 1050,120 1120,120 1170,150 1120,180 1050,180"
+    fill="none"
+    stroke="url(#banner-orange)"
+    stroke-width="2"
+    opacity="0.3"
+    transform="rotate(-20 1085 150)"
+  />
+
+  <!-- Grid pattern (3D printing layers) -->
+  <g opacity="0.15">
+    <line x1="0" y1="200" x2="1200" y2="200" stroke="#f49b1a" stroke-width="1" />
+    <line x1="0" y1="250" x2="1200" y2="250" stroke="#f49b1a" stroke-width="1" />
+    <line x1="0" y1="300" x2="1200" y2="300" stroke="#f49b1a" stroke-width="1" />
+    <line x1="400" y1="0" x2="400" y2="400" stroke="#f49b1a" stroke-width="1" />
+    <line x1="800" y1="0" x2="800" y2="400" stroke="#f49b1a" stroke-width="1" />
+  </g>
+
+  <!-- Central design element - M3 logo style -->
+  <g transform="translate(500, 100)">
+    <!-- Large M3 representation -->
+    <rect
+      x="0"
+      y="0"
+      width="200"
+      height="200"
+      rx="30"
+      fill="none"
+      stroke="url(#banner-orange)"
+      stroke-width="8"
+      opacity="0.6"
+    />
+    <rect
+      x="30"
+      y="30"
+      width="140"
+      height="140"
+      rx="20"
+      fill="url(#banner-green)"
+      opacity="0.8"
+    />
+    <!-- M letter -->
+    <text
+      x="70"
+      y="130"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="80"
+      font-weight="800"
+      fill="url(#banner-orange)"
+      opacity="0.9"
+    >
+      M
+    </text>
+    <!-- 3 superscript -->
+    <text
+      x="140"
+      y="70"
+      font-family="system-ui, -apple-system, sans-serif"
+      font-size="40"
+      font-weight="800"
+      fill="url(#banner-orange)"
+      opacity="0.9"
+    >
+      3
+    </text>
+  </g>
+
+  <!-- Floating elements - representing products/ventures -->
+  <!-- Keychain shape -->
+  <circle cx="950" cy="120" r="25" fill="url(#banner-orange)" opacity="0.6" filter="url(#banner-shadow)" />
+  <circle cx="950" cy="120" r="15" fill="none" stroke="#f3e9d9" stroke-width="2" opacity="0.8" />
+
+  <!-- App/Code symbol -->
+  <rect
+    x="100"
+    y="280"
+    width="60"
+    height="60"
+    rx="8"
+    fill="url(#banner-green)"
+    opacity="0.7"
+    filter="url(#banner-shadow)"
+  />
+  <rect
+    x="110"
+    y="290"
+    width="40"
+    height="40"
+    rx="4"
+    fill="none"
+    stroke="url(#banner-orange)"
+    stroke-width="2"
+    opacity="0.8"
+  />
+
+  <!-- 3D print layers -->
+  <g transform="translate(1050, 280)">
+    <rect x="0" y="0" width="50" height="8" rx="2" fill="url(#banner-orange)" opacity="0.7" />
+    <rect x="5" y="12" width="40" height="8" rx="2" fill="url(#banner-orange)" opacity="0.6" />
+    <rect x="10" y="24" width="30" height="8" rx="2" fill="url(#banner-orange)" opacity="0.5" />
+  </g>
+
+  <!-- Accent lines -->
+  <line
+    x1="0"
+    y1="0"
+    x2="1200"
+    y2="400"
+    stroke="url(#banner-orange)"
+    stroke-width="2"
+    opacity="0.1"
+  />
+  <line
+    x1="1200"
+    y1="0"
+    x2="0"
+    y2="400"
+    stroke="url(#banner-orange)"
+    stroke-width="2"
+    opacity="0.1"
+  />
+
+  <!-- Text overlay integrated into banner -->
+  <g transform="translate(60, 300)">
+    <!-- Background for text -->
+    <rect
+      x="0"
+      y="0"
+      width="1080"
+      height="85"
+      rx="18"
+      fill="url(#overlay-bg)"
+      opacity="0.9"
+    />
+    <rect
+      x="0"
+      y="0"
+      width="1080"
+      height="85"
+      rx="18"
+      fill="none"
+      stroke="rgba(205, 241, 221, 0.35)"
+      stroke-width="1.5"
+    />
+
+    <!-- Left side - MixedMakerShop name (STANDING OUT) -->
+    <text
+      x="35"
+      y="48"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-size="52"
+      font-weight="800"
+      letter-spacing="-0.04em"
+      fill="#f3e9d9"
+      filter="url(#text-shadow)"
+    >
+      MixedMakerShop
+    </text>
+
+    <!-- Stat line -->
+    <text
+      x="35"
+      y="68"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-size="20"
+      font-weight="600"
+      fill="#f49b1a"
+      filter="url(#text-shadow)"
+    >
+      3D prints, apps, and small ventures under one roof
+    </text>
+
+    <!-- Right side - Ventures list -->
+    <text
+      x="1045"
+      y="32"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-size="18"
+      fill="rgba(231, 248, 240, 0.95)"
+      text-anchor="end"
+      filter="url(#text-shadow)"
+    >
+      ● Henry AI
+    </text>
+    <text
+      x="1045"
+      y="52"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-size="18"
+      fill="rgba(231, 248, 240, 0.95)"
+      text-anchor="end"
+      filter="url(#text-shadow)"
+    >
+      ● StrainSpotter.app
+    </text>
+    <text
+      x="1045"
+      y="72"
+      font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-size="18"
+      fill="rgba(231, 248, 240, 0.95)"
+      text-anchor="end"
+      filter="url(#text-shadow)"
+    >
+      ● GoneFishin keychains &amp; custom prints
+    </text>
+  </g>
+</svg>

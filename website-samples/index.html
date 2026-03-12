@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Design Portfolio | MixedMakerShop</title>
+  <meta name="description" content="Creative website builds, redesign concepts, and tools for modern businesses." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Colored background to match MixedMakerShop (no solid white) */
+    body {
+      background: radial-gradient(ellipse at top, #1a4d38 0%, #0f3526 35%, #0a2318 100%);
+      color: #f3e9d9;
+    }
+    body .text-slate-600 { color: rgba(243, 233, 217, 0.85); }
+    body .text-slate-500 { color: rgba(243, 233, 217, 0.7); }
+    body .text-slate-700 { color: rgba(243, 233, 217, 0.9); }
+    body .text-slate-800 { color: rgba(243, 233, 217, 0.95); }
+    body .text-slate-900 { color: #f3e9d9; }
+    /* Cards: dark tinted panels instead of white */
+    .sample-card {
+      background: linear-gradient(135deg, rgba(8, 39, 23, 0.94), rgba(3, 16, 10, 0.98));
+      border: 1px solid rgba(243, 233, 217, 0.18);
+    }
+    .sample-card:hover { border-color: rgba(243, 233, 217, 0.35); }
+    .sample-card .font-semibold.text-amber-700,
+    .sample-card .font-semibold.text-emerald-700,
+    .sample-card .font-semibold.text-slate-800,
+    .sample-card .font-semibold.text-orange-800,
+    .sample-card .font-semibold.text-pink-700,
+    .sample-card .font-semibold.text-cyan-700,
+    .sample-card .font-semibold.text-rose-700 { color: #f49b1a; }
+    /* Back to homepage: always visible, touch-friendly on mobile */
+    .portfolio-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      background: rgba(3, 9, 5, 0.95);
+      border-bottom: 1px solid rgba(243, 233, 217, 0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .portfolio-back a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 44px;
+      padding: 0.5rem 1rem;
+      color: #f3e9d9;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 999px;
+      border: 1px solid rgba(243, 233, 217, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .portfolio-back a:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(243, 233, 217, 0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <nav class="portfolio-back" aria-label="Back to main site">
+    <a href="../index.html">← Back to MixedMakerShop</a>
+  </nav>
+  <main class="max-w-6xl mx-auto px-6 py-16">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">Web Design Portfolio</h1>
+        <p class="mt-3 text-lg text-slate-600 max-w-2xl">
+          Creative website builds, redesign concepts, and tools for modern businesses.
+        </p>
+      </div>
+      <div class="text-sm text-slate-500">
+        <p><span class="font-semibold text-slate-700">Stack:</span> HTML/CSS (+ Tailwind on 2)</p>
+        <p><span class="font-semibold text-slate-700">Goal:</span> clean, client-ready mockups</p>
+      </div>
+    </div>
+
+    <h2 class="mt-10 text-2xl font-bold">Creative Website Builds</h2>
+    <p class="mt-2 text-slate-600 mb-6">Client-ready mockups and website concepts.</p>
+    <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <a href="./bean-bliss.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1015/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Bean Bliss café design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Bean Bliss</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Cozy modern Tailwind build with hero, menu, about, and visit.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./bean-bliss-boho.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1060/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Bean Bliss Boho café design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Bean Bliss Boho</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Earthy, laid-back boho styling with warm tones and cozy sections.</p>
+          <p class="mt-4 text-sm font-semibold text-emerald-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./noir-roast.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1061/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Noir Roast roastery design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Noir Roast</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Upscale, minimal editorial style. Typography-forward layout.</p>
+          <p class="mt-4 text-sm font-semibold text-slate-800">View site →</p>
+        </div>
+      </a>
+
+      <a href="./noir-roast-rustic.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1018/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Noir Roast Rustic roastery design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Noir Roast Rustic</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Cabin roastery look with wood tones, pine accents, and cozy sections.</p>
+          <p class="mt-4 text-sm font-semibold text-orange-800">View site →</p>
+        </div>
+      </a>
+
+      <a href="./sunrise-cafe.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1066/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Sunrise Café design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Sunrise Café</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Playful retro vibes with pure CSS (no Tailwind).</p>
+          <p class="mt-4 text-sm font-semibold text-pink-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./sunrise-cafe-modern.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1050/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Sunrise Café Modern design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Sunrise Café Modern</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Neon-forward modern concept with glass effects and nightlife energy.</p>
+          <p class="mt-4 text-sm font-semibold text-cyan-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./route-66-coffee.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1040/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Route 66 Coffee diner design">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Route 66 Coffee</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Vintage diner concept with bold type, checkerboard energy, and shake bar sections.</p>
+          <p class="mt-4 text-sm font-semibold text-rose-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./southern-diner-concept/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/292/1200/700" class="w-full h-44 object-cover" alt="Restaurant website design example — Southern Diner concept homepage">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Southern Diner Concept</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Clean southern charm — mobile-friendly menu, tap-to-call, hours &amp; location.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+
+      <a href="./grace-fellowship-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/225/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Grace Fellowship Church homepage">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Grace Fellowship Church</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Traditional / Established — clear service times, ministries, giving.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+      <a href="./riverstone-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/26/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Riverstone Church homepage">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Riverstone Church</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Modern / Contemporary — next steps, events, clean design.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+      <a href="./oak-hill-community-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/1018/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Oak Hill Community Church homepage">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Oak Hill Community Church</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
+          <p class="mt-2 text-slate-600">Warm / Community — small-town feel, what to expect, welcoming.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+    </section>
+
+    <h2 class="mt-16 text-2xl font-bold">Redesign Concepts</h2>
+    <p class="mt-2 text-slate-600 mb-6">Before/after redesign demos.</p>
+    <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <a href="/restaurant-website-redesign.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/292/1200/700" class="w-full h-44 object-cover" alt="Restaurant website design example — before and after homepage redesign">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Restaurant Redesign Demo</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Redesign</p>
+          <p class="mt-2 text-slate-600">Before/after homepage makeover: mobile-first, faster, menu-focused.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View site →</p>
+        </div>
+      </a>
+    </section>
+
+    <h2 class="mt-16 text-2xl font-bold">Tools</h2>
+    <p class="mt-2 text-slate-600 mb-6">Free tools to improve your website.</p>
+    <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <a href="/website-check.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
+        <img src="https://picsum.photos/id/119/1200/700" class="w-full h-44 object-cover" alt="Website check tool — free website review interface">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold">Website Teardown Tool</h2>
+          <p class="mt-1 text-xs text-slate-500">Type: Tool</p>
+          <p class="mt-2 text-slate-600">Free website check — I'll review your site and reply by email with improvements.</p>
+          <p class="mt-4 text-sm font-semibold text-amber-700">View tool →</p>
+        </div>
+      </a>
+    </section>
+
+    <section class="mt-12 sample-card rounded-2xl shadow-lg p-6">
+      <h3 class="text-xl font-bold">What this shows</h3>
+      <ul class="mt-3 list-disc pl-6 text-slate-700 space-y-1">
+        <li>Different design directions (cozy / boho / modern / premium / rustic / playful / vintage)</li>
+        <li>Responsive layouts + clean sections</li>
+        <li>Menus with a small flavors list (not a giant flavors page)</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="py-10 text-center text-sm text-slate-500 border-t border-white/10">
+    <p class="mb-4"><a href="../index.html" class="text-amber-400/95 hover:text-amber-300 font-medium">← Back to MixedMakerShop</a></p>
+    <p>Portfolio mockups • Replace with real client work later</p>
+  </footer>
+</body>
+</html>

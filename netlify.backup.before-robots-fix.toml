@@ -1,0 +1,58 @@
+# Netlify configuration for MixedMakerShop
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  # No build command needed - this is a static HTML site
+
+# Netlify Forms configuration
+# Forms are automatically detected with data-netlify="true" attribute
+# After deployment, configure email notifications in Netlify dashboard:
+# Site Settings → Forms → Form Notifications
+
+# Forms on this site:
+# 1. "contact" - Contact form on index.html
+
+# Root path (/) automatically serves index.html by default
+# No redirect needed for multi-page site
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Don't cache HTML files
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[redirects]]
+  from = "/agreement"
+  to = "/agreement.html"
+  status = 200

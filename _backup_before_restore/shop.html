@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop – MixedMakerShop</title>
+  <meta name="description" content="Shop 3D printed items from MixedMakerShop" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="m3-logo.svg" />
+  <link rel="apple-touch-icon" href="m3-logo.svg" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root {
+      --mms-green-dark: #0b2f20;
+      --mms-green: #10412a;
+      --mms-orange: #f49b1a;
+      --mms-cream: #f3e9d9;
+      --mms-cream-deep: #e6d4be;
+      --mms-ink: #101418;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.28);
+      --shadow-subtle: 0 10px 25px rgba(0, 0, 0, 0.18);
+      --transition-fast: 0.16s ease-out;
+      --transition-med: 0.24s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #184c31 0, #061710 45%, #020905 100%);
+      color: var(--mms-cream);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(1120px, 100% - 2.5rem);
+      margin-inline: auto;
+    }
+
+    /* Header: logo + CTA. Prevent logo from overlapping CTA. */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to bottom, rgba(3, 9, 5, 0.98), rgba(3, 9, 5, 0.92), rgba(3, 9, 5, 0.72));
+      border-bottom: 1px solid rgba(243, 233, 217, 0.1);
+      padding: 1rem clamp(16px, 3vw, 32px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(10px, 1.2vw, 18px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+      min-width: 0;
+      max-width: 240px;
+      overflow: hidden;
+    }
+
+    .nav-left > div {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .logo-text-main {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-size: clamp(16px, 1.6vw, 20px);
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .logo-text-sub {
+      font-size: 0.75rem;
+      color: rgba(243, 233, 217, 0.7);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+
+    /* Mobile Header Styles */
+    @media (max-width: 640px) {
+      header {
+        padding: 0.75rem 0;
+      }
+
+      .nav {
+        gap: 0.5rem;
+      }
+
+      .nav-left {
+        gap: 0.5rem;
+      }
+
+      .logo-mark {
+        width: 28px;
+        height: 28px;
+      }
+
+      .logo-text-main {
+        font-size: 0.8rem;
+      }
+
+      .logo-text-sub {
+        font-size: 0.7rem;
+      }
+
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: var(--radius-pill);
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all var(--transition-med);
+      background: linear-gradient(135deg, var(--mms-orange) 0%, #f7a531 100%);
+      color: #1b0c00;
+      box-shadow: 0 8px 24px rgba(244, 155, 26, 0.4);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(244, 155, 26, 0.6);
+    }
+
+    /* Main Content */
+    main {
+      padding: 2rem 0 4rem;
+      min-height: calc(100vh - 200px);
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: rgba(243, 233, 217, 0.8);
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(243, 233, 217, 0.3);
+      background: rgba(3, 16, 10, 0.6);
+      color: rgba(243, 233, 217, 0.8);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.9rem;
+    }
+
+    .filter-tab:hover {
+      border-color: rgba(244, 155, 26, 0.6);
+      background: rgba(244, 155, 26, 0.1);
+    }
+
+    .filter-tab.active {
+      background: rgba(244, 155, 26, 0.2);
+      border-color: var(--mms-orange);
+      color: var(--mms-orange);
+    }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .product-card {
+      background: linear-gradient(135deg, rgba(8, 39, 23, 0.94), rgba(3, 16, 10, 0.98));
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      border: 1px solid rgba(243, 233, 217, 0.12);
+      box-shadow: var(--shadow-subtle);
+      transition: all var(--transition-med);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-soft);
+      border-color: rgba(244, 155, 26, 0.3);
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(243, 233, 217, 0.1) 0%, rgba(244, 155, 26, 0.1) 100%);
+      border: 2px dashed rgba(243, 233, 217, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(244, 155, 26, 0.2);
+      border: 1px solid rgba(244, 155, 26, 0.5);
+      color: var(--mms-orange);
+      margin-bottom: 0.5rem;
+    }
+
+    .product-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .product-description {
+      font-size: 0.9rem;
+      color: rgba(243, 233, 217, 0.7);
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+    }
+
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--mms-orange);
+    }
+
+    .btn-add-cart {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .empty-products {
+      text-align: center;
+      padding: 3rem 0;
+      color: rgba(243, 233, 217, 0.6);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav">
+      <div class="nav-left">
+        <a href="index.html">
+          <img src="m3-logo.svg" alt="MixedMakerShop" class="logo-mark" />
+        </a>
+        <div>
+          <div class="logo-text-main">MixedMakerShop</div>
+          <div class="logo-text-sub">Shop</div>
+        </div>
+      </div>
+      <a class="btn" href="https://mixedmakershop.com/#contact">Request Quote</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <div class="page-header">
+        <h1 class="page-title">Shop MixedMakerShop</h1>
+        <p class="page-subtitle">3D printed items and unique creations</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: rgba(243, 233, 217, 0.7);">
+          Looking for GoneFishin Keychains? Visit <a href="https://gonefishinkeychains.com" target="_blank" style="color: var(--mms-orange); text-decoration: underline;">gonefishinkeychains.com</a>
+        </p>
+      </div>
+
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterProducts('all')">All Products</button>
+        <button class="filter-tab" onclick="filterProducts('3dprints')">3D Printed Items</button>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <!-- Products will be loaded here -->
+      </div>
+
+      <div style="background:rgba(244,155,26,0.08);border:1px solid rgba(244,155,26,0.25);border-radius:var(--radius-md);padding:1rem 1.25rem;margin-top:2rem;margin-bottom:1rem;max-width:1200px;margin-left:auto;margin-right:auto;">
+
+        <p style="font-size:0.85rem;color:rgba(243,233,217,0.9);line-height:1.6;margin:0;">
+
+          <strong style="color:var(--mms-orange);">Note:</strong> The 3D printed items shown above are example models from our available catalog. These designs are not our original creations, but we have access to thousands of 3D print designs and can produce any of them for you. Each item can be customized to your preferred size, color, and material.
+
+        </p>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Product Database
+    const products = [
+      // 3D Printed Items
+      {
+        id: 'dragon-blue',
+        name: 'Dragon Figurines',
+        description: 'Detailed dragon figurines with intricate scales, spikes, and wings. Available in multiple colors including blue, copper, and custom colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/blue dragon.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'dragon-copper',
+        name: 'Copper Dragon Figurines',
+        description: 'Detailed dragon figurine in warm copper tones. Same intricate design with scales, spikes, and wings.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/copper-dragon.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'cat-hat',
+        name: 'Cat Figurines with Hat',
+        description: 'Adorable cat figurine with a knitted-style hat featuring a pom-pom. Textured surface gives it a cozy, hand-knit appearance.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/black-knit-cat.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'baby-dragon',
+        name: 'Baby Dragon Figurines',
+        description: 'Adorable baby dragon figurine perfect for collectors or desk displays. Features expressive eyes and detailed design.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/baby-dragon.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'uno-case',
+        name: 'UNO Card Case',
+        description: 'Functional card game storage case with official UNO branding. Orange and black design with secure latches.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/uno box.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'articulating-monkey',
+        name: 'Articulating Monkey',
+        description: 'Poseable articulating monkey figurine with movable joints. Perfect for desk displays, fidgeting, or collectibles.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/articulating-monkey.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'bird',
+        name: 'Bird Figurines',
+        description: 'Detailed bird figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/Bird.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'chess-piece',
+        name: 'Chess Pieces',
+        description: 'Custom 3D printed chess pieces. Perfect for replacement pieces or custom chess sets.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/chess-piece.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'goat',
+        name: 'Goat Figurines',
+        description: 'Detailed goat figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/Goat.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'rose-guy',
+        name: 'Rose Guy Figurine',
+        description: 'Unique rose-themed figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/Rose guy.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'shark',
+        name: 'Shark Figurines',
+        description: 'Detailed shark figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/shark.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'skeleton-fish',
+        name: 'Skeleton Fish',
+        description: 'Unique skeleton fish figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/skeleton-fish.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'spider',
+        name: 'Spider Figurines',
+        description: 'Detailed spider figurine perfect for collectors or decorative displays. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/Spider.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      },
+      {
+        id: 'fish-keychain',
+        name: '3D Fish Keychain',
+        description: 'Detailed 3D fish keychain perfect for everyday carry. Available in various sizes and colors.',
+        price: 0,
+        category: '3dprints',
+        image: 'images/products/3d-fish-keychain.png',
+        brand: 'MixedMakerShop',
+        priceNote: 'Request Quote'
+      }
+    ];
+
+    let currentFilter = 'all';
+
+    // Initialize
+    function init() {
+      renderProducts();
+    }
+
+    // Filter Products
+    function filterProducts(category) {
+      currentFilter = category;
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      renderProducts();
+    }
+
+    // Render Products
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      const filtered = currentFilter === 'all' 
+        ? products 
+        : products.filter(p => p.category === currentFilter);
+      
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="empty-products">No products in this category yet. Check back soon!</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(product => `
+        <div class="product-card">
+          <div class="product-image">
+            ${product.image ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='🎣'" />` : '🎣'}
+          </div>
+          <span class="product-badge">${product.brand}</span>
+          <h3 class="product-title">${product.name}</h3>
+          <p class="product-description">${product.description}</p>
+          <div class="product-footer">
+            <span class="product-price">${product.priceNote || '$' + product.price.toFixed(2)}</span>
+            <a class="btn btn-add-cart" href="https://mixedmakershop.com/#contact">Request Quote</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

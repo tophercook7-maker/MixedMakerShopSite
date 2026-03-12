@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MixedMakerShop | 3D Prints & Small Business Website Building</title>
+  <meta name="description" content="Custom 3D printing services and website building for small businesses. Websites, tools, and 3D prints — built thoughtfully and made to last. Hot Springs, AR." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --mms-green-dark: #0b2f20;
+      --mms-green: #10412a;
+      --mms-orange: #f49b1a;
+      --mms-cream: #f3e9d9;
+      --mms-ink: #101418;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #184c31 0, #061710 45%, #020905 100%);
+      color: var(--mms-cream);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .shell { width: min(980px, 100% - 2.5rem); margin: 0 auto; padding: 0 1.25rem; }
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(3, 9, 5, 0.92);
+      border-bottom: 1px solid rgba(243, 233, 217, 0.1);
+      padding: 0.85rem 0;
+      z-index: 10;
+    }
+    .nav-flex {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .logo-sub {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .nav-links a {
+      padding: 0.5rem 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(243, 233, 217, 0.2);
+    }
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(243, 233, 217, 0.35);
+    }
+    .hero {
+      padding: 3rem 0 2.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      line-height: 1.15;
+      margin: 0 0 0.75rem;
+      letter-spacing: -0.02em;
+    }
+    .hero .subhead {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 56ch;
+      margin: 0 0 1.25rem;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.1rem;
+      border-radius: var(--radius-md);
+      background: var(--mms-orange);
+      color: var(--mms-ink);
+      font-weight: 600;
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--mms-cream);
+      border: 1px solid rgba(243, 233, 217, 0.4);
+    }
+    .card {
+      background: rgba(7, 22, 15, 0.8);
+      border: 1px solid rgba(243, 233, 217, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+    }
+    .section-title { margin: 0 0 0.5rem; font-size: 1.4rem; }
+    .section-sub { opacity: 0.85; margin: 0 0 1rem; }
+    ul { padding-left: 1.2rem; }
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .offer-card {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+    .offer-card h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .offer-card p { margin: 0 0 0.75rem; opacity: 0.85; font-size: 0.95rem; }
+    .offer-card ul { margin: 0; padding-left: 1.2rem; font-size: 0.9rem; opacity: 0.9; }
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .project-card {
+      display: block;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 1.25rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .project-card:hover {
+      border-color: rgba(243, 233, 217, 0.3);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .project-card strong { display: block; margin-bottom: 0.35rem; }
+    .project-card span { font-size: 0.9rem; opacity: 0.8; }
+    .contact-form label { display: block; margin-bottom: 0.35rem; font-weight: 600; }
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(243, 233, 217, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--mms-cream);
+      font-family: inherit;
+      margin-bottom: 1rem;
+    }
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+    footer {
+      padding: 2.5rem 0 3rem;
+      color: rgba(243, 233, 217, 0.75);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav-flex">
+      <a href="index.html" class="logo">
+        MixedMakerShop
+        <div class="logo-sub">Built by Topher</div>
+      </a>
+      <nav class="nav-links">
+        <a href="website-samples/index.html">Website Samples</a>
+        <a href="websites-by-topher.html">Websites by Topher</a>
+        <a href="index.html#pricing">Pricing</a>
+        <a href="index.html#makes">3D Printing</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero shell">
+      <h1>A place where ideas become real.</h1>
+      <p class="subhead">
+        Websites, tools, and 3D prints — built thoughtfully and made to last.
+        No chaos. Just clean builds and steady support. Local pickup in Hot Springs + shipping nationwide.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="website-samples/index.html">View Samples</a>
+        <a class="btn" href="index.html#contact">Start a Project</a>
+        <a class="btn btn-outline" href="index.html#makes">3D Print Quote</a>
+      </div>
+    </section>
+
+    <section id="small-business-sites" class="shell" style="padding-bottom: 2.5rem;">
+      <h2 class="section-title">Featured Website Samples</h2>
+      <p class="section-sub">Coffee shop, diner, and business site demos — pick a style and we’ll customize it.</p>
+      <div class="project-grid">
+        <a href="website-samples/bean-bliss.html" class="project-card"><strong>Bean Bliss</strong><span>Cozy modern</span></a>
+        <a href="website-samples/bean-bliss-boho.html" class="project-card"><strong>Bean Bliss Boho</strong><span>Earthy boho</span></a>
+        <a href="website-samples/noir-roast.html" class="project-card"><strong>Noir Roast</strong><span>Upscale minimal</span></a>
+        <a href="website-samples/noir-roast-rustic.html" class="project-card"><strong>Noir Roast Rustic</strong><span>Cabin roastery</span></a>
+        <a href="website-samples/sunrise-cafe.html" class="project-card"><strong>Sunrise Café</strong><span>Playful retro</span></a>
+        <a href="website-samples/sunrise-cafe-modern.html" class="project-card"><strong>Sunrise Café Modern</strong><span>Neon modern</span></a>
+        <a href="website-samples/route-66-coffee.html" class="project-card"><strong>Route 66 Coffee</strong><span>Vintage diner</span></a>
+        <a href="website-samples/southern-diner-concept/" class="project-card"><strong>Southern Diner</strong><span>Clean southern charm</span></a>
+      </div>
+      <div class="cta-row" style="margin-top: 1rem;">
+        <a class="btn" href="website-samples/index.html">View All Samples</a>
+        <a class="btn btn-outline" href="websites-by-topher.html">Website Info</a>
+      </div>
+    </section>
+
+    <section id="makes" class="shell" style="padding-bottom: 2.5rem;">
+      <div class="card">
+        <h2 class="section-title">3D Printing (Creative + Commercial)</h2>
+        <p class="section-sub">
+          Custom prints, prototypes, and functional parts — built to be used, handled, and displayed.
+          Three printers ready for commercial work.
+        </p>
+        <ul>
+          <li>Custom gifts & collectibles</li>
+          <li>Prototypes & replacement parts</li>
+          <li>Small-batch production runs</li>
+        </ul>
+        <div class="cta-row">
+          <a class="btn" href="shop.html">Shop</a>
+          <a class="btn btn-outline" href="index.html#contact">Request a Quote</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="shell" style="padding-bottom: 2.5rem;">
+      <h2 class="section-title">Pricing — Pick What Fits</h2>
+      <p class="section-sub">Clear pricing. No surprises. Web design is my primary focus.</p>
+      <div class="grid-cards">
+        <div class="offer-card">
+          <h3>Custom Website Build — $900 (one-time)</h3>
+          <p>Up to 5 pages, mobile-first, ready to launch.</p>
+          <ul>
+            <li>Home • About • Services/Menu • Gallery • Contact</li>
+            <li>Contact form + SEO setup</li>
+            <li>Launch help included</li>
+          </ul>
+        </div>
+        <div class="offer-card">
+          <h3>Hosting & Support — $89/month</h3>
+          <p>Keep it stable and updated.</p>
+          <ul>
+            <li>Secure hosting + backups</li>
+            <li>Minor content updates</li>
+            <li>Direct help when needed</li>
+          </ul>
+        </div>
+        <div class="offer-card">
+          <h3>Coffee Shop Kit — $99 (DIY)</h3>
+          <p>Budget-friendly. You do setup, I provide structure.</p>
+          <ul>
+            <li>5-page starter (Warm/Modern/Dark)</li>
+            <li>Netlify-ready</li>
+            <li>Simple instructions</li>
+          </ul>
+        </div>
+        <div class="offer-card">
+          <h3>Menu Updates — $29/month (client sites)</h3>
+          <p>For sites I built. Quick turnaround.</p>
+          <ul>
+            <li>Price & item updates</li>
+            <li>Seasonal swaps</li>
+            <li>24–48 hour turnaround</li>
+          </ul>
+        </div>
+      </div>
+      <div class="cta-row" style="margin-top: 1rem;">
+        <a class="btn" href="index.html#contact">Start a Project</a>
+        <a class="btn btn-outline" href="websites-by-topher.html">Full Website Details</a>
+      </div>
+    </section>
+
+    <section id="contact" class="shell" style="padding-bottom: 3rem;">
+      <div class="card">
+        <h2 class="section-title">Contact</h2>
+        <p class="section-sub">Tell me what you want to build — websites, 3D prints, or both.</p>
+        <form
+          name="contact"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          netlify
+          class="contact-form"
+        >
+          <input type="hidden" name="form-name" value="contact" />
+          <p style="display: none;"><label>Don't fill this out: <input name="bot-field" /></label></p>
+          <label for="name">Name *</label>
+          <input id="name" name="name" type="text" required placeholder="Your name" />
+          <label for="email">Email *</label>
+          <input id="email" name="email" type="email" required placeholder="your@email.com" />
+          <label for="message">Message *</label>
+          <textarea id="message" name="message" required placeholder="What are you looking for?"></textarea>
+          <button class="btn" type="submit">Send Message</button>
+        </form>
+        <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">Hot Springs, AR • Local pickup + shipping nationwide</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    © <span id="y"></span> MixedMakerShop • Built by Topher • Hot Springs, AR
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

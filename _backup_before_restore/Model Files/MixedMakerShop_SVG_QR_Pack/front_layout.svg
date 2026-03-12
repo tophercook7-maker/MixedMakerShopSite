@@ -1,0 +1,11 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="85mm" height="54mm" viewBox="0 0 85 54">
+  <rect x="1" y="1" width="83" height="52" fill="none" stroke="white" stroke-width="1"/>
+  <text x="42.5" y="12" font-size="6" text-anchor="middle" fill="orange">MixedMakerShop</text>
+  <text x="42.5" y="20" font-size="3" text-anchor="middle" fill="orange">
+    Helping people turn ideas into real, usable things
+  </text>
+  <text x="42.5" y="25" font-size="3" text-anchor="middle" fill="orange">
+    through 3D printing, websites, and design
+  </text>
+</svg>

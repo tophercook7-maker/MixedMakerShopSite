@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — MixedMakerShop</title>
+  <meta name="description" content="Start a project, ask a question, pitch an idea." />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/index.html">
+      <div class="logo">M³</div>
+      <div class="brand-title">
+        <div class="name">MIXEDMAKERSHOP</div>
+        <div class="sub"><strong>Owned & Operated by Topher Cook</strong></div>
+        <div class="small" style="font-size:12px;color:rgba(255,255,255,.55);">Custom Web Design • Local Visibility • 3D Printing</div>
+        <div class="tag">From ideas to websites, tools, and builds you can hold.</div>
+      </div>
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Open menu">☰</button>
+    <nav class="main-nav nav-links">
+      <a class="pill" href="/index.html">Home</a>
+      <a class="pill" href="/web-design.html">Web Design</a>
+      <a class="pill" href="/website-samples/index.html">Website Samples</a>
+      <a class="pill" href="/3d-printing.html">3D Printing</a>
+      <a class="pill" href="/website-roast/">Free Website Roast</a>
+      <a class="pill cta" href="/#free-mockup-request">Get My Free Mockup ➜</a>
+    </nav>
+  </div>
+</header>
+
+<main class="section">
+  <div class="container">
+    <div class="panel">
+      <h1 style="margin:0 0 8px;">Start a project, ask a question, pitch an idea</h1>
+      <p class="subhead">Web design, custom builds, 3D printing — tell me what you're working on and I'll reply personally.</p>
+
+      <form name="contact" method="POST" data-netlify="true" action="/thank-you.html" class="card" style="max-width:520px;margin-top:20px;">
+        <input type="hidden" name="form-name" value="contact" />
+        <label class="small" style="display:block;margin-bottom:6px;">Name</label>
+        <input type="text" name="name" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;" />
+        <label class="small" style="display:block;margin-bottom:6px;">Email</label>
+        <input type="email" name="email" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;" />
+        <label class="small" style="display:block;margin-bottom:6px;">Phone (optional)</label>
+        <input type="text" name="phone" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;" />
+        <label class="small" style="display:block;margin-bottom:6px;">What do you need?</label>
+        <select name="project" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;">
+          <option>New Website Build ($950)</option>
+          <option>Free Website Check</option>
+          <option>Hosting & Support</option>
+          <option>Website Updates</option>
+          <option>3D Printing Project</option>
+          <option>Other</option>
+        </select>
+        <label class="small" style="display:block;margin-bottom:6px;">Tell me about your project</label>
+        <textarea name="message" rows="5" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:16px;font-size:14px;"></textarea>
+        <button type="submit" class="btn gold">Send Message</button>
+      </form>
+
+      <div style="margin-top:28px;max-width:520px;">
+        <h2 style="margin:0 0 14px;">What happens next</h2>
+        <ol class="small" style="margin:0 0 0 18px;color:var(--muted);">
+          <li>I reply personally within one business day</li>
+          <li>We confirm scope and next steps</li>
+          <li>If we're a good fit I send a deposit Stripe link to start</li>
+        </ol>
+        <p class="small" style="margin-top:14px;opacity:.85;">Want to see how projects work? <a href="/agreement.html">View the simple agreement</a></p>
+      </div>
+
+      <div class="grid-2" style="margin-top:28px;">
+        <div class="card">
+          <h3>Fastest way</h3>
+          <p class="small">Send a message and I’ll reply within 1 business day.</p>
+          <div class="btn-row">
+            <a class="btn gold" href="mailto:Topher@mixedmakershop.com?subject=Website%20Design%20Inquiry">Email me ➜</a>
+          </div>
+          <p class="small" style="margin-top:10px;">Based in Hot Springs, AR — working nationwide online.</p>
+        </div>
+
+        <div class="card">
+          <h3>Browse</h3>
+          <p class="small">Want to show a style you like? Link a demo site and I'll match the direction.</p>
+          <div class="btn-row">
+            <a class="btn" href="/3d-printing.html">3D Printing</a>
+            <a class="btn" href="/pricing.html">Pricing</a>
+            <a class="btn" href="/web-design.html">Web Design</a>
+          </div>
+        </div>
+      </div>
+
+      <p class="small" style="margin-top:20px;">Find MixedMakerShop on Google: <a href="https://share.google/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener">View our Google listing</a> — or <a href="https://share.google/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener">leave a review</a> if you've worked with us before.</p>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="small">© MixedMakerShop</div>
+        <div class="small" style="margin-top:6px;">MixedMakerShop — Web design studio based in Hot Springs, Arkansas.</div>
+        <p class="small" style="margin-top:8px;"><a href="https://share.google/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener">Find MixedMakerShop on Google</a></p>
+      </div>
+      <div class="footer-col">
+        <h2 class="small" style="margin:0 0 10px;font-weight:950;color:rgba(255,255,255,.9);">Web Design Services</h2>
+        <ul class="footer-links" style="margin:0;padding:0;list-style:none;">
+          <li><a href="/web-design-hot-springs-ar.html">Web Design in Hot Springs</a></li>
+          <li><a href="/restaurant-websites-hot-springs.html">Restaurant Websites</a></li>
+          <li><a href="/coffee-shop-websites-hot-springs.html">Coffee Shop Websites</a></li>
+          <li><a href="/church-websites-hot-springs.html">Church Websites</a></li>
+          <li><a href="/small-business-websites-hot-springs.html">Small Business Websites</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="small" style="margin-top:20px;"><a href="/index.html">Home</a> • <a href="/web-design.html">Web Design</a> • <a href="/website-roast/">Free Website Roast</a> • <a href="/website-samples/index.html">Website Samples</a> • <a href="/3d-printing.html">3D Printing</a> • <a href="/contact.html">Contact</a></div>
+  </div>
+</footer>
+<script src="/assets/nav.js"></script>
+</body>
+</html>

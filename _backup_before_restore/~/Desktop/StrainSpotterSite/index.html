@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>StrainSpotter – Private strain journal & scan-based tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="StrainSpotter is a private strain journal and scan-based tracker. Log sessions, track effects, and discover what actually works for you." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <style>
+    :root {
+      /* Colors from real app */
+      --color-primary: #7CB342;
+      --color-primary-light: #9CCC65;
+      --color-primary-dark: #558B2F;
+      --color-secondary: #9E9D24;
+      --color-secondary-light: #C5E1A5;
+      
+      /* Backgrounds */
+      --bg-primary: #0a0f0a;
+      --bg-secondary: #1a1a1a;
+      --bg-card: rgba(0, 0, 0, 0.35);
+      --bg-elevated: #1f3a1f;
+      
+      /* Text */
+      --text-primary: #9CCC65;
+      --text-secondary: #7CB342;
+      --text-muted: rgba(200, 230, 201, 0.7);
+      --text-light: rgba(200, 230, 201, 0.85);
+      
+      /* Borders & Effects */
+      --border-subtle: rgba(124, 179, 66, 0.2);
+      --border-medium: rgba(124, 179, 66, 0.35);
+      --border-strong: rgba(124, 179, 66, 0.6);
+      
+      /* Shadows */
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+      --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.7);
+      --shadow-glow: 0 0 20px rgba(124, 179, 66, 0.25);
+      
+      /* Spacing */
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      
+      /* Transitions */
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      background-image: radial-gradient(circle at top, #164f35 0%, #0a0f0a 45%, #020905 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: rgba(10, 15, 10, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.8rem 0;
+    }
+    
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .logo-square {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #000;
+      border: 2px solid var(--border-medium);
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .brand-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .nav-link {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      color: var(--text-light);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    
+    .nav-link:hover {
+      background: rgba(124, 179, 66, 0.1);
+      border-color: var(--border-subtle);
+      color: var(--text-primary);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: 2px solid var(--border-strong);
+      background: rgba(124, 179, 66, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      box-shadow: var(--shadow-card);
+    }
+    
+    .btn:hover {
+      background: rgba(124, 179, 66, 0.3);
+      border-color: rgba(124, 179, 66, 0.8);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-elevated);
+    }
+    
+    .btn-primary {
+      background: rgba(124, 179, 66, 0.3);
+      border-color: rgba(124, 179, 66, 0.6);
+    }
+    
+    .btn-primary:hover {
+      background: rgba(124, 179, 66, 0.5);
+    }
+    
+    /* Hero Section */
+    .hero {
+      padding: 4rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+      color: var(--text-light);
+      width: fit-content;
+    }
+    
+    .hero-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+    }
+    
+    .hero-title .accent {
+      color: var(--color-primary-light);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      max-width: 32rem;
+      line-height: 1.6;
+    }
+    
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .hero-footnote {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    
+    /* Sample Scan Panel */
+    .sample-scan-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-elevated);
+    }
+    
+    .sample-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+    
+    .sample-toggle-btn {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .sample-toggle-btn.active {
+      background: rgba(124, 179, 66, 0.2);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+    }
+    
+    .scan-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 1.5rem;
+    }
+    
+    .scan-image-placeholder {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    
+    .scan-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .scan-meta-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    
+    .scan-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    
+    .scan-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .tag {
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid var(--border-medium);
+      background: rgba(124, 179, 66, 0.1);
+      color: var(--text-light);
+    }
+    
+    .tag-thc {
+      background: rgba(255, 204, 128, 0.15);
+      border-color: rgba(255, 204, 128, 0.3);
+      color: #FFCC80;
+    }
+    
+    .tag-cbd {
+      background: rgba(179, 229, 252, 0.15);
+      border-color: rgba(179, 229, 252, 0.3);
+      color: #B3E5FC;
+    }
+    
+    .scan-effects {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin-top: 0.5rem;
+    }
+    
+    .scan-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    /* Sections */
+    section {
+      padding: 4rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .section-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .kicker {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .section-title {
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+    
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      max-width: 32rem;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    
+    /* Features Grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .feature-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .feature-list li {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    
+    .feature-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--color-primary-light);
+      font-weight: bold;
+    }
+    
+    /* Pricing Section */
+    .pricing-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .reason-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .reason-list li {
+      font-size: 1rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      padding-left: 2rem;
+      position: relative;
+    }
+    
+    .reason-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--color-primary-light);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .bio-card {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .bio-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .bio-card p {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    
+    /* About Section */
+    .about-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .about-content p {
+      font-size: 1rem;
+      color: var(--text-light);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero-inner,
+      .pricing-layout,
+      .about-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .scan-card {
+        grid-template-columns: 1fr;
+      }
+      
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      section {
+        padding: 3rem 1rem;
+      }
+      
+      .section-panel {
+        padding: 1.5rem;
+      }
+      
+      .hero {
+        padding: 2rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-row">
+        <div class="logo-square">SS</div>
+        <div class="brand-text">
+          <div class="brand-name">StrainSpotter</div>
+          <div class="brand-subtitle">Private strain journal & scan-based tracker</div>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#features" class="nav-link" onclick="scrollToSection('features'); return false;">Features</a>
+        <a href="#scan" class="nav-link" onclick="scrollToSection('scan'); return false;">See a scan</a>
+        <a href="#pricing" class="nav-link" onclick="scrollToSection('pricing'); return false;">Why it costs</a>
+        <a href="#about" class="nav-link" onclick="scrollToSection('about'); return false;">About</a>
+        <!-- TODO: replace with real App Store URL -->
+        <a href="https://apps.apple.com" target="_blank" rel="noopener" class="btn btn-primary">
+          Get StrainSpotter
+          <span>→</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="hero-inner">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span>🔒</span>
+            <span>Private by design – your data is yours</span>
+          </div>
+          <h1 class="hero-title">
+            <span class="accent">StrainSpotter:</span><br />
+            Identify marijuana plants<br />
+            and track what works.
+          </h1>
+          <p class="hero-subtitle">
+            A plant identification scanner and strain journal for iOS. Scan live plants and product labels to identify strains, get plant health insights, manage your garden, and track which strains actually help you. No ads, no accounts, no selling your data.
+          </p>
+          <div class="hero-cta">
+            <!-- TODO: replace with real App Store URL -->
+            <a href="https://apps.apple.com" target="_blank" rel="noopener" class="btn btn-primary">
+              Get StrainSpotter on the App Store
+              <span>→</span>
+            </a>
+            <button class="btn" onclick="scrollToSection('scan')">
+              See a sample scan
+            </button>
+          </div>
+          <p class="hero-footnote">
+            Works great for medical and recreational users who want predictable results: less guessing, more "this is what helps me."
+          </p>
+        </div>
+        
+        <!-- Sample Scan Panel -->
+        <aside class="sample-scan-panel" id="scan">
+          <div class="sample-toggle">
+            <button class="sample-toggle-btn active" id="btnPackaged" onclick="setSample('packaged')">
+              Packaged label scan
+            </button>
+            <button class="sample-toggle-btn" id="btnPlant" onclick="setSample('plant')">
+              Live plant scan
+            </button>
+          </div>
+          
+          <div class="scan-card" id="scanCard">
+            <div class="scan-image-placeholder" id="scanImage">
+              Example placeholder<br />(packaged label scan)
+            </div>
+            <div class="scan-meta">
+              <div class="scan-meta-label">Sample result</div>
+              <div class="scan-name" id="scanName">Gelato #33 – packaged eighth</div>
+              <div class="scan-tags" id="scanTags">
+                <span class="tag">Hybrid</span>
+                <span class="tag tag-thc">THC 24%</span>
+                <span class="tag">Evening</span>
+              </div>
+              <div class="scan-effects" id="scanEffects">
+                Mild body relaxation, calm mood, light creative boost. Good for winding down without fully checking out.
+              </div>
+              <div class="scan-footer" id="scanFooter">
+                Captured by scanning the front label. You can add dosage, how you felt, and whether you'd pick it again.
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+    
+    <!-- Features -->
+    <section id="features" class="section-panel">
+      <div class="kicker">What StrainSpotter does</div>
+      <h2 class="section-title">Plant identification scanner with journal and garden features</h2>
+      <p class="section-subtitle">
+        StrainSpotter is primarily a marijuana plant identification scanner. Scan live plants or product labels to identify strains, get plant health insights, manage your garden, and track which strains work for you.
+      </p>
+      
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Plant identification scanner</h3>
+          <ul class="feature-list">
+            <li>Scan live marijuana plants to identify the strain</li>
+            <li>Scan packaged product labels for instant strain info</li>
+            <li>Get plant health insights and doctor features</li>
+            <li>Save identified strains with photos and details</li>
+          </ul>
+        </article>
+        
+        <article class="feature-card">
+          <h3>Garden management</h3>
+          <ul class="feature-list">
+            <li>Track plants in your garden with photos and notes</li>
+            <li>Monitor plant health and growth stages</li>
+            <li>Organize your garden by strain, location, or status</li>
+            <li>Keep a complete history of each plant</li>
+          </ul>
+        </article>
+        
+        <article class="feature-card">
+          <h3>Strain journal & tracking</h3>
+          <ul class="feature-list">
+            <li>Log sessions and track effects you actually felt</li>
+            <li>See patterns: which strains help and when</li>
+            <li>Mark favorites and "safe choices" for later</li>
+            <li>Less guessing, more confidence in what works</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+    
+    <!-- Pricing -->
+    <section id="pricing" class="section-panel">
+      <div class="kicker">Why there's a price tag</div>
+      <h2 class="section-title">Paid on purpose, so your data isn't the product</h2>
+      <p class="section-subtitle">
+        StrainSpotter is a paid app instead of "free with ads" for a reason: the whole point is that your history is private and not part of a marketing machine.
+      </p>
+      
+      <div class="pricing-layout">
+        <div>
+          <ul class="reason-list">
+            <li><strong>No ads.</strong> Nothing blinking at you while you're trying to log a session.</li>
+            <li><strong>No selling your data.</strong> Your strain history isn't being packaged up for "insights".</li>
+            <li><strong>No accounts required.</strong> Use it without making yet another login.</li>
+            <li><strong>Supports ongoing work.</strong> The price helps pay for development, bugs, iOS updates, and new ideas.</li>
+            <li><strong>Independent, single-maker app.</strong> Built by one person who actually uses the thing.</li>
+          </ul>
+        </div>
+        
+        <aside class="bio-card">
+          <h3>What you're paying for</h3>
+          <p>
+            Instead of chasing downloads with ads, StrainSpotter is designed like a notebook you can trust: clean, focused, and not trying to trick you into anything.
+          </p>
+          <p>
+            The app offers flexible payment options: you can pay once for lifetime access, or choose a membership tier that fits how you use it. This helps cover iOS maintenance, design work, feature development, and testing across new devices and OS versions—so the tool you rely on doesn't suddenly break after an update.
+          </p>
+          <p>
+            Whether you prefer a one-time purchase or a subscription, StrainSpotter stays honest: no ads, no data selling, just a tool that works.
+          </p>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+            Pricing and membership options are shown on the App Store page for your region.
+          </p>
+        </aside>
+      </div>
+    </section>
+    
+    <!-- About -->
+    <section id="about" class="section-panel">
+      <div class="kicker">About the maker</div>
+      <h2 class="section-title">Built as a real tool, not a startup pitch</h2>
+      <p class="section-subtitle">
+        StrainSpotter is part of MixedMakerShop – a one-person studio that builds small, focused tools and physical things that are actually used every day.
+      </p>
+      
+      <div class="about-layout">
+        <div class="about-content">
+          <p>
+            The app grew out of a simple problem: scattered notes, strain names you can't remember, and trying to guess "what worked last time" from memory. Instead of building yet another giant social review platform, StrainSpotter is deliberately small and personal.
+          </p>
+          <p>
+            I use the app myself, keep an eye on real-world feedback, and update it as iOS changes so you're not stuck with abandonware. The same brain that designs 3D printed fixes and keychains at MixedMakerShop is behind this app, too.
+          </p>
+        </div>
+        
+        <aside class="bio-card">
+          <h3>MixedMakerShop & StrainSpotter</h3>
+          <p>
+            MixedMakerShop is the umbrella for small ventures like Henry AI, StrainSpotter, and GoneFishin Keychains. It's where the experiments live: some are physical, some digital, some both.
+          </p>
+          <p>
+            StrainSpotter is one of those: a focused tool that does one job well. If you'd like to see everything else being built under the same roof, you can visit:
+          </p>
+          <a href="https://mixedmakershop.com" target="_blank" rel="noopener" class="btn" style="margin-top: 1rem;">
+            Visit MixedMakerShop.com
+            <span>→</span>
+          </a>
+        </aside>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <span>© <span id="yearSpan"></span> StrainSpotter · A MixedMakerShop project.</span>
+      <a href="#top" onclick="scrollToSection('top'); return false;">Back to top</a>
+    </div>
+  </footer>
+  
+  <script>
+    // Smooth scroll helper
+    function scrollToSection(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const top = target.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+    
+    // Sample scan toggle
+    const samples = {
+      packaged: {
+        imageText: 'Example placeholder\n(packaged label scan)',
+        name: 'Gelato #33 – packaged eighth',
+        tags: [
+          '<span class="tag">Hybrid</span>',
+          '<span class="tag tag-thc">THC 24%</span>',
+          '<span class="tag">Evening</span>'
+        ],
+        effects: 'Mild body relaxation, calm mood, light creative boost. Good for winding down without fully checking out.',
+        footer: 'Captured by scanning the front label. You can add dosage, how you felt, and whether you\'d pick it again.'
+      },
+      plant: {
+        imageText: 'Example placeholder\n(live plant scan)',
+        name: 'Sour Diesel – home grow, week 7',
+        tags: [
+          '<span class="tag">Sativa-leaning</span>',
+          '<span class="tag">Daytime</span>',
+          '<span class="tag">Home grow</span>'
+        ],
+        effects: 'Bright, energetic headspace with a noticeable focus kick. Great for creative work when dosed lightly.',
+        footer: 'Captured by aiming the camera at the plant and tagging it. Later sessions can reference this same plant entry.'
+      }
+    };
+    
+    function setSample(kind) {
+      const data = samples[kind];
+      if (!data) return;
+      
+      document.getElementById('scanImage').textContent = data.imageText;
+      document.getElementById('scanName').textContent = data.name;
+      document.getElementById('scanTags').innerHTML = data.tags.join('');
+      document.getElementById('scanEffects').textContent = data.effects;
+      document.getElementById('scanFooter').textContent = data.footer;
+      
+      // Update toggle buttons
+      document.getElementById('btnPackaged').classList.toggle('active', kind === 'packaged');
+      document.getElementById('btnPlant').classList.toggle('active', kind === 'plant');
+    }
+    
+    // Set initial sample
+    setSample('packaged');
+    
+    // Set year in footer
+    document.getElementById('yearSpan').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
