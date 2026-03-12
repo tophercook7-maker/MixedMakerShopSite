@@ -51,6 +51,11 @@ export function ProjectsTable({ projects, clients }: Props) {
   }
 
   const clientName = (p: ProjectRow) => (p.clients && typeof p.clients === "object" && "business_name" in p.clients ? (p.clients as { business_name: string }).business_name : "—");
+  const statusClass = (s: string) => {
+    if (["complete", "maintenance"].includes(s)) return "admin-badge admin-badge-complete";
+    if (["development", "testing"].includes(s)) return "admin-badge admin-badge-progress";
+    return "admin-badge admin-badge-new";
+  };
 
   return (
     <div className="space-y-4">
@@ -58,7 +63,7 @@ export function ProjectsTable({ projects, clients }: Props) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="admin-select h-9"
         >
           <option value="">All statuses</option>
           <option value="planning">Planning</option>
@@ -71,12 +76,12 @@ export function ProjectsTable({ projects, clients }: Props) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="admin-btn-primary"
         >
           Add project
         </button>
       </div>
-      <div className="rounded-md border overflow-x-auto">
+      <div className="admin-table-wrap overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -96,14 +101,14 @@ export function ProjectsTable({ projects, clients }: Props) {
               >
                 <td className="p-3">{p.name}</td>
                 <td className="p-3">{clientName(p)}</td>
-                <td className="p-3 capitalize">{p.status.replace("_", " ")}</td>
-                <td className="p-3 text-muted-foreground">{p.deadline ?? "—"}</td>
+                <td className="p-3"><span className={statusClass(p.status)}>{p.status.replace("_", " ")}</span></td>
+                <td className="p-3" style={{ color: "var(--admin-muted)" }}>{p.deadline ?? "—"}</td>
                 <td className="p-3">{p.price != null ? `$${Number(p.price).toLocaleString()}` : "—"}</td>
                 <td className="p-3">
                   <button
                     type="button"
                     onClick={() => setEditing(p)}
-                    className="text-primary hover:underline"
+                    className="text-[var(--admin-gold)] hover:underline font-medium"
                   >
                     Edit
                   </button>
@@ -114,7 +119,9 @@ export function ProjectsTable({ projects, clients }: Props) {
         </table>
       </div>
       {filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground py-6 text-center">No projects match.</p>
+        <div className="admin-empty admin-card">
+          <div className="admin-empty-title">No projects match</div>
+        </div>
       )}
       {editing && (
         <ProjectForm

@@ -17,7 +17,7 @@ export default async function AdminTasksPage() {
   };
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Tasks</h1>
+      <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Tasks</h1>
       <TasksTable tasksByGroup={byDate} projects={projects ?? []} />
     </div>
   );

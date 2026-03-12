@@ -11,7 +11,7 @@ export default async function AdminPaymentsPage() {
   const { data: projects } = await supabase.from("projects").select("*").order("name");
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Payments</h1>
+      <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Payments</h1>
       <PaymentsTable payments={payments ?? []} clients={clients ?? []} projects={projects ?? []} />
     </div>
   );

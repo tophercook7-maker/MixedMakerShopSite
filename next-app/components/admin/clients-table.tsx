@@ -64,17 +64,17 @@ export function ClientsTable({ clients }: Props) {
           placeholder="Search clients…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm w-64"
+          className="admin-input h-9 w-64"
         />
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="admin-btn-primary"
         >
           Add client
         </button>
       </div>
-      <div className="rounded-md border overflow-x-auto">
+      <div className="admin-table-wrap overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -98,14 +98,14 @@ export function ClientsTable({ clients }: Props) {
                   <button
                     type="button"
                     onClick={() => setDetail(c)}
-                    className="text-primary hover:underline text-xs mr-2"
+                    className="text-[var(--admin-gold)] hover:underline text-xs mr-2 font-medium"
                   >
                     View
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditing(c)}
-                    className="text-primary hover:underline text-xs"
+                    className="text-[var(--admin-gold)] hover:underline text-xs font-medium"
                   >
                     Edit
                   </button>
@@ -116,29 +116,32 @@ export function ClientsTable({ clients }: Props) {
         </table>
       </div>
       {filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground py-6 text-center">No clients found.</p>
+        <div className="admin-empty admin-card">
+          <div className="admin-empty-title">No clients found</div>
+          <div className="admin-empty-desc">Add your first client to get started</div>
+        </div>
       )}
       {detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDetail(null)}>
-          <div className="w-full max-w-lg rounded-lg border bg-background p-4 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-semibold text-lg">{detail.business_name}</h3>
-            <p className="text-sm text-muted-foreground mt-1">{detail.contact_name}</p>
-            <p className="text-sm text-muted-foreground">{detail.email}</p>
-            {detail.website && <p className="text-sm text-muted-foreground">{detail.website}</p>}
+        <div className="fixed inset-0 z-50 flex items-center justify-center admin-modal-backdrop p-4" onClick={() => setDetail(null)}>
+          <div className="admin-modal w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-lg" style={{ color: "var(--admin-fg)" }}>{detail.business_name}</h3>
+            <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>{detail.contact_name}</p>
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>{detail.email}</p>
+            {detail.website && <p className="text-sm" style={{ color: "var(--admin-muted)" }}>{detail.website}</p>}
             {detail.notes && <p className="mt-2 text-sm">{detail.notes}</p>}
             <p className="mt-3 text-sm font-medium">Projects: {detail.project_count ?? 0}</p>
             <p className="text-sm font-medium">Payments: {detail.payment_count ?? 0}</p>
             <div className="mt-4 flex gap-2">
-              <Link href={`/admin/projects?client=${detail.id}`} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+              <Link href={`/admin/projects?client=${detail.id}`} className="admin-btn-ghost">
                 View projects
               </Link>
-              <Link href={`/admin/payments?client=${detail.id}`} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+              <Link href={`/admin/payments?client=${detail.id}`} className="admin-btn-ghost">
                 View payments
               </Link>
-              <button type="button" onClick={() => { setDetail(null); setEditing(detail); }} className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90">
+              <button type="button" onClick={() => { setDetail(null); setEditing(detail); }} className="admin-btn-primary">
                 Edit
               </button>
-              <button type="button" onClick={() => setDetail(null)} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">Close</button>
+              <button type="button" onClick={() => setDetail(null)} className="admin-btn-ghost">Close</button>
             </div>
           </div>
         </div>

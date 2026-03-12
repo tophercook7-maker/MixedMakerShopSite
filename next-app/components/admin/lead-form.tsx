@@ -51,75 +51,75 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg border bg-background p-4 shadow-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-semibold mb-3">{lead ? "Edit lead" : "Add lead"}</h3>
-        {error && <p className="text-sm text-destructive mb-3">{error}</p>}
+    <div className="fixed inset-0 z-50 flex items-center justify-center admin-modal-backdrop p-4" onClick={onClose}>
+      <div className="admin-modal w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>{lead ? "Edit lead" : "Add lead"}</h3>
+        {error && <p className="text-sm mb-3" style={{ color: "var(--admin-orange)" }}>{error}</p>}
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Business name *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Business name *</label>
             <input
               value={form.business_name}
               onChange={(e) => setForm((f) => ({ ...f, business_name: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Contact name</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Contact name</label>
             <input
               value={form.contact_name}
               onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Phone</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Phone</label>
             <input
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Website</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Website</label>
             <input
               value={form.website}
               onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Industry</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Industry</label>
             <input
               value={form.industry}
               onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Lead source</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Lead source</label>
             <input
               value={form.lead_source}
               onChange={(e) => setForm((f) => ({ ...f, lead_source: e.target.value }))}
               placeholder="e.g. contact_form, website_check"
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as (typeof STATUSES)[number] }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
             >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>{s.replace("_", " ")}</option>
@@ -127,54 +127,42 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Follow-up date</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Follow-up date</label>
             <input
               type="date"
               value={form.follow_up_date}
               onChange={(e) => setForm((f) => ({ ...f, follow_up_date: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
         </div>
         <div className="mt-4 flex justify-between gap-2 flex-wrap">
           <div className="flex gap-2 items-center">
             {lead && onConvertToClient && (
-              <button
-                type="button"
-                onClick={() => onConvertToClient(lead.id)}
-                className="rounded-md border border-primary text-primary px-3 py-1.5 text-sm hover:bg-primary/10"
-              >
+              <button type="button" onClick={() => onConvertToClient(lead.id)} className="admin-btn-primary">
                 Convert to client
               </button>
             )}
             {onDelete && (
-              <button
-                type="button"
-                onClick={onDelete}
-                className="rounded-md border border-destructive text-destructive px-3 py-1.5 text-sm hover:bg-destructive/10"
-              >
+              <button type="button" onClick={onDelete} className="admin-btn-ghost" style={{ color: "var(--admin-orange)" }}>
                 Delete
               </button>
             )}
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+            <button type="button" onClick={onClose} className="admin-btn-ghost">
               Cancel
             </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
-            >
+            <button type="button" onClick={handleSave} className="admin-btn-primary">
               Save
             </button>
           </div>

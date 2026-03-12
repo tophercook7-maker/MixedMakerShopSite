@@ -65,6 +65,13 @@ export function LeadsTable({ leads }: Props) {
     router.refresh();
   }
 
+  function statusClass(s: string) {
+    if (["won"].includes(s)) return "admin-badge admin-badge-won";
+    if (["lost"].includes(s)) return "admin-badge admin-badge-lost";
+    if (["new", "pending"].includes(s)) return "admin-badge admin-badge-new";
+    return "admin-badge admin-badge-progress";
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
@@ -73,12 +80,12 @@ export function LeadsTable({ leads }: Props) {
           placeholder="Search leads…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48"
+          className="admin-input h-9 w-48"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="admin-select h-9"
         >
           <option value="">All statuses</option>
           <option value="new">New</option>
@@ -88,42 +95,34 @@ export function LeadsTable({ leads }: Props) {
           <option value="won">Won</option>
           <option value="lost">Lost</option>
         </select>
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+        <button type="button" onClick={() => setAdding(true)} className="admin-btn-primary">
           Add lead
         </button>
       </div>
-      <div className="rounded-md border overflow-x-auto">
+      <div className="admin-table-wrap overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="text-left p-3 font-medium">Business</th>
-              <th className="text-left p-3 font-medium">Contact</th>
-              <th className="text-left p-3 font-medium">Email</th>
-              <th className="text-left p-3 font-medium">Status</th>
-              <th className="text-left p-3 font-medium">Source</th>
-              <th className="text-left p-3 font-medium">Created</th>
-              <th className="w-24 p-3" />
+            <tr>
+              <th>Business</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Source</th>
+              <th>Created</th>
+              <th className="w-24" />
             </tr>
           </thead>
           <tbody>
             {filtered.map((l) => (
-              <tr key={l.id} className="border-b last:border-0">
-                <td className="p-3">{l.business_name}</td>
-                <td className="p-3">{l.contact_name ?? "—"}</td>
-                <td className="p-3">{l.email ?? "—"}</td>
-                <td className="p-3 capitalize">{l.status.replace("_", " ")}</td>
-                <td className="p-3 text-muted-foreground">{l.lead_source ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">{l.created_at?.slice(0, 10)}</td>
-                <td className="p-3">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(l)}
-                    className="text-primary hover:underline text-xs"
-                  >
+              <tr key={l.id}>
+                <td>{l.business_name}</td>
+                <td>{l.contact_name ?? "—"}</td>
+                <td>{l.email ?? "—"}</td>
+                <td><span className={statusClass(l.status)}>{l.status.replace("_", " ")}</span></td>
+                <td style={{ color: "var(--admin-muted)" }}>{l.lead_source ?? "—"}</td>
+                <td style={{ color: "var(--admin-muted)" }}>{l.created_at?.slice(0, 10)}</td>
+                <td>
+                  <button type="button" onClick={() => setEditing(l)} className="text-[var(--admin-gold)] hover:underline text-xs">
                     Edit
                   </button>
                 </td>
@@ -133,7 +132,11 @@ export function LeadsTable({ leads }: Props) {
         </table>
       </div>
       {filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground py-6 text-center">No leads match your filters.</p>
+        <div className="admin-empty admin-card">
+          <div className="admin-empty-icon">—</div>
+          <div className="admin-empty-title">No leads match your filters</div>
+          <div className="admin-empty-desc">Try a different search or status</div>
+        </div>
       )}
       {editing && (
         <LeadForm

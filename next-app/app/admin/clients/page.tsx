@@ -18,7 +18,7 @@ export default async function AdminClientsPage() {
   }));
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Clients</h1>
+      <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Clients</h1>
       <ClientsTable clients={clientsWithCounts} />
     </div>
   );

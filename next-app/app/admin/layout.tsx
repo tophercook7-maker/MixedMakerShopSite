@@ -1,18 +1,25 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
+import "./admin.css";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-white text-black md:grid md:grid-cols-[240px_1fr]">
-      <aside className="border-r border-neutral-200">
+    <div className="admin-root min-h-screen md:grid md:grid-cols-[260px_1fr]">
+      <aside className="admin-sidebar">
         <Sidebar />
       </aside>
-      <section className="min-w-0">
-        <div className="border-b border-neutral-200 px-6 py-4">
-          <h1 className="text-xl font-semibold">MixedMakerShop Admin</h1>
-        </div>
-        <div className="p-6">{children}</div>
-      </section>
+      <div className="min-w-0 flex flex-col">
+        <header className="admin-header">
+          <h1>MixedMakerShop Admin</h1>
+          <div className="admin-quick-actions">
+            <Link href="/admin/leads">Add Lead</Link>
+            <Link href="/admin/tasks">Add Task</Link>
+            <Link href="/admin/payments">Add Payment</Link>
+          </div>
+        </header>
+        <main className="admin-main flex-1">{children}</main>
+      </div>
     </div>
   );
 }

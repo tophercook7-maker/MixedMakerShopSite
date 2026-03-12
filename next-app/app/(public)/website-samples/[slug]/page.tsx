@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-const samples: Record<string, { name: string; desc: string }> = {
-  "bean-bliss": { name: "Bean Bliss", desc: "Clean café website designed to highlight menu, location, and daily traffic." },
-  "noir-roast": { name: "Noir Roast", desc: "Bold roastery layout focused on brand identity and product storytelling." },
-  "sunrise-cafe": { name: "Sunrise Café", desc: "Warm neighborhood café style built to encourage visits and local loyalty." },
-  "route-66-coffee": { name: "Route 66 Coffee", desc: "Retro diner-inspired design that stands out and invites travelers inside." },
-};
+import { getSampleBySlug } from "@/lib/website-samples";
 
 export default async function WebsiteSamplePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const sample = samples[slug];
-  if (!sample) notFound();
+  const sample = getSampleBySlug(slug);
+  if (!sample || sample.externalHref) notFound();
 
   return (
     <section className="section">
       <div className="container">
         <div className="panel">
+          {sample.imageUrl && (
+            <div style={{ marginBottom: 20, borderRadius: 12, overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={sample.imageUrl}
+                alt=""
+                style={{ width: "100%", maxHeight: 280, objectFit: "cover", display: "block" }}
+              />
+            </div>
+          )}
           <h1 style={{ margin: "0 0 10px" }}>{sample.name}</h1>
           <p className="subhead">{sample.desc}</p>
           <p className="small" style={{ marginTop: 14 }}>

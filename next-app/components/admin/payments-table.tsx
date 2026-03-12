@@ -24,6 +24,11 @@ export function PaymentsTable({ payments, clients, projects }: Props) {
 
   const clientName = (p: PaymentRow) => (p.clients && typeof p.clients === "object" && "business_name" in p.clients ? (p.clients as { business_name: string }).business_name : "—");
   const projectName = (p: PaymentRow) => (p.projects && typeof p.projects === "object" && "name" in p.projects ? (p.projects as { name: string }).name : "—");
+  const statusClass = (s: string) => {
+    if (s === "paid") return "admin-badge admin-badge-paid";
+    if (["overdue"].includes(s)) return "admin-badge admin-badge-overdue";
+    return "admin-badge admin-badge-pending";
+  };
 
   async function updatePayment(id: string, updates: Partial<Payment>) {
     const res = await fetch(`/api/payments/${id}`, {
@@ -61,16 +66,16 @@ export function PaymentsTable({ payments, clients, projects }: Props) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="admin-btn-primary"
         >
           Add payment
         </button>
-        <div className="flex gap-6 text-sm">
-          <span className="text-muted-foreground">Paid total: <strong className="text-foreground">${totalPaid.toLocaleString()}</strong></span>
-          <span className="text-muted-foreground">Pending: <strong className="text-foreground">${totalPending.toLocaleString()}</strong></span>
+        <div className="flex gap-6 text-sm" style={{ color: "var(--admin-muted)" }}>
+          <span>Paid total: <strong style={{ color: "var(--admin-fg)" }}>${totalPaid.toLocaleString()}</strong></span>
+          <span>Pending: <strong style={{ color: "var(--admin-fg)" }}>${totalPending.toLocaleString()}</strong></span>
         </div>
       </div>
-      <div className="rounded-md border overflow-x-auto">
+      <div className="admin-table-wrap overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -88,13 +93,13 @@ export function PaymentsTable({ payments, clients, projects }: Props) {
                 <td className="p-3">{clientName(p)}</td>
                 <td className="p-3">{projectName(p) || "—"}</td>
                 <td className="p-3">${Number(p.amount).toLocaleString()}</td>
-                <td className="p-3 capitalize">{p.status}</td>
-                <td className="p-3 text-muted-foreground">{p.payment_date ?? "—"}</td>
+                <td className="p-3"><span className={statusClass(p.status)}>{p.status}</span></td>
+                <td className="p-3" style={{ color: "var(--admin-muted)" }}>{p.payment_date ?? "—"}</td>
                 <td className="p-3">
                   <button
                     type="button"
                     onClick={() => setEditing(p)}
-                    className="text-primary hover:underline"
+                    className="text-[var(--admin-gold)] hover:underline font-medium"
                   >
                     Edit
                   </button>
@@ -105,7 +110,9 @@ export function PaymentsTable({ payments, clients, projects }: Props) {
         </table>
       </div>
       {payments.length === 0 && (
-        <p className="text-sm text-muted-foreground py-6 text-center">No payments yet.</p>
+        <div className="admin-empty admin-card">
+          <div className="admin-empty-title">No payments yet</div>
+        </div>
       )}
       {editing && (
         <PaymentForm

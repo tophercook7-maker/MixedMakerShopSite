@@ -103,8 +103,8 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+    <>
+      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--admin-fg)" }}>Dashboard</h1>
       <StatsCards stats={stats} />
       <DashboardOverview
         recentLeads={recentLeads ?? []}
@@ -112,6 +112,6 @@ export default async function AdminDashboardPage() {
         activeProjects={activeProjects ?? []}
         recentPayments={recentPayments ?? []}
       />
-    </main>
+    </>
   );
 }

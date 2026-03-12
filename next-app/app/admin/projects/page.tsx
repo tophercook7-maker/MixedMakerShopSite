@@ -10,7 +10,7 @@ export default async function AdminProjectsPage() {
   const { data: clients } = await supabase.from("clients").select("*").order("business_name");
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Projects</h1>
+      <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Projects</h1>
       <ProjectsTable projects={projects ?? []} clients={clients ?? []} />
     </div>
   );

@@ -37,74 +37,74 @@ export function ClientForm({ client, onClose, onSave, onDelete }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg border bg-background p-4 shadow-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-semibold mb-3">{client ? "Edit client" : "Add client"}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center admin-modal-backdrop p-4" onClick={onClose}>
+      <div className="admin-modal w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>{client ? "Edit client" : "Add client"}</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Business name *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Business name *</label>
             <input
               value={form.business_name}
               onChange={(e) => setForm((f) => ({ ...f, business_name: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Contact name</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Contact name</label>
             <input
               value={form.contact_name}
               onChange={(e) => setForm((f) => ({ ...f, contact_name: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Phone</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Phone</label>
             <input
               value={form.phone}
               onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Website</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Website</label>
             <input
               value={form.website}
               onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Hosting provider</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Hosting provider</label>
             <input
               value={form.hosting_provider}
               onChange={(e) => setForm((f) => ({ ...f, hosting_provider: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Maintenance plan</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Maintenance plan</label>
             <input
               value={form.maintenance_plan}
               onChange={(e) => setForm((f) => ({ ...f, maintenance_plan: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
         </div>
@@ -114,20 +114,20 @@ export function ClientForm({ client, onClose, onSave, onDelete }: Props) {
               <button
                 type="button"
                 onClick={onDelete}
-                className="rounded-md border border-destructive text-destructive px-3 py-1.5 text-sm hover:bg-destructive/10"
+                className="admin-btn-danger"
               >
                 Delete
               </button>
             )}
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+            <button type="button" onClick={onClose} className="admin-btn-ghost">
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
+              className="admin-btn-primary"
             >
               Save
             </button>

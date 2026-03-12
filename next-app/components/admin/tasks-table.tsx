@@ -16,10 +16,10 @@ type Props = {
 const today = new Date().toISOString().slice(0, 10);
 
 const priorityClass: Record<string, string> = {
-  critical: "bg-destructive/20 text-destructive",
-  high: "bg-orange-500/20 text-orange-700 dark:text-orange-400",
-  medium: "bg-muted text-muted-foreground",
-  low: "bg-muted/50 text-muted-foreground",
+  critical: "admin-badge admin-badge-overdue",
+  high: "admin-badge admin-badge-progress",
+  medium: "admin-badge admin-badge-new",
+  low: "admin-badge admin-badge-progress",
 };
 
 export function TasksTable({ tasksByGroup, projects }: Props) {
@@ -70,15 +70,15 @@ export function TasksTable({ tasksByGroup, projects }: Props) {
   const projectName = (t: TaskRow) => (t.projects && typeof t.projects === "object" && "name" in t.projects ? (t.projects as { name: string }).name : "—");
 
   const renderList = (title: string, tasks: TaskRow[], titleClass = "") => (
-    <section className="rounded-lg border bg-card p-4">
-      <h2 className={`font-semibold mb-3 ${titleClass}`}>{title}</h2>
+    <section className="admin-card p-4">
+      <h2 className={`font-semibold mb-3 ${titleClass}`} style={{ color: titleClass.includes("destructive") ? undefined : "var(--admin-fg)" }}>{title}</h2>
       <ul className="space-y-2">
         {tasks.map((t) => (
-          <li key={t.id} className="rounded border p-2 text-sm flex items-center justify-between gap-2">
+          <li key={t.id} className="rounded-lg border border-[var(--admin-border)] p-3 text-sm flex items-center justify-between gap-2 bg-[var(--admin-card)]">
             <div className="min-w-0">
-              <p className="font-medium truncate">{t.title}</p>
-              <p className="text-muted-foreground text-xs">
-                <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${priorityClass[t.priority] ?? "bg-muted"}`}>
+              <p className="font-medium truncate" style={{ color: "var(--admin-fg)" }}>{t.title}</p>
+              <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${priorityClass[t.priority] ?? "admin-badge admin-badge-new"}`}>
                   {t.priority}
                 </span>
                 {" · "}{projectName(t)}
@@ -87,13 +87,13 @@ export function TasksTable({ tasksByGroup, projects }: Props) {
             <button
               type="button"
               onClick={() => setEditing(t)}
-              className="text-primary hover:underline shrink-0"
+              className="text-[var(--admin-gold)] hover:underline shrink-0 font-medium"
             >
               Edit
             </button>
           </li>
         ))}
-        {tasks.length === 0 && <li className="text-sm text-muted-foreground">None</li>}
+        {tasks.length === 0 && <li className="text-sm" style={{ color: "var(--admin-muted)" }}>None</li>}
       </ul>
     </section>
   );
@@ -104,7 +104,7 @@ export function TasksTable({ tasksByGroup, projects }: Props) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="admin-select h-9"
         >
           <option value="">All statuses</option>
           <option value="todo">Todo</option>
@@ -114,7 +114,7 @@ export function TasksTable({ tasksByGroup, projects }: Props) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="admin-btn-primary"
         >
           Add task
         </button>

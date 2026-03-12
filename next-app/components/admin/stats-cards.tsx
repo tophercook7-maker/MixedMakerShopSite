@@ -10,18 +10,14 @@ type Stat = {
 
 export function StatsCards({ stats }: { stats: Stat[] }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="admin-stats-grid">
       {stats.map(({ label, value, href, icon: Icon }) => (
-        <Link
-          key={label}
-          href={href}
-          className="rounded-lg border bg-card p-4 hover:bg-accent/50 transition-colors"
-        >
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Icon className="h-4 w-4" />
-            <span className="text-sm">{label}</span>
+        <Link key={label} href={href} className="admin-stat-card block">
+          <div className="admin-stat-icon">
+            <Icon className="h-5 w-5" />
           </div>
-          <p className="mt-2 text-2xl font-semibold">{value}</p>
+          <div className="admin-stat-label">{label}</div>
+          <div className="admin-stat-value">{value}</div>
         </Link>
       ))}
     </div>

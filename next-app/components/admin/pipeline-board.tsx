@@ -24,25 +24,19 @@ export function PipelineBoard({ initialStatuses }: { initialStatuses: Col[] }) {
     <div className="overflow-x-auto pb-4">
       <div className="flex gap-4 min-w-max">
         {initialStatuses.map(({ status, leads }) => (
-          <div
-            key={status}
-            className="w-64 shrink-0 rounded-lg border bg-card p-3"
-          >
-            <h3 className="font-medium capitalize mb-2">
+          <div key={status} className="admin-card w-64 shrink-0 p-4">
+            <h3 className="font-medium capitalize mb-3" style={{ color: "var(--admin-fg)" }}>
               {status.replace("_", " ")} ({leads.length})
             </h3>
             <div className="space-y-2">
               {leads.map((l) => (
-                <div
-                  key={l.id}
-                  className="rounded border bg-background p-2 text-sm"
-                >
-                  <p className="font-medium truncate">{l.business_name}</p>
-                  <p className="text-muted-foreground text-xs truncate">{l.contact_name || l.email || "—"}</p>
+                <div key={l.id} className="admin-card p-3 text-sm" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                  <p className="font-medium truncate" style={{ color: "var(--admin-fg)" }}>{l.business_name}</p>
+                  <p className="text-xs truncate" style={{ color: "var(--admin-muted)" }}>{l.contact_name || l.email || "—"}</p>
                   <select
                     value={l.status}
                     onChange={(e) => updateStatus(l.id, e.target.value)}
-                    className="mt-2 w-full rounded border border-input bg-background px-2 py-1 text-xs"
+                    className="admin-select mt-2 w-full text-xs"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>{s.replace("_", " ")}</option>

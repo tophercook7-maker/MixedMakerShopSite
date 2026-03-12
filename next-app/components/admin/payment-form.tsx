@@ -41,16 +41,16 @@ export function PaymentForm({ payment, clients, projects, onClose, onSave, onDel
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg border bg-background p-4 shadow-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-semibold mb-3">{payment ? "Edit payment" : "Add payment"}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center admin-modal-backdrop p-4" onClick={onClose}>
+      <div className="admin-modal w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>{payment ? "Edit payment" : "Add payment"}</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Client *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Client *</label>
             <select
               value={form.client_id}
               onChange={(e) => setForm((f) => ({ ...f, client_id: e.target.value, project_id: "" }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
               disabled={!!payment}
             >
               <option value="">Select client</option>
@@ -60,11 +60,11 @@ export function PaymentForm({ payment, clients, projects, onClose, onSave, onDel
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Project (optional)</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Project (optional)</label>
             <select
               value={form.project_id}
               onChange={(e) => setForm((f) => ({ ...f, project_id: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
               disabled={!!payment}
             >
               <option value="">None</option>
@@ -74,22 +74,22 @@ export function PaymentForm({ payment, clients, projects, onClose, onSave, onDel
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Amount *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Amount *</label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={form.amount}
               onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as (typeof STATUSES)[number] }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
             >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>{s}</option>
@@ -97,21 +97,21 @@ export function PaymentForm({ payment, clients, projects, onClose, onSave, onDel
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Payment date</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Payment date</label>
             <input
               type="date"
               value={form.payment_date}
               onChange={(e) => setForm((f) => ({ ...f, payment_date: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={2}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
         </div>
@@ -121,20 +121,20 @@ export function PaymentForm({ payment, clients, projects, onClose, onSave, onDel
               <button
                 type="button"
                 onClick={onDelete}
-                className="rounded-md border border-destructive text-destructive px-3 py-1.5 text-sm hover:bg-destructive/10"
+                className="admin-btn-danger"
               >
                 Delete
               </button>
             )}
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+            <button type="button" onClick={onClose} className="admin-btn-ghost">
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
+              className="admin-btn-primary"
             >
               Save
             </button>

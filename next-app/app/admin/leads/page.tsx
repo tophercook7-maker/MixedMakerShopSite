@@ -27,17 +27,17 @@ export default async function AdminLeadsPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Leads</h1>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Leads</h1>
         <div className="flex gap-2">
           <Link
             href="/admin/leads?view=table"
-            className={`rounded-md border px-3 py-1.5 text-sm font-medium ${!showPipeline ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+            className={!showPipeline ? "admin-btn-primary" : "admin-btn-ghost"}
           >
             Table
           </Link>
           <Link
             href="/admin/leads?view=pipeline"
-            className={`rounded-md border px-3 py-1.5 text-sm font-medium ${showPipeline ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+            className={showPipeline ? "admin-btn-primary" : "admin-btn-ghost"}
           >
             Pipeline
           </Link>

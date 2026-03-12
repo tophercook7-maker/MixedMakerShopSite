@@ -1,32 +1,37 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, UserCheck, FolderKanban, CheckSquare, DollarSign, Settings } from "lucide-react";
+
+const links = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/leads", label: "Leads", icon: Users },
+  { href: "/admin/clients", label: "Clients", icon: UserCheck },
+  { href: "/admin/projects", label: "Projects", icon: FolderKanban },
+  { href: "/admin/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/admin/payments", label: "Payments", icon: DollarSign },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
+];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <nav className="p-4">
-      <div className="mb-6 text-lg font-bold">MixedMakerShop</div>
-      <div className="space-y-2">
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin">
-          Dashboard
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/leads">
-          Leads
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/clients">
-          Clients
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/projects">
-          Projects
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/tasks">
-          Tasks
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/payments">
-          Payments
-        </Link>
-        <Link className="block rounded-lg px-3 py-2 hover:bg-neutral-100" href="/admin/settings">
-          Settings
-        </Link>
-      </div>
-    </nav>
+    <>
+      <div className="admin-brand">M³ Admin</div>
+      <nav>
+        {links.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            data-active={pathname === href || (href !== "/admin" && pathname.startsWith(href))}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+    </>
   );
 }

@@ -37,16 +37,16 @@ export function ProjectForm({ project, clients, onClose, onSave, onDelete }: Pro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-md rounded-lg border bg-background p-4 shadow-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-semibold mb-3">{project ? "Edit project" : "Add project"}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center admin-modal-backdrop p-4" onClick={onClose}>
+      <div className="admin-modal w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>{project ? "Edit project" : "Add project"}</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Client *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Client *</label>
             <select
               value={form.client_id}
               onChange={(e) => setForm((f) => ({ ...f, client_id: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
               disabled={!!project}
             >
               <option value="">Select client</option>
@@ -56,19 +56,19 @@ export function ProjectForm({ project, clients, onClose, onSave, onDelete }: Pro
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Project name *</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Project name *</label>
             <input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Status</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Status</label>
             <select
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as (typeof STATUSES)[number] }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-select w-full"
             >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>{s.replace("_", " ")}</option>
@@ -76,32 +76,32 @@ export function ProjectForm({ project, clients, onClose, onSave, onDelete }: Pro
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Deadline</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Deadline</label>
             <input
               type="date"
               value={form.deadline}
               onChange={(e) => setForm((f) => ({ ...f, deadline: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Price</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Price</label>
             <input
               type="number"
               step="0.01"
               min="0"
               value={form.price}
               onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
-              className="w-full rounded-md border px-3 py-2 text-sm"
+              className="admin-input"
             />
           </div>
         </div>
@@ -111,20 +111,20 @@ export function ProjectForm({ project, clients, onClose, onSave, onDelete }: Pro
               <button
                 type="button"
                 onClick={onDelete}
-                className="rounded-md border border-destructive text-destructive px-3 py-1.5 text-sm hover:bg-destructive/10"
+                className="admin-btn-danger"
               >
                 Delete
               </button>
             )}
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+            <button type="button" onClick={onClose} className="admin-btn-ghost">
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
+              className="admin-btn-primary"
             >
               Save
             </button>
