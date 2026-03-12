@@ -32,15 +32,18 @@ export const quoteFormSchema = z.object({
 
 export const leadSchema = z.object({
   business_name: z.string().min(1, "Business name required").max(200),
-  contact_name: z.string().max(200).optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().max(50).optional(),
-  website: z.string().url().optional().or(z.literal("")),
-  industry: z.string().max(100).optional(),
-  lead_source: z.string().max(50).optional(),
+  contact_name: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  email: z
+    .union([z.string().email(), z.literal("")])
+    .optional()
+    .transform((v) => (v === "" ? undefined : v)),
+  phone: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
+  website: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  industry: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
+  lead_source: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   status: z.enum(leadStatuses),
-  notes: z.string().max(5000).optional(),
-  follow_up_date: z.string().optional(),
+  notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),
+  follow_up_date: z.string().optional().transform((v) => (v === "" ? undefined : v)),
 });
 
 export const clientSchema = z.object({

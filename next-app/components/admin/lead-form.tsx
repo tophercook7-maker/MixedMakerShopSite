@@ -14,6 +14,7 @@ type Props = {
 };
 
 export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }: Props) {
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     business_name: lead?.business_name ?? "",
     contact_name: lead?.contact_name ?? "",
@@ -28,16 +29,23 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
   });
 
   const handleSave = () => {
+    setError(null);
+    const businessName = form.business_name.trim();
+    if (!businessName) {
+      setError("Business name is required");
+      return;
+    }
     const payload = {
       ...form,
-      contact_name: form.contact_name || undefined,
-      email: form.email || undefined,
-      phone: form.phone || undefined,
-      website: form.website || undefined,
-      industry: form.industry || undefined,
-      lead_source: form.lead_source || undefined,
-      notes: form.notes || undefined,
-      follow_up_date: form.follow_up_date || undefined,
+      business_name: businessName,
+      contact_name: form.contact_name?.trim() || undefined,
+      email: form.email?.trim() || undefined,
+      phone: form.phone?.trim() || undefined,
+      website: form.website?.trim() || undefined,
+      industry: form.industry?.trim() || undefined,
+      lead_source: form.lead_source?.trim() || undefined,
+      notes: form.notes?.trim() || undefined,
+      follow_up_date: form.follow_up_date?.trim() || undefined,
     };
     onSave(payload);
   };
@@ -46,6 +54,7 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-lg border bg-background p-4 shadow-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-semibold mb-3">{lead ? "Edit lead" : "Add lead"}</h3>
+        {error && <p className="text-sm text-destructive mb-3">{error}</p>}
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Business name *</label>
