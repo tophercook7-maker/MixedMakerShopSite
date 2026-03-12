@@ -2,43 +2,35 @@ import Link from "next/link";
 
 export default function ConnectPage() {
   return (
-    <main className="min-h-screen bg-white text-black px-6 py-12">
-      <div className="mx-auto max-w-xl space-y-6">
-        <h1 className="text-3xl font-bold">MixedMakerShop</h1>
-        <p className="text-base text-neutral-700">
-          Welcome to MixedMakerShop. Choose what you need.
-        </p>
-
-        <div className="grid gap-4">
-          <Link
-            href="/contact"
-            className="rounded-2xl border border-black px-5 py-4 text-lg font-medium hover:bg-black hover:text-white transition"
-          >
-            Request a Website
-          </Link>
-
-          <Link
-            href="/free-website-check"
-            className="rounded-2xl border border-black px-5 py-4 text-lg font-medium hover:bg-black hover:text-white transition"
-          >
-            Free Website Check
-          </Link>
-
-          <Link
-            href="/portfolio"
-            className="rounded-2xl border border-black px-5 py-4 text-lg font-medium hover:bg-black hover:text-white transition"
-          >
-            View Portfolio
-          </Link>
-
-          <Link
-            href="/contact"
-            className="rounded-2xl border border-black px-5 py-4 text-lg font-medium hover:bg-black hover:text-white transition"
-          >
-            Contact Topher
-          </Link>
+    <section className="section">
+      <div className="container">
+        <div className="panel">
+          <h1 style={{ margin: "0 0 10px" }}>MixedMakerShop</h1>
+          <p className="subhead">Choose what you need.</p>
+          <div className="grid-2" style={{ marginTop: 24 }}>
+            <Link href="/contact" className="card" style={{ textDecoration: "none" }}>
+              <h3>Request a Website</h3>
+              <p className="small">New build, redesign, or updates.</p>
+              <span className="btn">Go →</span>
+            </Link>
+            <Link href="/free-website-check" className="card" style={{ textDecoration: "none" }}>
+              <h3>Free Website Check</h3>
+              <p className="small">Quick feedback on your current site.</p>
+              <span className="btn">Go →</span>
+            </Link>
+            <Link href="/website-samples" className="card" style={{ textDecoration: "none" }}>
+              <h3>View Portfolio</h3>
+              <p className="small">Sample websites in different styles.</p>
+              <span className="btn">Go →</span>
+            </Link>
+            <Link href="/contact" className="card" style={{ textDecoration: "none" }}>
+              <h3>Contact Topher</h3>
+              <p className="small">Ask a question or pitch an idea.</p>
+              <span className="btn">Go →</span>
+            </Link>
+          </div>
         </div>
       </div>
-    </main>
+    </section>
   );
 }
