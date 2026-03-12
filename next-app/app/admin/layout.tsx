@@ -1,21 +1,35 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
+import { HeaderActions } from "@/components/admin/HeaderActions";
+import { Plus } from "lucide-react";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="admin-root min-h-screen md:grid md:grid-cols-[260px_1fr]">
-      <aside className="admin-sidebar">
+    <div className="admin-root min-h-screen md:grid md:grid-cols-[280px_1fr]">
+      <aside className="admin-sidebar shrink-0">
         <Sidebar />
       </aside>
       <div className="min-w-0 flex flex-col">
         <header className="admin-header">
           <h1>MixedMakerShop Admin</h1>
-          <div className="admin-quick-actions">
-            <Link href="/admin/leads">Add Lead</Link>
-            <Link href="/admin/tasks">Add Task</Link>
-            <Link href="/admin/payments">Add Payment</Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="admin-quick-actions">
+              <Link href="/admin/leads">
+                <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                Add Lead
+              </Link>
+              <Link href="/admin/tasks">
+                <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                Add Task
+              </Link>
+              <Link href="/admin/payments">
+                <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                Add Payment
+              </Link>
+            </div>
+            <HeaderActions />
           </div>
         </header>
         <main className="admin-main flex-1">{children}</main>

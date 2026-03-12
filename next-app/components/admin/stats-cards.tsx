@@ -13,8 +13,8 @@ export function StatsCards({ stats }: { stats: Stat[] }) {
     <div className="admin-stats-grid">
       {stats.map(({ label, value, href, icon: Icon }) => (
         <Link key={label} href={href} className="admin-stat-card block">
-          <div className="admin-stat-icon">
-            <Icon className="h-5 w-5" />
+          <div className="admin-stat-icon-wrap">
+            <Icon className="admin-stat-icon" />
           </div>
           <div className="admin-stat-label">{label}</div>
           <div className="admin-stat-value">{value}</div>

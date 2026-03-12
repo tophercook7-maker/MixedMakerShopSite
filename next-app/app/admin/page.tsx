@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { StatsCards } from "@/components/admin/stats-cards";
 import { DashboardOverview } from "@/components/admin/dashboard-overview";
-import { Users, UserCheck, FolderKanban, CheckSquare, DollarSign } from "lucide-react";
+import { Users, UserCheck, FolderKanban, CheckSquare, DollarSign, LayoutGrid } from "lucide-react";
 
 const ACTIVE_PROJECT_STATUSES = ["planning", "design", "development", "testing"];
 
@@ -102,10 +102,26 @@ export default async function AdminDashboardPage() {
     },
   ];
 
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 18) return "Good afternoon";
+    return "Good evening";
+  })();
+
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6" style={{ color: "var(--admin-fg)" }}>Dashboard</h1>
+      <div className="admin-welcome">
+        <h1 className="admin-welcome-title">{greeting}</h1>
+        <p className="admin-welcome-desc">
+          Your command center for leads, clients, projects, tasks, and payments. Use the quick actions above or the sidebar to get started.
+        </p>
+      </div>
       <StatsCards stats={stats} />
+      <h2 className="admin-section-title mt-10 mb-4">
+        <LayoutGrid className="admin-section-title-icon h-4 w-4" />
+        Overview
+      </h2>
       <DashboardOverview
         recentLeads={recentLeads ?? []}
         todaysTasks={todaysTasks ?? []}

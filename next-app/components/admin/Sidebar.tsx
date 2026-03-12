@@ -19,7 +19,10 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="admin-brand">M³ Admin</div>
+      <div className="admin-brand-wrap">
+        <span className="admin-brand">MixedMaker Admin</span>
+        <span className="admin-brand-tagline">Command Center</span>
+      </div>
       <nav>
         {links.map(({ href, label, icon: Icon }) => (
           <Link
@@ -27,7 +30,7 @@ export default function Sidebar() {
             href={href}
             data-active={pathname === href || (href !== "/admin" && pathname.startsWith(href))}
           >
-            <Icon className="h-4 w-4 shrink-0" />
+            <Icon className="admin-nav-icon h-4 w-4 shrink-0" />
             {label}
           </Link>
         ))}
