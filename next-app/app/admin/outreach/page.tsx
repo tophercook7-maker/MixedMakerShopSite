@@ -17,7 +17,7 @@ export default async function AdminOutreachPage() {
   const supabase = await createClient();
   const user = await getCurrentUser();
   const profile = user ? await getProfile(user.id) : null;
-  const showEmailTestPanel = ["owner", "admin"].includes(String(profile?.role || ""));
+  const showEmailTestPanel = ["owner", "admin", ""].includes(String(profile?.role || ""));
 
   const [{ data: leads }, { data: events }] = await Promise.all([
     supabase

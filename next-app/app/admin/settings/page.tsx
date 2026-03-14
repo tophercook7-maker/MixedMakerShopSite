@@ -1,12 +1,16 @@
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, getProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { EmailTestPanel } from "@/components/admin/email-test-panel";
 
 export default async function AdminSettingsPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
   const supabase = await createClient();
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  const roleProfile = await getProfile(user.id);
+  const role = String(roleProfile?.role || "");
+  const showEmailTestPanel = ["owner", "admin", ""].includes(role);
 
   return (
     <div className="space-y-6">
@@ -29,6 +33,11 @@ export default async function AdminSettingsPage() {
         <h2 className="font-semibold" style={{ color: "var(--admin-fg)" }}>Integrations</h2>
         <p className="text-sm" style={{ color: "var(--admin-muted)" }}>Future: email, calendar, accounting (placeholder).</p>
       </div>
+      {showEmailTestPanel && (
+        <div className="max-w-xl">
+          <EmailTestPanel />
+        </div>
+      )}
     </div>
   );
 }

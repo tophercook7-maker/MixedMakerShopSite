@@ -5,6 +5,7 @@ import { Users, UserCheck, FolderKanban, CheckSquare, DollarSign, LayoutGrid, Sp
 import { getScoutSummary } from "@/lib/scout/server";
 import type { Lead } from "@/lib/db-types";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
+import Link from "next/link";
 
 const ACTIVE_PROJECT_STATUSES = ["planning", "design", "development", "testing"];
 
@@ -180,6 +181,8 @@ export default async function AdminDashboardPage() {
       ? `Last run ${new Date(scoutSummary.last_run_time).toLocaleString()} — ${scoutSummary.today_businesses_discovered} discovered, ${scoutSummary.today_high_opportunity_total} high-opportunity, ${scoutSummary.top_opportunities_count} top opportunities.`
       : "No Scout run summary available yet. Run Scout or wait for morning scheduled intake.";
   const scoutFollowUpsDue = scoutSummary?.followups_due ?? 0;
+  const scoutConfigured = scoutSummaryResult.configured;
+  const scoutError = scoutSummaryResult.error;
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -196,6 +199,37 @@ export default async function AdminDashboardPage() {
           Your private command center for CRM + Scout intelligence. Use the sidebar to move between CRM, Leads, Cases, Outreach, Scout, and Notes.
         </p>
       </div>
+      <section className="admin-card">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Scout-Brain Integration
+            </h2>
+            {!scoutConfigured ? (
+              <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
+                Scout is not configured yet. Set `SCOUT_BRAIN_API_BASE_URL` in `next-app/.env.local`.
+              </p>
+            ) : scoutError ? (
+              <p className="text-sm mt-1" style={{ color: "#fca5a5" }}>
+                Scout connection issue: {scoutError}
+              </p>
+            ) : (
+              <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
+                Last run: {scoutSummary?.last_run_time ? new Date(scoutSummary.last_run_time).toLocaleString() : "none"} ·
+                Top opportunities: {scoutSummary?.top_opportunities_count ?? 0}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/admin/scout" className="admin-btn-primary">
+              Run Scout
+            </Link>
+            <Link href="/admin/outreach" className="admin-btn-ghost">
+              Open Outreach
+            </Link>
+          </div>
+        </div>
+      </section>
       <StatsCards stats={stats} />
       <h2 className="admin-section-title mt-10 mb-4">
         <LayoutGrid className="admin-section-title-icon h-4 w-4" />
