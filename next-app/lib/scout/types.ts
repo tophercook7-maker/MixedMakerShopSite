@@ -47,6 +47,8 @@ export type ScoutJobStatusResponse = {
   id: string;
   status: "queued" | "running" | "finished" | "failed" | string;
   progress: number;
+  message?: string | null;
+  stage?: string | null;
   summary: string | null;
   error: string | null;
   created_at?: string | null;

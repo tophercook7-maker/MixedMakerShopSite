@@ -1,0 +1,440 @@
+"use client";
+
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
+import type { RunScoutResponse, ScoutJobStatusResponse } from "@/lib/scout/types";
+
+type JobUiStatus = "idle" | "queued" | "running" | "analyzing" | "finished" | "failed";
+
+type StoredScoutJobState = {
+  jobId: string | null;
+  jobStatus: JobUiStatus;
+  jobProgress: number;
+  jobMessage: string | null;
+  jobError: string | null;
+  stage: string | null;
+  updatedAt: number;
+};
+
+type StartScoutResult = {
+  ok: boolean;
+  error?: string;
+};
+
+type GlobalScoutJobContextValue = {
+  jobId: string | null;
+  jobStatus: JobUiStatus;
+  jobProgress: number;
+  jobMessage: string | null;
+  jobError: string | null;
+  stage: string | null;
+  statusMessage: string;
+  isStarting: boolean;
+  isBusy: boolean;
+  startScout: (integrationReady: boolean) => Promise<StartScoutResult>;
+  clearScoutState: () => void;
+};
+
+const STORAGE_KEY = "mixedmakershop.activeScoutJob.v1";
+
+const GlobalScoutJobContext = createContext<GlobalScoutJobContextValue | null>(null);
+
+function deriveUiStatus(job: ScoutJobStatusResponse): JobUiStatus {
+  if (job.status === "queued") return "queued";
+  if (job.status === "failed") return "failed";
+  if (job.status === "finished" || job.status === "completed") return "finished";
+  if (job.status === "running") {
+    if ((job.progress ?? 0) >= 60) return "analyzing";
+    return "running";
+  }
+  return "running";
+}
+
+function stageLabel(stage: string | null) {
+  const normalized = String(stage || "").trim();
+  if (!normalized) return "Working";
+  return normalized
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function friendlyStatusMessage(status: JobUiStatus, message: string | null, error: string | null) {
+  if (status === "queued") return message || "Scout job started";
+  if (status === "running") return message || "Scout running...";
+  if (status === "analyzing") return message || "Scout analyzing businesses...";
+  if (status === "finished") return message || "Scout complete";
+  if (status === "failed") return error || "Scout failed";
+  return "Ready";
+}
+
+export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollingJobIdRef = useRef<string | null>(null);
+  const lastProgressRef = useRef(0);
+  const lastProgressAtRef = useRef(0);
+
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobUiStatus>("idle");
+  const [jobProgress, setJobProgress] = useState<number>(0);
+  const [jobMessage, setJobMessage] = useState<string | null>(null);
+  const [jobError, setJobError] = useState<string | null>(null);
+  const [stage, setStage] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const isBusy = isStarting || jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing";
+
+  const persistScoutState = useCallback((state: StoredScoutJobState) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Ignore local storage write failures.
+    }
+  }, []);
+
+  const clearScoutState = useCallback(() => {
+    setJobId(null);
+    setJobStatus("idle");
+    setJobProgress(0);
+    setJobMessage(null);
+    setJobError(null);
+    setStage(null);
+    pollingJobIdRef.current = null;
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore local storage write failures.
+    }
+  }, []);
+
+  const writeAndSetState = useCallback(
+    (next: Partial<StoredScoutJobState>) => {
+      setJobId((prev) => next.jobId ?? prev);
+      setJobStatus((prev) => next.jobStatus ?? prev);
+      setJobProgress((prev) => (typeof next.jobProgress === "number" ? next.jobProgress : prev));
+      setJobMessage((prev) => next.jobMessage ?? prev ?? null);
+      setJobError((prev) => next.jobError ?? prev ?? null);
+      setStage((prev) => next.stage ?? prev ?? null);
+
+      const state: StoredScoutJobState = {
+        jobId: next.jobId ?? jobId,
+        jobStatus: next.jobStatus ?? jobStatus,
+        jobProgress: typeof next.jobProgress === "number" ? next.jobProgress : jobProgress,
+        jobMessage: next.jobMessage ?? jobMessage ?? null,
+        jobError: next.jobError ?? jobError ?? null,
+        stage: next.stage ?? stage ?? null,
+        updatedAt: Date.now(),
+      };
+      persistScoutState(state);
+    },
+    [jobError, jobId, jobMessage, jobProgress, jobStatus, persistScoutState, stage]
+  );
+
+  const stopPolling = useCallback(() => {
+    pollingJobIdRef.current = null;
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
+
+  const pollJob = useCallback(
+    async (id: string) => {
+      if (pollingJobIdRef.current === id) return;
+      pollingJobIdRef.current = id;
+      console.info("global scout polling active", id);
+
+      const tick = async () => {
+        try {
+          const res = await fetch(`/api/scout/jobs/${id}`, {
+            method: "GET",
+            cache: "no-store",
+          });
+          const body = (await res.json()) as ScoutJobStatusResponse & {
+            error?: string;
+            refreshTriggered?: boolean;
+          };
+
+          if (!res.ok) {
+            writeAndSetState({
+              jobId: id,
+              jobStatus: "failed",
+              jobError: body.error ?? "Scout polling failed.",
+              jobMessage: body.error ?? "Scout polling failed.",
+            });
+            stopPolling();
+            return;
+          }
+
+          const uiStatus = deriveUiStatus(body);
+          const nextProgress = Math.max(0, Math.min(100, Number(body.progress ?? 0)));
+          const now = Date.now();
+          if (nextProgress > lastProgressRef.current) {
+            lastProgressRef.current = nextProgress;
+            lastProgressAtRef.current = now;
+          } else if (!lastProgressAtRef.current) {
+            lastProgressAtRef.current = now;
+          }
+          const staleMs = now - lastProgressAtRef.current;
+          const backendMessage = body.message ?? body.summary ?? null;
+          const message =
+            (uiStatus === "queued" || uiStatus === "running" || uiStatus === "analyzing") && staleMs >= 15000
+              ? `${backendMessage || "Still running..."} Still running...`
+              : backendMessage;
+
+          writeAndSetState({
+            jobId: id,
+            jobStatus: uiStatus,
+            jobProgress: nextProgress,
+            jobMessage: message,
+            jobError: body.error ?? null,
+            stage: body.stage ?? null,
+          });
+
+          if (uiStatus === "finished") {
+            console.info("scout job finished, refreshing admin data", id);
+            router.refresh();
+            const leadsMatch = (body.summary ?? "").match(/(\d+)\s+leads?\s+discovered/i);
+            const refreshedCount = leadsMatch ? Number(leadsMatch[1]) : null;
+            setToastMessage(
+              refreshedCount !== null
+                ? `Scout complete — ${refreshedCount} leads refreshed`
+                : "Scout complete — leads refreshed"
+            );
+            stopPolling();
+            return;
+          }
+
+          if (uiStatus === "failed") {
+            stopPolling();
+            return;
+          }
+
+          pollTimerRef.current = setTimeout(tick, 2500);
+        } catch (error) {
+          writeAndSetState({
+            jobId: id,
+            jobStatus: "failed",
+            jobError: error instanceof Error ? error.message : "Scout polling failed.",
+            jobMessage: "Scout polling failed.",
+          });
+          stopPolling();
+        }
+      };
+
+      await tick();
+    },
+    [router, stopPolling, writeAndSetState]
+  );
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as StoredScoutJobState;
+      if (!saved?.jobId) return;
+      setJobId(saved.jobId);
+      setJobStatus(saved.jobStatus || "queued");
+      setJobProgress(Number(saved.jobProgress || 0));
+      setJobMessage(saved.jobMessage || null);
+      setJobError(saved.jobError || null);
+      setStage(saved.stage || null);
+      lastProgressRef.current = Number(saved.jobProgress || 0);
+      lastProgressAtRef.current = Date.now();
+      console.info("scout job restored after navigation", saved.jobId);
+      if (saved.jobStatus === "queued" || saved.jobStatus === "running" || saved.jobStatus === "analyzing") {
+        void pollJob(saved.jobId);
+      }
+    } catch {
+      // Ignore local storage parse failures.
+    }
+  }, [pollJob]);
+
+  useEffect(() => {
+    if (isBusy) {
+      console.info("route changed, scout continues", pathname);
+    }
+  }, [isBusy, pathname]);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = setTimeout(() => setToastMessage(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
+
+  const startScout = useCallback(
+    async (integrationReady: boolean): Promise<StartScoutResult> => {
+      if (!integrationReady) return { ok: false, error: "Scout integration is not configured." };
+      if (isBusy) return { ok: false, error: "Scout is already running." };
+
+      setIsStarting(true);
+      writeAndSetState({
+        jobError: null,
+        jobMessage: "Starting scout job...",
+      });
+
+      try {
+        const res = await fetch("/api/scout/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        const body = (await res.json()) as RunScoutResponse;
+
+        if (!res.ok || !body.job_id) {
+          const err = body.user_message || body.message || body.error || "Could not start Scout job.";
+          writeAndSetState({
+            jobStatus: "failed",
+            jobError: err,
+            jobMessage: err,
+          });
+          return { ok: false, error: err };
+        }
+
+        const initialProgress = Math.max(0, Math.min(100, Number(body.progress ?? 10)));
+        lastProgressRef.current = initialProgress;
+        lastProgressAtRef.current = Date.now();
+        writeAndSetState({
+          jobId: body.job_id,
+          jobStatus: "queued",
+          jobProgress: initialProgress,
+          jobMessage: body.message || "Scout job started",
+          stage: "queued",
+          jobError: null,
+        });
+        console.info("global scout job started", body.job_id);
+        void pollJob(body.job_id);
+        return { ok: true };
+      } catch (error) {
+        const err = error instanceof Error ? error.message : "Failed to start Scout.";
+        writeAndSetState({
+          jobStatus: "failed",
+          jobError: err,
+          jobMessage: err,
+        });
+        return { ok: false, error: err };
+      } finally {
+        setIsStarting(false);
+      }
+    },
+    [isBusy, pollJob, writeAndSetState]
+  );
+
+  const statusMessage = useMemo(
+    () => friendlyStatusMessage(jobStatus, jobMessage, jobError),
+    [jobError, jobMessage, jobStatus]
+  );
+
+  const contextValue = useMemo<GlobalScoutJobContextValue>(
+    () => ({
+      jobId,
+      jobStatus,
+      jobProgress,
+      jobMessage,
+      jobError,
+      stage,
+      statusMessage,
+      isStarting,
+      isBusy,
+      startScout,
+      clearScoutState,
+    }),
+    [
+      clearScoutState,
+      isBusy,
+      isStarting,
+      jobError,
+      jobId,
+      jobMessage,
+      jobProgress,
+      jobStatus,
+      stage,
+      startScout,
+      statusMessage,
+    ]
+  );
+
+  const showWidget = Boolean(jobId) && (jobStatus !== "idle" || isStarting);
+
+  return (
+    <GlobalScoutJobContext.Provider value={contextValue}>
+      {children}
+      {showWidget && (
+        <div
+          className="fixed bottom-4 right-4 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border p-3"
+          style={{
+            borderColor: "var(--admin-border)",
+            background: "rgba(15, 18, 24, 0.95)",
+            color: "var(--admin-fg)",
+            boxShadow: "0 12px 36px rgba(0, 0, 0, 0.35)",
+          }}
+        >
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            {(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing" || isStarting) && (
+              <RefreshCw className="h-4 w-4 animate-spin" style={{ color: "var(--admin-gold)" }} />
+            )}
+            <span>Scout {jobStatus === "finished" ? "complete" : jobStatus}</span>
+            <span style={{ color: "var(--admin-muted)" }}>- {jobProgress}%</span>
+          </div>
+          <p className="mt-1 text-sm" style={{ color: "var(--admin-muted)" }}>
+            {statusMessage}
+          </p>
+          <p className="text-xs mt-1" style={{ color: "var(--admin-muted-2)" }}>
+            Phase: {stageLabel(stage)}
+          </p>
+          {(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing") && (
+            <div className="mt-2">
+              <div className="w-full h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <div
+                  className="h-1.5 rounded-full"
+                  style={{
+                    width: `${Math.max(0, Math.min(100, jobProgress))}%`,
+                    background: "linear-gradient(90deg, rgba(240,165,26,1), rgba(198,90,30,0.95))",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {toastMessage && (
+        <div
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 rounded-lg border px-4 py-2 text-sm"
+          style={{
+            borderColor: "rgba(34, 197, 94, 0.45)",
+            background: "rgba(20, 83, 45, 0.95)",
+            color: "#dcfce7",
+            boxShadow: "0 10px 28px rgba(0,0,0,0.35)",
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
+    </GlobalScoutJobContext.Provider>
+  );
+}
+
+export function useGlobalScoutJob() {
+  const ctx = useContext(GlobalScoutJobContext);
+  if (!ctx) {
+    throw new Error("useGlobalScoutJob must be used within GlobalScoutJobProvider");
+  }
+  return ctx;
+}
