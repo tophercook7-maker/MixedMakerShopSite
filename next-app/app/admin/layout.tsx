@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
 import { HeaderActions } from "@/components/admin/HeaderActions";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -20,13 +20,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                 Add Lead
               </Link>
-              <Link href="/admin/tasks">
-                <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-                Add Task
+              <Link href="/admin/scout">
+                <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                Scout Console
               </Link>
-              <Link href="/admin/payments">
-                <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-                Add Payment
+              <Link href="/admin/outreach">
+                <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                Outreach Queue
               </Link>
             </div>
             <HeaderActions />

@@ -2,8 +2,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LeadsTable } from "@/components/admin/leads-table";
 import { PipelineBoard } from "@/components/admin/pipeline-board";
+import { refreshDueFollowUps } from "@/lib/leads-workflow";
 
-const STATUSES = ["new", "contacted", "interested", "proposal_sent", "won", "lost"];
+const STATUSES = [
+  "new",
+  "contacted",
+  "follow_up_due",
+  "replied",
+  "closed_won",
+  "closed_lost",
+  "do_not_contact",
+];
 
 export default async function AdminLeadsPage({
   searchParams,
@@ -12,6 +21,7 @@ export default async function AdminLeadsPage({
 }) {
   const { view } = await searchParams;
   const showPipeline = view === "pipeline";
+  await refreshDueFollowUps();
 
   const supabase = await createClient();
   const { data: leads } = await supabase

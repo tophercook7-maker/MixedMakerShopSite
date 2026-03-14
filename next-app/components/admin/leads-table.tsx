@@ -66,9 +66,10 @@ export function LeadsTable({ leads }: Props) {
   }
 
   function statusClass(s: string) {
-    if (["won"].includes(s)) return "admin-badge admin-badge-won";
-    if (["lost"].includes(s)) return "admin-badge admin-badge-lost";
+    if (["closed_won"].includes(s)) return "admin-badge admin-badge-won";
+    if (["closed_lost", "do_not_contact"].includes(s)) return "admin-badge admin-badge-lost";
     if (["new", "pending"].includes(s)) return "admin-badge admin-badge-new";
+    if (["follow_up_due"].includes(s)) return "admin-badge admin-badge-overdue";
     return "admin-badge admin-badge-progress";
   }
 
@@ -90,10 +91,11 @@ export function LeadsTable({ leads }: Props) {
           <option value="">All statuses</option>
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
-          <option value="interested">Interested</option>
-          <option value="proposal_sent">Proposal sent</option>
-          <option value="won">Won</option>
-          <option value="lost">Lost</option>
+          <option value="follow_up_due">Follow up due</option>
+          <option value="replied">Replied</option>
+          <option value="closed_won">Closed won</option>
+          <option value="closed_lost">Closed lost</option>
+          <option value="do_not_contact">Do not contact</option>
         </select>
         <button type="button" onClick={() => setAdding(true)} className="admin-btn-primary">
           Add lead

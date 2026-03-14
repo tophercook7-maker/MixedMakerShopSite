@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
+import { refreshDueFollowUps } from "@/lib/leads-workflow";
 
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  await refreshDueFollowUps();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leads")

@@ -3,7 +3,15 @@
 import { useRouter } from "next/navigation";
 import type { Lead } from "@/lib/db-types";
 
-const STATUSES = ["new", "contacted", "interested", "proposal_sent", "won", "lost"] as const;
+const STATUSES = [
+  "new",
+  "contacted",
+  "follow_up_due",
+  "replied",
+  "closed_won",
+  "closed_lost",
+  "do_not_contact",
+] as const;
 
 type Col = { status: string; leads: Lead[] };
 

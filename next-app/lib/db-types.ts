@@ -6,7 +6,14 @@ export type Profile = {
   created_at: string;
 };
 
-export type LeadStatus = "new" | "contacted" | "interested" | "proposal_sent" | "won" | "lost";
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "follow_up_due"
+  | "replied"
+  | "closed_won"
+  | "closed_lost"
+  | "do_not_contact";
 export type Lead = {
   id: string;
   business_name: string;
@@ -14,11 +21,21 @@ export type Lead = {
   email: string | null;
   phone: string | null;
   website: string | null;
+  address?: string | null;
+  place_id?: string | null;
   industry: string | null;
   lead_source: string | null;
+  workspace_id?: string | null;
+  linked_opportunity_id?: string | null;
+  best_contact_method?: string | null;
+  opportunity_score?: number | null;
+  auto_intake?: boolean;
   status: LeadStatus;
   notes: string | null;
   follow_up_date: string | null;
+  last_contacted_at?: string | null;
+  next_follow_up_at?: string | null;
+  follow_up_count?: number;
   created_at: string;
   owner_id: string;
 };

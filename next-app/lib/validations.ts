@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-const leadStatuses = ["new", "contacted", "interested", "proposal_sent", "won", "lost"] as const;
+const leadStatuses = [
+  "new",
+  "contacted",
+  "follow_up_due",
+  "replied",
+  "closed_won",
+  "closed_lost",
+  "do_not_contact",
+] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;

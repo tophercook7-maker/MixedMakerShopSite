@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, UserCheck, FolderKanban, CheckSquare, DollarSign, Settings } from "lucide-react";
+import { Building, Crosshair, FolderKanban, LayoutDashboard, Send, Settings, StickyNote, Users } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/crm", label: "CRM", icon: Building },
   { href: "/admin/leads", label: "Leads", icon: Users },
-  { href: "/admin/clients", label: "Clients", icon: UserCheck },
-  { href: "/admin/projects", label: "Projects", icon: FolderKanban },
-  { href: "/admin/tasks", label: "Tasks", icon: CheckSquare },
-  { href: "/admin/payments", label: "Payments", icon: DollarSign },
+  { href: "/admin/cases", label: "Cases", icon: FolderKanban },
+  { href: "/admin/outreach", label: "Outreach", icon: Send },
+  { href: "/admin/scout", label: "Scout", icon: Crosshair },
+  { href: "/admin/notes", label: "Notes", icon: StickyNote },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

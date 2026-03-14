@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   if (clientErr) return NextResponse.json({ error: clientErr.message }, { status: 500 });
 
   if (markWon) {
-    await supabase.from("leads").update({ status: "won" }).eq("id", leadId);
+    await supabase.from("leads").update({ status: "closed_won" }).eq("id", leadId);
   }
 
   return NextResponse.json({ client, leadId });
