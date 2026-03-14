@@ -9,6 +9,12 @@ function scoutBaseUrl() {
   return process.env.SCOUT_BRAIN_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 }
 
+function isScoutJobStatusResponse(
+  body: ScoutJobStatusResponse | { error: string }
+): body is ScoutJobStatusResponse {
+  return "status" in body && "progress" in body;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -52,8 +58,10 @@ export async function GET(
     clearTimeout(timer);
 
     const contentType = response.headers.get("content-type") || "";
-    const body = contentType.includes("application/json")
-      ? ((await response.json()) as ScoutJobStatusResponse)
+    const body: ScoutJobStatusResponse | { error: string } = contentType.includes(
+      "application/json"
+    )
+      ? ((await response.json()) as ScoutJobStatusResponse | { error: string })
       : ({ error: await response.text() } as { error: string });
 
     if (!response.ok) {
@@ -61,12 +69,15 @@ export async function GET(
       return NextResponse.json(body, { status: response.status });
     }
 
-    console.info(
-      "[Scout Proxy] polling update",
-      id,
-      body.status,
-      body.progress
-    );
+    if (!isScoutJobStatusResponse(body)) {
+      console.warn("[Scout Proxy] polling update error", id, body.error);
+      return NextResponse.json(
+        { error: body.error || "Invalid polling response from Scout backend." },
+        { status: 502 }
+      );
+    }
+
+    console.info("[Scout Proxy] polling update", id, body.status, body.progress);
 
     let refreshTriggered = false;
     if (body.status === "finished" && !body.error) {

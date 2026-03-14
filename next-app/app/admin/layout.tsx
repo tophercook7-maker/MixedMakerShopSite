@@ -6,6 +6,9 @@ import { ArrowRight, Plus } from "lucide-react";
 import "./admin.css";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const scoutBaseUrl = process.env.SCOUT_BRAIN_API_BASE_URL?.trim();
+  const isScoutConfigured = Boolean(scoutBaseUrl);
+
   return (
     <div className="admin-root min-h-screen md:grid md:grid-cols-[280px_1fr]">
       <aside className="admin-sidebar shrink-0">
@@ -32,6 +35,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <HeaderActions />
           </div>
         </header>
+        {!isScoutConfigured && (
+          <div
+            className="mx-7 mt-4 rounded-xl border px-4 py-3 text-sm"
+            style={{
+              borderColor: "rgba(252, 165, 165, 0.5)",
+              background: "rgba(127, 29, 29, 0.18)",
+              color: "#fecaca",
+            }}
+          >
+            Scout integration is not configured. Set{" "}
+            <code>SCOUT_BRAIN_API_BASE_URL</code> in <code>next-app/.env.local</code>.
+          </div>
+        )}
         <main className="admin-main flex-1">{children}</main>
       </div>
     </div>
