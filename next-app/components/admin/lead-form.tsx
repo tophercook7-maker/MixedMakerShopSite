@@ -376,8 +376,9 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
         nextFollowUpAt,
         lastContactedAt,
       });
-      if (updates.status) {
-        setForm((prev) => ({ ...prev, status: updates.status }));
+      if (updates.status !== undefined) {
+        const resolvedStatus = updates.status;
+        setForm((prev) => ({ ...prev, status: resolvedStatus }));
       } else if (form.status === "new") {
         // Backend auto-marks new leads as contacted after a successful send.
         setForm((prev) => ({ ...prev, status: "contacted" }));
