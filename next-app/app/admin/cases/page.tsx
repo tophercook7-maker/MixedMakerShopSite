@@ -23,7 +23,7 @@ export default function AdminCasesPage() {
         <ul className="space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
           <li>- Keep Scout-Brain as source of truth for case intelligence.</li>
           <li>- Render cases natively in this admin without changing the Scout backend contract.</li>
-          <li>- Link lead -> case -> outreach in a single private operator flow.</li>
+          <li>- Link lead {"->"} case {"->"} outreach in a single private operator flow.</li>
         </ul>
         <div className="flex flex-wrap gap-2 mt-4">
           <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
