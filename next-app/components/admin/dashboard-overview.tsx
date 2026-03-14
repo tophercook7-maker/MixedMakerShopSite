@@ -20,9 +20,35 @@ type Props = {
   activeProjects: Project[];
   recentPayments: Payment[];
   scoutAutoLeads: Lead[];
-  topScoutContactsToday: Lead[];
+  topFiveToContactToday: {
+    id: string;
+    business_name: string;
+    score: number;
+    issue_summary: string;
+    best_contact_method: string;
+  }[];
   lastScoutRunSummary: string;
   scoutFollowUpsDue: number;
+  newReplies: {
+    lead_id: string | null;
+    business_name: string;
+    status: string | null;
+    last_message_at: string | null;
+    subject: string | null;
+    contact_email: string | null;
+  }[];
+  workflowQueues: {
+    newLeads: number;
+    followUpsDue: number;
+    replied: number;
+    closed: number;
+  };
+  scoutSummaryMetrics: {
+    leadsFoundToday: number;
+    topOpportunities: number;
+    websitesAudited: number;
+    followUpsDue: number;
+  };
 };
 
 export function DashboardOverview({
@@ -31,9 +57,12 @@ export function DashboardOverview({
   activeProjects,
   recentPayments,
   scoutAutoLeads,
-  topScoutContactsToday,
+  topFiveToContactToday,
   lastScoutRunSummary,
   scoutFollowUpsDue,
+  newReplies,
+  workflowQueues,
+  scoutSummaryMetrics,
 }: Props) {
   const Empty = ({ title, desc }: { title: string; desc: string }) => (
     <div className="admin-empty">
@@ -45,24 +74,106 @@ export function DashboardOverview({
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="admin-card">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>New Leads</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{workflowQueues.newLeads}</p>
+        </div>
+        <div className="admin-card">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Follow-Ups Due</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{workflowQueues.followUpsDue}</p>
+        </div>
+        <div className="admin-card">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Replied</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{workflowQueues.replied}</p>
+        </div>
+        <div className="admin-card">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Closed</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{workflowQueues.closed}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Link href="/admin/leads?source=scout-brain&date=today" className="admin-card block">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Leads Found Today</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{scoutSummaryMetrics.leadsFoundToday}</p>
+        </Link>
+        <Link href="/admin/cases?filter=top" className="admin-card block">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Top Opportunities</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{scoutSummaryMetrics.topOpportunities}</p>
+        </Link>
+        <Link href="/admin/cases?audited=true" className="admin-card block">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Websites Audited</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{scoutSummaryMetrics.websitesAudited}</p>
+        </Link>
+        <Link href="/admin/outreach?status=follow_up_due" className="admin-card block">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Follow-Ups Due</h3>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{scoutSummaryMetrics.followUpsDue}</p>
+        </Link>
+      </div>
+
       <ScoutLeadsIntake leads={scoutAutoLeads} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="admin-card">
-          <h2 className="admin-section-title">Top 5 Contacts Today</h2>
-          {topScoutContactsToday.length === 0 ? (
-            <Empty title="No intake contacts today" desc="Top contacts will appear after the morning intake run." />
+          <h2 className="admin-section-title">New Replies</h2>
+          {newReplies.length === 0 ? (
+            <Empty title="No new replies" desc="Replies will appear here after leads respond." />
           ) : (
             <ul className="space-y-2">
-              {topScoutContactsToday.map((lead) => (
-                <li key={lead.id} className="flex items-center justify-between text-sm py-1">
-                  <span className="truncate text-[var(--admin-fg)]">{lead.business_name}</span>
+              {newReplies.map((reply, idx) => (
+                <li key={`${reply.lead_id || "lead"}-${idx}`} className="flex items-center justify-between text-sm py-1">
+                  <span className="truncate text-[var(--admin-fg)]">{reply.business_name}</span>
                   <span className="text-[var(--admin-muted)]">
-                    score {lead.opportunity_score ?? "—"}
+                    {reply.last_message_at ? new Date(reply.last_message_at).toLocaleString() : "just now"}
                   </span>
                 </li>
               ))}
             </ul>
+          )}
+          <Link href="/admin/outreach" className="mt-4 inline-block text-sm font-semibold text-[var(--admin-gold)] hover:underline">
+            Open Outreach →
+          </Link>
+        </div>
+        <div className="admin-card">
+          <h2 className="admin-section-title">Top 5 to Contact Today</h2>
+          {topFiveToContactToday.length === 0 ? (
+            <Empty title="No contact-ready leads" desc="Run Scout or wait for morning intake to surface top leads." />
+          ) : (
+            <div className="admin-table-wrap overflow-x-auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Business</th>
+                    <th>Score</th>
+                    <th>Website Issue</th>
+                    <th>Best Contact</th>
+                    <th>Quick Open</th>
+                    <th>Quick Send Outreach</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topFiveToContactToday.map((lead) => (
+                    <tr key={lead.id}>
+                      <td>{lead.business_name}</td>
+                      <td>{lead.score}</td>
+                      <td>{lead.issue_summary}</td>
+                      <td>{lead.best_contact_method}</td>
+                      <td>
+                        <Link href={`/admin/leads?lead=${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                          Open
+                        </Link>
+                      </td>
+                      <td>
+                        <Link href={`/admin/leads?lead=${encodeURIComponent(lead.id)}&focus=outreach`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                          Send
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
         <div className="admin-card">

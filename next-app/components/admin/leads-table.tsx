@@ -1,18 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Lead } from "@/lib/db-types";
 import { LeadForm } from "./lead-form";
 
-type Props = { leads: Lead[] };
+type Props = {
+  leads: Lead[];
+  initialLeadId?: string;
+  initialFocus?: string;
+  emptyStateTitle?: string;
+  emptyStateDescription?: string;
+};
 
-export function LeadsTable({ leads }: Props) {
+export function LeadsTable({
+  leads,
+  initialLeadId,
+  initialFocus,
+  emptyStateTitle,
+  emptyStateDescription,
+}: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [editing, setEditing] = useState<Lead | null>(null);
   const [adding, setAdding] = useState(false);
+  const [autoOpened, setAutoOpened] = useState(false);
+
+  useEffect(() => {
+    if (!initialLeadId || autoOpened || editing) return;
+    const target = leads.find((lead) => lead.id === initialLeadId);
+    if (!target) return;
+    setEditing(target);
+    setAutoOpened(true);
+  }, [initialLeadId, autoOpened, editing, leads]);
 
   const filtered = leads.filter((l) => {
     const matchSearch =
@@ -136,8 +157,8 @@ export function LeadsTable({ leads }: Props) {
       {filtered.length === 0 && (
         <div className="admin-empty admin-card">
           <div className="admin-empty-icon">—</div>
-          <div className="admin-empty-title">No leads match your filters</div>
-          <div className="admin-empty-desc">Try a different search or status</div>
+          <div className="admin-empty-title">{emptyStateTitle || "No leads match your filters"}</div>
+          <div className="admin-empty-desc">{emptyStateDescription || "Try a different search or status"}</div>
         </div>
       )}
       {editing && (
@@ -147,6 +168,7 @@ export function LeadsTable({ leads }: Props) {
           onSave={(updates) => updateLead(editing.id, updates)}
           onDelete={() => deleteLead(editing.id)}
           onConvertToClient={convertToClient}
+          initialFocus={initialFocus}
         />
       )}
       {adding && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Lead } from "@/lib/db-types";
 
 const STATUSES = [
@@ -13,19 +13,59 @@ const STATUSES = [
   "do_not_contact",
 ] as const;
 const MESSAGE_TYPES = ["short_email", "long_email", "follow_up"] as const;
+const COPY_TYPES = [
+  "short_email",
+  "long_email",
+  "follow_up_1",
+  "follow_up_2",
+  "contact_form_version",
+  "social_dm_version",
+] as const;
 type DossierTemplate = {
   short_email?: string | null;
   longer_email?: string | null;
   contact_form_version?: string | null;
   social_dm_version?: string | null;
   follow_up_note?: string | null;
+  follow_up_1?: string | null;
+  follow_up_2?: string | null;
+  why_this_lead?: string | null;
+  main_issue_observed?: string | null;
+  best_opening_angle?: string | null;
+  best_offer_to_make?: string | null;
+  demo_url?: string | null;
   metadata?: {
     business_name?: string | null;
     owner_name?: string | null;
+    category?: string | null;
     lane?: string | null;
     score?: number | null;
+    website_score?: number | null;
+    audit_issues?: string[] | null;
+    review_rating?: number | null;
+    review_count?: number | null;
     strongest_pitch_angle?: string | null;
+    best_service_to_offer?: string | null;
+    demo_url?: string | null;
   };
+};
+
+type EmailThread = {
+  id: string;
+  status?: string | null;
+  subject?: string | null;
+  last_message_at?: string | null;
+};
+
+type EmailMessage = {
+  id: string;
+  direction?: "outbound" | "inbound" | string | null;
+  subject?: string | null;
+  body?: string | null;
+  created_at?: string | null;
+  sent_at?: string | null;
+  received_at?: string | null;
+  delivery_status?: string | null;
 };
 
 type Props = {
@@ -34,9 +74,10 @@ type Props = {
   onSave: (u: Partial<Lead> | Record<string, unknown>) => void;
   onDelete?: () => void;
   onConvertToClient?: (leadId: string) => void;
+  initialFocus?: string;
 };
 
-export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }: Props) {
+export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, initialFocus }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [mailError, setMailError] = useState<string | null>(null);
   const [mailSuccess, setMailSuccess] = useState<string | null>(null);
@@ -44,6 +85,21 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
   const [previewType, setPreviewType] = useState<(typeof MESSAGE_TYPES)[number]>("short_email");
   const [templateLoading, setTemplateLoading] = useState(false);
   const [dossierTemplate, setDossierTemplate] = useState<DossierTemplate | null>(null);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadData, setThreadData] = useState<{ threads: EmailThread[]; messages: EmailMessage[] } | null>(null);
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [outreachWorkflow, setOutreachWorkflow] = useState<{
+    lastEmailType: (typeof MESSAGE_TYPES)[number] | null;
+    sendStatus: "sent" | "failed" | null;
+    nextFollowUpAt: string | null;
+    lastContactedAt: string | null;
+  }>({
+    lastEmailType: null,
+    sendStatus: null,
+    nextFollowUpAt: lead?.next_follow_up_at ?? null,
+    lastContactedAt: lead?.last_contacted_at ?? null,
+  });
   const [form, setForm] = useState({
     business_name: lead?.business_name ?? "",
     contact_name: lead?.contact_name ?? "",
@@ -56,6 +112,7 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
     notes: lead?.notes ?? "",
     follow_up_date: lead?.follow_up_date ?? "",
   });
+  const outreachSectionRef = useRef<HTMLDivElement | null>(null);
 
   const handleSave = () => {
     setError(null);
@@ -134,7 +191,49 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
     };
   }, [lead?.id, lead?.linked_opportunity_id]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function loadThread() {
+      if (!lead?.id) {
+        setThreadData(null);
+        return;
+      }
+      setThreadLoading(true);
+      try {
+        const res = await fetch(`/api/scout/outreach/thread/${lead.id}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const body = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (!res.ok) {
+          setThreadData(null);
+          return;
+        }
+        setThreadData({
+          threads: Array.isArray(body?.threads) ? (body.threads as EmailThread[]) : [],
+          messages: Array.isArray(body?.messages) ? (body.messages as EmailMessage[]) : [],
+        });
+      } catch {
+        if (!cancelled) setThreadData(null);
+      } finally {
+        if (!cancelled) setThreadLoading(false);
+      }
+    }
+    void loadThread();
+    return () => {
+      cancelled = true;
+    };
+  }, [lead?.id]);
+
+  useEffect(() => {
+    if (initialFocus !== "outreach") return;
+    outreachSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [initialFocus, lead?.id]);
+
   const fallbackPreview = buildTemplate(previewType);
+  const followUp1 = (dossierTemplate?.follow_up_1 || dossierTemplate?.follow_up_note || "").trim();
+  const followUp2 = (dossierTemplate?.follow_up_2 || "").trim();
   const preview = useMemo(() => {
     const candidate =
       previewType === "short_email"
@@ -148,6 +247,66 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
       source: (candidate || "").trim() ? "dossier" : "fallback",
     };
   }, [previewType, dossierTemplate, fallbackPreview.subject, fallbackPreview.body]);
+
+  const copyValue = useMemo(() => {
+    return {
+      short_email: (dossierTemplate?.short_email || "").trim() || buildTemplate("short_email").body,
+      long_email: (dossierTemplate?.longer_email || "").trim() || buildTemplate("long_email").body,
+      follow_up_1: followUp1 || buildTemplate("follow_up").body,
+      follow_up_2: followUp2 || followUp1 || buildTemplate("follow_up").body,
+      contact_form_version:
+        (dossierTemplate?.contact_form_version || "").trim() || buildTemplate("short_email").body,
+      social_dm_version:
+        (dossierTemplate?.social_dm_version || "").trim() || buildTemplate("short_email").body,
+    };
+  }, [dossierTemplate, followUp1, followUp2]);
+
+  const copyLabel: Record<(typeof COPY_TYPES)[number], string> = {
+    short_email: "Copy Short",
+    long_email: "Copy Long",
+    follow_up_1: "Copy Follow-Up 1",
+    follow_up_2: "Copy Follow-Up 2",
+    contact_form_version: "Copy Contact Form",
+    social_dm_version: "Copy DM",
+  };
+
+  const copyPack = async (type: (typeof COPY_TYPES)[number]) => {
+    const text = copyValue[type];
+    if (!text.trim()) {
+      setCopyMessage("Nothing to copy for this field yet.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyMessage(`${copyLabel[type]} copied.`);
+    } catch {
+      setCopyMessage("Copy failed. Please copy manually.");
+    }
+  };
+
+  const regenerateOutreach = async () => {
+    if (!lead?.id) return;
+    setRegenerating(true);
+    setCopyMessage(null);
+    try {
+      const res = await fetch("/api/scout/outreach/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lead_id: lead.id, linked_opportunity_id: lead.linked_opportunity_id }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMailError(body?.detail || body?.error || "Could not regenerate outreach.");
+        return;
+      }
+      setDossierTemplate(body as DossierTemplate);
+      setMailSuccess("Personalized outreach regenerated for this business.");
+    } catch (e) {
+      setMailError(e instanceof Error ? e.message : "Could not regenerate outreach.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   const sendOutreach = async (messageType: (typeof MESSAGE_TYPES)[number]) => {
     if (!lead?.id) {
@@ -196,11 +355,59 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
+        setOutreachWorkflow((prev) => ({
+          ...prev,
+          lastEmailType: messageType,
+          sendStatus: "failed",
+        }));
         setMailError(body?.detail || body?.error || "Outreach email failed.");
         return;
       }
-      setMailSuccess("Outreach email sent.");
+      const updates = (body?.lead_updates ?? {}) as {
+        status?: (typeof STATUSES)[number];
+        next_follow_up_at?: string;
+        last_contacted_at?: string;
+      };
+      const nextFollowUpAt = updates.next_follow_up_at || null;
+      const lastContactedAt = updates.last_contacted_at || new Date().toISOString();
+      setOutreachWorkflow({
+        lastEmailType: messageType,
+        sendStatus: "sent",
+        nextFollowUpAt,
+        lastContactedAt,
+      });
+      if (updates.status) {
+        setForm((prev) => ({ ...prev, status: updates.status }));
+      } else if (form.status === "new") {
+        // Backend auto-marks new leads as contacted after a successful send.
+        setForm((prev) => ({ ...prev, status: "contacted" }));
+      }
+      if (nextFollowUpAt) {
+        setForm((prev) => ({ ...prev, follow_up_date: nextFollowUpAt.slice(0, 10) }));
+      }
+      const nextFollowUpLabel = nextFollowUpAt
+        ? new Date(nextFollowUpAt).toLocaleDateString()
+        : "not scheduled";
+      setMailSuccess(`Outreach email sent successfully. Next follow-up: ${nextFollowUpLabel}.`);
+      if (lead?.id) {
+        const threadRes = await fetch(`/api/scout/outreach/thread/${lead.id}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const threadBody = await threadRes.json().catch(() => ({}));
+        if (threadRes.ok) {
+          setThreadData({
+            threads: Array.isArray(threadBody?.threads) ? (threadBody.threads as EmailThread[]) : [],
+            messages: Array.isArray(threadBody?.messages) ? (threadBody.messages as EmailMessage[]) : [],
+          });
+        }
+      }
     } catch (e) {
+      setOutreachWorkflow((prev) => ({
+        ...prev,
+        lastEmailType: messageType,
+        sendStatus: "failed",
+      }));
       setMailError(e instanceof Error ? e.message : "Outreach email failed.");
     } finally {
       setSendingType(null);
@@ -293,7 +500,7 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
             />
           </div>
           {lead && (
-            <div className="border rounded-xl p-3" style={{ borderColor: "var(--admin-border)" }}>
+            <div ref={outreachSectionRef} className="border rounded-xl p-3" style={{ borderColor: "var(--admin-border)" }}>
               <label className="block text-xs font-medium mb-2" style={{ color: "var(--admin-muted)" }}>
                 Outreach preview
               </label>
@@ -326,14 +533,47 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
                     {[
                       dossierTemplate.metadata.business_name,
                       dossierTemplate.metadata.owner_name ? `Owner: ${dossierTemplate.metadata.owner_name}` : null,
+                      dossierTemplate.metadata.category ? `Category: ${dossierTemplate.metadata.category}` : null,
                       dossierTemplate.metadata.lane ? `Lane: ${dossierTemplate.metadata.lane}` : null,
                       dossierTemplate.metadata.score != null ? `Score: ${dossierTemplate.metadata.score}` : null,
+                      dossierTemplate.metadata.review_rating != null
+                        ? `Reviews: ${dossierTemplate.metadata.review_rating} (${dossierTemplate.metadata.review_count ?? 0})`
+                        : null,
                     ]
                       .filter(Boolean)
                       .join(" · ")}
                   </div>
                 )}
+                <div className="text-xs mt-2 space-y-1" style={{ color: "var(--admin-muted-2)" }}>
+                  <div><strong>Why this site is worth pitching:</strong> {dossierTemplate?.why_this_lead || "No website/quality signals identified."}</div>
+                  <div><strong>Main issue observed:</strong> {dossierTemplate?.main_issue_observed || "Website opportunity identified."}</div>
+                  <div><strong>Best opening angle:</strong> {dossierTemplate?.best_opening_angle || dossierTemplate?.metadata?.strongest_pitch_angle || "Site improvement opportunity."}</div>
+                  <div><strong>Best offer to make:</strong> {dossierTemplate?.best_offer_to_make || dossierTemplate?.metadata?.best_service_to_offer || "Targeted web improvement plan."}</div>
+                </div>
               </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {COPY_TYPES.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => void copyPack(type)}
+                    className="admin-btn-ghost"
+                  >
+                    {copyLabel[type]}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  disabled={regenerating}
+                  onClick={() => void regenerateOutreach()}
+                  className="admin-btn-primary"
+                >
+                  {regenerating ? "Regenerating..." : "Regenerate Outreach"}
+                </button>
+              </div>
+              {copyMessage && <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>{copyMessage}</p>}
               <div className="flex flex-wrap gap-2 mt-3">
                 <button
                   type="button"
@@ -362,6 +602,78 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient }:
               </div>
               {mailError && <p className="text-xs mt-2" style={{ color: "var(--admin-orange)" }}>{mailError}</p>}
               {mailSuccess && <p className="text-xs mt-2" style={{ color: "#4ade80" }}>{mailSuccess}</p>}
+              {(outreachWorkflow.lastEmailType || outreachWorkflow.nextFollowUpAt || outreachWorkflow.lastContactedAt) && (
+                <div className="mt-2 rounded-lg border p-2 text-xs space-y-1" style={{ borderColor: "var(--admin-border)" }}>
+                  <div style={{ color: "var(--admin-fg)" }}>
+                    Last email type sent:{" "}
+                    <strong>
+                      {(outreachWorkflow.lastEmailType || "—").replace("_", " ")}
+                    </strong>
+                  </div>
+                  <div style={{ color: "var(--admin-fg)" }}>
+                    Send status:{" "}
+                    <strong>{outreachWorkflow.sendStatus === "failed" ? "failed to send" : "sent successfully"}</strong>
+                  </div>
+                  <div style={{ color: "var(--admin-fg)" }}>
+                    Next follow-up date:{" "}
+                    <strong>
+                      {outreachWorkflow.nextFollowUpAt
+                        ? new Date(outreachWorkflow.nextFollowUpAt).toLocaleDateString()
+                        : "—"}
+                    </strong>
+                  </div>
+                  <div style={{ color: "var(--admin-fg)" }}>
+                    Last contacted:{" "}
+                    <strong>
+                      {outreachWorkflow.lastContactedAt
+                        ? new Date(outreachWorkflow.lastContactedAt).toLocaleString()
+                        : "—"}
+                    </strong>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {lead && (
+            <div className="border rounded-xl p-3" style={{ borderColor: "var(--admin-border)" }}>
+              <label className="block text-xs font-medium mb-2" style={{ color: "var(--admin-muted)" }}>
+                Email thread timeline
+              </label>
+              {threadLoading ? (
+                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                  Loading conversation...
+                </p>
+              ) : !(threadData?.messages?.length || 0) ? (
+                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                  No tracked thread yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-xs" style={{ color: "var(--admin-muted-2)" }}>
+                    Latest reply status: {(threadData?.threads?.[0]?.status || "open").replace("_", " ")}
+                  </div>
+                  <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                  {(threadData?.messages || []).map((msg) => (
+                    <div key={msg.id} className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--admin-border)" }}>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="font-semibold" style={{ color: "var(--admin-fg)" }}>
+                          {msg.direction === "inbound" ? "Inbound reply" : "Outbound"}
+                        </span>
+                        <span style={{ color: "var(--admin-muted-2)" }}>
+                          {msg.received_at || msg.sent_at || msg.created_at
+                            ? new Date(msg.received_at || msg.sent_at || msg.created_at || "").toLocaleString()
+                            : "—"}
+                        </span>
+                      </div>
+                      <div style={{ color: "var(--admin-muted)" }}>{msg.subject || "No subject"}</div>
+                      <div className="mt-1 whitespace-pre-wrap" style={{ color: "var(--admin-fg)" }}>
+                        {msg.body || ""}
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <div>

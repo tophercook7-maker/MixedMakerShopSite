@@ -23,7 +23,9 @@ export default async function AdminDashboardPage() {
     { count: newLeadsCount },
     { count: followUpsDueTodayCount },
     { count: recentlyContactedCount },
+    { count: repliedCount },
     { count: closedDealsCount },
+    { count: closedWorkflowCount },
     { count: clientsCount },
     { count: projectsCount },
     { count: tasksDueCount },
@@ -34,7 +36,8 @@ export default async function AdminDashboardPage() {
     { data: recentPayments },
     { count: autoAddedLeadsCount },
     { data: scoutAutoLeads },
-    { data: topScoutContactsToday },
+    { data: scoutContactCandidates },
+    { data: newReplyThreads },
     scoutSummaryResult,
   ] = await Promise.all([
     supabase
@@ -52,7 +55,15 @@ export default async function AdminDashboardPage() {
     supabase
       .from("leads")
       .select("*", { count: "exact", head: true })
+      .eq("status", "replied"),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
       .eq("status", "closed_won"),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .in("status", ["closed_won", "closed_lost", "do_not_contact"]),
     supabase.from("clients").select("*", { count: "exact", head: true }),
     supabase
       .from("projects")
@@ -106,8 +117,15 @@ export default async function AdminDashboardPage() {
       .from("leads")
       .select("*")
       .eq("lead_source", "scout-brain")
-      .gte("created_at", dayStart)
-      .order("created_at", { ascending: false })
+      .eq("status", "new")
+      .is("last_contacted_at", null)
+      .order("opportunity_score", { ascending: false, nullsFirst: false })
+      .limit(150),
+    supabase
+      .from("email_threads")
+      .select("lead_id,status,last_message_at,contact_email,subject")
+      .eq("status", "active")
+      .order("last_message_at", { ascending: false })
       .limit(5),
     getScoutSummary(),
   ]);
@@ -119,13 +137,13 @@ export default async function AdminDashboardPage() {
     {
       label: "New leads",
       value: newLeadsCount ?? 0,
-      href: "/admin/leads",
+      href: "/admin/leads?status=new",
       icon: Users,
     },
     {
       label: "Follow-Ups Due Today",
       value: followUpsDueTodayCount ?? 0,
-      href: "/admin/leads",
+      href: "/admin/outreach?status=follow_up_due",
       icon: CheckSquare,
     },
     {
@@ -137,7 +155,7 @@ export default async function AdminDashboardPage() {
     {
       label: "Closed Deals",
       value: closedDealsCount ?? 0,
-      href: "/admin/leads",
+      href: "/admin/leads?status=closed_won",
       icon: UserCheck,
     },
     {
@@ -167,15 +185,68 @@ export default async function AdminDashboardPage() {
     {
       label: "New Auto-Added Leads",
       value: autoAddedLeadsCount ?? 0,
-      href: "/admin/scout",
+      href: "/admin/leads?source=scout-brain&date=today",
       icon: Sparkles,
     },
   ];
 
   const scoutSummary = scoutSummaryResult.data;
-  const rankedTopScoutContacts = ((topScoutContactsToday ?? []) as Lead[]).sort(
-    (a, b) => Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0)
-  );
+  const candidateLeads = (scoutContactCandidates ?? []) as Lead[];
+  const linkedOppIds = candidateLeads
+    .map((lead) => String(lead.linked_opportunity_id || "").trim())
+    .filter((id): id is string => Boolean(id));
+  const { data: linkedOppRows } = linkedOppIds.length
+    ? await supabase
+        .from("opportunities")
+        .select("id,lane,no_website,mobile_ready,mobile_score,website_speed,outdated_design_clues,recommended_contact_method")
+        .in("id", linkedOppIds)
+    : { data: [] as Record<string, unknown>[] };
+  const oppById = new Map((linkedOppRows || []).map((row) => [String(row.id || ""), row]));
+  const topFiveToContactToday = candidateLeads
+    .filter((lead) => {
+      const hasContactPath = Boolean(
+        String(lead.email || "").trim() ||
+        String(lead.phone || "").trim() ||
+        String(lead.website || "").trim() ||
+        String(lead.best_contact_method || "").trim()
+      );
+      return hasContactPath && lead.status === "new" && !lead.last_contacted_at;
+    })
+    .map((lead) => {
+      const opp = oppById.get(String(lead.linked_opportunity_id || "").trim());
+      const noWebsite = !String(lead.website || "").trim() || opp?.no_website === true || String(opp?.lane || "") === "no_website";
+      const terribleMobile = opp?.mobile_ready === false || Number(opp?.mobile_score ?? 100) <= 45;
+      const slowWebsite = Number(opp?.website_speed ?? 0) > 3;
+      const outdatedDesign = Boolean(opp?.outdated_design_clues);
+      const priority =
+        noWebsite ? 0 :
+        terribleMobile ? 1 :
+        slowWebsite ? 2 :
+        outdatedDesign ? 3 : 4;
+      const issueSummary =
+        noWebsite ? "No website" :
+        terribleMobile ? "Terrible mobile experience" :
+        slowWebsite ? "Slow website" :
+        outdatedDesign ? "Outdated design signals" :
+        "Needs website improvements";
+      const bestContactMethod =
+        String(lead.best_contact_method || "").trim() ||
+        String(opp?.recommended_contact_method || "").trim() ||
+        (lead.email ? "Email" : lead.phone ? "Phone" : lead.website ? "Website" : "Unknown");
+      return {
+        id: lead.id,
+        business_name: lead.business_name,
+        score: Number(lead.opportunity_score ?? 0),
+        issue_summary: issueSummary,
+        best_contact_method: bestContactMethod,
+        priority,
+      };
+    })
+    .sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority;
+      return b.score - a.score;
+    })
+    .slice(0, 5);
   const lastScoutRunSummary =
     scoutSummary && scoutSummary.last_run_time
       ? `Last run ${new Date(scoutSummary.last_run_time).toLocaleString()} — ${scoutSummary.today_businesses_discovered} discovered, ${scoutSummary.today_high_opportunity_total} high-opportunity, ${scoutSummary.top_opportunities_count} top opportunities.`
@@ -183,6 +254,32 @@ export default async function AdminDashboardPage() {
   const scoutFollowUpsDue = scoutSummary?.followups_due ?? 0;
   const scoutConfigured = scoutSummaryResult.configured;
   const scoutError = scoutSummaryResult.error;
+  console.info("[Admin Dashboard] dashboard summary source", {
+    leads_found_today: scoutSummary?.leads_found_today ?? 0,
+    top_opportunities_count: scoutSummary?.top_opportunities_count ?? 0,
+    websites_audited: scoutSummary?.dashboard_websites_audited ?? 0,
+    followups_due: scoutSummary?.followups_due ?? 0,
+    leads_query_new: newLeadsCount ?? 0,
+    leads_query_follow_up_due: followUpsDueTodayCount ?? 0,
+  });
+  const replyLeadIds = (newReplyThreads || [])
+    .map((row) => row.lead_id)
+    .filter((id): id is string => Boolean(id));
+  const { data: replyLeads } = replyLeadIds.length
+    ? await supabase
+        .from("leads")
+        .select("id,business_name,status")
+        .in("id", replyLeadIds)
+    : { data: [] as { id: string; business_name: string; status: string }[] };
+  const replyLeadMap = new Map((replyLeads || []).map((lead) => [lead.id, lead]));
+  const newReplies = (newReplyThreads || []).map((thread) => ({
+    lead_id: thread.lead_id as string | null,
+    business_name: thread.lead_id ? replyLeadMap.get(thread.lead_id)?.business_name || "Unknown lead" : "Unknown lead",
+    status: thread.status as string | null,
+    last_message_at: thread.last_message_at as string | null,
+    subject: thread.subject as string | null,
+    contact_email: thread.contact_email as string | null,
+  }));
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -241,9 +338,22 @@ export default async function AdminDashboardPage() {
         activeProjects={activeProjects ?? []}
         recentPayments={recentPayments ?? []}
         scoutAutoLeads={((scoutAutoLeads ?? []) as Lead[])}
-        topScoutContactsToday={rankedTopScoutContacts}
+        topFiveToContactToday={topFiveToContactToday}
         lastScoutRunSummary={lastScoutRunSummary}
         scoutFollowUpsDue={scoutFollowUpsDue}
+        newReplies={newReplies}
+        workflowQueues={{
+          newLeads: newLeadsCount ?? 0,
+          followUpsDue: followUpsDueTodayCount ?? 0,
+          replied: repliedCount ?? 0,
+          closed: closedWorkflowCount ?? 0,
+        }}
+        scoutSummaryMetrics={{
+          leadsFoundToday: scoutSummary?.leads_found_today ?? 0,
+          topOpportunities: scoutSummary?.top_opportunities_count ?? 0,
+          websitesAudited: scoutSummary?.dashboard_websites_audited ?? 0,
+          followUpsDue: scoutSummary?.followups_due ?? 0,
+        }}
       />
     </>
   );

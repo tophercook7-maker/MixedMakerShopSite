@@ -31,6 +31,11 @@ type StartScoutResult = {
   error?: string;
 };
 
+type ActiveScoutJobResponse = {
+  active_job?: ScoutJobStatusResponse | null;
+  error?: string;
+};
+
 type GlobalScoutJobContextValue = {
   jobId: string | null;
   jobStatus: JobUiStatus;
@@ -266,6 +271,59 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       // Ignore local storage parse failures.
     }
   }, [pollJob]);
+
+  const restoreActiveJobFromWorkspace = useCallback(async () => {
+    try {
+      console.info("restoring active scout job from jobs table");
+      const res = await fetch("/api/scout/jobs/active", {
+        method: "GET",
+        cache: "no-store",
+      });
+      const body = (await res.json()) as ActiveScoutJobResponse;
+      if (!res.ok) return false;
+      const active = body.active_job;
+      if (!active?.id) return false;
+      const uiStatus = deriveUiStatus(active);
+      if (!(uiStatus === "queued" || uiStatus === "running" || uiStatus === "analyzing")) return false;
+      const nextProgress = Math.max(0, Math.min(100, Number(active.progress ?? 0)));
+      lastProgressRef.current = nextProgress;
+      lastProgressAtRef.current = Date.now();
+      writeAndSetState({
+        jobId: active.id,
+        jobStatus: uiStatus,
+        jobProgress: nextProgress,
+        jobMessage: active.message ?? active.summary ?? "Scout running...",
+        jobError: active.error ?? null,
+        stage: active.stage ?? null,
+      });
+      console.info("cross-device scout restore success", active.id);
+      void pollJob(active.id);
+      return true;
+    } catch {
+      // Ignore remote restore errors.
+      return false;
+    }
+  }, [pollJob, writeAndSetState]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function runRestore() {
+      if (cancelled) return;
+      await restoreActiveJobFromWorkspace();
+    }
+    void runRestore();
+    return () => {
+      cancelled = true;
+    };
+  }, [restoreActiveJobFromWorkspace]);
+
+  useEffect(() => {
+    if (isBusy || jobId) return;
+    const timer = setInterval(() => {
+      void restoreActiveJobFromWorkspace();
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [isBusy, jobId, restoreActiveJobFromWorkspace]);
 
   useEffect(() => {
     if (isBusy) {

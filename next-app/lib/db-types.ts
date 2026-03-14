@@ -106,3 +106,34 @@ export type FormSubmission = {
   created_at: string;
   owner_id: string | null;
 };
+
+export type EmailThreadStatus = "open" | "active" | "closed";
+export type EmailThread = {
+  id: string;
+  workspace_id: string | null;
+  lead_id: string | null;
+  contact_email: string;
+  subject: string | null;
+  provider_thread_id: string | null;
+  status: EmailThreadStatus;
+  last_message_at: string | null;
+  created_at: string;
+  owner_id: string;
+};
+
+export type EmailDirection = "outbound" | "inbound";
+export type EmailDeliveryStatus = "queued" | "sent" | "failed" | "received";
+export type EmailMessage = {
+  id: string;
+  thread_id: string | null;
+  lead_id: string | null;
+  direction: EmailDirection;
+  provider_message_id: string | null;
+  subject: string | null;
+  body: string;
+  delivery_status: EmailDeliveryStatus;
+  sent_at: string | null;
+  received_at: string | null;
+  created_at: string;
+  owner_id: string;
+};

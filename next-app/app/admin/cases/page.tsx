@@ -1,7 +1,82 @@
 import Link from "next/link";
-import { FileSearch, Lightbulb, Mail } from "lucide-react";
+import { FileSearch } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-export default function AdminCasesPage() {
+type CaseSearchParams = {
+  audited?: string;
+  filter?: string;
+  date?: string;
+};
+
+export default async function AdminCasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<CaseSearchParams>;
+}) {
+  const { audited, filter, date } = await searchParams;
+  const supabase = await createClient();
+  const now = new Date();
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+  console.info("[Admin Cases] navigating to detail page with filters", {
+    audited: audited || null,
+    filter: filter || null,
+    date: date || null,
+  });
+
+  let casesQuery = supabase
+    .from("case_files")
+    .select("id,opportunity_id,website_score,audit_issues,status,created_at,email,contact_page,phone_from_site")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (date === "today") {
+    casesQuery = casesQuery.gte("created_at", dayStart);
+  }
+  const { data: caseRows } = await casesQuery;
+  const rows = caseRows || [];
+  const oppIds = rows
+    .map((row) => String(row.opportunity_id || "").trim())
+    .filter((id): id is string => Boolean(id));
+  const { data: opportunities } = oppIds.length
+    ? await supabase
+        .from("opportunities")
+        .select("id,business_name,opportunity_score,lane,no_website,website_speed,mobile_ready")
+        .in("id", oppIds)
+    : { data: [] as Record<string, unknown>[] };
+  const oppById = new Map((opportunities || []).map((row) => [String(row.id || ""), row]));
+
+  let mapped = rows.map((row) => {
+    const opp = oppById.get(String(row.opportunity_id || "").trim());
+    const auditIssues = Array.isArray(row.audit_issues) ? row.audit_issues : [];
+    const hasAudit = row.website_score != null || auditIssues.length > 0;
+    return {
+      id: String(row.id || ""),
+      opportunity_id: String(row.opportunity_id || ""),
+      business_name: String(opp?.business_name || "Unknown business"),
+      score: Number(opp?.opportunity_score ?? 0),
+      lane: String(opp?.lane || (opp?.no_website ? "no_website" : "weak_website")),
+      website_speed: opp?.website_speed as number | null | undefined,
+      mobile_ready: opp?.mobile_ready as boolean | null | undefined,
+      website_score: row.website_score as number | null | undefined,
+      audit_issues_count: auditIssues.length,
+      has_audit: hasAudit,
+      status: String(row.status || "New"),
+    };
+  });
+
+  if (audited === "true") {
+    mapped = mapped.filter((row) => row.has_audit);
+  }
+  if (filter === "top") {
+    mapped = mapped
+      .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+      .slice(0, 100);
+  } else {
+    mapped = mapped.sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+  }
+
+  console.info("[Admin Cases] detail query returned X rows", mapped.length);
+
   return (
     <div className="space-y-6">
       <section className="admin-card">
@@ -12,30 +87,60 @@ export default function AdminCasesPage() {
           </h1>
         </div>
         <p style={{ color: "var(--admin-muted)" }}>
-          Case dossiers will be powered by Scout-Brain `case_files` and surfaced inside this CRM shell.
+          Case dossiers are sourced from Scout-Brain `case_files` and linked opportunities.
         </p>
       </section>
 
-      <section className="admin-card">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
-          Safe migration plan
-        </h2>
-        <ul className="space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
-          <li>- Keep Scout-Brain as source of truth for case intelligence.</li>
-          <li>- Render cases natively in this admin without changing the Scout backend contract.</li>
-          <li>- Link lead {"->"} case {"->"} outreach in a single private operator flow.</li>
-        </ul>
-        <div className="flex flex-wrap gap-2 mt-4">
-          <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
-            <Lightbulb className="h-4 w-4" />
-            View Leads
-          </Link>
-          <Link href="/admin/outreach" className="admin-btn-ghost inline-flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            View Outreach
-          </Link>
-        </div>
-      </section>
+      {mapped.length === 0 ? (
+        <section className="admin-card">
+          <div className="admin-empty !py-8">
+            <div className="admin-empty-title">
+              {audited === "true" ? "No audited case files found" : "No case files found"}
+            </div>
+            <div className="admin-empty-desc">
+              {date === "today"
+                ? "No scout case files found for today."
+                : "Run Scout and open dossiers to populate cases."}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="admin-card">
+          <div className="admin-table-wrap overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Business</th>
+                  <th>Score</th>
+                  <th>Lane</th>
+                  <th>Website Audit</th>
+                  <th>Status</th>
+                  <th>Quick Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mapped.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.business_name}</td>
+                    <td>{row.score || "—"}</td>
+                    <td>{row.lane.replace("_", " ")}</td>
+                    <td>{row.has_audit ? `audited (${row.audit_issues_count} issues)` : "not audited"}</td>
+                    <td>{row.status.replace("_", " ")}</td>
+                    <td>
+                      <Link
+                        href={`/admin/leads?source=scout-brain&sort=score_desc`}
+                        className="text-[var(--admin-gold)] hover:underline text-xs"
+                      >
+                        Open Leads
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function ScoutLeadsIntake({ leads }: { leads: ScoutLeadRow[] }) {
     <div className="admin-card">
       <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="admin-section-title !mb-0">New Leads From Scout-Brain</h2>
-        <Link href="/admin/leads" className="text-sm font-semibold text-[var(--admin-gold)] hover:underline">
+        <Link href="/admin/leads?source=scout-brain&status=new" className="text-sm font-semibold text-[var(--admin-gold)] hover:underline">
           Open Leads
         </Link>
       </div>
@@ -82,7 +82,7 @@ export function ScoutLeadsIntake({ leads }: { leads: ScoutLeadRow[] }) {
                   <td>{lead.opportunity_score ?? "—"}</td>
                   <td>{lead.lead_source ?? "scout-brain"}</td>
                   <td>
-                    <Link href="/admin/leads" className="text-[var(--admin-gold)] hover:underline text-xs">
+                    <Link href={`/admin/leads?lead=${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                       Open
                     </Link>
                   </td>
