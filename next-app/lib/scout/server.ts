@@ -14,12 +14,17 @@ async function getScoutHeaders(): Promise<HeadersInit | null> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  const hasSession = Boolean(session);
+  const hasAccessToken = Boolean(session?.access_token);
+  console.info("[Scout Server] session found:", hasSession);
+  console.info("[Scout Server] token found:", hasAccessToken);
 
   if (!session?.access_token) return null;
 
   const headers: HeadersInit = {
     Authorization: `Bearer ${session.access_token}`,
   };
+  console.info("[Scout Server] forwarding Authorization header");
 
   const workspaceId = process.env.SCOUT_BRAIN_WORKSPACE_ID?.trim();
   if (workspaceId) {
@@ -44,7 +49,7 @@ async function fetchScout<T>(path: string): Promise<ScoutIntegrationResult<T>> {
     return {
       configured: true,
       data: null,
-      error: "Missing authenticated Supabase session for Scout request.",
+      error: "No authenticated session found in admin proxy",
     };
   }
 
@@ -61,6 +66,13 @@ async function fetchScout<T>(path: string): Promise<ScoutIntegrationResult<T>> {
 
     if (!response.ok) {
       const body = await response.text();
+      if (response.status === 401) {
+        return {
+          configured: true,
+          data: null,
+          error: "Scout authentication failed",
+        };
+      }
       return {
         configured: true,
         data: null,

@@ -21,8 +21,25 @@ export async function POST(request: Request) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const requestAuth = request.headers.get("authorization") || "";
+  const requestBearerToken =
+    requestAuth.startsWith("Bearer ") ? requestAuth.slice(7).trim() : "";
+  const accessToken = session?.access_token || requestBearerToken;
+  const tokenSource = session?.access_token
+    ? "session"
+    : requestBearerToken
+      ? "request-header"
+      : "none";
+  const hasSession = Boolean(session);
+  const hasAccessToken = Boolean(accessToken);
+  console.info("[Scout Proxy] session found for run:", hasSession);
+  console.info("[Scout Proxy] token found for run:", hasAccessToken);
+  console.info("[Scout Proxy] token source for run:", tokenSource);
+  if (!accessToken) {
+    return NextResponse.json(
+      { error: "No authenticated session found in admin proxy" },
+      { status: 401 }
+    );
   }
 
   const payload = await request
@@ -35,9 +52,10 @@ export async function POST(request: Request) {
     "";
 
   const headers: HeadersInit = {
-    Authorization: `Bearer ${session.access_token}`,
+    Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
+  console.info("[Scout Proxy] forwarding Authorization header for run");
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
   console.info("[Scout Proxy] scout job started request");
@@ -61,6 +79,12 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       console.error("[Scout Proxy] run failed", response.status, body);
+      if (response.status === 401) {
+        return NextResponse.json(
+          { error: "Scout authentication failed", detail: body },
+          { status: 401 }
+        );
+      }
       return NextResponse.json(body, { status: response.status });
     }
 
