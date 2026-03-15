@@ -53,6 +53,13 @@ export default async function AdminLeadsPage({
   });
   const { data: leads } = await query;
   console.info("[Admin Leads] detail query returned X rows", (leads || []).length);
+  const debugWorkspaceIds = Array.from(
+    new Set(
+      (leads || [])
+        .map((l) => String((l as { workspace_id?: string | null }).workspace_id || "").trim())
+        .filter(Boolean)
+    )
+  );
 
   const byStatus = STATUSES.map((s) => ({
     status: s,
@@ -102,6 +109,18 @@ export default async function AdminLeadsPage({
           <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Closed</h2>
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{closed.length}</p>
         </div>
+      </section>
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--admin-fg)" }}>
+          Leads Debug (temporary)
+        </h2>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          total_rows: {(leads || []).length} | filters - source: {source || "none"}, date: {date || "none"}, status:{" "}
+          {status || "none"}, sort: {sort || "created_desc"} | workspace_filter: none
+        </p>
+        <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+          workspace_ids_in_rows: {debugWorkspaceIds.length ? debugWorkspaceIds.join(", ") : "(none)"}
+        </p>
       </section>
       {showPipeline ? (
         <PipelineBoard initialStatuses={byStatus} />
