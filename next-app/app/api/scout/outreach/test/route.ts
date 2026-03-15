@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getProfile } from "@/lib/auth";
 
-const DEFAULT_TIMEOUT_MS = 12000;
+const DEFAULT_TIMEOUT_MS = 45000;
 
 function scoutBaseUrl() {
   return process.env.SCOUT_BRAIN_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
@@ -72,6 +72,7 @@ export async function POST(request: Request) {
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
   console.info("sending test email");
+  console.info("[Scout Proxy] next proxy request started");
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
@@ -81,8 +82,7 @@ export async function POST(request: Request) {
       body: JSON.stringify(payload),
       signal: controller.signal,
       cache: "no-store",
-    });
-    clearTimeout(timer);
+    }).finally(() => clearTimeout(timer));
 
     const contentType = response.headers.get("content-type") || "";
     const body = contentType.includes("application/json")
@@ -103,6 +103,22 @@ export async function POST(request: Request) {
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
     console.error("test email failed", error);
+    const aborted =
+      (error instanceof Error && error.name === "AbortError") ||
+      (error instanceof Error && /aborted/i.test(error.message));
+    if (aborted) {
+      console.error("[Scout Proxy] proxy request aborted");
+      return NextResponse.json(
+        {
+          error:
+            "Proxy request aborted while waiting for Scout-Brain/Resend. Email may have been sent; client request ended before confirmation.",
+          layer: "next-proxy",
+          aborted: true,
+          timeout_ms: DEFAULT_TIMEOUT_MS,
+        },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       {
         error:

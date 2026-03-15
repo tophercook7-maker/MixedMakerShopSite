@@ -22,6 +22,7 @@ export function EmailTestPanel() {
     }
     setSending(true);
     try {
+      console.info("frontend request started");
       const res = await fetch("/api/scout/outreach/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,7 +35,13 @@ export function EmailTestPanel() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         console.error("test email failed", data);
-        setError(data?.detail || data?.error || "Test email failed.");
+        const message =
+          data?.detail ||
+          data?.error ||
+          (res.status === 504
+            ? "Request timed out in proxy. Email may have been sent; client request ended before confirmation."
+            : "Test email failed.");
+        setError(message);
         return;
       }
       console.info("test email success", data);
@@ -45,6 +52,12 @@ export function EmailTestPanel() {
       );
     } catch (e) {
       console.error("test email failed", e);
+      const aborted =
+        (e instanceof Error && e.name === "AbortError") ||
+        (e instanceof Error && /aborted/i.test(e.message));
+      if (aborted) {
+        console.warn("frontend request aborted");
+      }
       setError(e instanceof Error ? e.message : "Test email failed.");
     } finally {
       setSending(false);

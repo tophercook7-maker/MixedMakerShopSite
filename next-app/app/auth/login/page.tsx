@@ -40,7 +40,14 @@ function LoginForm() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-white text-black px-6">
       <div className="w-full max-w-md rounded-2xl border border-neutral-200 p-6 space-y-6">
-        <h1 className="text-2xl font-bold">Admin login</h1>
+        <div className="space-y-3 text-center">
+          <img
+            src="/m3-logo.png"
+            alt="MixedMakerShop M3 logo"
+            className="mx-auto w-full max-w-[120px] h-auto"
+          />
+          <h1 className="text-2xl font-bold">MixedMakerShopAdmin</h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

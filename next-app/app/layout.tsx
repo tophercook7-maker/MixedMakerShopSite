@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MixedMakerShop — Web Design & Admin",
   description: "MixedMakerShop website and admin",
+  icons: {
+    icon: "/m3-icon.png",
+    shortcut: "/m3-icon.png",
+    apple: "/m3-192.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -13,11 +19,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/m3-icon.png" type="image/png" />
-        <link rel="shortcut icon" href="/m3-icon.png" />
-        <link rel="apple-touch-icon" href="/m3-icon.png" />
-      </head>
       <body className="min-h-screen antialiased">
         {children}
       </body>

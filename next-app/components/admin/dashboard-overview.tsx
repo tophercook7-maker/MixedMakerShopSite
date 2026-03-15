@@ -122,8 +122,17 @@ export function DashboardOverview({
           ) : (
             <ul className="space-y-2">
               {newReplies.map((reply, idx) => (
-                <li key={`${reply.lead_id || "lead"}-${idx}`} className="flex items-center justify-between text-sm py-1">
-                  <span className="truncate text-[var(--admin-fg)]">{reply.business_name}</span>
+                <li key={`${reply.lead_id || "lead"}-${idx}`} className="flex items-center justify-between text-sm py-1 gap-2">
+                  {reply.lead_id ? (
+                    <Link
+                      href={`/admin/leads?lead=${encodeURIComponent(reply.lead_id)}&focus=outreach`}
+                      className="truncate text-[var(--admin-gold)] hover:underline font-semibold"
+                    >
+                      {reply.business_name}
+                    </Link>
+                  ) : (
+                    <span className="truncate text-[var(--admin-fg)]">{reply.business_name}</span>
+                  )}
                   <span className="text-[var(--admin-muted)]">
                     {reply.last_message_at ? new Date(reply.last_message_at).toLocaleString() : "just now"}
                   </span>

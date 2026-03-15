@@ -190,7 +190,7 @@ export function LeadsTable({
                       href={`/admin/leads?lead=${encodeURIComponent(l.id)}&focus=outreach&generate=1`}
                       className="text-[var(--admin-gold)] hover:underline text-xs"
                     >
-                      Generate Email
+                      Generate Outreach
                     </Link>
                   </div>
                 </td>

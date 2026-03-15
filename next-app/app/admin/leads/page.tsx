@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LeadsTable } from "@/components/admin/leads-table";
 import { PipelineBoard } from "@/components/admin/pipeline-board";
+import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 
 const STATUSES = [
@@ -69,6 +70,7 @@ export default async function AdminLeadsPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>Leads</h1>
         <div className="flex gap-2">
+          <BackfillLeadsButton />
           <Link
             href="/admin/leads?view=table"
             className={!showPipeline ? "admin-btn-primary" : "admin-btn-ghost"}

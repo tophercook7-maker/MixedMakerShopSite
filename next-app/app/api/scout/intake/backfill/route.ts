@@ -29,11 +29,9 @@ export async function POST(request: Request) {
     : requestBearerToken
       ? "request-header"
       : "none";
-  const hasSession = Boolean(session);
-  const hasAccessToken = Boolean(accessToken);
-  console.info("[Scout Proxy] session found for outreach send:", hasSession);
-  console.info("[Scout Proxy] token found for outreach send:", hasAccessToken);
-  console.info("[Scout Proxy] token source for outreach send:", tokenSource);
+  console.info("[Scout Proxy] session found for intake backfill:", Boolean(session));
+  console.info("[Scout Proxy] token found for intake backfill:", Boolean(accessToken));
+  console.info("[Scout Proxy] token source for intake backfill:", tokenSource);
   if (!accessToken) {
     return NextResponse.json(
       { error: "No authenticated session found in admin proxy" },
@@ -54,14 +52,13 @@ export async function POST(request: Request) {
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
   };
-  console.info("[Scout Proxy] forwarding Authorization header for outreach send");
+  console.info("[Scout Proxy] forwarding Authorization header for intake backfill");
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
   try {
-    console.info("[Scout Proxy] next proxy request started");
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-    const response = await fetch(`${baseUrl}/outreach/send`, {
+    const response = await fetch(`${baseUrl}/crm/intake/backfill`, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
@@ -85,28 +82,12 @@ export async function POST(request: Request) {
     }
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
-    const aborted =
-      (error instanceof Error && error.name === "AbortError") ||
-      (error instanceof Error && /aborted/i.test(error.message));
-    if (aborted) {
-      console.error("[Scout Proxy] proxy request aborted");
-      return NextResponse.json(
-        {
-          error:
-            "Proxy request aborted while waiting for Scout-Brain/Resend. Email may have been sent; client request ended before confirmation.",
-          layer: "next-proxy",
-          aborted: true,
-          timeout_ms: DEFAULT_TIMEOUT_MS,
-        },
-        { status: 504 }
-      );
-    }
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Outreach send request failed.",
+            : "Scout intake backfill request failed.",
       },
       { status: 502 }
     );

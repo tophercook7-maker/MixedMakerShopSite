@@ -73,6 +73,8 @@ type GeneratedOutreachEmail = {
   body?: string | null;
   issues?: string[] | null;
   screenshot_url?: string | null;
+  draft_message_id?: string | null;
+  draft_thread_id?: string | null;
 };
 
 type Props = {
@@ -378,8 +380,14 @@ export function LeadForm({
         body: (body.body || "").trim(),
         issues: Array.isArray(body.issues) ? body.issues.filter(Boolean) : [],
         screenshot_url: body.screenshot_url || null,
+        draft_message_id: body.draft_message_id || null,
+        draft_thread_id: body.draft_thread_id || null,
       });
-      setMailSuccess("Generated personalized email from Scout analysis.");
+      setMailSuccess(
+        body.draft_message_id
+          ? "Generated personalized outreach and saved draft to timeline."
+          : "Generated personalized email from Scout analysis."
+      );
     } catch (e) {
       setMailError(e instanceof Error ? e.message : "Could not generate outreach email.");
     } finally {
@@ -707,7 +715,7 @@ export function LeadForm({
                   onClick={() => void generateEmail()}
                   className="admin-btn-primary"
                 >
-                  {generatingEmail ? "Generating..." : "Generate Email"}
+                  {generatingEmail ? "Generating..." : "Generate Outreach"}
                 </button>
                 <button
                   type="button"

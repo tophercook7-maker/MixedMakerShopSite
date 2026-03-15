@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FileSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 
 type CaseSearchParams = {
   audited?: string;
@@ -26,7 +27,10 @@ export default async function AdminCasesPage({
 
   let casesQuery = supabase
     .from("case_files")
-    .select("id,opportunity_id,website_score,audit_issues,status,created_at,email,contact_page,phone_from_site")
+    .select(
+      "id,opportunity_id,website_score,audit_issues,status,created_at,email,contact_page,phone_from_site,"
+      "opportunity:opportunities(id,business_name,category,website,opportunity_score)"
+    )
     .order("created_at", { ascending: false })
     .limit(500);
   if (date === "today") {
@@ -37,22 +41,36 @@ export default async function AdminCasesPage({
   const oppIds = rows
     .map((row) => String(row.opportunity_id || "").trim())
     .filter((id): id is string => Boolean(id));
-  const { data: opportunities } = oppIds.length
+  const rowsNeedingFallback = rows.filter((row) => !row.opportunity || !row.opportunity.business_name);
+  const fallbackOppIds = rowsNeedingFallback
+    .map((row) => String(row.opportunity_id || "").trim())
+    .filter((id): id is string => Boolean(id));
+  const { data: opportunities } = fallbackOppIds.length
     ? await supabase
         .from("opportunities")
-        .select("id,business_name,opportunity_score,lane,no_website,website_speed,mobile_ready")
-        .in("id", oppIds)
+        .select("id,business_name,category,website,opportunity_score,lane,no_website,website_speed,mobile_ready")
+        .in("id", fallbackOppIds)
     : { data: [] as Record<string, unknown>[] };
   const oppById = new Map((opportunities || []).map((row) => [String(row.id || ""), row]));
+  const missingJoinCount = rowsNeedingFallback.length;
+  if (missingJoinCount > 0) {
+    console.warn("[Admin Cases] case_files -> opportunities join missing rows", {
+      missingJoinCount,
+      fallbackFetched: (opportunities || []).length,
+    });
+  }
 
   let mapped = rows.map((row) => {
-    const opp = oppById.get(String(row.opportunity_id || "").trim());
+    const joinedOpp = row.opportunity as Record<string, unknown> | null | undefined;
+    const opp = joinedOpp || oppById.get(String(row.opportunity_id || "").trim());
     const auditIssues = Array.isArray(row.audit_issues) ? row.audit_issues : [];
     const hasAudit = row.website_score != null || auditIssues.length > 0;
     return {
       id: String(row.id || ""),
       opportunity_id: String(row.opportunity_id || ""),
       business_name: String(opp?.business_name || "Unknown business"),
+      category: String(opp?.category || "—"),
+      website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
       lane: String(opp?.lane || (opp?.no_website ? "no_website" : "weak_website")),
       website_speed: opp?.website_speed as number | null | undefined,
@@ -89,6 +107,9 @@ export default async function AdminCasesPage({
         <p style={{ color: "var(--admin-muted)" }}>
           Case dossiers are sourced from Scout-Brain `case_files` and linked opportunities.
         </p>
+        <div className="mt-3">
+          <BackfillLeadsButton />
+        </div>
       </section>
 
       {mapped.length === 0 ? (
@@ -111,6 +132,8 @@ export default async function AdminCasesPage({
               <thead>
                 <tr>
                   <th>Business</th>
+                  <th>Category</th>
+                  <th>Website</th>
                   <th>Score</th>
                   <th>Lane</th>
                   <th>Website Audit</th>
@@ -122,6 +145,16 @@ export default async function AdminCasesPage({
                 {mapped.map((row) => (
                   <tr key={row.id}>
                     <td>{row.business_name}</td>
+                    <td>{row.category}</td>
+                    <td>
+                      {row.website ? (
+                        <a href={row.website} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline text-xs">
+                          Open Site
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td>{row.score || "—"}</td>
                     <td>{row.lane.replace("_", " ")}</td>
                     <td>{row.has_audit ? `audited (${row.audit_issues_count} issues)` : "not audited"}</td>

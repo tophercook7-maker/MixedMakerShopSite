@@ -158,6 +158,7 @@ export default async function AdminOutreachPage({
                   <th>Subject</th>
                   <th>Last Message</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,6 +169,18 @@ export default async function AdminOutreachPage({
                     <td>{thread.subject || "—"}</td>
                     <td>{thread.last_message_at ? new Date(thread.last_message_at).toLocaleString() : "—"}</td>
                     <td>{String(thread.status || "").replace("_", " ") || "—"}</td>
+                    <td>
+                      {thread.lead_id ? (
+                        <Link
+                          href={`/admin/leads?lead=${encodeURIComponent(thread.lead_id)}&focus=outreach`}
+                          className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
+                        >
+                          Open Timeline
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

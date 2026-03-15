@@ -128,6 +128,8 @@ export type EmailMessage = {
   thread_id: string | null;
   lead_id: string | null;
   direction: EmailDirection;
+  status?: "draft" | "queued" | "sent" | "failed" | "received" | string | null;
+  generated_by?: string | null;
   provider_message_id: string | null;
   subject: string | null;
   body: string;
