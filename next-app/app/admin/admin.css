@@ -379,6 +379,9 @@
 .admin-badge-overdue { background: rgba(200, 100, 60, 0.25); color: #fb923c; }
 .admin-badge-progress { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
 .admin-badge-cancelled { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+.admin-badge-tier-hot { background: rgba(220, 38, 38, 0.22); color: #fca5a5; }
+.admin-badge-tier-warm { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
+.admin-badge-tier-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
 /* Empty states */
 .admin-empty {

@@ -13,6 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/m3-icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/m3-icon.png" />
+        <link rel="apple-touch-icon" href="/m3-icon.png" />
+      </head>
       <body className="min-h-screen antialiased">
         {children}
       </body>

@@ -97,6 +97,30 @@ export function LeadsTable({
     return "admin-badge admin-badge-progress";
   }
 
+  function tierFromScore(score: number | null | undefined) {
+    const value = Number(score ?? 0);
+    if (value >= 80) return "hot_lead";
+    if (value >= 60) return "warm_lead";
+    return "low_priority";
+  }
+
+  function tierClass(tier: string) {
+    if (tier === "hot_lead") return "admin-badge admin-badge-tier-hot";
+    if (tier === "warm_lead") return "admin-badge admin-badge-tier-warm";
+    return "admin-badge admin-badge-tier-low";
+  }
+
+  function issuesFromNotes(notes: string | null | undefined) {
+    const text = String(notes || "");
+    const match = text.match(/Issues:\s*([^.]*)/i);
+    if (!match?.[1]) return [];
+    return match[1]
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 3);
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
@@ -133,6 +157,9 @@ export function LeadsTable({
               <th>Contact</th>
               <th>Email</th>
               <th>Status</th>
+              <th>Score</th>
+              <th>Tier</th>
+              <th>Detected Issues</th>
               <th>Source</th>
               <th>Created</th>
               <th className="w-24" />
@@ -145,6 +172,13 @@ export function LeadsTable({
                 <td>{l.contact_name ?? "—"}</td>
                 <td>{l.email ?? "—"}</td>
                 <td><span className={statusClass(l.status)}>{l.status.replace("_", " ")}</span></td>
+                <td>{l.opportunity_score != null ? Number(l.opportunity_score).toFixed(0) : "—"}</td>
+                <td>
+                  <span className={tierClass(tierFromScore(l.opportunity_score))}>
+                    {tierFromScore(l.opportunity_score).replace(/_/g, " ")}
+                  </span>
+                </td>
+                <td>{issuesFromNotes(l.notes).join(", ") || "—"}</td>
                 <td style={{ color: "var(--admin-muted)" }}>{l.lead_source ?? "—"}</td>
                 <td style={{ color: "var(--admin-muted)" }}>{l.created_at?.slice(0, 10)}</td>
                 <td>

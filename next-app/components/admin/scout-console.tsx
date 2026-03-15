@@ -47,6 +47,13 @@ export function ScoutConsole({
     return "admin-badge admin-badge-progress";
   }, [scout.jobStatus]);
 
+  const tierBadgeClass = (tier: string | null | undefined) => {
+    const normalized = String(tier || "").trim().toLowerCase();
+    if (normalized === "hot_lead" || normalized === "hot lead") return "admin-badge admin-badge-tier-hot";
+    if (normalized === "warm_lead" || normalized === "warm lead") return "admin-badge admin-badge-tier-warm";
+    return "admin-badge admin-badge-tier-low";
+  };
+
   return (
     <div className="space-y-6">
       <section className="admin-card">
@@ -192,6 +199,7 @@ export function ScoutConsole({
                     <th>City</th>
                     <th>Score</th>
                     <th>Tier</th>
+                    <th>Detected Issues</th>
                     <th>Best Contact</th>
                   </tr>
                 </thead>
@@ -202,7 +210,16 @@ export function ScoutConsole({
                       <td>{lead.category ?? "—"}</td>
                       <td>{lead.city ?? "—"}</td>
                       <td>{lead.score ?? "—"}</td>
-                      <td>{lead.lead_tier ?? "—"}</td>
+                      <td>
+                        <span className={tierBadgeClass(lead.lead_tier)}>
+                          {String(lead.lead_tier || "—").replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td>
+                        {Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
+                          ? lead.opportunity_signals.slice(0, 3).join(", ")
+                          : "—"}
+                      </td>
                       <td>{lead.best_contact_method ?? "—"}</td>
                     </tr>
                   ))}
