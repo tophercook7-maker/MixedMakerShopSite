@@ -46,10 +46,18 @@ export default async function AdminCasesPage({
 
   let casesQuery = supabase
     .from("case_files")
-    .select(
-      "id,opportunity_id,website_score,audit_issues,status,created_at,email,contact_page,phone_from_site,"
-      + "opportunity:opportunities(id,business_name,category,website,opportunity_score)"
-    )
+    .select(`
+      id,
+      opportunity_id,
+      website_score,
+      audit_issues,
+      status,
+      created_at,
+      email,
+      contact_page,
+      phone_from_site,
+      opportunity:opportunities(id, business_name, category, website, opportunity_score)
+    `)
     .order("created_at", { ascending: false })
     .limit(500);
   if (date === "today") {
