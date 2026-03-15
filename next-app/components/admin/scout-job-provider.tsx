@@ -105,6 +105,8 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const pollingJobIdRef = useRef<string | null>(null);
   const lastProgressRef = useRef(0);
   const lastProgressAtRef = useRef(0);
+  const completionNotifiedJobIdRef = useRef<string | null>(null);
+  const clearCompletedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobUiStatus>("idle");
@@ -113,7 +115,6 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const [jobError, setJobError] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const isBusy = isStarting || jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing";
 
@@ -136,6 +137,10 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
+    }
+    if (clearCompletedTimerRef.current) {
+      clearTimeout(clearCompletedTimerRef.current);
+      clearCompletedTimerRef.current = null;
     }
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -231,19 +236,34 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           if (uiStatus === "finished") {
             console.info("scout job finished, refreshing admin data", id);
             router.refresh();
-            const leadsMatch = (body.summary ?? "").match(/(\d+)\s+leads?\s+discovered/i);
-            const refreshedCount = leadsMatch ? Number(leadsMatch[1]) : null;
-            setToastMessage(
-              refreshedCount !== null
-                ? `Scout complete — ${refreshedCount} leads refreshed`
-                : "Scout complete — leads refreshed"
-            );
+            if (completionNotifiedJobIdRef.current !== id) {
+              completionNotifiedJobIdRef.current = id;
+              const leadsMatch = (body.summary ?? "").match(/(\d+)\s+leads?\s+discovered/i);
+              const refreshedCount = leadsMatch ? Number(leadsMatch[1]) : null;
+              const completionMessage =
+                refreshedCount !== null
+                  ? `Scout complete — ${refreshedCount} leads refreshed`
+                  : "Scout complete — leads refreshed";
+              writeAndSetState({
+                jobId: id,
+                jobStatus: "finished",
+                jobProgress: 100,
+                jobMessage: completionMessage,
+                jobError: null,
+                stage: body.stage ?? "finished",
+              });
+            }
             stopPolling();
+            if (clearCompletedTimerRef.current) {
+              clearTimeout(clearCompletedTimerRef.current);
+            }
+            clearCompletedTimerRef.current = setTimeout(() => {
+              clearScoutState();
+            }, 3000);
             return;
           }
 
           if (uiStatus === "cancelled") {
-            setToastMessage("Scout cancelled");
             stopPolling();
             return;
           }
@@ -267,7 +287,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
 
       await tick();
     },
-    [router, stopPolling, writeAndSetState]
+    [clearScoutState, router, stopPolling, writeAndSetState]
   );
 
   useEffect(() => {
@@ -352,12 +372,6 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     }
   }, [isBusy, pathname]);
 
-  useEffect(() => {
-    if (!toastMessage) return;
-    const timer = setTimeout(() => setToastMessage(null), 5000);
-    return () => clearTimeout(timer);
-  }, [toastMessage]);
-
   const startScout = useCallback(
     async (integrationReady: boolean): Promise<StartScoutResult> => {
       if (!integrationReady) return { ok: false, error: "Scout integration is not configured." };
@@ -390,6 +404,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         const initialProgress = Math.max(0, Math.min(100, Number(body.progress ?? 10)));
         lastProgressRef.current = initialProgress;
         lastProgressAtRef.current = Date.now();
+        completionNotifiedJobIdRef.current = null;
         writeAndSetState({
           jobId: body.job_id,
           jobStatus: "queued",
@@ -450,7 +465,6 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           jobError: null,
         });
         stopPolling();
-        setToastMessage("Scout cancelled");
       } else {
         writeAndSetState({
           jobId,
@@ -566,19 +580,6 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
               </button>
             </div>
           )}
-        </div>
-      )}
-      {toastMessage && (
-        <div
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 rounded-lg border px-4 py-2 text-sm"
-          style={{
-            borderColor: "rgba(34, 197, 94, 0.45)",
-            background: "rgba(20, 83, 45, 0.95)",
-            color: "#dcfce7",
-            boxShadow: "0 10px 28px rgba(0,0,0,0.35)",
-          }}
-        >
-          {toastMessage}
         </div>
       )}
     </GlobalScoutJobContext.Provider>

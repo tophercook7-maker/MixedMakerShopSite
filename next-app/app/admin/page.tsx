@@ -9,6 +9,36 @@ import Link from "next/link";
 
 const ACTIVE_PROJECT_STATUSES = ["planning", "design", "development", "testing"];
 
+type DashboardScoutCaseRow = {
+  id?: string;
+  opportunity_id?: string | null;
+  website_score?: number | null;
+  audit_issues?: string[] | null;
+  status?: string | null;
+  created_at?: string | null;
+  email?: string | null;
+  contact_page?: string | null;
+  phone_from_site?: string | null;
+  opportunity?: {
+    id?: string;
+    business_name?: string;
+    category?: string;
+    website?: string;
+    opportunity_score?: number;
+  } | null;
+};
+
+function supabaseProjectRef(url: string | undefined): string {
+  if (!url) return "missing";
+  try {
+    const host = new URL(url).hostname;
+    const ref = host.split(".")[0];
+    return ref || "unknown";
+  } catch {
+    return "invalid";
+  }
+}
+
 export default async function AdminDashboardPage() {
   await refreshDueFollowUps();
   const supabase = await createClient();
@@ -18,6 +48,10 @@ export default async function AdminDashboardPage() {
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     .toISOString()
     .slice(0, 10);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseRef = supabaseProjectRef(supabaseUrl);
+  const anonConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const serviceRoleConfigured = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   const [
     { count: newLeadsCount },
@@ -130,20 +164,119 @@ export default async function AdminDashboardPage() {
     getScoutSummary(),
   ]);
 
+  const [
+    { count: caseNewLeadsCount, error: caseNewLeadsError },
+    { count: caseFollowUpsCount, error: caseFollowUpsError },
+    { count: caseRepliedCount, error: caseRepliedError },
+    { count: caseClosedCount, error: caseClosedError },
+    { count: caseAuditedCount, error: caseAuditedError },
+    { data: topOpportunityRows, error: topOpportunityError },
+  ] = await Promise.all([
+    supabase
+      .from("case_files")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "new"),
+    supabase
+      .from("case_files")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "follow_up"),
+    supabase
+      .from("case_files")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "replied"),
+    supabase
+      .from("case_files")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "closed"),
+    supabase
+      .from("case_files")
+      .select("*", { count: "exact", head: true }),
+    supabase
+      .from("opportunities")
+      .select("id,business_name,category,website,opportunity_score,recommended_contact_method")
+      .order("opportunity_score", { ascending: false })
+      .limit(5),
+  ]);
+
+  let scoutCaseRows: DashboardScoutCaseRow[] = [];
+  let scoutCaseQueryMode: "relationship" | "simple_fallback" | "failed" = "relationship";
+  let scoutCaseError: string | null = null;
+  const { data: joinedScoutRows, error: joinedScoutError } = await supabase
+    .from("case_files")
+    .select(`
+      id,
+      opportunity_id,
+      website_score,
+      audit_issues,
+      status,
+      created_at,
+      email,
+      contact_page,
+      phone_from_site,
+      opportunity:opportunities(
+        id,
+        business_name,
+        category,
+        website,
+        opportunity_score
+      )
+    `)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (joinedScoutError) {
+    scoutCaseQueryMode = "simple_fallback";
+    scoutCaseError = `[relationship query] ${joinedScoutError.message}`;
+    const { data: fallbackRows, error: fallbackError } = await supabase
+      .from("case_files")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (fallbackError) {
+      scoutCaseQueryMode = "failed";
+      scoutCaseError = `${scoutCaseError} | [simple fallback] ${fallbackError.message}`;
+      scoutCaseRows = [];
+    } else {
+      scoutCaseRows = (fallbackRows || []) as DashboardScoutCaseRow[];
+    }
+  } else {
+    scoutCaseRows = (joinedScoutRows || []) as DashboardScoutCaseRow[];
+  }
+
+  console.info("[Admin Dashboard] scout case_files debug", {
+    supabase_project_ref: supabaseRef,
+    anon_key_configured: anonConfigured,
+    service_role_configured: serviceRoleConfigured,
+    query_mode: scoutCaseQueryMode,
+    rows_returned: scoutCaseRows.length,
+    query_error: scoutCaseError,
+  });
+  const caseMetricErrors = [
+    caseNewLeadsError?.message,
+    caseFollowUpsError?.message,
+    caseRepliedError?.message,
+    caseClosedError?.message,
+    caseAuditedError?.message,
+    topOpportunityError?.message,
+  ].filter(Boolean);
+  if (caseMetricErrors.length) {
+    console.warn("[Admin Dashboard] case_files/opportunities metric query errors", caseMetricErrors);
+  }
+
   const revenue =
     (paymentsMonth ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
 
   const stats = [
     {
       label: "New leads",
-      value: newLeadsCount ?? 0,
+      value: caseNewLeadsCount ?? 0,
       href: "/admin/leads?status=new",
       icon: Users,
     },
     {
       label: "Follow-Ups Due Today",
-      value: followUpsDueTodayCount ?? 0,
-      href: "/admin/outreach?status=follow_up_due",
+      value: caseFollowUpsCount ?? 0,
+      href: "/admin/leads?status=follow_up",
       icon: CheckSquare,
     },
     {
@@ -154,8 +287,8 @@ export default async function AdminDashboardPage() {
     },
     {
       label: "Closed Deals",
-      value: closedDealsCount ?? 0,
-      href: "/admin/leads?status=closed_won",
+      value: caseClosedCount ?? 0,
+      href: "/admin/leads?status=closed",
       icon: UserCheck,
     },
     {
@@ -183,70 +316,21 @@ export default async function AdminDashboardPage() {
       icon: UserCheck,
     },
     {
-      label: "New Auto-Added Leads",
-      value: autoAddedLeadsCount ?? 0,
-      href: "/admin/leads?source=scout-brain&date=today",
+      label: "Websites Audited",
+      value: caseAuditedCount ?? 0,
+      href: "/admin/cases",
       icon: Sparkles,
     },
   ];
 
   const scoutSummary = scoutSummaryResult.data;
-  const candidateLeads = (scoutContactCandidates ?? []) as Lead[];
-  const linkedOppIds = candidateLeads
-    .map((lead) => String(lead.linked_opportunity_id || "").trim())
-    .filter((id): id is string => Boolean(id));
-  const { data: linkedOppRows } = linkedOppIds.length
-    ? await supabase
-        .from("opportunities")
-        .select("id,lane,no_website,mobile_ready,mobile_score,website_speed,outdated_design_clues,recommended_contact_method")
-        .in("id", linkedOppIds)
-    : { data: [] as Record<string, unknown>[] };
-  const oppById = new Map((linkedOppRows || []).map((row) => [String(row.id || ""), row]));
-  const topFiveToContactToday = candidateLeads
-    .filter((lead) => {
-      const hasContactPath = Boolean(
-        String(lead.email || "").trim() ||
-        String(lead.phone || "").trim() ||
-        String(lead.website || "").trim() ||
-        String(lead.best_contact_method || "").trim()
-      );
-      return hasContactPath && lead.status === "new" && !lead.last_contacted_at;
-    })
-    .map((lead) => {
-      const opp = oppById.get(String(lead.linked_opportunity_id || "").trim());
-      const noWebsite = !String(lead.website || "").trim() || opp?.no_website === true || String(opp?.lane || "") === "no_website";
-      const terribleMobile = opp?.mobile_ready === false || Number(opp?.mobile_score ?? 100) <= 45;
-      const slowWebsite = Number(opp?.website_speed ?? 0) > 3;
-      const outdatedDesign = Boolean(opp?.outdated_design_clues);
-      const priority =
-        noWebsite ? 0 :
-        terribleMobile ? 1 :
-        slowWebsite ? 2 :
-        outdatedDesign ? 3 : 4;
-      const issueSummary =
-        noWebsite ? "No website" :
-        terribleMobile ? "Terrible mobile experience" :
-        slowWebsite ? "Slow website" :
-        outdatedDesign ? "Outdated design signals" :
-        "Needs website improvements";
-      const bestContactMethod =
-        String(lead.best_contact_method || "").trim() ||
-        String(opp?.recommended_contact_method || "").trim() ||
-        (lead.email ? "Email" : lead.phone ? "Phone" : lead.website ? "Website" : "Unknown");
-      return {
-        id: lead.id,
-        business_name: lead.business_name,
-        score: Number(lead.opportunity_score ?? 0),
-        issue_summary: issueSummary,
-        best_contact_method: bestContactMethod,
-        priority,
-      };
-    })
-    .sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority;
-      return b.score - a.score;
-    })
-    .slice(0, 5);
+  const topFiveToContactToday = (topOpportunityRows || []).map((row) => ({
+    id: String(row.id || ""),
+    business_name: String(row.business_name || "Unknown business"),
+    score: Number(row.opportunity_score ?? 0),
+    issue_summary: "Top opportunity from Scout scoring",
+    best_contact_method: String(row.recommended_contact_method || "Website"),
+  }));
   const lastScoutRunSummary =
     scoutSummary && scoutSummary.last_run_time
       ? `Last run ${new Date(scoutSummary.last_run_time).toLocaleString()} — ${scoutSummary.today_businesses_discovered} discovered, ${scoutSummary.today_high_opportunity_total} high-opportunity, ${scoutSummary.top_opportunities_count} top opportunities.`
@@ -259,8 +343,12 @@ export default async function AdminDashboardPage() {
     top_opportunities_count: scoutSummary?.top_opportunities_count ?? 0,
     websites_audited: scoutSummary?.dashboard_websites_audited ?? 0,
     followups_due: scoutSummary?.followups_due ?? 0,
-    leads_query_new: newLeadsCount ?? 0,
-    leads_query_follow_up_due: followUpsDueTodayCount ?? 0,
+    case_files_new: caseNewLeadsCount ?? 0,
+    case_files_follow_up: caseFollowUpsCount ?? 0,
+    case_files_replied: caseRepliedCount ?? 0,
+    case_files_closed: caseClosedCount ?? 0,
+    case_files_total: caseAuditedCount ?? 0,
+    top_opportunities_rows: (topOpportunityRows || []).length,
   });
   const replyLeadIds = (newReplyThreads || [])
     .map((row) => row.lead_id)
@@ -327,6 +415,65 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       </section>
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-1" style={{ color: "var(--admin-fg)" }}>
+          Dashboard Data Debug (temporary)
+        </h2>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          supabase_project_ref: {supabaseRef} | anon_key_configured: {String(anonConfigured)} | service_role_configured:{" "}
+          {String(serviceRoleConfigured)} | query_mode: {scoutCaseQueryMode} | rows_returned: {scoutCaseRows.length}
+        </p>
+        {scoutCaseError ? (
+          <p className="text-xs mt-1" style={{ color: "#fca5a5" }}>
+            error message: {scoutCaseError}
+          </p>
+        ) : null}
+        <details className="mt-2">
+          <summary className="cursor-pointer text-[var(--admin-gold)]">First row preview</summary>
+          <pre className="mt-1 p-2 rounded-md overflow-x-auto text-xs" style={{ background: "rgba(255,255,255,0.04)" }}>
+            {JSON.stringify(scoutCaseRows?.[0] ?? null, null, 2)}
+          </pre>
+        </details>
+      </section>
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+          Scout Case Records (debug)
+        </h2>
+        {scoutCaseRows.length === 0 ? (
+          <p className="text-xs" style={{ color: scoutCaseError ? "#fca5a5" : "var(--admin-muted)" }}>
+            {scoutCaseError
+              ? "Scout case query failed. See debug error above."
+              : "No case_files rows returned from dashboard query."}
+          </p>
+        ) : (
+          <div className="admin-table-wrap overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>id</th>
+                  <th>opportunity_id</th>
+                  <th>status</th>
+                  <th>created_at</th>
+                  <th>email</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoutCaseRows.slice(0, 20).map((row, idx) => (
+                  <tr key={String(row.id || idx)}>
+                    <td className="text-xs">{String(row.id || "—")}</td>
+                    <td className="text-xs">{String(row.opportunity_id || "—")}</td>
+                    <td className="text-xs">{String(row.status || "—")}</td>
+                    <td className="text-xs">
+                      {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
+                    </td>
+                    <td className="text-xs">{String(row.email || "—")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
       <StatsCards stats={stats} />
       <h2 className="admin-section-title mt-10 mb-4">
         <LayoutGrid className="admin-section-title-icon h-4 w-4" />
@@ -343,16 +490,16 @@ export default async function AdminDashboardPage() {
         scoutFollowUpsDue={scoutFollowUpsDue}
         newReplies={newReplies}
         workflowQueues={{
-          newLeads: newLeadsCount ?? 0,
-          followUpsDue: followUpsDueTodayCount ?? 0,
-          replied: repliedCount ?? 0,
-          closed: closedWorkflowCount ?? 0,
+          newLeads: caseNewLeadsCount ?? 0,
+          followUpsDue: caseFollowUpsCount ?? 0,
+          replied: caseRepliedCount ?? 0,
+          closed: caseClosedCount ?? 0,
         }}
         scoutSummaryMetrics={{
           leadsFoundToday: scoutSummary?.leads_found_today ?? 0,
-          topOpportunities: scoutSummary?.top_opportunities_count ?? 0,
-          websitesAudited: scoutSummary?.dashboard_websites_audited ?? 0,
-          followUpsDue: scoutSummary?.followups_due ?? 0,
+          topOpportunities: (topOpportunityRows || []).length,
+          websitesAudited: caseAuditedCount ?? 0,
+          followUpsDue: caseFollowUpsCount ?? 0,
         }}
       />
     </>

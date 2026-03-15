@@ -10,9 +10,31 @@ type BackfillResponse = {
   scout_supabase_host?: string;
   stats?: {
     evaluated?: number;
+    eligible?: number;
     created?: number;
-    duplicate?: number;
-    filtered?: number;
+    duplicate_skipped?: number;
+    filtered_low_score?: number;
+    filtered_missing_contact_path?: number;
+    filtered_missing_workspace?: number;
+    filtered_existing_linked_opportunity?: number;
+    insert_attempted?: number;
+    insert_succeeded?: number;
+    insert_failed?: number;
+    debug_mode?: boolean;
+    intake_threshold_used?: number;
+    contact_rule_used?: string;
+    debug_decisions?: Array<{
+      opportunity_id?: string | null;
+      business_name?: string | null;
+      score?: number;
+      decision?: string;
+      reason?: string;
+    }>;
+    exclusion_samples?: Array<{
+      business_name?: string | null;
+      score?: number;
+      exclusion_reason?: string;
+    }>;
     insert_errors?: number;
     insert_error_samples?: string[];
     query_error?: string | null;
@@ -34,7 +56,7 @@ export function BackfillLeadsButton() {
       const res = await fetch("/api/scout/intake/backfill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ debug_mode: true }),
       });
       const body = (await res.json().catch(() => ({}))) as BackfillResponse;
       if (!res.ok) {
@@ -60,9 +82,22 @@ export function BackfillLeadsButton() {
             {result.message || "Backfill completed."}
           </div>
           <div>
-            evaluated: {Number(result.stats?.evaluated || 0)} | created: {Number(result.stats?.created || 0)} | duplicate:{" "}
-            {Number(result.stats?.duplicate || 0)} | filtered: {Number(result.stats?.filtered || 0)} | insert_errors:{" "}
-            {Number(result.stats?.insert_errors || 0)}
+            evaluated: {Number(result.stats?.evaluated || 0)} | eligible: {Number(result.stats?.eligible || 0)} | created:{" "}
+            {Number(result.stats?.created || 0)} | duplicate_skipped: {Number(result.stats?.duplicate_skipped || 0)} | insert_failed:{" "}
+            {Number(result.stats?.insert_failed || 0)}
+          </div>
+          <div>
+            filtered_low_score: {Number(result.stats?.filtered_low_score || 0)} | filtered_missing_contact_path:{" "}
+            {Number(result.stats?.filtered_missing_contact_path || 0)} | filtered_existing_linked_opportunity:{" "}
+            {Number(result.stats?.filtered_existing_linked_opportunity || 0)}
+          </div>
+          <div>
+            insert_attempted: {Number(result.stats?.insert_attempted || 0)} | insert_succeeded:{" "}
+            {Number(result.stats?.insert_succeeded || 0)} | insert_errors: {Number(result.stats?.insert_errors || 0)}
+          </div>
+          <div>
+            debug_mode: {String(Boolean(result.stats?.debug_mode))} | threshold: {Number(result.stats?.intake_threshold_used || 0)} | contact_rule:{" "}
+            {result.stats?.contact_rule_used || "unknown"}
           </div>
           <div>
             workspace_id: {result.workspace_id || "unknown"} | crm_host: {result.crm_supabase_host || "unknown"} | scout_host:{" "}
@@ -74,6 +109,27 @@ export function BackfillLeadsButton() {
           {Array.isArray(result.stats?.insert_error_samples) && result.stats?.insert_error_samples.length > 0 ? (
             <div style={{ color: "#fca5a5" }}>
               insert_error_samples: {result.stats?.insert_error_samples.slice(0, 3).join(" | ")}
+            </div>
+          ) : null}
+          {Array.isArray(result.stats?.debug_decisions) && result.stats?.debug_decisions.length > 0 ? (
+            <div>
+              decision_samples:{" "}
+              {result.stats.debug_decisions
+                .slice(0, 3)
+                .map((d) => `${d.decision || "unknown"}(${d.business_name || d.opportunity_id || "n/a"}): ${d.reason || "n/a"}`)
+                .join(" | ")}
+            </div>
+          ) : null}
+          {Array.isArray(result.stats?.exclusion_samples) && result.stats?.exclusion_samples.length > 0 ? (
+            <div>
+              exclusion_samples:{" "}
+              {result.stats.exclusion_samples
+                .slice(0, 3)
+                .map(
+                  (d) =>
+                    `${d.business_name || "n/a"} (${Number(d.score ?? 0).toFixed(0)}): ${d.exclusion_reason || "unknown"}`
+                )
+                .join(" | ")}
             </div>
           ) : null}
           <details className="mt-2">
