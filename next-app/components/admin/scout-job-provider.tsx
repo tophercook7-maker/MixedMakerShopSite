@@ -14,7 +14,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import type { RunScoutResponse, ScoutJobStatusResponse } from "@/lib/scout/types";
 
-type JobUiStatus = "idle" | "queued" | "running" | "analyzing" | "finished" | "failed";
+type JobUiStatus =
+  | "idle"
+  | "queued"
+  | "running"
+  | "analyzing"
+  | "finished"
+  | "failed"
+  | "cancelled";
 
 type StoredScoutJobState = {
   jobId: string | null;
@@ -27,6 +34,11 @@ type StoredScoutJobState = {
 };
 
 type StartScoutResult = {
+  ok: boolean;
+  error?: string;
+};
+
+type CancelScoutResult = {
   ok: boolean;
   error?: string;
 };
@@ -47,6 +59,7 @@ type GlobalScoutJobContextValue = {
   isStarting: boolean;
   isBusy: boolean;
   startScout: (integrationReady: boolean) => Promise<StartScoutResult>;
+  cancelScout: () => Promise<CancelScoutResult>;
   clearScoutState: () => void;
 };
 
@@ -56,6 +69,7 @@ const GlobalScoutJobContext = createContext<GlobalScoutJobContextValue | null>(n
 
 function deriveUiStatus(job: ScoutJobStatusResponse): JobUiStatus {
   if (job.status === "queued") return "queued";
+  if (job.status === "cancelled") return "cancelled";
   if (job.status === "failed") return "failed";
   if (job.status === "finished" || job.status === "completed") return "finished";
   if (job.status === "running") {
@@ -78,6 +92,7 @@ function friendlyStatusMessage(status: JobUiStatus, message: string | null, erro
   if (status === "running") return message || "Scout running...";
   if (status === "analyzing") return message || "Scout analyzing businesses...";
   if (status === "finished") return message || "Scout complete";
+  if (status === "cancelled") return message || "Scout cancelled";
   if (status === "failed") return error || "Scout failed";
   return "Ready";
 }
@@ -223,6 +238,12 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
                 ? `Scout complete — ${refreshedCount} leads refreshed`
                 : "Scout complete — leads refreshed"
             );
+            stopPolling();
+            return;
+          }
+
+          if (uiStatus === "cancelled") {
+            setToastMessage("Scout cancelled");
             stopPolling();
             return;
           }
@@ -395,6 +416,57 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     [isBusy, pollJob, writeAndSetState]
   );
 
+  const cancelScout = useCallback(async (): Promise<CancelScoutResult> => {
+    if (!jobId) return { ok: false, error: "No active Scout job." };
+    if (!(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing")) {
+      return { ok: false, error: "Scout is not running." };
+    }
+    writeAndSetState({
+      jobId,
+      jobMessage: "Stopping scout...",
+      stage: "cancelling",
+    });
+    try {
+      const res = await fetch(`/api/scout/jobs/${encodeURIComponent(jobId)}/cancel`, {
+        method: "POST",
+        cache: "no-store",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        status?: string;
+        message?: string;
+        error?: string;
+      };
+      if (!res.ok) {
+        return { ok: false, error: body.error || "Could not cancel Scout job." };
+      }
+      const cancelled = String(body.status || "").toLowerCase() === "cancelled";
+      if (cancelled) {
+        writeAndSetState({
+          jobId,
+          jobStatus: "cancelled",
+          jobProgress: 100,
+          jobMessage: body.message || "Scout cancelled",
+          stage: "cancelled",
+          jobError: null,
+        });
+        stopPolling();
+        setToastMessage("Scout cancelled");
+      } else {
+        writeAndSetState({
+          jobId,
+          jobMessage: body.message || "Stopping scout...",
+          stage: "cancelling",
+        });
+      }
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : "Could not cancel Scout job.",
+      };
+    }
+  }, [jobId, jobStatus, stopPolling, writeAndSetState]);
+
   const statusMessage = useMemo(
     () => friendlyStatusMessage(jobStatus, jobMessage, jobError),
     [jobError, jobMessage, jobStatus]
@@ -412,6 +484,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       isStarting,
       isBusy,
       startScout,
+      cancelScout,
       clearScoutState,
     }),
     [
@@ -425,11 +498,26 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       jobStatus,
       stage,
       startScout,
+      cancelScout,
       statusMessage,
     ]
   );
 
   const showWidget = Boolean(jobId) && (jobStatus !== "idle" || isStarting);
+  const widgetStyle =
+    jobStatus === "cancelled"
+      ? {
+          borderColor: "rgba(250, 204, 21, 0.5)",
+          background: "rgba(66, 52, 12, 0.96)",
+          color: "var(--admin-fg)",
+          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.35)",
+        }
+      : {
+          borderColor: "var(--admin-border)",
+          background: "rgba(15, 18, 24, 0.95)",
+          color: "var(--admin-fg)",
+          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.35)",
+        };
 
   return (
     <GlobalScoutJobContext.Provider value={contextValue}>
@@ -437,12 +525,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       {showWidget && (
         <div
           className="fixed bottom-4 right-4 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border p-3"
-          style={{
-            borderColor: "var(--admin-border)",
-            background: "rgba(15, 18, 24, 0.95)",
-            color: "var(--admin-fg)",
-            boxShadow: "0 12px 36px rgba(0, 0, 0, 0.35)",
-          }}
+          style={widgetStyle}
         >
           <div className="flex items-center gap-2 text-sm font-semibold">
             {(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing" || isStarting) && (
@@ -468,6 +551,19 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
                   }}
                 />
               </div>
+            </div>
+          )}
+          {(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing") && (
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                className="admin-btn-ghost text-xs"
+                onClick={() => {
+                  void cancelScout();
+                }}
+              >
+                Cancel Scout
+              </button>
             </div>
           )}
         </div>

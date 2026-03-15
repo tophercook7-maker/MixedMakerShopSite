@@ -41,6 +41,7 @@ export function ScoutConsole({
 
   const statusClass = useMemo(() => {
     if (scout.jobStatus === "finished") return "admin-badge admin-badge-won";
+    if (scout.jobStatus === "cancelled") return "admin-badge admin-badge-cancelled";
     if (scout.jobStatus === "failed") return "admin-badge admin-badge-lost";
     if (scout.jobStatus === "idle") return "admin-badge admin-badge-pending";
     return "admin-badge admin-badge-progress";
@@ -69,6 +70,17 @@ export function ScoutConsole({
           >
             {scout.isBusy ? "Running..." : "Run Scout"}
           </button>
+          {(scout.jobStatus === "queued" || scout.jobStatus === "running" || scout.jobStatus === "analyzing") && (
+            <button
+              type="button"
+              className="admin-btn-ghost"
+              onClick={() => {
+                void scout.cancelScout();
+              }}
+            >
+              Cancel Scout
+            </button>
+          )}
         </div>
       </section>
 

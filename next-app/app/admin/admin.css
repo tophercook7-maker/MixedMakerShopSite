@@ -378,6 +378,7 @@
 .admin-badge-lost { background: rgba(180, 80, 70, 0.25); color: #f87171; }
 .admin-badge-overdue { background: rgba(200, 100, 60, 0.25); color: #fb923c; }
 .admin-badge-progress { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+.admin-badge-cancelled { background: rgba(250, 204, 21, 0.2); color: #facc15; }
 
 /* Empty states */
 .admin-empty {

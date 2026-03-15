@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Lead } from "@/lib/db-types";
 import { LeadForm } from "./lead-form";
 
@@ -9,6 +10,7 @@ type Props = {
   leads: Lead[];
   initialLeadId?: string;
   initialFocus?: string;
+  initialGenerate?: string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
 };
@@ -17,6 +19,7 @@ export function LeadsTable({
   leads,
   initialLeadId,
   initialFocus,
+  initialGenerate,
   emptyStateTitle,
   emptyStateDescription,
 }: Props) {
@@ -145,9 +148,17 @@ export function LeadsTable({
                 <td style={{ color: "var(--admin-muted)" }}>{l.lead_source ?? "—"}</td>
                 <td style={{ color: "var(--admin-muted)" }}>{l.created_at?.slice(0, 10)}</td>
                 <td>
-                  <button type="button" onClick={() => setEditing(l)} className="text-[var(--admin-gold)] hover:underline text-xs">
-                    Edit
-                  </button>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setEditing(l)} className="text-[var(--admin-gold)] hover:underline text-xs">
+                      Edit
+                    </button>
+                    <Link
+                      href={`/admin/leads?lead=${encodeURIComponent(l.id)}&focus=outreach&generate=1`}
+                      className="text-[var(--admin-gold)] hover:underline text-xs"
+                    >
+                      Generate Email
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -169,6 +180,7 @@ export function LeadsTable({
           onDelete={() => deleteLead(editing.id)}
           onConvertToClient={convertToClient}
           initialFocus={initialFocus}
+          initialGenerate={initialGenerate}
         />
       )}
       {adding && (

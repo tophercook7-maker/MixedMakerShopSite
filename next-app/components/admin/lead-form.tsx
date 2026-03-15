@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Lead } from "@/lib/db-types";
 
 const STATUSES = [
@@ -68,6 +68,13 @@ type EmailMessage = {
   delivery_status?: string | null;
 };
 
+type GeneratedOutreachEmail = {
+  subject?: string | null;
+  body?: string | null;
+  issues?: string[] | null;
+  screenshot_url?: string | null;
+};
+
 type Props = {
   lead?: Lead;
   onClose: () => void;
@@ -75,9 +82,18 @@ type Props = {
   onDelete?: () => void;
   onConvertToClient?: (leadId: string) => void;
   initialFocus?: string;
+  initialGenerate?: string;
 };
 
-export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, initialFocus }: Props) {
+export function LeadForm({
+  lead,
+  onClose,
+  onSave,
+  onDelete,
+  onConvertToClient,
+  initialFocus,
+  initialGenerate,
+}: Props) {
   const [error, setError] = useState<string | null>(null);
   const [mailError, setMailError] = useState<string | null>(null);
   const [mailSuccess, setMailSuccess] = useState<string | null>(null);
@@ -89,6 +105,10 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
   const [threadData, setThreadData] = useState<{ threads: EmailThread[]; messages: EmailMessage[] } | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [generatingEmail, setGeneratingEmail] = useState(false);
+  const [generatedEmail, setGeneratedEmail] = useState<GeneratedOutreachEmail | null>(null);
+  const [draftSubject, setDraftSubject] = useState("");
+  const [draftBody, setDraftBody] = useState("");
   const [outreachWorkflow, setOutreachWorkflow] = useState<{
     lastEmailType: (typeof MESSAGE_TYPES)[number] | null;
     sendStatus: "sent" | "failed" | null;
@@ -113,6 +133,7 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
     follow_up_date: lead?.follow_up_date ?? "",
   });
   const outreachSectionRef = useRef<HTMLDivElement | null>(null);
+  const autoGenerateRef = useRef(false);
 
   const handleSave = () => {
     setError(null);
@@ -247,6 +268,28 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
       source: (candidate || "").trim() ? "dossier" : "fallback",
     };
   }, [previewType, dossierTemplate, fallbackPreview.subject, fallbackPreview.body]);
+  const composedPreview = useMemo(() => {
+    const generatedSubject = (generatedEmail?.subject || "").trim();
+    const generatedBody = (generatedEmail?.body || "").trim();
+    if (generatedSubject || generatedBody) {
+      return {
+        subject: generatedSubject || preview.subject,
+        body: generatedBody || preview.body,
+        source: "ai-generated",
+      };
+    }
+    return preview;
+  }, [generatedEmail?.body, generatedEmail?.subject, preview]);
+
+  useEffect(() => {
+    if ((generatedEmail?.subject || "").trim() || (generatedEmail?.body || "").trim()) {
+      setDraftSubject((generatedEmail?.subject || "").trim() || preview.subject);
+      setDraftBody((generatedEmail?.body || "").trim() || preview.body);
+      return;
+    }
+    setDraftSubject(preview.subject);
+    setDraftBody(preview.body);
+  }, [generatedEmail?.body, generatedEmail?.subject, preview.body, preview.subject]);
 
   const copyValue = useMemo(() => {
     return {
@@ -308,6 +351,48 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
     }
   };
 
+  const generateEmail = useCallback(async () => {
+    if (!lead?.id) {
+      setMailError("Save the lead first before generating outreach.");
+      return;
+    }
+    setGeneratingEmail(true);
+    setMailError(null);
+    setMailSuccess(null);
+    try {
+      const res = await fetch("/api/scout/outreach/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lead_id: lead.id, linked_opportunity_id: lead.linked_opportunity_id }),
+      });
+      const body = (await res.json().catch(() => ({}))) as GeneratedOutreachEmail & {
+        detail?: string;
+        error?: string;
+      };
+      if (!res.ok) {
+        setMailError(body?.detail || body?.error || "Could not generate outreach email.");
+        return;
+      }
+      setGeneratedEmail({
+        subject: (body.subject || "").trim(),
+        body: (body.body || "").trim(),
+        issues: Array.isArray(body.issues) ? body.issues.filter(Boolean) : [],
+        screenshot_url: body.screenshot_url || null,
+      });
+      setMailSuccess("Generated personalized email from Scout analysis.");
+    } catch (e) {
+      setMailError(e instanceof Error ? e.message : "Could not generate outreach email.");
+    } finally {
+      setGeneratingEmail(false);
+    }
+  }, [lead?.id, lead?.linked_opportunity_id]);
+
+  useEffect(() => {
+    if (!lead?.id || initialGenerate !== "1" || autoGenerateRef.current) return;
+    autoGenerateRef.current = true;
+    void generateEmail();
+  }, [generateEmail, initialGenerate, lead?.id]);
+
   const sendOutreach = async (messageType: (typeof MESSAGE_TYPES)[number]) => {
     if (!lead?.id) {
       setMailError("Save the lead first before sending outreach.");
@@ -319,7 +404,11 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
       setMailError("Recipient email is missing.");
       return;
     }
-    if (!preview.body.trim()) {
+    const sendSubject =
+      previewType === messageType ? draftSubject.trim() || composedPreview.subject : composedPreview.subject;
+    const sendBody =
+      previewType === messageType ? draftBody.trim() || composedPreview.body : composedPreview.body;
+    if (!sendBody.trim()) {
       setMailError("Email body is empty.");
       return;
     }
@@ -328,7 +417,10 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
     try {
       const resolvedPreview =
         previewType === messageType
-          ? preview
+          ? {
+              subject: sendSubject,
+              body: sendBody,
+            }
           : (() => {
               const fb = buildTemplate(messageType);
               const candidate =
@@ -521,14 +613,58 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
                 <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
                   Subject
                 </div>
-                <div className="admin-input text-sm">{preview.subject}</div>
+                <input
+                  className="admin-input text-sm"
+                  value={draftSubject}
+                  onChange={(e) => setDraftSubject(e.target.value)}
+                />
                 <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
                   Body
                 </div>
-                <pre className="admin-input text-xs whitespace-pre-wrap">{preview.body}</pre>
+                <textarea
+                  className="admin-input text-xs whitespace-pre-wrap min-h-40"
+                  value={draftBody}
+                  onChange={(e) => setDraftBody(e.target.value)}
+                />
                 <div className="text-xs" style={{ color: "var(--admin-muted-2)" }}>
-                  Source: {templateLoading ? "loading dossier..." : preview.source === "dossier" ? "Scout dossier" : "fallback template"}
+                  Source:{" "}
+                  {templateLoading
+                    ? "loading dossier..."
+                    : composedPreview.source === "ai-generated"
+                      ? "Generated from Scout analysis"
+                      : preview.source === "dossier"
+                        ? "Scout dossier"
+                        : "fallback template"}
                 </div>
+                {Array.isArray(generatedEmail?.issues) && generatedEmail?.issues.length > 0 && (
+                  <div className="text-xs space-y-1" style={{ color: "var(--admin-muted-2)" }}>
+                    <div><strong>Detected issues:</strong></div>
+                    {(generatedEmail?.issues || []).slice(0, 3).map((issue, idx) => (
+                      <div key={`${issue}-${idx}`}>• {issue}</div>
+                    ))}
+                  </div>
+                )}
+                {(generatedEmail?.screenshot_url || "").trim() && (
+                  <div className="space-y-1">
+                    <div className="text-xs" style={{ color: "var(--admin-muted-2)" }}>
+                      Scout screenshot evidence
+                    </div>
+                    <a
+                      href={(generatedEmail?.screenshot_url || "").trim()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
+                    >
+                      Open screenshot
+                    </a>
+                    <img
+                      src={(generatedEmail?.screenshot_url || "").trim()}
+                      alt="Scout website screenshot"
+                      className="rounded-lg border w-full max-h-40 object-cover"
+                      style={{ borderColor: "var(--admin-border)" }}
+                    />
+                  </div>
+                )}
                 {dossierTemplate?.metadata && (
                   <div className="text-xs" style={{ color: "var(--admin-muted-2)" }}>
                     {[
@@ -565,6 +701,14 @@ export function LeadForm({ lead, onClose, onSave, onDelete, onConvertToClient, i
                 ))}
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  disabled={generatingEmail}
+                  onClick={() => void generateEmail()}
+                  className="admin-btn-primary"
+                >
+                  {generatingEmail ? "Generating..." : "Generate Email"}
+                </button>
                 <button
                   type="button"
                   disabled={regenerating}

@@ -107,6 +107,7 @@ export default async function AdminOutreachPage({
                   <th>Send Status</th>
                   <th>Last Email Sent</th>
                   <th>Next Follow-Up</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,6 +121,14 @@ export default async function AdminOutreachPage({
                       <td>{event?.send_status || "—"}</td>
                       <td>{event?.sent_at ? new Date(event.sent_at).toLocaleString() : "—"}</td>
                       <td>{lead.next_follow_up_at ? new Date(lead.next_follow_up_at).toLocaleDateString() : "—"}</td>
+                      <td>
+                        <Link
+                          href={`/admin/leads?lead=${encodeURIComponent(lead.id)}&focus=outreach&generate=1`}
+                          className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
+                        >
+                          Generate Email
+                        </Link>
+                      </td>
                     </tr>
                   );
                 })}

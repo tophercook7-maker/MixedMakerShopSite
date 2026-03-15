@@ -25,9 +25,10 @@ export default async function AdminLeadsPage({
     date?: string;
     status?: string;
     sort?: string;
+    generate?: string;
   }>;
 }) {
-  const { view, lead, focus, source, date, status, sort } = await searchParams;
+  const { view, lead, focus, source, date, status, sort, generate } = await searchParams;
   const showPipeline = view === "pipeline";
   await refreshDueFollowUps();
 
@@ -107,6 +108,7 @@ export default async function AdminLeadsPage({
           leads={leads ?? []}
           initialLeadId={lead}
           initialFocus={focus}
+          initialGenerate={generate}
           emptyStateTitle={
             source === "scout-brain" && date === "today"
               ? "No scout leads found for today"
