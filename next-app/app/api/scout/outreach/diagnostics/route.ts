@@ -67,6 +67,23 @@ export async function GET(request: Request) {
       : { error: await response.text() };
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          {
+            ok: false,
+            proxy_route_live: true,
+            error: "Scout diagnostics endpoint is not available on backend deployment",
+            upstream: {
+              path: "/outreach/email-diagnostics",
+              status: 404,
+              body,
+            },
+            next_step:
+              "Deploy Scout-Brain backend version that includes GET /outreach/email-diagnostics.",
+          },
+          { status: 502 }
+        );
+      }
       if (response.status === 401) {
         return NextResponse.json(
           { error: "Scout authentication failed", detail: body },
