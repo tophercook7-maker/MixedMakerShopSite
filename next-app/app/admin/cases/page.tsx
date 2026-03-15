@@ -9,6 +9,25 @@ type CaseSearchParams = {
   date?: string;
 };
 
+type CaseRow = {
+  id: string;
+  opportunity_id: string | null;
+  website_score: number | null;
+  audit_issues: string[] | null;
+  status: string | null;
+  created_at: string | null;
+  email: string | null;
+  contact_page: string | null;
+  phone_from_site: string | null;
+  opportunity?: {
+    id?: string;
+    business_name?: string;
+    category?: string;
+    website?: string;
+    opportunity_score?: number;
+  } | null;
+};
+
 export default async function AdminCasesPage({
   searchParams,
 }: {
@@ -29,7 +48,7 @@ export default async function AdminCasesPage({
     .from("case_files")
     .select(
       "id,opportunity_id,website_score,audit_issues,status,created_at,email,contact_page,phone_from_site,"
-      "opportunity:opportunities(id,business_name,category,website,opportunity_score)"
+      + "opportunity:opportunities(id,business_name,category,website,opportunity_score)"
     )
     .order("created_at", { ascending: false })
     .limit(500);
@@ -37,7 +56,7 @@ export default async function AdminCasesPage({
     casesQuery = casesQuery.gte("created_at", dayStart);
   }
   const { data: caseRows } = await casesQuery;
-  const rows = caseRows || [];
+  const rows = ((caseRows || []) as unknown[]) as CaseRow[];
   const oppIds = rows
     .map((row) => String(row.opportunity_id || "").trim())
     .filter((id): id is string => Boolean(id));
