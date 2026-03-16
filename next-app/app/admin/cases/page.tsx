@@ -54,6 +54,20 @@ export default async function AdminCasesPage({
 }) {
   const { audited, filter, date } = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const ownerId = String(user?.id || "").trim();
+  if (!ownerId) {
+    return (
+      <section className="admin-card">
+        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+          Sign in to view cases.
+        </p>
+      </section>
+    );
+  }
+  const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
@@ -79,6 +93,9 @@ export default async function AdminCasesPage({
     `)
     .order("created_at", { ascending: false })
     .limit(500);
+  if (workspaceId) {
+    casesQuery = casesQuery.eq("workspace_id", workspaceId);
+  }
   if (date === "today") {
     casesQuery = casesQuery.gte("created_at", dayStart);
   }
@@ -92,14 +109,24 @@ export default async function AdminCasesPage({
     .map((row) => String(row.opportunity_id || "").trim())
     .filter((id): id is string => Boolean(id));
   const { data: opportunities } = fallbackOppIds.length
-    ? await supabase
-        .from("opportunities")
-        .select("id,business_name,category,website,opportunity_score,opportunity_reason,lane,no_website,website_speed,mobile_ready")
-        .in("id", fallbackOppIds)
+    ? await (async () => {
+        let oppQuery = supabase
+          .from("opportunities")
+          .select("id,business_name,category,website,opportunity_score,opportunity_reason,lane,no_website,website_speed,mobile_ready")
+          .in("id", fallbackOppIds);
+        if (workspaceId) {
+          oppQuery = oppQuery.eq("workspace_id", workspaceId);
+        }
+        return oppQuery;
+      })()
     : { data: [] as Record<string, unknown>[] };
   const oppById = new Map((opportunities || []).map((row) => [String(row.id || ""), row]));
   const { data: linkedLeadRows } = oppIds.length
-    ? await supabase.from("leads").select("id,linked_opportunity_id").in("linked_opportunity_id", oppIds)
+    ? await supabase
+        .from("leads")
+        .select("id,linked_opportunity_id")
+        .eq("owner_id", ownerId)
+        .in("linked_opportunity_id", oppIds)
     : { data: [] as Array<{ id: string; linked_opportunity_id?: string | null }> };
   const leadByOppId = new Map<string, string>(
     (linkedLeadRows || [])

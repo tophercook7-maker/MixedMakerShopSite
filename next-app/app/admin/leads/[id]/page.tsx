@@ -60,6 +60,19 @@ export default async function AdminLeadDetailPage({
   const { id } = await params;
   const { generate, compose } = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const ownerId = String(user?.id || "").trim();
+  if (!ownerId) {
+    return (
+      <section className="admin-card">
+        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+          Sign in to open lead workspaces.
+        </p>
+      </section>
+    );
+  }
   const targetId = String(id || "").trim();
   if (!targetId) {
     return (
@@ -76,20 +89,14 @@ export default async function AdminLeadDetailPage({
     .select(
       "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
     )
+    .eq("owner_id", ownerId)
     .eq("id", targetId)
     .limit(1);
   const lead = ((leadRows || [])[0] as LeadRow | undefined) || null;
 
-  const { data: directCaseRows } = await supabase
-    .from("case_files")
-    .select(
-      "id,opportunity_id,created_at,status,email,contact_page,phone_from_site,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome"
-    )
-    .eq("id", targetId)
-    .limit(1);
-  let caseRow = ((directCaseRows || [])[0] as CaseRow | undefined) || null;
+  let caseRow: CaseRow | null = null;
 
-  const linkedOppId = String(lead?.linked_opportunity_id || caseRow?.opportunity_id || "").trim();
+  const linkedOppId = String(lead?.linked_opportunity_id || "").trim();
   if (!caseRow && linkedOppId) {
     const { data: caseByOppRows } = await supabase
       .from("case_files")

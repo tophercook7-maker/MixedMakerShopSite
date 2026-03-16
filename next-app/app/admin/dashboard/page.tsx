@@ -81,13 +81,20 @@ async function createLeadFromOpportunity(formData: FormData) {
     return;
   }
 
-  const { data: opportunityRows } = await supabase
-    .from("opportunities")
-    .select(
-      "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
-    )
-    .eq("id", opportunityId)
-    .limit(1);
+  const { data: opportunityRows } = await (async () => {
+    let oppQuery = supabase
+      .from("opportunities")
+      .select(
+        "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
+      )
+      .eq("id", opportunityId)
+      .limit(1);
+    const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+    if (workspaceId) {
+      oppQuery = oppQuery.eq("workspace_id", workspaceId);
+    }
+    return oppQuery;
+  })();
   const opp = (opportunityRows || [])[0] as OpportunityRow | undefined;
   if (!opp?.id) return;
 
@@ -122,6 +129,7 @@ export default async function ScoutCrmCommandCenterPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
 
   const ownerId = String(user?.id || "").trim();
   if (!ownerId) {
@@ -142,13 +150,19 @@ export default async function ScoutCrmCommandCenterPage() {
     { data: followUpsRaw },
     winsWithEstimated,
   ] = await Promise.all([
-    supabase
-      .from("opportunities")
-      .select(
-        "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
-      )
-      .order("opportunity_score", { ascending: false })
-      .limit(400),
+    (async () => {
+      let oppQuery = supabase
+        .from("opportunities")
+        .select(
+          "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
+        )
+        .order("opportunity_score", { ascending: false })
+        .limit(400);
+      if (workspaceId) {
+        oppQuery = oppQuery.eq("workspace_id", workspaceId);
+      }
+      return oppQuery;
+    })(),
     supabase.from("leads").select("id,linked_opportunity_id").eq("owner_id", ownerId).limit(2000),
     supabase
       .from("leads")
@@ -207,10 +221,16 @@ export default async function ScoutCrmCommandCenterPage() {
   );
   const allActionOppIds = Array.from(new Set([...readyOppIds, ...followUpOppIds]));
   const { data: actionOppRows } = allActionOppIds.length
-    ? await supabase
-        .from("opportunities")
-        .select("id,opportunity_reason,opportunity_score,business_name")
-        .in("id", allActionOppIds)
+    ? await (async () => {
+        let actionQuery = supabase
+          .from("opportunities")
+          .select("id,opportunity_reason,opportunity_score,business_name")
+          .in("id", allActionOppIds);
+        if (workspaceId) {
+          actionQuery = actionQuery.eq("workspace_id", workspaceId);
+        }
+        return actionQuery;
+      })()
     : { data: [] as Array<Record<string, unknown>> };
   const actionOppById = new Map(
     (actionOppRows || []).map((row) => [String(row.id || "").trim(), row as Record<string, unknown>])

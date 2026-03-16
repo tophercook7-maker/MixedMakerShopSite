@@ -84,6 +84,15 @@ export default async function AdminLeadsPage({
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const ownerId = String(user?.id || "").trim();
+  if (!ownerId) {
+    return (
+      <section className="admin-card">
+        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+          Sign in to view leads.
+        </p>
+      </section>
+    );
+  }
 
   let baseQuery = supabase
     .from("leads")
@@ -96,12 +105,11 @@ export default async function AdminLeadsPage({
   if (date === "today") baseQuery = baseQuery.gte("created_at", dayStart);
 
   const { data: joinedRows, error: joinedError } = await baseQuery;
-  let queryMode: "relationship" | "simple_fallback" | "failed" = "relationship";
+  let queryMode: "relationship" | "failed" = "relationship";
   let queryError: string | null = joinedError?.message || null;
   let rows: LeadRow[] = [];
 
   if (joinedError) {
-    queryMode = "simple_fallback";
     queryMode = "failed";
     queryError = joinedError.message;
     rows = [];
@@ -198,11 +206,18 @@ export default async function AdminLeadsPage({
       annotated_screenshot_url: caseRow?.annotated_screenshot_url || null,
       timeline: [],
       notes: [String(caseRow?.outcome || "").trim(), String(caseRow?.notes || "").trim(), String(row.notes || "").trim()].filter(Boolean),
+      lead_source: String(row.lead_source || "").trim() || null,
     };
   });
 
-  if (source && source !== "scout-brain") {
-    workflowLeads = [];
+  if (source) {
+    const wantedSource = String(source || "").trim().toLowerCase();
+    workflowLeads = workflowLeads.filter((lead) => {
+      const leadSource = String(lead.lead_source || "")
+        .trim()
+        .toLowerCase();
+      return leadSource === wantedSource;
+    });
   }
   if (status) {
     const wanted = normalizeStatus(status);
@@ -308,6 +323,36 @@ export default async function AdminLeadsPage({
     };
   });
 
+  let emptyStateReason = "";
+  if (workflowLeads.length === 0) {
+    const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+    const [{ count: opportunitiesCount }, { count: casesCount }] = await Promise.all([
+      workspaceId
+        ? supabase
+            .from("opportunities")
+            .select("id", { count: "exact", head: true })
+            .eq("workspace_id", workspaceId)
+        : Promise.resolve({ count: null }),
+      workspaceId
+        ? supabase
+            .from("case_files")
+            .select("id", { count: "exact", head: true })
+            .eq("workspace_id", workspaceId)
+        : Promise.resolve({ count: null }),
+    ]);
+    if (source) {
+      emptyStateReason = `No leads found for source "${source}".`;
+    } else if (status) {
+      emptyStateReason = `No leads currently match status "${status.replace(/_/g, " ")}".`;
+    } else if ((opportunitiesCount || 0) > 0 && (casesCount || 0) > 0) {
+      emptyStateReason =
+        "Scout opportunities/cases exist, but no CRM leads are linked yet. Run intake backfill and confirm workspace alignment.";
+    } else {
+      emptyStateReason =
+        "No leads created yet. Run Scout and use intake/backfill to convert opportunities into leads. If opportunities exist but leads do not, verify workspace alignment and intake results.";
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -323,7 +368,7 @@ export default async function AdminLeadsPage({
           </p>
         </section>
       ) : (
-        <LeadsWorkflowView initialLeads={workflowLeads} />
+        <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
       )}
     </div>
   );

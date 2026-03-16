@@ -15,6 +15,7 @@ type TimelineEntry = {
 export type WorkflowLead = {
   id: string;
   related_case_id?: string | null;
+  lead_source?: string | null;
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
@@ -47,7 +48,13 @@ function badgeClass(status: WorkflowLead["status"]) {
   return "admin-badge admin-badge-new";
 }
 
-export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead[] }) {
+export function LeadsWorkflowView({
+  initialLeads,
+  emptyStateReason,
+}: {
+  initialLeads: WorkflowLead[];
+  emptyStateReason?: string;
+}) {
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -165,7 +172,9 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
         {filtered.length === 0 ? (
           <div className="admin-empty !py-8">
             <div className="admin-empty-title">No leads found</div>
-            <div className="admin-empty-desc">Try a different search query.</div>
+            <div className="admin-empty-desc">
+              {emptyStateReason || "Try a different search query."}
+            </div>
           </div>
         ) : viewMode === "cards" ? (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
