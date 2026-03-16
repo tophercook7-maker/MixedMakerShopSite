@@ -67,7 +67,23 @@ export default async function AdminLeadsPage({
   let baseQuery = supabase
     .from("case_files")
     .select(`
-      *,
+      id,
+      opportunity_id,
+      workspace_id,
+      created_at,
+      status,
+      email,
+      contact_page,
+      phone_from_site,
+      audit_issues,
+      strongest_problems,
+      screenshot_url,
+      screenshot_urls,
+      homepage_screenshot_url,
+      annotated_screenshot_url,
+      annotation_payload,
+      notes,
+      outcome,
       opportunity:opportunities(
         id,
         business_name,
@@ -172,7 +188,7 @@ export default async function AdminLeadsPage({
       .map((v) => String(v || "").trim())
       .filter(Boolean);
     return {
-      id: String(row.id || ""),
+      id: String(row.id || row.opportunity_id || ""),
       opportunity_id: String(row.opportunity_id || "") || null,
       business_name: String(opp?.business_name || "Unknown business"),
       category: opp?.category ? String(opp.category) : null,

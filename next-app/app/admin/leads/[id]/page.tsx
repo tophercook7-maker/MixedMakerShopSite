@@ -28,6 +28,22 @@ type LeadDetailCaseRow = {
   } | null;
 };
 
+type LeadTableRow = {
+  id: string;
+  business_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  linked_opportunity_id?: string | null;
+  opportunity_score?: number | null;
+  status?: string | null;
+  notes?: string | null;
+  last_contacted_at?: string | null;
+  next_follow_up_at?: string | null;
+  created_at?: string | null;
+};
+
 function fmtDate(v: string | null | undefined) {
   if (!v) return "—";
   const d = new Date(v);
@@ -42,6 +58,8 @@ export default async function AdminLeadDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const targetId = String(id || "").trim();
+  if (!targetId) notFound();
 
   const { data: joinedRows } = await supabase
     .from("case_files")
@@ -56,14 +74,49 @@ export default async function AdminLeadDetailPage({
         opportunity_reason
       )
     `)
-    .eq("id", id)
+    .eq("id", targetId)
     .limit(1);
 
-  const row = (joinedRows || [])[0] as LeadDetailCaseRow | undefined;
-  if (!row) notFound();
+  let row = (joinedRows || [])[0] as LeadDetailCaseRow | undefined;
+  let leadRow: LeadTableRow | null = null;
 
-  const oppId = String(row.opportunity_id || "").trim();
-  let opp = row.opportunity || null;
+  if (!row) {
+    const { data: leadRows } = await supabase
+      .from("leads")
+      .select(
+        "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,last_contacted_at,next_follow_up_at,created_at"
+      )
+      .eq("id", targetId)
+      .limit(1);
+    leadRow = ((leadRows || [])[0] as LeadTableRow | undefined) || null;
+    if (!leadRow) notFound();
+
+    const linkedOppId = String(leadRow.linked_opportunity_id || "").trim();
+    if (linkedOppId) {
+      const { data: caseByOppRows } = await supabase
+        .from("case_files")
+        .select(`
+          *,
+          opportunity:opportunities(
+            id,
+            business_name,
+            category,
+            website,
+            opportunity_score,
+            opportunity_reason
+          )
+        `)
+        .eq("opportunity_id", linkedOppId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      row = (caseByOppRows || [])[0] as LeadDetailCaseRow | undefined;
+    }
+  }
+
+  if (!row && !leadRow) notFound();
+
+  const oppId = String(row?.opportunity_id || leadRow?.linked_opportunity_id || "").trim();
+  let opp = row?.opportunity || null;
   if ((!opp || !String(opp.business_name || "").trim()) && oppId) {
     const { data: oppRows } = await supabase
       .from("opportunities")
@@ -74,24 +127,26 @@ export default async function AdminLeadDetailPage({
   }
 
   const screenshotUrls = [
-    row.annotated_screenshot_url,
-    row.screenshot_url,
-    row.homepage_screenshot_url,
-    ...(Array.isArray(row.screenshot_urls) ? row.screenshot_urls : []),
+    row?.annotated_screenshot_url,
+    row?.screenshot_url,
+    row?.homepage_screenshot_url,
+    ...(Array.isArray(row?.screenshot_urls) ? row!.screenshot_urls : []),
   ]
     .map((v) => String(v || "").trim())
     .filter(Boolean);
 
   const issueListRaw = [
     String(opp?.opportunity_reason || "").trim(),
-    ...(Array.isArray(row.audit_issues) ? row.audit_issues : []),
-    ...(Array.isArray(row.strongest_problems) ? row.strongest_problems : []),
+    ...(Array.isArray(row?.audit_issues) ? row!.audit_issues : []),
+    ...(Array.isArray(row?.strongest_problems) ? row!.strongest_problems : []),
+    String((leadRow?.notes || "")).trim(),
   ];
   const issueList = Array.from(
     new Set(issueListRaw.map((v) => String(v || "").trim()).filter(Boolean))
   ).slice(0, 8);
 
-  const leadEmail = String(row.email || "").trim().toLowerCase();
+  const leadEmail = String(row?.email || leadRow?.email || "").trim().toLowerCase();
+  const leadIdForTimeline = String(leadRow?.id || "").trim();
   const { data: threadRows } = leadEmail
     ? await supabase
         .from("email_threads")
@@ -110,7 +165,40 @@ export default async function AdminLeadDetailPage({
         .in("thread_id", threadIds)
         .order("created_at", { ascending: true })
         .limit(1500)
+    : leadIdForTimeline
+      ? await supabase
+          .from("email_messages")
+          .select("id,thread_id,direction,subject,body,delivery_status,sent_at,received_at,created_at")
+          .eq("lead_id", leadIdForTimeline)
+          .order("created_at", { ascending: true })
+          .limit(1500)
     : { data: [] as Array<Record<string, unknown>> };
+
+  const displayBusinessName =
+    String(opp?.business_name || "").trim() ||
+    String(row?.opportunity?.business_name || "").trim() ||
+    String(leadRow?.business_name || "").trim() ||
+    "Unknown business";
+  const displayCategory =
+    String(opp?.category || "").trim() ||
+    String(row?.opportunity?.category || "").trim() ||
+    String(leadRow?.industry || "").trim() ||
+    "—";
+  const displayScore = Number(
+    opp?.opportunity_score ??
+      row?.opportunity?.opportunity_score ??
+      leadRow?.opportunity_score ??
+      0
+  );
+  const displayWebsite =
+    String(opp?.website || "").trim() ||
+    String(row?.opportunity?.website || "").trim() ||
+    String(leadRow?.website || "").trim();
+  const displayEmail = String(row?.email || leadRow?.email || "").trim();
+  const displayPhone = String(row?.phone_from_site || leadRow?.phone || "").trim();
+  const displayContactPage = String(row?.contact_page || "").trim();
+  const displayStatus = String(row?.status || leadRow?.status || "new");
+  const displayCreatedAt = row?.created_at || leadRow?.created_at || null;
 
   return (
     <div className="space-y-6">
@@ -118,10 +206,10 @@ export default async function AdminLeadDetailPage({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
-              {String(opp?.business_name || "Unknown business")}
+              {displayBusinessName}
             </h1>
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-              {String(opp?.category || "—")} · Score {Number(opp?.opportunity_score ?? 0) || "—"}
+              {displayCategory} · Score {displayScore || "—"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -138,9 +226,9 @@ export default async function AdminLeadDetailPage({
       <section className="admin-card">
         <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Website</h2>
         <div className="text-sm mb-3" style={{ color: "var(--admin-muted)" }}>
-          {opp?.website ? (
-            <a href={String(opp.website)} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-              {String(opp.website)}
+          {displayWebsite ? (
+            <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
+              {displayWebsite}
             </a>
           ) : (
             "No website captured"
@@ -177,15 +265,15 @@ export default async function AdminLeadDetailPage({
         <div className="grid gap-2 md:grid-cols-3 text-sm">
           <div>
             <span style={{ color: "var(--admin-muted)" }}>Email: </span>
-            {row.email ? <a href={`mailto:${row.email}`} className="text-[var(--admin-gold)] hover:underline">{row.email}</a> : "—"}
+            {displayEmail ? <a href={`mailto:${displayEmail}`} className="text-[var(--admin-gold)] hover:underline">{displayEmail}</a> : "—"}
           </div>
           <div>
             <span style={{ color: "var(--admin-muted)" }}>Phone: </span>
-            {row.phone_from_site ? <a href={`tel:${row.phone_from_site}`} className="text-[var(--admin-gold)] hover:underline">{row.phone_from_site}</a> : "—"}
+            {displayPhone ? <a href={`tel:${displayPhone}`} className="text-[var(--admin-gold)] hover:underline">{displayPhone}</a> : "—"}
           </div>
           <div>
             <span style={{ color: "var(--admin-muted)" }}>Contact Page: </span>
-            {row.contact_page ? <a href={row.contact_page} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">Open</a> : "—"}
+            {displayContactPage ? <a href={displayContactPage} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">Open</a> : "—"}
           </div>
         </div>
       </section>
@@ -221,7 +309,7 @@ export default async function AdminLeadDetailPage({
           </ul>
         )}
         <div className="mt-3 text-xs" style={{ color: "var(--admin-muted)" }}>
-          Status: {String(row.status || "new")} · Created: {fmtDate(row.created_at)}
+          Status: {displayStatus} · Created: {fmtDate(displayCreatedAt)}
         </div>
       </section>
     </div>
