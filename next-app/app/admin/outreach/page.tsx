@@ -123,7 +123,7 @@ export default async function AdminOutreachPage({
                       <td>{lead.next_follow_up_at ? new Date(lead.next_follow_up_at).toLocaleDateString() : "—"}</td>
                       <td>
                         <Link
-                          href={`/admin/leads?lead=${encodeURIComponent(lead.id)}&focus=outreach&generate=1`}
+                          href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`}
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Generate Email
@@ -172,7 +172,7 @@ export default async function AdminOutreachPage({
                     <td>
                       {thread.lead_id ? (
                         <Link
-                          href={`/admin/leads?lead=${encodeURIComponent(thread.lead_id)}&focus=outreach`}
+                          href={`/admin/leads/${encodeURIComponent(thread.lead_id)}`}
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Open Timeline

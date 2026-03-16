@@ -29,6 +29,24 @@ type CaseRow = {
   } | null;
 };
 
+type MappedCaseRow = {
+  id: string;
+  opportunity_id: string;
+  business_name: string;
+  category: string;
+  website: string;
+  score: number;
+  opportunity_reason: string;
+  lane: string;
+  website_speed: number | null | undefined;
+  mobile_ready: boolean | null | undefined;
+  website_score: number | null | undefined;
+  audit_issues_count: number;
+  has_audit: boolean;
+  status: string;
+  linked_lead_id: string | null;
+};
+
 export default async function AdminCasesPage({
   searchParams,
 }: {
@@ -80,6 +98,14 @@ export default async function AdminCasesPage({
         .in("id", fallbackOppIds)
     : { data: [] as Record<string, unknown>[] };
   const oppById = new Map((opportunities || []).map((row) => [String(row.id || ""), row]));
+  const { data: linkedLeadRows } = oppIds.length
+    ? await supabase.from("leads").select("id,linked_opportunity_id").in("linked_opportunity_id", oppIds)
+    : { data: [] as Array<{ id: string; linked_opportunity_id?: string | null }> };
+  const leadByOppId = new Map<string, string>(
+    (linkedLeadRows || [])
+      .map((row): [string, string] => [String(row.linked_opportunity_id || "").trim(), String(row.id || "").trim()])
+      .filter(([opp, leadId]) => Boolean(opp) && Boolean(leadId))
+  );
   const missingJoinCount = rowsNeedingFallback.length;
   if (missingJoinCount > 0) {
     console.warn("[Admin Cases] case_files -> opportunities join missing rows", {
@@ -88,7 +114,7 @@ export default async function AdminCasesPage({
     });
   }
 
-  let mapped = rows.map((row) => {
+  let mapped: MappedCaseRow[] = rows.map((row) => {
     const joinedOpp = row.opportunity as Record<string, unknown> | null | undefined;
     const opp = joinedOpp || oppById.get(String(row.opportunity_id || "").trim());
     const auditIssues = Array.isArray(row.audit_issues) ? row.audit_issues : [];
@@ -108,6 +134,7 @@ export default async function AdminCasesPage({
       audit_issues_count: auditIssues.length,
       has_audit: hasAudit,
       status: String(row.status || "New"),
+      linked_lead_id: leadByOppId.get(String(row.opportunity_id || "").trim()) || null,
     };
   });
 
@@ -191,12 +218,21 @@ export default async function AdminCasesPage({
                     <td>{row.has_audit ? `audited (${row.audit_issues_count} issues)` : "not audited"}</td>
                     <td>{row.status.replace("_", " ")}</td>
                     <td>
-                      <Link
-                        href={`/admin/leads?source=scout-brain&sort=score_desc`}
-                        className="text-[var(--admin-gold)] hover:underline text-xs"
-                      >
-                        Open Leads
-                      </Link>
+                      {row.linked_lead_id ? (
+                        <Link
+                          href={`/admin/leads/${encodeURIComponent(row.linked_lead_id)}`}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                        >
+                          Open Lead
+                        </Link>
+                      ) : (
+                        <Link
+                          href={`/admin/leads?source=scout-brain&sort=score_desc`}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                        >
+                          Open Leads
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}

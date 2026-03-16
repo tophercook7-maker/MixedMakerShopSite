@@ -1,36 +1,26 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView, type WorkflowLead } from "@/components/admin/leads-workflow-view";
 
-type CaseLeadRow = {
+type LeadRow = {
   id: string;
-  opportunity_id: string | null;
+  owner_id?: string | null;
+  linked_opportunity_id?: string | null;
   workspace_id?: string | null;
   created_at: string | null;
   status: string | null;
+  business_name?: string | null;
   email: string | null;
-  contact_page: string | null;
-  phone_from_site: string | null;
-  audit_issues?: string[] | null;
-  strongest_problems?: string[] | null;
-  screenshot_url?: string | null;
-  screenshot_urls?: string[] | null;
-  homepage_screenshot_url?: string | null;
-  annotated_screenshot_url?: string | null;
-  annotation_payload?: unknown;
-  opportunity?: {
-    id?: string;
-    business_name?: string;
-    category?: string;
-    website?: string;
-    opportunity_score?: number;
-    opportunity_reason?: string | null;
-  } | null;
+  phone?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  notes?: string | null;
+  opportunity_score?: number | null;
+  lead_source?: string | null;
 };
 
 type OpportunityRow = {
-  id?: string;
+  id: string;
   business_name?: string;
   category?: string;
   website?: string;
@@ -38,15 +28,42 @@ type OpportunityRow = {
   opportunity_reason?: string | null;
 };
 
-function normalizeStatus(value: string | null | undefined): string {
+type CaseByOpportunityRow = {
+  id: string;
+  opportunity_id: string | null;
+  status?: string | null;
+  email?: string | null;
+  contact_page?: string | null;
+  phone_from_site?: string | null;
+  audit_issues?: string[] | null;
+  strongest_problems?: string[] | null;
+  screenshot_url?: string | null;
+  screenshot_urls?: string[] | null;
+  homepage_screenshot_url?: string | null;
+  annotated_screenshot_url?: string | null;
+  notes?: string | null;
+  outcome?: string | null;
+  created_at?: string | null;
+};
+
+function normalizeStatus(value: string | null | undefined): WorkflowLead["status"] {
   const normalized = String(value || "")
     .trim()
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
   if (!normalized) return "new";
-  if (normalized === "follow_up_due") return "follow_up";
-  if (normalized === "closed_won") return "closed";
-  return normalized;
+  if (
+    normalized === "new" ||
+    normalized === "contacted" ||
+    normalized === "follow_up_due" ||
+    normalized === "replied" ||
+    normalized === "closed_won" ||
+    normalized === "closed_lost" ||
+    normalized === "do_not_contact"
+  ) {
+    return normalized;
+  }
+  return "new";
 }
 
 export default async function AdminLeadsPage({
@@ -61,38 +78,19 @@ export default async function AdminLeadsPage({
 }) {
   const { source, date, status, sort } = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const now = new Date();
   const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const ownerId = String(user?.id || "").trim();
 
   let baseQuery = supabase
-    .from("case_files")
-    .select(`
-      id,
-      opportunity_id,
-      workspace_id,
-      created_at,
-      status,
-      email,
-      contact_page,
-      phone_from_site,
-      audit_issues,
-      strongest_problems,
-      screenshot_url,
-      screenshot_urls,
-      homepage_screenshot_url,
-      annotated_screenshot_url,
-      annotation_payload,
-      notes,
-      outcome,
-      opportunity:opportunities(
-        id,
-        business_name,
-        category,
-        website,
-        opportunity_score,
-        opportunity_reason
-      )
-    `)
+    .from("leads")
+    .select(
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source"
+    )
+    .eq("owner_id", ownerId)
     .order("created_at", { ascending: false })
     .limit(500);
   if (date === "today") baseQuery = baseQuery.gte("created_at", dayStart);
@@ -100,128 +98,109 @@ export default async function AdminLeadsPage({
   const { data: joinedRows, error: joinedError } = await baseQuery;
   let queryMode: "relationship" | "simple_fallback" | "failed" = "relationship";
   let queryError: string | null = joinedError?.message || null;
-  let rows: CaseLeadRow[] = [];
+  let rows: LeadRow[] = [];
 
   if (joinedError) {
     queryMode = "simple_fallback";
-    let fallbackQuery = supabase
-      .from("case_files")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
-    if (date === "today") fallbackQuery = fallbackQuery.gte("created_at", dayStart);
-    const { data: fallbackRows, error: fallbackError } = await fallbackQuery;
-    if (fallbackError) {
-      queryMode = "failed";
-      queryError = `${joinedError.message} | fallback: ${fallbackError.message}`;
-      rows = [];
-    } else {
-      rows = (fallbackRows || []) as CaseLeadRow[];
-    }
+    queryMode = "failed";
+    queryError = joinedError.message;
+    rows = [];
   } else {
-    rows = (joinedRows || []) as CaseLeadRow[];
+    rows = (joinedRows || []) as LeadRow[];
   }
 
-  function relationshipOpportunity(row: CaseLeadRow): OpportunityRow | null {
-    const rel = row.opportunity as unknown;
-    if (Array.isArray(rel)) {
-      const first = rel[0] as OpportunityRow | undefined;
-      return first || null;
-    }
-    if (rel && typeof rel === "object") {
-      return rel as OpportunityRow;
-    }
-    return null;
-  }
-
-  const missingOppRows = rows.filter((row) => {
-    const rel = relationshipOpportunity(row);
-    return !String(rel?.business_name || "").trim() && String(row.opportunity_id || "").trim();
-  });
-  const fallbackOppIds = Array.from(
+  const opportunityIds = Array.from(
     new Set(
-      missingOppRows
-        .map((row) => String(row.opportunity_id || "").trim())
+      rows
+        .map((row) => String(row.linked_opportunity_id || "").trim())
         .filter(Boolean)
     )
   );
-  const { data: fallbackOppRows } = fallbackOppIds.length
+  const { data: fallbackOppRows } = opportunityIds.length
     ? await supabase
         .from("opportunities")
         .select("id,business_name,category,website,opportunity_score,opportunity_reason")
-        .in("id", fallbackOppIds)
+        .in("id", opportunityIds)
     : { data: [] as OpportunityRow[] };
   const fallbackOppById = new Map(
-    (fallbackOppRows || []).map((row) => [String(row.id || ""), row])
+    (fallbackOppRows || []).map((row) => [String(row.id || ""), row as OpportunityRow])
   );
-  if (fallbackOppIds.length > 0) {
-    console.warn("[Admin Leads] missing relationship opportunity data, used fallback by opportunity_id", {
-      missing: fallbackOppIds.length,
-      resolved: (fallbackOppRows || []).length,
-    });
+  const { data: caseRowsRaw } = opportunityIds.length
+    ? await supabase
+        .from("case_files")
+        .select(
+          "id,opportunity_id,status,email,contact_page,phone_from_site,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,created_at"
+        )
+        .in("opportunity_id", opportunityIds)
+        .order("created_at", { ascending: false })
+        .limit(1000)
+    : { data: [] as CaseByOpportunityRow[] };
+  const caseRows = (caseRowsRaw || []) as CaseByOpportunityRow[];
+  const latestCaseByOppId = new Map<string, CaseByOpportunityRow>();
+  for (const row of caseRows) {
+    const oppId = String(row.opportunity_id || "").trim();
+    if (!oppId || latestCaseByOppId.has(oppId)) continue;
+    latestCaseByOppId.set(oppId, row);
   }
 
   let workflowLeads: WorkflowLead[] = rows.map((row) => {
-    const detectedIssuesRaw = Array.isArray(row.audit_issues)
-      ? row.audit_issues
-      : Array.isArray(row.strongest_problems)
-        ? row.strongest_problems
+    const linkedOppId = String(row.linked_opportunity_id || "").trim();
+    const opp = linkedOppId ? fallbackOppById.get(linkedOppId) : undefined;
+    const caseRow = linkedOppId ? latestCaseByOppId.get(linkedOppId) : undefined;
+    const detectedIssuesRaw = Array.isArray(caseRow?.audit_issues)
+      ? caseRow!.audit_issues!
+      : Array.isArray(caseRow?.strongest_problems)
+        ? caseRow!.strongest_problems!
         : [];
-    const detectedIssues = detectedIssuesRaw
-      .map((v) => String(v || "").trim())
-      .filter(Boolean)
-      .slice(0, 6);
-    const relOpp = relationshipOpportunity(row);
-    const fallbackOpp = fallbackOppById.get(String(row.opportunity_id || "").trim());
-    const opp = relOpp || fallbackOpp || null;
+    const detectedIssues = detectedIssuesRaw.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 6);
     const opportunityReason = String(opp?.opportunity_reason || "").trim();
-    const detectedIssuesWithReason =
+    const issueList =
       opportunityReason && !detectedIssues.some((issue) => issue.toLowerCase() === opportunityReason.toLowerCase())
         ? [opportunityReason, ...detectedIssues].slice(0, 6)
         : detectedIssues;
     const screenshotCandidates = [
-      row.annotated_screenshot_url,
-      row.screenshot_url,
-      row.homepage_screenshot_url,
-      ...(Array.isArray(row.screenshot_urls) ? row.screenshot_urls : []),
+      caseRow?.annotated_screenshot_url,
+      caseRow?.screenshot_url,
+      caseRow?.homepage_screenshot_url,
+      ...(Array.isArray(caseRow?.screenshot_urls) ? caseRow!.screenshot_urls! : []),
     ]
       .map((v) => String(v || "").trim())
       .filter(Boolean);
+    const email = String(row.email || caseRow?.email || "").trim();
+    const phone = String(caseRow?.phone_from_site || row.phone || "").trim();
+    const contactPage = String(caseRow?.contact_page || "").trim();
+    const website = String(opp?.website || row.website || "").trim();
     return {
-      id: String(row.id || row.opportunity_id || ""),
-      opportunity_id: String(row.opportunity_id || "") || null,
-      business_name: String(opp?.business_name || "Unknown business"),
-      category: opp?.category ? String(opp.category) : null,
-      opportunity_score:
-        opp?.opportunity_score != null
-          ? Number(opp.opportunity_score)
-          : null,
-      website: opp?.website ? String(opp.website) : null,
-      email: row.email ? String(row.email) : null,
-      phone_from_site: row.phone_from_site ? String(row.phone_from_site) : null,
-      contact_page: row.contact_page ? String(row.contact_page) : null,
-      contact_method: row.email
+      id: String(row.id || ""),
+      related_case_id: String(caseRow?.id || "") || null,
+      opportunity_id: linkedOppId || null,
+      business_name: String(opp?.business_name || row.business_name || "Unknown business"),
+      category: String(opp?.category || row.industry || "").trim() || null,
+      opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
+      website: website || null,
+      email: email || null,
+      phone_from_site: phone || null,
+      contact_page: contactPage || null,
+      contact_method: email
         ? "email"
-        : row.phone_from_site
+        : phone
           ? "phone"
-          : row.contact_page
+          : contactPage
             ? "contact page"
-            : opp?.website
+            : website
               ? "website"
               : "none",
-      detected_issue_summary: opportunityReason || detectedIssues[0] || "Website pain signals detected",
-      detected_issues: detectedIssuesWithReason,
+      detected_issue_summary: opportunityReason || issueList[0] || "Website pain signals detected",
+      detected_issues: issueList,
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
       screenshot_urls: screenshotCandidates,
-      annotated_screenshot_url: row.annotated_screenshot_url || null,
+      annotated_screenshot_url: caseRow?.annotated_screenshot_url || null,
       timeline: [],
-      notes: [
-        String((row as { outcome?: string | null }).outcome || "").trim(),
-        String((row as { notes?: string | null }).notes || "").trim(),
-      ].filter(Boolean),
+      notes: [String(caseRow?.outcome || "").trim(), String(caseRow?.notes || "").trim(), String(row.notes || "").trim()].filter(Boolean),
     };
   });
+
   if (source && source !== "scout-brain") {
     workflowLeads = [];
   }
@@ -239,6 +218,16 @@ export default async function AdminLeadsPage({
         new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
     );
   }
+  const leadIds = workflowLeads.map((lead) => lead.id).filter(Boolean);
+  const { data: directLeadMessages } = leadIds.length
+    ? await supabase
+        .from("email_messages")
+        .select("id,lead_id,direction,subject,body,delivery_status,sent_at,received_at,created_at")
+        .in("lead_id", leadIds)
+        .order("created_at", { ascending: true })
+        .limit(3000)
+    : { data: [] as Array<Record<string, unknown>> };
+
   const leadEmails = Array.from(
     new Set(
       workflowLeads
@@ -271,6 +260,21 @@ export default async function AdminLeadsPage({
       String(row.contact_email || "").trim().toLowerCase(),
     ])
   );
+  const timelineByLeadId = new Map<string, WorkflowLead["timeline"]>();
+  for (const message of directLeadMessages || []) {
+    const leadId = String(message.lead_id || "").trim();
+    if (!leadId) continue;
+    if (!timelineByLeadId.has(leadId)) timelineByLeadId.set(leadId, []);
+    timelineByLeadId.get(leadId)!.push({
+      id: String(message.id || `${leadId}-${message.created_at || "row"}`),
+      direction: String(message.direction || ""),
+      subject: message.subject ? String(message.subject) : null,
+      body: message.body ? String(message.body) : null,
+      status: message.delivery_status ? String(message.delivery_status) : null,
+      occurred_at: String(message.received_at || message.sent_at || message.created_at || ""),
+    });
+  }
+
   const timelineByEmail = new Map<string, WorkflowLead["timeline"]>();
   for (const message of messageRows || []) {
     const threadId = String(message.thread_id || "").trim();
@@ -290,9 +294,17 @@ export default async function AdminLeadsPage({
   }
   workflowLeads = workflowLeads.map((lead) => {
     const email = String(lead.email || "").trim().toLowerCase();
+    const byLead = timelineByLeadId.get(lead.id) || [];
+    const byEmail = email ? timelineByEmail.get(email) || [] : [];
+    const merged = [...byLead, ...byEmail];
+    const deduped = new Map<string, WorkflowLead["timeline"][number]>();
+    for (const item of merged) deduped.set(item.id, item);
+    const sorted = Array.from(deduped.values()).sort(
+      (a, b) => new Date(a.occurred_at || 0).getTime() - new Date(b.occurred_at || 0).getTime()
+    );
     return {
       ...lead,
-      timeline: email ? timelineByEmail.get(email) || [] : [],
+      timeline: sorted,
     };
   });
 

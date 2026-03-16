@@ -14,6 +14,7 @@ type TimelineEntry = {
 
 export type WorkflowLead = {
   id: string;
+  related_case_id?: string | null;
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
@@ -25,7 +26,7 @@ export type WorkflowLead = {
   contact_method: string;
   detected_issue_summary: string;
   detected_issues: string[];
-  status: string;
+  status: "new" | "contacted" | "follow_up_due" | "replied" | "closed_won" | "closed_lost" | "do_not_contact";
   created_at: string | null;
   screenshot_urls: string[];
   annotated_screenshot_url?: string | null;
@@ -34,23 +35,24 @@ export type WorkflowLead = {
 };
 
 function prettyStatus(status: string) {
-  return String(status || "new").replace(/_/g, " ");
+  return String(status || "new")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function badgeClass(status: WorkflowLead["status"]) {
+  if (status === "replied" || status === "closed_won") return "admin-badge admin-badge-won";
+  if (status === "closed_lost" || status === "do_not_contact") return "admin-badge admin-badge-lost";
+  if (status === "contacted" || status === "follow_up_due") return "admin-badge admin-badge-progress";
+  return "admin-badge admin-badge-new";
 }
 
 export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead[] }) {
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
-  const [selectedId, setSelectedId] = useState<string | null>(initialLeads[0]?.id || null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [draftForLeadId, setDraftForLeadId] = useState<string | null>(null);
-  const [draftSubject, setDraftSubject] = useState("");
-  const [draftBody, setDraftBody] = useState("");
-  const [annotatingLeadId, setAnnotatingLeadId] = useState<string | null>(null);
-  const [annotationRect, setAnnotationRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
-  const [drawingStart, setDrawingStart] = useState<{ x: number; y: number } | null>(null);
-  const [savingAnnotation, setSavingAnnotation] = useState(false);
-  const [sendingProofForLeadId, setSendingProofForLeadId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -59,6 +61,8 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
       [
         lead.business_name,
         lead.category || "",
+        lead.status,
+        lead.website || "",
         lead.contact_method || "",
         lead.detected_issue_summary || "",
       ]
@@ -79,148 +83,16 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
       const s = String(lead.status || "").toLowerCase();
       if (s === "new") counts.newLeads += 1;
       if (s === "replied") counts.repliesWaiting += 1;
-      if (s === "follow_up" || s === "follow_up_due") counts.followUpsDue += 1;
+      if (s === "follow_up_due") counts.followUpsDue += 1;
       if (s === "contacted") counts.contacted += 1;
     }
     return counts;
   }, [leads]);
-
-  const selectedLead = useMemo(
-    () => filtered.find((lead) => lead.id === selectedId) || filtered[0] || null,
-    [filtered, selectedId]
-  );
-
-  function buildGeneratedMessage(lead: WorkflowLead) {
-    const issueText = lead.detected_issues[0] || "something that might be affecting conversions";
-    const subject = "quick question about your website";
-    const body = [
-      "Hi,",
-      "",
-      `I was looking at your website and noticed: ${issueText}.`,
-      "",
-      "I grabbed a quick screenshot showing it.",
-      "",
-      "Would you like me to send it over?",
-      "",
-      "- Topher",
-    ].join("\n");
-    return { subject, body };
-  }
-
-  function startDraft(lead: WorkflowLead) {
-    const generated = buildGeneratedMessage(lead);
-    setDraftForLeadId(lead.id);
-    setDraftSubject(generated.subject);
-    setDraftBody(generated.body);
-  }
-
-  function sendDraft(lead: WorkflowLead) {
-    if (!draftBody.trim()) {
-      setError("Draft body is empty.");
-      return;
-    }
-    if (lead.email) {
-      const mailto = `mailto:${encodeURIComponent(lead.email)}?subject=${encodeURIComponent(
-        draftSubject || `Website idea for ${lead.business_name}`
-      )}&body=${encodeURIComponent(draftBody)}`;
-      window.location.href = mailto;
-      return;
-    }
-    if (lead.contact_page) {
-      window.open(lead.contact_page, "_blank", "noopener,noreferrer");
-      return;
-    }
-    setError("No email or contact page is available for this lead.");
-  }
-
-  async function saveAnnotation(lead: WorkflowLead) {
-    if (!annotationRect) {
-      setError("Draw a highlight box first.");
-      return;
-    }
-    const baseScreenshot = lead.annotated_screenshot_url || lead.screenshot_urls[0] || null;
-    if (!baseScreenshot) {
-      setError("No screenshot available to annotate.");
-      return;
-    }
-    setSavingAnnotation(true);
+  async function updateStatus(leadId: string, nextStatus: WorkflowLead["status"]) {
+    setUpdatingId(leadId);
     setError(null);
     try {
-      const res = await fetch(`/api/case-files/${encodeURIComponent(lead.id)}/annotate`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          base_screenshot_url: baseScreenshot,
-          rect: annotationRect,
-        }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-        annotated_screenshot_url?: string | null;
-      };
-      if (!res.ok || !body.ok) {
-        throw new Error(body.error || "Could not save annotation.");
-      }
-      const nextUrl = String(body.annotated_screenshot_url || "").trim();
-      if (nextUrl) {
-        setLeads((prev) =>
-          prev.map((item) =>
-            item.id === lead.id
-              ? {
-                  ...item,
-                  annotated_screenshot_url: nextUrl,
-                  screenshot_urls: [nextUrl, ...item.screenshot_urls.filter((u) => u !== nextUrl)],
-                }
-              : item
-          )
-        );
-      }
-      setAnnotatingLeadId(null);
-      setAnnotationRect(null);
-      setDrawingStart(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save annotation.");
-    } finally {
-      setSavingAnnotation(false);
-    }
-  }
-
-  async function sendProofEmail(lead: WorkflowLead) {
-    if (!lead.email) {
-      setError("Lead is missing email for proof outreach.");
-      return;
-    }
-    setSendingProofForLeadId(lead.id);
-    setError(null);
-    try {
-      const res = await fetch(`/api/case-files/${encodeURIComponent(lead.id)}/send-proof-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          annotated_screenshot_url: lead.annotated_screenshot_url || lead.screenshot_urls[0] || null,
-          detected_issue_summary: lead.detected_issue_summary,
-        }),
-      });
-      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; message?: string };
-      if (!res.ok || !body.ok) {
-        throw new Error(body.error || "Could not send proof email.");
-      }
-      setLeads((prev) =>
-        prev.map((item) => (item.id === lead.id ? { ...item, status: "contacted" } : item))
-      );
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send proof email.");
-    } finally {
-      setSendingProofForLeadId(null);
-    }
-  }
-
-  async function updateStatus(caseFileId: string, nextStatus: string) {
-    setUpdatingId(caseFileId);
-    setError(null);
-    try {
-      const res = await fetch(`/api/case-files/${encodeURIComponent(caseFileId)}/status`, {
+      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
@@ -229,9 +101,7 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
       if (!res.ok) {
         throw new Error(body.error || "Could not update lead status.");
       }
-      setLeads((prev) =>
-        prev.map((lead) => (lead.id === caseFileId ? { ...lead, status: nextStatus } : lead))
-      );
+      setLeads((prev) => prev.map((lead) => (lead.id === leadId ? { ...lead, status: nextStatus } : lead)));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update lead status.");
     } finally {
@@ -261,23 +131,103 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
       </section>
 
       <section className="admin-card">
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <input
-            type="search"
-            placeholder="Search businesses, issues, contact..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="admin-input h-9 w-80"
-          />
-          <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-            Showing {filtered.length} of {leads.length}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              placeholder="Search business, issue, category, status..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="admin-input h-9 w-80"
+            />
+            <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Showing {filtered.length} of {leads.length}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <button
+              type="button"
+              className={viewMode === "cards" ? "admin-btn-primary" : "admin-btn-ghost"}
+              onClick={() => setViewMode("cards")}
+            >
+              Card View
+            </button>
+            <button
+              type="button"
+              className={viewMode === "table" ? "admin-btn-primary" : "admin-btn-ghost"}
+              onClick={() => setViewMode("table")}
+            >
+              Table View
+            </button>
+          </div>
         </div>
 
         {filtered.length === 0 ? (
           <div className="admin-empty !py-8">
             <div className="admin-empty-title">No leads found</div>
             <div className="admin-empty-desc">Try a different search query.</div>
+          </div>
+        ) : viewMode === "cards" ? (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((lead) => (
+              <article
+                key={lead.id}
+                className="rounded-xl border p-4 space-y-3"
+                style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.2)" }}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold">{lead.business_name}</h3>
+                    <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      {lead.category || "—"} · Score {lead.opportunity_score ?? "—"}
+                    </p>
+                  </div>
+                  <span className={badgeClass(lead.status)}>{prettyStatus(lead.status)}</span>
+                </div>
+                <div className="space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
+                  <p>
+                    <span className="font-semibold">Main issue:</span> {lead.detected_issue_summary}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Best contact:</span> {lead.contact_method}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="admin-btn-primary text-xs">
+                    Open Lead
+                  </Link>
+                  {lead.related_case_id ? (
+                    <Link href={`/admin/cases?case_id=${encodeURIComponent(lead.related_case_id)}`} className="admin-btn-ghost text-xs">
+                      Open Case
+                    </Link>
+                  ) : (
+                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">Open Case</span>
+                  )}
+                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`} className="admin-btn-ghost text-xs">
+                    Generate Email
+                  </Link>
+                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="admin-btn-ghost text-xs">
+                    Send Email
+                  </Link>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs"
+                    disabled={updatingId === lead.id}
+                    onClick={() => void updateStatus(lead.id, "contacted")}
+                  >
+                    Mark Contacted
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-danger text-xs"
+                    disabled={updatingId === lead.id}
+                    onClick={() => void updateStatus(lead.id, "do_not_contact")}
+                  >
+                    Do Not Contact
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
         ) : (
           <div className="admin-table-wrap overflow-x-auto">
@@ -289,6 +239,7 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
                   <th>Score</th>
                   <th>Main Issue</th>
                   <th>Contact Method</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -300,18 +251,23 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
                     <td>{lead.opportunity_score ?? "—"}</td>
                     <td>{lead.detected_issue_summary}</td>
                     <td>{lead.contact_method}</td>
+                    <td>{prettyStatus(lead.status)}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Open Lead
                         </Link>
-                        <Link href="/admin/cases" className="text-[var(--admin-gold)] hover:underline text-xs">
-                          Open Case
-                        </Link>
-                        <Link href={`/admin/outreach?generate=1&opportunity_id=${encodeURIComponent(lead.opportunity_id || "")}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        {lead.related_case_id ? (
+                          <Link href={`/admin/cases?case_id=${encodeURIComponent(lead.related_case_id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                            Open Case
+                          </Link>
+                        ) : (
+                          <span className="text-xs opacity-60">Open Case</span>
+                        )}
+                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Generate Email
                         </Link>
-                        <Link href={`/admin/outreach?opportunity_id=${encodeURIComponent(lead.opportunity_id || "")}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Send Email
                         </Link>
                         <button
@@ -328,7 +284,7 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
                           disabled={updatingId === lead.id}
                           onClick={() => void updateStatus(lead.id, "do_not_contact")}
                         >
-                          Mark Do Not Contact
+                          Do Not Contact
                         </button>
                       </div>
                     </td>
@@ -339,261 +295,6 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
           </div>
         )}
       </section>
-
-      {selectedLead ? (
-        <section className="admin-card">
-          <div className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-                {selectedLead.business_name}
-              </h2>
-              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                {selectedLead.category || "—"} · Score {selectedLead.opportunity_score ?? "—"}
-              </p>
-            </div>
-            <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Status: {prettyStatus(selectedLead.status)}
-            </span>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Website Screenshots</h3>
-              {selectedLead.screenshot_urls.length === 0 ? (
-                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>No screenshots available.</p>
-              ) : (
-                <div className="space-y-2">
-                  {(() => {
-                    const mainUrl = selectedLead.annotated_screenshot_url || selectedLead.screenshot_urls[0];
-                    return (
-                      <div
-                        className="relative border rounded-md overflow-hidden"
-                        style={{ borderColor: "var(--admin-border)" }}
-                        onMouseDown={(e) => {
-                          if (annotatingLeadId !== selectedLead.id) return;
-                          const el = e.currentTarget.getBoundingClientRect();
-                          const x = ((e.clientX - el.left) / el.width) * 100;
-                          const y = ((e.clientY - el.top) / el.height) * 100;
-                          setDrawingStart({ x, y });
-                          setAnnotationRect({ x, y, w: 0, h: 0 });
-                        }}
-                        onMouseMove={(e) => {
-                          if (annotatingLeadId !== selectedLead.id || !drawingStart) return;
-                          const el = e.currentTarget.getBoundingClientRect();
-                          const x = ((e.clientX - el.left) / el.width) * 100;
-                          const y = ((e.clientY - el.top) / el.height) * 100;
-                          const left = Math.min(drawingStart.x, x);
-                          const top = Math.min(drawingStart.y, y);
-                          const w = Math.abs(x - drawingStart.x);
-                          const h = Math.abs(y - drawingStart.y);
-                          setAnnotationRect({ x: left, y: top, w, h });
-                        }}
-                        onMouseUp={() => {
-                          if (annotatingLeadId !== selectedLead.id) return;
-                          setDrawingStart(null);
-                        }}
-                      >
-                        <img src={mainUrl} alt="Website screenshot" className="w-full h-auto block" />
-                        {annotationRect && annotatingLeadId === selectedLead.id ? (
-                          <div
-                            style={{
-                              position: "absolute",
-                              left: `${annotationRect.x}%`,
-                              top: `${annotationRect.y}%`,
-                              width: `${annotationRect.w}%`,
-                              height: `${annotationRect.h}%`,
-                              border: "3px solid #ef4444",
-                              boxShadow: "0 0 0 1px rgba(255,255,255,0.7) inset",
-                              pointerEvents: "none",
-                            }}
-                          />
-                        ) : null}
-                      </div>
-                    );
-                  })()}
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="admin-btn-ghost text-xs"
-                      onClick={() => {
-                        if (annotatingLeadId === selectedLead.id) {
-                          setAnnotatingLeadId(null);
-                          setAnnotationRect(null);
-                          setDrawingStart(null);
-                        } else {
-                          setAnnotatingLeadId(selectedLead.id);
-                          setAnnotationRect(null);
-                          setDrawingStart(null);
-                        }
-                      }}
-                    >
-                      {annotatingLeadId === selectedLead.id ? "Cancel Annotation" : "Annotate Issue"}
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-btn-primary text-xs"
-                      disabled={annotatingLeadId !== selectedLead.id || savingAnnotation}
-                      onClick={() => void saveAnnotation(selectedLead)}
-                    >
-                      {savingAnnotation ? "Saving..." : "Save Annotated Image"}
-                    </button>
-                    <a
-                      href={selectedLead.annotated_screenshot_url || selectedLead.screenshot_urls[0]}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-xs text-[var(--admin-gold)] hover:underline self-center"
-                    >
-                      Open screenshot
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Website Audit</h3>
-              {selectedLead.detected_issues.length === 0 ? (
-                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>No audit issues recorded.</p>
-              ) : (
-                <ul className="list-disc pl-5 space-y-1 text-sm">
-                  {selectedLead.detected_issues.map((issue, idx) => (
-                    <li key={`${issue}-${idx}`}>{issue}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Contact Methods</h3>
-            <div className="grid gap-2 md:grid-cols-3 text-sm">
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Email: </span>
-                {selectedLead.email ? (
-                  <a className="text-[var(--admin-gold)] hover:underline" href={`mailto:${selectedLead.email}`}>
-                    {selectedLead.email}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </div>
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Phone: </span>
-                {selectedLead.phone_from_site ? (
-                  <a className="text-[var(--admin-gold)] hover:underline" href={`tel:${selectedLead.phone_from_site}`}>
-                    {selectedLead.phone_from_site}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </div>
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Contact Page: </span>
-                {selectedLead.contact_page ? (
-                  <a
-                    className="text-[var(--admin-gold)] hover:underline"
-                    href={selectedLead.contact_page}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Outreach Generator</h3>
-            <div className="flex flex-wrap gap-2 mb-2">
-              <button
-                type="button"
-                className="admin-btn-ghost text-xs"
-                onClick={() => startDraft(selectedLead)}
-              >
-                Generate outreach email
-              </button>
-              <button
-                type="button"
-                className="admin-btn-primary text-xs"
-                onClick={() => sendDraft(selectedLead)}
-                disabled={draftForLeadId !== selectedLead.id}
-              >
-                Send email
-              </button>
-              <button
-                type="button"
-                className="admin-btn-primary text-xs"
-                onClick={() => void sendProofEmail(selectedLead)}
-                disabled={sendingProofForLeadId === selectedLead.id}
-              >
-                {sendingProofForLeadId === selectedLead.id ? "Sending..." : "Send Proof Email"}
-              </button>
-            </div>
-            {draftForLeadId === selectedLead.id ? (
-              <div className="space-y-2">
-                <input
-                  className="admin-input h-9 w-full"
-                  value={draftSubject}
-                  onChange={(e) => setDraftSubject(e.target.value)}
-                  placeholder="Email subject"
-                />
-                <textarea
-                  className="admin-textarea w-full min-h-[140px]"
-                  value={draftBody}
-                  onChange={(e) => setDraftBody(e.target.value)}
-                />
-              </div>
-            ) : (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Generate outreach to prefill message from detected issues.
-              </p>
-            )}
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>Conversation Timeline</h3>
-            <div className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
-              Emails sent / replies / notes / follow-up schedule
-            </div>
-            <div className="mb-3 text-xs" style={{ color: "var(--admin-muted)" }}>
-              Follow-up schedule:{" "}
-              {selectedLead.status === "follow_up" || selectedLead.status === "follow_up_due"
-                ? "Follow-up due now"
-                : selectedLead.status === "contacted"
-                  ? "Next follow-up recommended in 4 days"
-                  : "No follow-up scheduled"}
-            </div>
-            {selectedLead.notes.length > 0 ? (
-              <ul className="mb-3 list-disc pl-5 text-xs" style={{ color: "var(--admin-muted)" }}>
-                {selectedLead.notes.map((note, idx) => (
-                  <li key={`${note}-${idx}`}>{note}</li>
-                ))}
-              </ul>
-            ) : null}
-            {selectedLead.timeline.length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>No conversation messages recorded yet.</p>
-            ) : (
-              <ul className="space-y-2">
-                {selectedLead.timeline.map((item) => (
-                  <li key={item.id} className="text-sm border rounded-md p-2" style={{ borderColor: "var(--admin-border)" }}>
-                    <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: "var(--admin-muted)" }}>
-                      <span>{item.direction || "message"}</span>
-                      <span>{item.status || "—"}</span>
-                      <span>{item.occurred_at ? new Date(item.occurred_at).toLocaleString() : "—"}</span>
-                    </div>
-                    <div className="font-medium mt-1">{item.subject || "(no subject)"}</div>
-                    <div className="text-xs mt-1 whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
-                      {String(item.body || "").slice(0, 500) || "(empty body)"}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-      ) : null}
 
       {error ? (
         <p className="text-sm" style={{ color: "#fca5a5" }}>
