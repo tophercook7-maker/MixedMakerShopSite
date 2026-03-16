@@ -24,6 +24,7 @@ type OpportunityRow = {
   business_name?: string;
   category?: string;
   website?: string;
+  website_status?: string | null;
   opportunity_score?: number;
   opportunity_reason?: string | null;
   opportunity_signals?: string[] | null;
@@ -152,7 +153,7 @@ export default async function AdminLeadsPage({
   const { data: fallbackOppRows } = opportunityIds.length
     ? await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,opportunity_score,opportunity_reason,opportunity_signals")
+        .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals")
         .in("id", opportunityIds)
     : { data: [] as OpportunityRow[] };
   const fallbackOppById = new Map(
@@ -218,6 +219,7 @@ export default async function AdminLeadsPage({
       opportunity_id: linkedOppId || null,
       business_name: String(opp?.business_name || row.business_name || "Unknown business"),
       category: String(opp?.category || row.industry || "").trim() || null,
+      website_status: String(opp?.website_status || "").trim() || null,
       opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
       close_probability:
         (String(opp?.close_probability || "").trim().toLowerCase() as "low" | "medium" | "high") ||
@@ -235,7 +237,7 @@ export default async function AdminLeadsPage({
             : website
               ? "website"
               : "none",
-      detected_issue_summary: opportunityReason || issueList[0] || "No specific website issue captured yet",
+      detected_issue_summary: opportunityReason || issueList[0] || "No immediate website breakage detected",
       detected_issues: issueList,
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,

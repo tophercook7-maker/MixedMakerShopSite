@@ -154,7 +154,7 @@ export default async function AdminCasesPage({
       category: String(opp?.category || "—"),
       website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
-      opportunity_reason: String(opp?.opportunity_reason || "No specific website issue captured yet"),
+      opportunity_reason: String(opp?.opportunity_reason || "No immediate website breakage detected"),
       opportunity_reason_items: String(opp?.opportunity_reason || "")
         .split("|")
         .map((v) => v.trim())

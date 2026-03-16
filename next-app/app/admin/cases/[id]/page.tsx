@@ -106,7 +106,7 @@ export default async function AdminCaseDetailPage({
               {String(caseRow.status || "new").replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opportunity?.opportunity_reason || "Website conversion opportunity").trim()}
+              Opportunity reason: {String(opportunity?.opportunity_reason || "No immediate website breakage detected").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Created {fmtDate(caseRow.created_at)}

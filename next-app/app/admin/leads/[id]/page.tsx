@@ -75,6 +75,7 @@ type OpportunityRow = {
   business_name?: string | null;
   category?: string | null;
   website?: string | null;
+  website_status?: string | null;
   opportunity_score?: number | null;
   opportunity_reason?: string | null;
   opportunity_signals?: string[] | null;
@@ -229,7 +230,7 @@ export default async function AdminLeadDetailPage({
   if (oppId) {
     const { data: oppRows } = await supabase
       .from("opportunities")
-      .select("id,business_name,category,website,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+      .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
       .eq("id", oppId)
       .limit(1);
     opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
@@ -239,7 +240,7 @@ export default async function AdminLeadDetailPage({
     if (leadWebsite) {
       const { data: fallbackOppRows } = await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+        .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
         .eq("website", leadWebsite)
         .order("opportunity_score", { ascending: false, nullsFirst: false })
         .limit(1);
@@ -388,6 +389,7 @@ export default async function AdminLeadDetailPage({
   const displayPhone = String(caseRow?.phone_from_site || lead?.phone || "").trim();
   const displayContactPage = String(caseRow?.contact_page || "").trim();
   const displayStatus = String(lead?.status || caseRow?.status || "new");
+  const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
   const closeProbability =
     String(opp?.close_probability || "").toLowerCase() ||
     deriveCloseProbability(opp?.opportunity_score ?? lead?.opportunity_score, opp?.category || lead?.industry, issueList);
@@ -413,7 +415,7 @@ export default async function AdminLeadDetailPage({
               {displayCategory} · Score {displayScore || "—"} · Status {displayStatus.replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Website conversion opportunity").trim()}
+              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "No immediate website breakage detected").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Website: {displayWebsite ? (
@@ -421,6 +423,9 @@ export default async function AdminLeadDetailPage({
                   {displayWebsite}
                 </a>
               ) : "—"}
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+              Website status: {displayWebsiteStatus}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Close probability: {closeProbability}
@@ -701,7 +706,7 @@ export default async function AdminLeadDetailPage({
           linkedOpportunityId={oppId || null}
           initialBusinessName={displayBusinessName}
           initialCategory={displayCategory}
-          initialIssue={topIssues[0]?.issue || "No specific website issue captured yet"}
+          initialIssue={topIssues[0]?.issue || "No immediate website breakage detected"}
           initialEmail={displayEmail || null}
           initialPhone={displayPhone || null}
           website={displayWebsite || null}

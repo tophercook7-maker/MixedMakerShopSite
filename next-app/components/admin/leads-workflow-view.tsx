@@ -19,6 +19,7 @@ export type WorkflowLead = {
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
+  website_status?: string | null;
   opportunity_score: number | null;
   close_probability?: "low" | "medium" | "high" | null;
   website: string | null;
@@ -167,7 +168,7 @@ export function LeadsWorkflowView({
                   <div>
                     <h3 className="font-semibold">{lead.business_name}</h3>
                     <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                      {lead.category || "—"} · Score {lead.opportunity_score ?? "—"}
+                      {lead.category || "—"} · Score {lead.opportunity_score ?? "—"} · Website {lead.website_status || "unknown"}
                     </p>
                   </div>
                   <span className={badgeClass(lead.status)}>{prettyStatus(lead.status)}</span>
@@ -178,6 +179,15 @@ export function LeadsWorkflowView({
                   </p>
                   <p>
                     <span className="font-semibold">Best contact:</span> {lead.contact_method}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Phone:</span> {lead.phone_from_site || "—"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Contact page:</span> {lead.contact_page || "—"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Email:</span> {lead.email || "—"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -208,8 +218,12 @@ export function LeadsWorkflowView({
                 <tr>
                   <th>Business</th>
                   <th>Category</th>
+                  <th>Website Status</th>
                   <th>Score</th>
                   <th>Opportunity Reason</th>
+                  <th>Phone</th>
+                  <th>Contact Page</th>
+                  <th>Email</th>
                   <th>Best Contact</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -220,10 +234,14 @@ export function LeadsWorkflowView({
                   <tr key={lead.id}>
                     <td>{lead.business_name}</td>
                     <td>{lead.category || "—"}</td>
+                    <td>{lead.website_status || "unknown"}</td>
                     <td>{lead.opportunity_score ?? "—"}</td>
                     <td>
                       {lead.detected_issue_summary || "Website improvement opportunity"}
                     </td>
+                    <td>{lead.phone_from_site || "—"}</td>
+                    <td>{lead.contact_page || "—"}</td>
+                    <td>{lead.email || "—"}</td>
                     <td>{lead.contact_method}</td>
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
