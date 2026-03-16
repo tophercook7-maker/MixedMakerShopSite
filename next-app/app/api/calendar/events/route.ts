@@ -42,6 +42,11 @@ async function hasHardBlockConflict(
 }
 
 export async function GET(request: Request) {
+  const supabaseProjectUrl =
+    String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim() || "unset";
+  console.info("[Calendar API] load start", {
+    supabase_project_url: supabaseProjectUrl,
+  });
   const supabase = await createClient();
   const {
     data: { user },
@@ -66,7 +71,18 @@ export async function GET(request: Request) {
   if (end) query = query.lte("start_time", end);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[Calendar API] calendar_events query failed", {
+      supabase_project_url: supabaseProjectUrl,
+      error_message: error.message,
+      error_payload: error,
+    });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  console.info("[Calendar API] calendar_events query success", {
+    supabase_project_url: supabaseProjectUrl,
+    row_count: Array.isArray(data) ? data.length : 0,
+  });
   const { data: settingsRows } = await supabase
     .from("calendar_settings")
     .select("show_soft_events_on_main_calendar")
