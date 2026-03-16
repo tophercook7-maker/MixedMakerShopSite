@@ -302,9 +302,9 @@ export function LeadsWorkflowView({ initialLeads }: { initialLeads: WorkflowLead
                     <td>{lead.contact_method}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
-                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => setSelectedId(lead.id)}>
+                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Open Lead
-                        </button>
+                        </Link>
                         <Link href="/admin/cases" className="text-[var(--admin-gold)] hover:underline text-xs">
                           Open Case
                         </Link>

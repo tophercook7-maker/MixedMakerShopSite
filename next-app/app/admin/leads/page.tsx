@@ -29,6 +29,15 @@ type CaseLeadRow = {
   } | null;
 };
 
+type OpportunityRow = {
+  id?: string;
+  business_name?: string;
+  category?: string;
+  website?: string;
+  opportunity_score?: number;
+  opportunity_reason?: string | null;
+};
+
 function normalizeStatus(value: string | null | undefined): string {
   const normalized = String(value || "")
     .trim()
@@ -97,6 +106,45 @@ export default async function AdminLeadsPage({
     rows = (joinedRows || []) as CaseLeadRow[];
   }
 
+  function relationshipOpportunity(row: CaseLeadRow): OpportunityRow | null {
+    const rel = row.opportunity as unknown;
+    if (Array.isArray(rel)) {
+      const first = rel[0] as OpportunityRow | undefined;
+      return first || null;
+    }
+    if (rel && typeof rel === "object") {
+      return rel as OpportunityRow;
+    }
+    return null;
+  }
+
+  const missingOppRows = rows.filter((row) => {
+    const rel = relationshipOpportunity(row);
+    return !String(rel?.business_name || "").trim() && String(row.opportunity_id || "").trim();
+  });
+  const fallbackOppIds = Array.from(
+    new Set(
+      missingOppRows
+        .map((row) => String(row.opportunity_id || "").trim())
+        .filter(Boolean)
+    )
+  );
+  const { data: fallbackOppRows } = fallbackOppIds.length
+    ? await supabase
+        .from("opportunities")
+        .select("id,business_name,category,website,opportunity_score,opportunity_reason")
+        .in("id", fallbackOppIds)
+    : { data: [] as OpportunityRow[] };
+  const fallbackOppById = new Map(
+    (fallbackOppRows || []).map((row) => [String(row.id || ""), row])
+  );
+  if (fallbackOppIds.length > 0) {
+    console.warn("[Admin Leads] missing relationship opportunity data, used fallback by opportunity_id", {
+      missing: fallbackOppIds.length,
+      resolved: (fallbackOppRows || []).length,
+    });
+  }
+
   let workflowLeads: WorkflowLead[] = rows.map((row) => {
     const detectedIssuesRaw = Array.isArray(row.audit_issues)
       ? row.audit_issues
@@ -107,7 +155,10 @@ export default async function AdminLeadsPage({
       .map((v) => String(v || "").trim())
       .filter(Boolean)
       .slice(0, 6);
-    const opportunityReason = String(row.opportunity?.opportunity_reason || "").trim();
+    const relOpp = relationshipOpportunity(row);
+    const fallbackOpp = fallbackOppById.get(String(row.opportunity_id || "").trim());
+    const opp = relOpp || fallbackOpp || null;
+    const opportunityReason = String(opp?.opportunity_reason || "").trim();
     const detectedIssuesWithReason =
       opportunityReason && !detectedIssues.some((issue) => issue.toLowerCase() === opportunityReason.toLowerCase())
         ? [opportunityReason, ...detectedIssues].slice(0, 6)
@@ -123,13 +174,13 @@ export default async function AdminLeadsPage({
     return {
       id: String(row.id || ""),
       opportunity_id: String(row.opportunity_id || "") || null,
-      business_name: String(row.opportunity?.business_name || "Unknown business"),
-      category: row.opportunity?.category ? String(row.opportunity.category) : null,
+      business_name: String(opp?.business_name || "Unknown business"),
+      category: opp?.category ? String(opp.category) : null,
       opportunity_score:
-        row.opportunity?.opportunity_score != null
-          ? Number(row.opportunity.opportunity_score)
+        opp?.opportunity_score != null
+          ? Number(opp.opportunity_score)
           : null,
-      website: row.opportunity?.website ? String(row.opportunity.website) : null,
+      website: opp?.website ? String(opp.website) : null,
       email: row.email ? String(row.email) : null,
       phone_from_site: row.phone_from_site ? String(row.phone_from_site) : null,
       contact_page: row.contact_page ? String(row.contact_page) : null,
@@ -139,7 +190,7 @@ export default async function AdminLeadsPage({
           ? "phone"
           : row.contact_page
             ? "contact page"
-            : row.opportunity?.website
+            : opp?.website
               ? "website"
               : "none",
       detected_issue_summary: opportunityReason || detectedIssues[0] || "Website pain signals detected",
