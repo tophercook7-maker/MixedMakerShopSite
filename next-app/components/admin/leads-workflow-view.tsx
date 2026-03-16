@@ -20,6 +20,7 @@ export type WorkflowLead = {
   business_name: string;
   category: string | null;
   opportunity_score: number | null;
+  close_probability?: "low" | "medium" | "high" | null;
   website: string | null;
   email: string | null;
   phone_from_site: string | null;
@@ -57,9 +58,8 @@ export function LeadsWorkflowView({
 }) {
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const error: string | null = null;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -95,27 +95,6 @@ export function LeadsWorkflowView({
     }
     return counts;
   }, [leads]);
-  async function updateStatus(leadId: string, nextStatus: WorkflowLead["status"]) {
-    setUpdatingId(leadId);
-    setError(null);
-    try {
-      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
-        throw new Error(body.error || "Could not update lead status.");
-      }
-      setLeads((prev) => prev.map((lead) => (lead.id === leadId ? { ...lead, status: nextStatus } : lead)));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not update lead status.");
-    } finally {
-      setUpdatingId(null);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -195,7 +174,7 @@ export function LeadsWorkflowView({
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
                   <p>
-                    <span className="font-semibold">Main issue:</span> {lead.detected_issue_summary}
+                    <span className="font-semibold">Opportunity reason:</span> {lead.detected_issue_summary || "Website improvement opportunity"}
                   </p>
                   <p>
                     <span className="font-semibold">Best contact:</span> {lead.contact_method}
@@ -206,7 +185,7 @@ export function LeadsWorkflowView({
                     Open Lead
                   </Link>
                   {lead.related_case_id ? (
-                    <Link href={`/admin/cases?case_id=${encodeURIComponent(lead.related_case_id)}`} className="admin-btn-ghost text-xs">
+                    <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="admin-btn-ghost text-xs">
                       Open Case
                     </Link>
                   ) : (
@@ -218,22 +197,6 @@ export function LeadsWorkflowView({
                   <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="admin-btn-ghost text-xs">
                     Send Email
                   </Link>
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs"
-                    disabled={updatingId === lead.id}
-                    onClick={() => void updateStatus(lead.id, "contacted")}
-                  >
-                    Mark Contacted
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-btn-danger text-xs"
-                    disabled={updatingId === lead.id}
-                    onClick={() => void updateStatus(lead.id, "do_not_contact")}
-                  >
-                    Do Not Contact
-                  </button>
                 </div>
               </article>
             ))}
@@ -246,8 +209,8 @@ export function LeadsWorkflowView({
                   <th>Business</th>
                   <th>Category</th>
                   <th>Score</th>
-                  <th>Main Issue</th>
-                  <th>Contact Method</th>
+                  <th>Opportunity Reason</th>
+                  <th>Best Contact</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -258,7 +221,9 @@ export function LeadsWorkflowView({
                     <td>{lead.business_name}</td>
                     <td>{lead.category || "—"}</td>
                     <td>{lead.opportunity_score ?? "—"}</td>
-                    <td>{lead.detected_issue_summary}</td>
+                    <td>
+                      {lead.detected_issue_summary || "Website improvement opportunity"}
+                    </td>
                     <td>{lead.contact_method}</td>
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
@@ -267,7 +232,7 @@ export function LeadsWorkflowView({
                           Open Lead
                         </Link>
                         {lead.related_case_id ? (
-                          <Link href={`/admin/cases?case_id=${encodeURIComponent(lead.related_case_id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                          <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                             Open Case
                           </Link>
                         ) : (
@@ -279,22 +244,6 @@ export function LeadsWorkflowView({
                         <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Send Email
                         </Link>
-                        <button
-                          type="button"
-                          className="text-[var(--admin-gold)] hover:underline text-xs"
-                          disabled={updatingId === lead.id}
-                          onClick={() => void updateStatus(lead.id, "contacted")}
-                        >
-                          Mark Contacted
-                        </button>
-                        <button
-                          type="button"
-                          className="text-[var(--admin-gold)] hover:underline text-xs"
-                          disabled={updatingId === lead.id}
-                          onClick={() => void updateStatus(lead.id, "do_not_contact")}
-                        >
-                          Do Not Contact
-                        </button>
                       </div>
                     </td>
                   </tr>

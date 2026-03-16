@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -206,6 +207,31 @@ export async function POST(request: Request, { params }: Params) {
   });
   if (messageError) {
     return NextResponse.json({ error: messageError.message }, { status: 500 });
+  }
+
+  const { data: matchedLeadRows } = await supabase
+    .from("leads")
+    .select("id")
+    .eq("owner_id", userId)
+    .eq("email", to)
+    .limit(1);
+  const leadId = String((matchedLeadRows || [])[0]?.id || "").trim() || null;
+  const followUpStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  const followUpEnd = new Date(followUpStart.getTime() + 30 * 60 * 1000);
+  try {
+    const workspaceForEvent = await resolveWorkspaceIdForOwner(userId);
+    await createCalendarEvent({
+      ownerId: userId,
+      workspaceId: workspaceForEvent,
+      leadId,
+      title: `Follow-up reminder: ${businessName}`,
+      eventType: "followup",
+      startTime: followUpStart.toISOString(),
+      endTime: followUpEnd.toISOString(),
+      notes: `Auto-created after proof email send for case ${id}.`,
+    });
+  } catch (calendarError) {
+    console.warn("[Case Proof Email] calendar follow-up event creation failed", calendarError);
   }
 
   await supabase

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 
 const DEFAULT_TIMEOUT_MS = 45000;
 
@@ -83,6 +84,30 @@ export async function POST(request: Request) {
       }
       return NextResponse.json(body, { status: response.status });
     }
+
+    const ownerId = String(session?.user?.id || "").trim();
+    const leadId = String(payload?.lead_id || "").trim();
+    const subject = String(payload?.subject || "Follow up outreach").trim();
+    if (ownerId) {
+      const followUpStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+      const followUpEnd = new Date(followUpStart.getTime() + 30 * 60 * 1000);
+      try {
+        const workspaceForEvent = await resolveWorkspaceIdForOwner(ownerId);
+        await createCalendarEvent({
+          ownerId,
+          workspaceId: workspaceForEvent,
+          leadId: leadId || null,
+          title: `Follow-up reminder: ${subject}`,
+          eventType: "followup",
+          startTime: followUpStart.toISOString(),
+          endTime: followUpEnd.toISOString(),
+          notes: "Auto-created after outreach email send.",
+        });
+      } catch (calendarError) {
+        console.warn("[Scout Proxy] calendar follow-up event creation failed", calendarError);
+      }
+    }
+
     return NextResponse.json(body, { status: 200 });
   } catch (error) {
     const aborted =

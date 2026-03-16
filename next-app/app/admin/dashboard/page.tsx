@@ -1,548 +1,343 @@
-import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-
-type OpportunityRow = {
-  id: string;
-  workspace_id?: string | null;
-  business_name?: string | null;
-  category?: string | null;
-  website?: string | null;
-  address?: string | null;
-  phone?: string | null;
-  opportunity_score?: number | null;
-  opportunity_reason?: string | null;
-  opportunity_signals?: string[] | null;
-};
 
 type LeadRow = {
   id: string;
   business_name?: string | null;
+  website?: string | null;
   linked_opportunity_id?: string | null;
-  workspace_id?: string | null;
-  status?: string | null;
-  sequence_step?: number | null;
-  last_contacted_at?: string | null;
-  next_follow_up_at?: string | null;
   opportunity_score?: number | null;
+  status?: string | null;
   created_at?: string | null;
-  estimated_value?: number | null;
+  follow_up_date?: string | null;
+  next_follow_up_at?: string | null;
+};
+
+type OpportunityRow = {
+  id: string;
+  business_name?: string | null;
+  website?: string | null;
   opportunity_reason?: string | null;
 };
 
-type EmailMessageRow = {
+type EmailDraftRow = {
   id: string;
   lead_id?: string | null;
-  direction?: string | null;
+  subject?: string | null;
   body?: string | null;
-  sent_at?: string | null;
-  received_at?: string | null;
   created_at?: string | null;
 };
 
-function formatDateTime(value: string | null | undefined): string {
+function fmtDate(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleString();
 }
 
-function monthKey(value: string | null | undefined): string {
-  if (!value) return "Unknown";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "Unknown";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+function dueAt(lead: LeadRow): Date | null {
+  const raw = String(lead.next_follow_up_at || lead.follow_up_date || "").trim();
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
 }
 
-function currency(n: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
-    Number.isFinite(n) ? n : 0
-  );
-}
-
-async function createLeadFromOpportunity(formData: FormData) {
-  "use server";
-  const opportunityId = String(formData.get("opportunity_id") || "").trim();
-  if (!opportunityId) return;
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user?.id) return;
-
-  const { data: existingRows } = await supabase
-    .from("leads")
-    .select("id")
-    .eq("owner_id", user.id)
-    .eq("linked_opportunity_id", opportunityId)
-    .limit(1);
-  if ((existingRows || []).length > 0) {
-    revalidatePath("/admin/dashboard");
-    return;
-  }
-
-  const { data: opportunityRows } = await (async () => {
-    let oppQuery = supabase
-      .from("opportunities")
-      .select(
-        "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
-      )
-      .eq("id", opportunityId)
-      .limit(1);
-    const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
-    if (workspaceId) {
-      oppQuery = oppQuery.eq("workspace_id", workspaceId);
+async function fetchDraftMessages(supabase: Awaited<ReturnType<typeof createClient>>, ownerId: string) {
+  const queryOptions = [
+    "id,lead_id,subject,body,created_at,status,direction",
+    "id,lead_id,subject,body,created_at,direction",
+    "id,lead_id,subject,body,created_at",
+  ];
+  for (const select of queryOptions) {
+    try {
+      let q = supabase.from("email_messages").select(select).eq("owner_id", ownerId);
+      if (select.includes("direction")) q = q.eq("direction", "outbound");
+      if (select.includes("status")) q = q.eq("status", "draft");
+      const res = await q.order("created_at", { ascending: false }).limit(300);
+      if (!res.error) return ((res.data || []) as unknown[]) as EmailDraftRow[];
+    } catch {
+      // try fallback select
     }
-    return oppQuery;
-  })();
-  const opp = (opportunityRows || [])[0] as OpportunityRow | undefined;
-  if (!opp?.id) return;
-
-  const topIssue =
-    String(opp.opportunity_reason || "").trim() ||
-    (Array.isArray(opp.opportunity_signals) ? String(opp.opportunity_signals[0] || "").trim() : "") ||
-    "Website issue detected";
-
-  await supabase.from("leads").insert({
-    owner_id: user.id,
-    workspace_id: opp.workspace_id || null,
-    linked_opportunity_id: opp.id,
-    business_name: String(opp.business_name || "Unknown business"),
-    contact_name: null,
-    email: null,
-    phone: opp.phone || null,
-    website: opp.website || null,
-    address: opp.address || null,
-    industry: opp.category || null,
-    lead_source: "scout-brain",
-    opportunity_score: opp.opportunity_score ?? null,
-    status: "new",
-    notes: `Created from dashboard command center. Top issue: ${topIssue}`,
-  });
-
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/admin/leads");
+  }
+  return [] as EmailDraftRow[];
 }
 
-export default async function ScoutCrmCommandCenterPage() {
+export default async function DailyCommandCenterPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
-
   const ownerId = String(user?.id || "").trim();
+
   if (!ownerId) {
     return (
       <section className="admin-card">
-        <p className="text-sm" style={{ color: "#fca5a5" }}>
-          You must be logged in to view the command center dashboard.
+        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+          Sign in to view the daily command center.
         </p>
       </section>
     );
   }
 
-  const [
-    { data: opportunityRowsRaw },
-    { data: leadsRaw },
-    { data: readyLeadsRaw },
-    { data: repliedLeadsRaw },
-    { data: followUpsRaw },
-    winsWithEstimated,
-  ] = await Promise.all([
-    (async () => {
-      let oppQuery = supabase
-        .from("opportunities")
-        .select(
-          "id,workspace_id,business_name,category,website,address,phone,opportunity_score,opportunity_reason,opportunity_signals"
-        )
-        .order("opportunity_score", { ascending: false })
-        .limit(400);
-      if (workspaceId) {
-        oppQuery = oppQuery.eq("workspace_id", workspaceId);
-      }
-      return oppQuery;
-    })(),
-    supabase.from("leads").select("id,linked_opportunity_id").eq("owner_id", ownerId).limit(2000),
+  const now = new Date();
+  const cutoff24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+
+  const [topLeadResult, allLeadsResult, draftRows] = await Promise.all([
     supabase
       .from("leads")
-      .select("id,business_name,status,linked_opportunity_id,opportunity_score")
+      .select(
+        "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+      )
       .eq("owner_id", ownerId)
-      .eq("status", "new")
+      .gte("created_at", cutoff24h)
+      .order("opportunity_score", { ascending: false, nullsFirst: false })
+      .limit(40),
+    supabase
+      .from("leads")
+      .select(
+        "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+      )
+      .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
-      .limit(250),
-    supabase
-      .from("leads")
-      .select("id,business_name,status")
-      .eq("owner_id", ownerId)
-      .eq("status", "replied")
-      .order("created_at", { ascending: false })
-      .limit(250),
-    supabase
-      .from("leads")
-      .select("id,business_name,status,next_follow_up_at,linked_opportunity_id,opportunity_score")
-      .eq("owner_id", ownerId)
-      .eq("status", "follow_up_due")
-      .order("next_follow_up_at", { ascending: true, nullsFirst: false })
-      .limit(250),
-    supabase
-      .from("leads")
-      .select("id,created_at,estimated_value,opportunity_score")
-      .eq("owner_id", ownerId)
-      .eq("status", "closed_won")
-      .limit(2000),
+      .limit(3000),
+    fetchDraftMessages(supabase, ownerId),
   ]);
 
-  const opportunityRows = (opportunityRowsRaw || []) as OpportunityRow[];
-  const linkedLeadRows = (leadsRaw || []) as Array<{ id: string; linked_opportunity_id?: string | null }>;
-  const linkedOppIds = new Set(
-    linkedLeadRows.map((row) => String(row.linked_opportunity_id || "").trim()).filter(Boolean)
-  );
-  const newOpportunities = opportunityRows
-    .filter((opp) => !linkedOppIds.has(String(opp.id || "").trim()))
-    .map((opp) => ({
-      ...opp,
-      top_issue:
-        String(opp.opportunity_reason || "").trim() ||
-        (Array.isArray(opp.opportunity_signals) ? String(opp.opportunity_signals[0] || "").trim() : "") ||
-        "Website issue detected",
-    }))
-    .slice(0, 50);
+  const topLeads = (topLeadResult.data || []) as LeadRow[];
+  const allLeads = (allLeadsResult.data || []) as LeadRow[];
+  const leadById = new Map(allLeads.map((lead) => [String(lead.id), lead]));
 
-  const repliedLeads = (repliedLeadsRaw || []) as LeadRow[];
-  const readyLeads = (readyLeadsRaw || []) as LeadRow[];
-  const followUpLeads = (followUpsRaw || []) as LeadRow[];
-
-  const readyOppIds = Array.from(
-    new Set(readyLeads.map((r) => String(r.linked_opportunity_id || "").trim()).filter(Boolean))
-  );
-  const followUpOppIds = Array.from(
-    new Set(followUpLeads.map((r) => String(r.linked_opportunity_id || "").trim()).filter(Boolean))
-  );
-  const allActionOppIds = Array.from(new Set([...readyOppIds, ...followUpOppIds]));
-  const { data: actionOppRows } = allActionOppIds.length
-    ? await (async () => {
-        let actionQuery = supabase
-          .from("opportunities")
-          .select("id,opportunity_reason,opportunity_score,business_name")
-          .in("id", allActionOppIds);
-        if (workspaceId) {
-          actionQuery = actionQuery.eq("workspace_id", workspaceId);
-        }
-        return actionQuery;
-      })()
-    : { data: [] as Array<Record<string, unknown>> };
-  const actionOppById = new Map(
-    (actionOppRows || []).map((row) => [String(row.id || "").trim(), row as Record<string, unknown>])
+  const topLeadOppIds = topLeads
+    .map((lead) => String(lead.linked_opportunity_id || "").trim())
+    .filter(Boolean);
+  const { data: topLeadOppRows } = topLeadOppIds.length
+    ? await supabase.from("opportunities").select("id,business_name,website,opportunity_reason").in("id", topLeadOppIds)
+    : { data: [] as Record<string, unknown>[] };
+  const topLeadOppById = new Map(
+    ((topLeadOppRows || []) as OpportunityRow[]).map((opp) => [String(opp.id), opp])
   );
 
-  const repliedLeadIds = repliedLeads.map((l) => l.id).filter(Boolean);
+  const followUpsDue = allLeads
+    .filter((lead) => {
+      const due = dueAt(lead);
+      if (!due) return false;
+      const status = String(lead.status || "").toLowerCase();
+      if (["closed_won", "closed_lost", "closed", "do_not_contact"].includes(status)) return false;
+      return due.getTime() <= now.getTime();
+    })
+    .sort((a, b) => {
+      const ad = dueAt(a)?.getTime() || 0;
+      const bd = dueAt(b)?.getTime() || 0;
+      return ad - bd;
+    })
+    .slice(0, 12);
 
-  const { data: replyMsgsRaw } = repliedLeadIds.length
-    ? await supabase
-        .from("email_messages")
-        .select("id,lead_id,direction,body,received_at,created_at")
-        .in("lead_id", repliedLeadIds)
-        .eq("direction", "inbound")
-        .order("received_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false })
-        .limit(2000)
-    : ({ data: [] } as { data: Record<string, unknown>[] });
-  const replyMsgs = (replyMsgsRaw || []) as EmailMessageRow[];
+  const emailsReady = draftRows
+    .filter((row) => String(row.lead_id || "").trim())
+    .slice(0, 12);
 
-  const latestInboundByLead = new Map<string, EmailMessageRow>();
-  for (const msg of replyMsgs) {
-    const leadId = String(msg.lead_id || "").trim();
-    if (!leadId || latestInboundByLead.has(leadId)) continue;
-    latestInboundByLead.set(leadId, msg);
+  const snapshot = {
+    new: 0,
+    contacted: 0,
+    interested: 0,
+    proposal_sent: 0,
+    closed: 0,
+  };
+  for (const lead of allLeads) {
+    const status = String(lead.status || "").trim().toLowerCase();
+    if (status === "new") snapshot.new += 1;
+    else if (status === "contacted" || status === "follow_up_due" || status === "replied") snapshot.contacted += 1;
+    else if (status === "interested") snapshot.interested += 1;
+    else if (status === "proposal_sent") snapshot.proposal_sent += 1;
+    else if (status === "closed" || status === "closed_won" || status === "closed_lost") snapshot.closed += 1;
   }
-
-  let winsRaw = (winsWithEstimated.data || []) as LeadRow[];
-  if (winsWithEstimated.error) {
-    const { data: winsFallback } = await supabase
-      .from("leads")
-      .select("id,created_at,opportunity_score")
-      .eq("owner_id", ownerId)
-      .eq("status", "closed_won")
-      .limit(2000);
-    winsRaw = (winsFallback || []) as LeadRow[];
-  }
-  const wins = winsRaw.map((row) => {
-    const explicitValue = Number((row as { estimated_value?: number | null }).estimated_value ?? NaN);
-    const scoreValue = Number(row.opportunity_score ?? 0);
-    const estimatedValue = Number.isFinite(explicitValue) ? explicitValue : Math.max(0, scoreValue) * 50;
-    return {
-      id: row.id,
-      created_at: row.created_at || null,
-      estimated_value: estimatedValue,
-    };
-  });
-  const totalEstimatedValue = wins.reduce((sum, w) => sum + Number(w.estimated_value || 0), 0);
-  const monthlyTotalsMap = new Map<string, number>();
-  for (const win of wins) {
-    const key = monthKey(win.created_at);
-    monthlyTotalsMap.set(key, Number(monthlyTotalsMap.get(key) || 0) + Number(win.estimated_value || 0));
-  }
-  const monthlyTotals = Array.from(monthlyTotalsMap.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(-6)
-    .reverse();
-
-  const cards = [
-    { label: "New Opportunities", value: newOpportunities.length },
-    { label: "Leads Ready To Contact", value: readyLeads.length },
-    { label: "Replies Waiting", value: repliedLeads.length },
-    { label: "Follow Ups Due", value: followUpLeads.length },
-  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <section className="admin-card">
-        <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--admin-fg)" }}>
-          Scout CRM Command Center
+        <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
+          Daily Command Center
         </h1>
-        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-          Daily control panel for the Scout pipeline: opportunities, outreach, replies, and wins.
-        </p>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-4">
-        {cards.map((card) => (
-          <article key={card.label} className="admin-card">
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
-              {card.label}
-            </p>
-            <p className="text-2xl font-bold mt-2" style={{ color: "var(--admin-fg)" }}>
-              {card.value}
-            </p>
-          </article>
-        ))}
-      </section>
-
-      <section className="admin-card">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
-          New Opportunities
-        </h2>
-        <div className="admin-table-wrap overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Business</th>
-                <th>Category</th>
-                <th>Website</th>
-                <th>Score</th>
-                <th>Top Issue</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {newOpportunities.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    No unmatched opportunities found.
-                  </td>
-                </tr>
-              ) : (
-                newOpportunities.map((opp) => (
-                  <tr key={opp.id}>
-                    <td>{String(opp.business_name || "Unknown business")}</td>
-                    <td>{String(opp.category || "—")}</td>
-                    <td>
-                      {opp.website ? (
-                        <a href={opp.website} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-                          Open
-                        </a>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td>{Number(opp.opportunity_score ?? 0)}</td>
-                    <td>{opp.top_issue}</td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <form action={createLeadFromOpportunity}>
-                          <input type="hidden" name="opportunity_id" value={opp.id} />
-                          <button type="submit" className="admin-btn-primary text-xs h-8 px-3">
-                            Create Lead
-                          </button>
-                        </form>
-                        <a href="/admin/cases" className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">Open Case</a>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="admin-card">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
-          Leads Ready To Contact
-        </h2>
-        <div className="admin-table-wrap overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Business</th>
-                <th>Score</th>
-                <th>Main Issue</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {readyLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    No new leads ready to contact.
-                  </td>
-                </tr>
-              ) : (
-                readyLeads.map((lead) => {
-                  const opp = actionOppById.get(String(lead.linked_opportunity_id || "").trim());
-                  const score = Number(opp?.opportunity_score ?? lead.opportunity_score ?? 0);
-                  const issue = String(opp?.opportunity_reason || "Website pain signal detected");
-                  return (
-                  <tr key={lead.id}>
-                    <td>{String(lead.business_name || "Unknown business")}</td>
-                    <td>{score || "—"}</td>
-                    <td>{issue}</td>
-                    <td>
-                      <div className="flex gap-2">
-                        <a href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
-                          Open Lead
-                        </a>
-                        <a href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`} className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
-                          Generate Email
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section
-        className="admin-card"
-        style={{
-          borderColor: "rgba(74, 222, 128, 0.45)",
-          boxShadow: "0 0 0 1px rgba(74, 222, 128, 0.2), 0 16px 30px rgba(2, 6, 23, 0.22)",
-          background: "linear-gradient(165deg, rgba(11, 35, 24, 0.95), rgba(8, 25, 18, 0.95))",
-        }}
-      >
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "#86efac" }}>
-          Replies Waiting
-        </h2>
-        <div className="admin-table-wrap overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Business</th>
-                <th>Latest Email Message</th>
-                <th>Reply Time</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {repliedLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    No replies yet.
-                  </td>
-                </tr>
-              ) : (
-                repliedLeads.map((lead) => {
-                  const msg = latestInboundByLead.get(lead.id);
-                  const snippet = String(msg?.body || "").trim().slice(0, 160);
-                  return (
-                    <tr key={lead.id}>
-                      <td>{String(lead.business_name || "Unknown business")}</td>
-                      <td>{snippet || "Reply received"}</td>
-                      <td>{formatDateTime(msg?.received_at || msg?.created_at)}</td>
-                      <td>
-                        <a href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
-                          Open Lead
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="admin-card">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
-          Follow Ups Due
-        </h2>
-        <div className="admin-table-wrap overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Business</th>
-                <th>Score</th>
-                <th>Main Issue</th>
-                <th>Next Follow Up</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {followUpLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    No follow ups due.
-                  </td>
-                </tr>
-              ) : (
-                followUpLeads.map((lead) => {
-                  const opp = actionOppById.get(String(lead.linked_opportunity_id || "").trim());
-                  return (
-                  <tr key={lead.id}>
-                    <td>{String(lead.business_name || "Unknown business")}</td>
-                    <td>{Number(opp?.opportunity_score ?? lead.opportunity_score ?? 0) || "—"}</td>
-                    <td>{String(opp?.opportunity_reason || "Follow-up due")}</td>
-                    <td>{formatDateTime(lead.next_follow_up_at)}</td>
-                    <td>
-                      <a href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
-                        Send Follow Up
+      <section className="grid gap-4 md:grid-cols-2">
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Today’s Top Leads</h2>
+          <div className="space-y-3">
+            {topLeads.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                No top leads in last 24h.
+              </p>
+            ) : (
+              topLeads.slice(0, 12).map((lead) => {
+                const website =
+                  String(lead.website || "").trim() ||
+                  String(topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.website || "").trim();
+                const businessName =
+                  String(lead.business_name || "").trim() ||
+                  String(topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.business_name || "").trim() ||
+                  "Lead";
+                const opportunityReason = String(
+                  topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.opportunity_reason || ""
+                ).trim();
+                return (
+                  <div
+                    key={lead.id}
+                    className="rounded-lg border px-3 py-2"
+                    style={{ borderColor: "var(--admin-border)" }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium">{businessName}</p>
+                      <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                        Score {Number(lead.opportunity_score ?? 0)}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                      {opportunityReason || "Website improvement opportunity"}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <a
+                        href={`/admin/leads/${encodeURIComponent(String(lead.id))}`}
+                        className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Open Lead
                       </a>
-                    </td>
-                  </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                      {website ? (
+                        <a
+                          href={website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                        >
+                          Open Website
+                        </a>
+                      ) : null}
+                      <a
+                        href={`/admin/leads/${encodeURIComponent(String(lead.id))}?generate=1`}
+                        className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Generate Email
+                      </a>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </article>
 
-      <section className="admin-card">
-        <h2 className="text-lg font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
-          Wins
-        </h2>
-        <div className="grid gap-3 md:grid-cols-3 mb-4">
-          <article className="rounded-lg border px-4 py-3" style={{ borderColor: "var(--admin-border)" }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>Count</p>
-            <p className="text-xl font-semibold mt-1">{wins.length}</p>
-          </article>
-          <article className="rounded-lg border px-4 py-3" style={{ borderColor: "var(--admin-border)" }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>Estimated Value</p>
-            <p className="text-xl font-semibold mt-1">{currency(totalEstimatedValue)}</p>
-          </article>
-          <article className="rounded-lg border px-4 py-3" style={{ borderColor: "var(--admin-border)" }}>
-            <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>Monthly Totals</p>
-            <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
-              Last {Math.max(1, monthlyTotals.length)} months
-            </p>
-          </article>
-        </div>
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Emails Ready To Send</h2>
+          <div className="space-y-3">
+            {emailsReady.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                No draft outreach emails.
+              </p>
+            ) : (
+              emailsReady.map((draft) => {
+                const leadId = String(draft.lead_id || "");
+                const lead = leadById.get(leadId);
+                return (
+                  <div
+                    key={draft.id}
+                    className="rounded-lg border px-3 py-2"
+                    style={{ borderColor: "var(--admin-border)" }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium">{String(lead?.business_name || "Lead")}</p>
+                      <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                        {fmtDate(draft.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                      {String(draft.subject || "Draft outreach")}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <a
+                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Preview
+                      </a>
+                      <a
+                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Edit
+                      </a>
+                      <a
+                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Send
+                      </a>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </article>
+
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Follow Ups Due</h2>
+          <div className="space-y-3">
+            {followUpsDue.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                No follow ups due.
+              </p>
+            ) : (
+              followUpsDue.map((lead) => (
+                <div
+                  key={lead.id}
+                  className="rounded-lg border px-3 py-2"
+                  style={{ borderColor: "var(--admin-border)" }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">{String(lead.business_name || "Unknown business")}</p>
+                    <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      {fmtDate((dueAt(lead) || null)?.toISOString() || null)}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <a
+                      href={`/admin/leads/${encodeURIComponent(String(lead.id))}?compose=1`}
+                      className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Send Follow Up
+                    </a>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Pipeline Snapshot</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>new</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.new}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>contacted</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.contacted}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>interested</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.interested}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>proposal_sent</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.proposal_sent}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3 col-span-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>closed</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.closed}</p>
+            </div>
+          </div>
+        </article>
       </section>
     </div>
   );

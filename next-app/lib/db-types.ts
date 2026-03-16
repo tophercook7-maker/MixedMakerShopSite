@@ -139,3 +139,17 @@ export type EmailMessage = {
   created_at: string;
   owner_id: string;
 };
+
+export type CalendarEventType = "meeting" | "followup" | "task" | "scout";
+export type CalendarEvent = {
+  id: string;
+  workspace_id: string | null;
+  lead_id: string | null;
+  title: string;
+  event_type: CalendarEventType;
+  start_time: string;
+  end_time: string | null;
+  notes: string | null;
+  created_at: string;
+  owner_id: string;
+};

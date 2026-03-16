@@ -6,8 +6,10 @@ type LeadWorkspaceActionsProps = {
   leadId: string;
   linkedOpportunityId: string | null;
   initialBusinessName: string;
+  initialCategory: string;
   initialIssue: string;
   initialEmail: string | null;
+  initialPhone: string | null;
   website: string | null;
   contactPage: string | null;
   caseHref: string | null;
@@ -43,8 +45,10 @@ export function LeadWorkspaceActions({
   leadId,
   linkedOpportunityId,
   initialBusinessName,
+  initialCategory,
   initialIssue,
   initialEmail,
+  initialPhone,
   website,
   contactPage,
   caseHref,
@@ -61,6 +65,7 @@ export function LeadWorkspaceActions({
   const [isUpdating, setIsUpdating] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [savedNotes, setSavedNotes] = useState<string[]>(initialNotes);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -184,6 +189,31 @@ export function LeadWorkspaceActions({
     setNoteDraft("");
   }
 
+  function buildPreviewUrl() {
+    if (typeof window === "undefined") return "";
+    const params = new URLSearchParams();
+    params.set("business", initialBusinessName || "Business");
+    params.set("category", initialCategory || "service");
+    if (initialEmail) params.set("email", initialEmail);
+    if (initialPhone) params.set("phone", initialPhone);
+    if (website) params.set("website", website);
+    const generated = `${window.location.origin}/preview/${encodeURIComponent(leadId)}?${params.toString()}`;
+    setPreviewUrl(generated);
+    return generated;
+  }
+
+  async function copyPreviewUrl() {
+    const url = previewUrl || buildPreviewUrl();
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage("Preview URL copied.");
+      setError(null);
+    } catch {
+      setError("Could not copy preview URL.");
+    }
+  }
+
   return (
     <aside className="space-y-3 sticky top-4">
       <div className="admin-card space-y-3">
@@ -217,6 +247,33 @@ export function LeadWorkspaceActions({
         ) : (
           <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
             Generate a draft from dossier intelligence, then edit and send.
+          </p>
+        )}
+      </div>
+
+      <div className="admin-card space-y-2">
+        <h3 className="text-sm font-semibold">Redesign Concept</h3>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="admin-btn-primary text-xs"
+            onClick={() => {
+              const url = buildPreviewUrl();
+              if (url) window.open(url, "_blank", "noopener,noreferrer");
+            }}
+          >
+            Generate Preview
+          </button>
+          <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
+            Copy Preview URL
+          </button>
+        </div>
+        {previewUrl ? (
+          <p className="text-xs break-all" style={{ color: "var(--admin-muted)" }}>
+            {previewUrl}
+          </p>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Generates a shareable redesign concept at <code>/preview/&lt;lead_id&gt;</code>.
           </p>
         )}
       </div>

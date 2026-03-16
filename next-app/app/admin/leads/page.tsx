@@ -26,7 +26,32 @@ type OpportunityRow = {
   website?: string;
   opportunity_score?: number;
   opportunity_reason?: string | null;
+  opportunity_signals?: string[] | null;
+  close_probability?: "low" | "medium" | "high" | null;
 };
+
+function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
+  const s = Number(score ?? 0);
+  const cat = String(category || "").toLowerCase();
+  const highCat = [
+    "dentist",
+    "chiropractor",
+    "restaurant",
+    "cafe",
+    "gym",
+    "salon",
+    "auto repair",
+    "plumber",
+    "contractor",
+  ].some((k) => cat.includes(k));
+  const hasCaptureIssue = issues.some((i) => {
+    const t = String(i || "").toLowerCase();
+    return t.includes("booking") || t.includes("ordering") || t.includes("contact");
+  });
+  if (s >= 85 || (s >= 70 && highCat && hasCaptureIssue)) return "high";
+  if (s >= 60 || highCat) return "medium";
+  return "low";
+}
 
 type CaseByOpportunityRow = {
   id: string;
@@ -127,12 +152,18 @@ export default async function AdminLeadsPage({
   const { data: fallbackOppRows } = opportunityIds.length
     ? await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,opportunity_score,opportunity_reason")
+        .select("id,business_name,category,website,opportunity_score,opportunity_reason,opportunity_signals")
         .in("id", opportunityIds)
     : { data: [] as OpportunityRow[] };
   const fallbackOppById = new Map(
     (fallbackOppRows || []).map((row) => [String(row.id || ""), row as OpportunityRow])
   );
+  if (opportunityIds.length && (fallbackOppRows || []).length) {
+    console.info("[Leads List] fallback relationship fetch used", {
+      requested_opportunity_ids: opportunityIds.length,
+      resolved_opportunity_rows: (fallbackOppRows || []).length,
+    });
+  }
   const { data: caseRowsRaw } = opportunityIds.length
     ? await supabase
         .from("case_files")
@@ -162,10 +193,13 @@ export default async function AdminLeadsPage({
         : [];
     const detectedIssues = detectedIssuesRaw.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 6);
     const opportunityReason = String(opp?.opportunity_reason || "").trim();
+    const opportunitySignals = Array.isArray(opp?.opportunity_signals)
+      ? opp!.opportunity_signals!.map((v) => String(v || "").trim()).filter(Boolean)
+      : [];
     const issueList =
       opportunityReason && !detectedIssues.some((issue) => issue.toLowerCase() === opportunityReason.toLowerCase())
-        ? [opportunityReason, ...detectedIssues].slice(0, 6)
-        : detectedIssues;
+        ? [opportunityReason, ...detectedIssues, ...opportunitySignals].slice(0, 6)
+        : [...detectedIssues, ...opportunitySignals].slice(0, 6);
     const screenshotCandidates = [
       caseRow?.annotated_screenshot_url,
       caseRow?.screenshot_url,
@@ -185,6 +219,9 @@ export default async function AdminLeadsPage({
       business_name: String(opp?.business_name || row.business_name || "Unknown business"),
       category: String(opp?.category || row.industry || "").trim() || null,
       opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
+      close_probability:
+        (String(opp?.close_probability || "").trim().toLowerCase() as "low" | "medium" | "high") ||
+        deriveCloseProbability(opp?.opportunity_score ?? row.opportunity_score, opp?.category || row.industry, issueList),
       website: website || null,
       email: email || null,
       phone_from_site: phone || null,
@@ -198,7 +235,7 @@ export default async function AdminLeadsPage({
             : website
               ? "website"
               : "none",
-      detected_issue_summary: opportunityReason || issueList[0] || "Website pain signals detected",
+      detected_issue_summary: opportunityReason || issueList[0] || "No specific website issue captured yet",
       detected_issues: issueList,
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
@@ -208,6 +245,11 @@ export default async function AdminLeadsPage({
       notes: [String(caseRow?.outcome || "").trim(), String(caseRow?.notes || "").trim(), String(row.notes || "").trim()].filter(Boolean),
       lead_source: String(row.lead_source || "").trim() || null,
     };
+  });
+  console.info("[Leads List] related data resolved", {
+    leads_count: rows.length,
+    opportunities_resolved: fallbackOppById.size,
+    cases_resolved: latestCaseByOppId.size,
   });
 
   if (source) {

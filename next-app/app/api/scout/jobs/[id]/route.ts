@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ScoutJobStatusResponse } from "@/lib/scout/types";
+import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 
 const DEFAULT_TIMEOUT_MS = 10000;
 
@@ -110,6 +111,35 @@ export async function GET(
       revalidatePath("/admin/leads");
       refreshTriggered = true;
       console.info("[Scout Proxy] polling finished, data refresh triggered", id);
+
+      const ownerId = String(session?.user?.id || "").trim();
+      if (ownerId) {
+        const notesKey = `scout_job_id:${id}`;
+        const { data: existing } = await supabase
+          .from("calendar_events")
+          .select("id")
+          .eq("owner_id", ownerId)
+          .eq("event_type", "scout")
+          .eq("notes", notesKey)
+          .limit(1);
+        if (!((existing || []).length > 0)) {
+          try {
+            const workspaceForEvent = await resolveWorkspaceIdForOwner(ownerId);
+            const startTime = String(body.finished_at || new Date().toISOString());
+            await createCalendarEvent({
+              ownerId,
+              workspaceId: workspaceForEvent,
+              title: "Scout run completed",
+              eventType: "scout",
+              startTime,
+              endTime: null,
+              notes: notesKey,
+            });
+          } catch (calendarError) {
+            console.warn("[Scout Proxy] scout completion event creation failed", calendarError);
+          }
+        }
+      }
     } else if (body.status === "failed") {
       console.info("[Scout Proxy] polling finished with failure", id);
     }

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building, Crosshair, FolderKanban, LayoutDashboard, Send, Settings, StickyNote, Users } from "lucide-react";
+import { Building, CalendarDays, Crosshair, FolderKanban, LayoutDashboard, Send, Settings, StickyNote, Users } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/crm", label: "CRM", icon: Building },
   { href: "/admin/leads", label: "Leads", icon: Users },
+  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/cases", label: "Cases", icon: FolderKanban },
   { href: "/admin/outreach", label: "Outreach", icon: Send },
   { href: "/admin/scout", label: "Scout", icon: Crosshair },

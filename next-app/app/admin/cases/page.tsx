@@ -37,6 +37,7 @@ type MappedCaseRow = {
   website: string;
   score: number;
   opportunity_reason: string;
+  opportunity_reason_items: string[];
   lane: string;
   website_speed: number | null | undefined;
   mobile_ready: boolean | null | undefined;
@@ -153,7 +154,11 @@ export default async function AdminCasesPage({
       category: String(opp?.category || "—"),
       website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
-      opportunity_reason: String(opp?.opportunity_reason || "Website pain signal detected"),
+      opportunity_reason: String(opp?.opportunity_reason || "No specific website issue captured yet"),
+      opportunity_reason_items: String(opp?.opportunity_reason || "")
+        .split("|")
+        .map((v) => v.trim())
+        .filter(Boolean),
       lane: String(opp?.lane || (opp?.no_website ? "no_website" : "weak_website")),
       website_speed: opp?.website_speed as number | null | undefined,
       mobile_ready: opp?.mobile_ready as boolean | null | undefined,
@@ -241,25 +246,37 @@ export default async function AdminCasesPage({
                     </td>
                     <td>{row.score || "—"}</td>
                     <td>{row.lane.replace("_", " ")}</td>
-                    <td>{row.opportunity_reason || "—"}</td>
+                    <td>
+                      {row.opportunity_reason_items.length > 0
+                        ? row.opportunity_reason_items.slice(0, 3).join(", ")
+                        : row.opportunity_reason || "—"}
+                    </td>
                     <td>{row.has_audit ? `audited (${row.audit_issues_count} issues)` : "not audited"}</td>
                     <td>{row.status.replace("_", " ")}</td>
                     <td>
-                      {row.linked_lead_id ? (
+                      <div className="flex items-center gap-2">
                         <Link
-                          href={`/admin/leads/${encodeURIComponent(row.linked_lead_id)}`}
+                          href={`/admin/cases/${encodeURIComponent(row.id)}`}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                         >
-                          Open Lead
+                          Open Case
                         </Link>
-                      ) : (
-                        <Link
-                          href={`/admin/leads?source=scout-brain&sort=score_desc`}
-                          className="text-[var(--admin-gold)] hover:underline text-xs"
-                        >
-                          Open Leads
-                        </Link>
-                      )}
+                        {row.linked_lead_id ? (
+                          <Link
+                            href={`/admin/leads/${encodeURIComponent(row.linked_lead_id)}`}
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                          >
+                            Open Lead
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/admin/leads?source=scout-brain&sort=score_desc`}
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                          >
+                            Open Leads
+                          </Link>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

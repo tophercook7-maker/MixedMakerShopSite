@@ -466,3 +466,22 @@
   margin: 0;
   max-width: 520px;
 }
+
+/* FullCalendar dark-mode overrides */
+.admin-root .fc {
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.03);
+  --fc-border-color: var(--admin-border);
+  --fc-button-bg-color: rgba(240, 165, 26, 0.12);
+  --fc-button-border-color: rgba(240, 165, 26, 0.28);
+  --fc-button-hover-bg-color: rgba(240, 165, 26, 0.2);
+  --fc-button-hover-border-color: rgba(240, 165, 26, 0.45);
+  --fc-button-active-bg-color: rgba(240, 165, 26, 0.28);
+  --fc-button-active-border-color: rgba(240, 165, 26, 0.55);
+  --fc-event-text-color: #08120f;
+  --fc-today-bg-color: rgba(240, 165, 26, 0.1);
+}
+
+.admin-root .fc .fc-toolbar-title {
+  font-size: 1.1rem;
+}
