@@ -6,7 +6,11 @@ import { GlobalScoutJobProvider } from "@/components/admin/scout-job-provider";
 import { ArrowRight, Plus } from "lucide-react";
 import "./admin.css";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  console.info("[Admin Bootstrap] admin shell render started");
   const scoutBaseUrl = process.env.SCOUT_BRAIN_API_BASE_URL?.trim();
   const isScoutConfigured = Boolean(scoutBaseUrl);
 

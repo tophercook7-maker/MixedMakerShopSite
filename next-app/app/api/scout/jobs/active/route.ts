@@ -7,6 +7,21 @@ function scoutBaseUrl() {
   return process.env.SCOUT_BRAIN_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 }
 
+function activeJobCandidates(baseUrl: string): string[] {
+  if (!baseUrl) return [];
+  const out: string[] = [];
+  out.push(`${baseUrl}/jobs/active`);
+  try {
+    const parsed = new URL(baseUrl);
+    const originOnly = parsed.origin.replace(/\/+$/, "");
+    const originActive = `${originOnly}/jobs/active`;
+    if (!out.includes(originActive)) out.push(originActive);
+  } catch {
+    // Ignore malformed base URL; downstream fetch surfaces error.
+  }
+  return out;
+}
+
 export async function GET(request: Request) {
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
@@ -48,31 +63,38 @@ export async function GET(request: Request) {
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-    const response = await fetch(`${baseUrl}/jobs/active`, {
-      method: "GET",
-      headers,
-      signal: controller.signal,
-      cache: "no-store",
-    });
-    clearTimeout(timer);
+    const candidates = activeJobCandidates(baseUrl);
+    let body: Record<string, unknown> = { error: "Scout active job request failed." };
+    let responseStatus = 502;
+    for (const targetUrl of candidates) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+      const response = await fetch(targetUrl, {
+        method: "GET",
+        headers,
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      clearTimeout(timer);
 
-    const contentType = response.headers.get("content-type") || "";
-    const body = contentType.includes("application/json")
-      ? await response.json()
-      : { error: await response.text() };
+      const contentType = response.headers.get("content-type") || "";
+      body = contentType.includes("application/json")
+        ? (await response.json()) as Record<string, unknown>
+        : { error: await response.text() };
+      responseStatus = response.status;
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        return NextResponse.json(
-          { error: "Scout authentication failed", detail: body },
-          { status: 401 }
-        );
+      if (!response.ok) {
+        if (response.status === 401) {
+          return NextResponse.json(
+            { error: "Scout authentication failed", detail: body },
+            { status: 401 }
+          );
+        }
+        continue;
       }
-      return NextResponse.json(body, { status: response.status });
+      return NextResponse.json(body, { status: 200 });
     }
-    return NextResponse.json(body, { status: 200 });
+    return NextResponse.json(body, { status: responseStatus >= 400 ? responseStatus : 502 });
   } catch (error) {
     return NextResponse.json(
       {

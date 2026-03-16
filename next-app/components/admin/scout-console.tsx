@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Crosshair, ExternalLink, RefreshCw } from "lucide-react";
 import type { ScoutLead, ScoutScanSettings, ScoutSummary } from "@/lib/scout/types";
 import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
@@ -162,6 +163,7 @@ export function ScoutConsole({
   initialTopLeads,
   initialError,
 }: Props) {
+  const router = useRouter();
   const scout = useGlobalScoutJob();
   const [pageError, setPageError] = useState<string | null>(initialError);
   const [scope, setScope] = useState<ScoutScanSettings["scope"]>("single_city");
@@ -264,6 +266,11 @@ export function ScoutConsole({
     }
   };
 
+  const resetScoutUiState = () => {
+    setPageError(null);
+    scout.clearScoutState();
+  };
+
   const runWithPreset = async (preset: ScanPreset) => {
     setPageError(null);
     applySettings(preset.settings);
@@ -317,6 +324,54 @@ export function ScoutConsole({
           )}
         </div>
       </section>
+
+      {(pageError || scout.jobError) && (
+        <section
+          className="admin-card"
+          style={{
+            borderColor: "rgba(252, 165, 165, 0.5)",
+            background: "rgba(127, 29, 29, 0.18)",
+          }}
+        >
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "#fecaca" }}>
+            Scout request failed
+          </h2>
+          <p className="text-sm" style={{ color: "#fecaca" }}>
+            {pageError || scout.jobError}
+          </p>
+          <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+            The admin page is still active. Retry Scout actions or reset local Scout UI state.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="admin-btn-primary text-xs"
+              disabled={!integrationReady || scout.isBusy}
+              onClick={() => {
+                void runScout();
+              }}
+            >
+              Retry Scout Start
+            </button>
+            <button
+              type="button"
+              className="admin-btn-ghost text-xs"
+              onClick={() => {
+                router.refresh();
+              }}
+            >
+              Retry Load
+            </button>
+            <button
+              type="button"
+              className="admin-btn-ghost text-xs"
+              onClick={resetScoutUiState}
+            >
+              Reset Scout UI State
+            </button>
+          </div>
+        </section>
+      )}
 
       {integrationReady && !scout.isBusy && (
         <section className="admin-card space-y-4">
@@ -559,11 +614,6 @@ export function ScoutConsole({
                 <p>Depth: {activeScanSettings.depth || "normal"}</p>
               </div>
             )}
-          {(pageError || scout.jobError) && (
-            <p className="text-sm mt-3" style={{ color: "#fca5a5" }}>
-              {pageError || scout.jobError}
-            </p>
-          )}
         </section>
       )}
 

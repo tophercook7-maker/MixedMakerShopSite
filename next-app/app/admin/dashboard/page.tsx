@@ -30,6 +30,40 @@ type EmailDraftRow = {
   created_at?: string | null;
 };
 
+type SearchParams = Record<string, string | string[] | undefined>;
+type BootstrapIssue = { label: string; message: string };
+
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? String(value[0] || "") : String(value || "");
+}
+
+async function runBootstrapTask<T>(
+  label: string,
+  fn: () => Promise<T>,
+  issues: BootstrapIssue[],
+  timeoutMs = 12000
+): Promise<T | null> {
+  console.info(`[Admin Bootstrap] ${label} started`);
+  try {
+    const result = (await Promise.race([
+      fn(),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+      }),
+    ])) as T;
+    console.info(`[Admin Bootstrap] ${label} success`);
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : `${label} failed`;
+    console.error(`[Admin Bootstrap] ${label} failed`, { message });
+    if (issues.length === 0) {
+      console.error(`[Admin Bootstrap] first failing request: ${label}`);
+    }
+    issues.push({ label, message });
+    return null;
+  }
+}
+
 function fmtDate(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);
@@ -65,12 +99,23 @@ async function fetchDraftMessages(supabase: Awaited<ReturnType<typeof createClie
   return [] as EmailDraftRow[];
 }
 
-export default async function DailyCommandCenterPage() {
+export default async function DailyCommandCenterPage({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
+  console.info("[Admin Bootstrap] admin bootstrap started");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const bootstrapIssues: BootstrapIssue[] = [];
+  const authResult = await runBootstrapTask(
+    "auth.getUser",
+    async () => supabase.auth.getUser(),
+    bootstrapIssues
+  );
+  const user = authResult?.data?.user ?? null;
   const ownerId = String(user?.id || "").trim();
+  const fromLogin = firstParam(searchParams?.fromLogin) === "1";
+  const minimalMode = firstParam(searchParams?.minimal) === "1";
 
   if (!ownerId) {
     return (
@@ -85,40 +130,76 @@ export default async function DailyCommandCenterPage() {
   const now = new Date();
   const cutoff24h = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [topLeadResult, allLeadsResult, draftRows] = await Promise.all([
-    supabase
-      .from("leads")
-      .select(
-        "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
-      )
-      .eq("owner_id", ownerId)
-      .gte("created_at", cutoff24h)
-      .order("opportunity_score", { ascending: false, nullsFirst: false })
-      .limit(40),
-    supabase
-      .from("leads")
-      .select(
-        "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
-      )
-      .eq("owner_id", ownerId)
-      .order("created_at", { ascending: false })
-      .limit(3000),
-    fetchDraftMessages(supabase, ownerId),
-  ]);
+  let topLeadResult:
+    | {
+        data: LeadRow[] | null;
+        error: unknown;
+      }
+    | null = null;
+  let allLeadsResult:
+    | {
+        data: LeadRow[] | null;
+        error: unknown;
+      }
+    | null = null;
+  let draftRows: EmailDraftRow[] = [];
 
-  const topLeads = (topLeadResult.data || []) as LeadRow[];
-  const allLeads = (allLeadsResult.data || []) as LeadRow[];
+  if (!minimalMode) {
+    const [topLeadRaw, allLeadsRaw, draftRaw] = await Promise.all([
+      runBootstrapTask(
+        "leads.top-24h",
+        async () =>
+          (await supabase
+            .from("leads")
+            .select(
+              "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+            )
+            .eq("owner_id", ownerId)
+            .gte("created_at", cutoff24h)
+            .order("opportunity_score", { ascending: false, nullsFirst: false })
+            .limit(40)) as { data: LeadRow[] | null; error: unknown },
+        bootstrapIssues
+      ),
+      runBootstrapTask(
+        "leads.all",
+        async () =>
+          (await supabase
+            .from("leads")
+            .select(
+              "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+            )
+            .eq("owner_id", ownerId)
+            .order("created_at", { ascending: false })
+            .limit(3000)) as { data: LeadRow[] | null; error: unknown },
+        bootstrapIssues
+      ),
+      runBootstrapTask("email_messages.drafts", async () => fetchDraftMessages(supabase, ownerId), bootstrapIssues),
+    ]);
+    topLeadResult = topLeadRaw;
+    allLeadsResult = allLeadsRaw;
+    draftRows = draftRaw || [];
+  }
+
+  const topLeads = ((topLeadResult?.data || []) as unknown[]) as LeadRow[];
+  const allLeads = ((allLeadsResult?.data || []) as unknown[]) as LeadRow[];
   const leadById = new Map(allLeads.map((lead) => [String(lead.id), lead]));
 
   const topLeadOppIds = topLeads
     .map((lead) => String(lead.linked_opportunity_id || "").trim())
     .filter(Boolean);
-  const { data: topLeadOppRows } = topLeadOppIds.length
-    ? await supabase
-        .from("opportunities")
-        .select("id,business_name,website,lead_bucket,opportunity_reason")
-        .in("id", topLeadOppIds)
-    : { data: [] as Record<string, unknown>[] };
+  const topLeadOppResult =
+    topLeadOppIds.length && !minimalMode
+      ? await runBootstrapTask(
+          "opportunities.top-lead-joins",
+          async () =>
+            await supabase
+              .from("opportunities")
+              .select("id,business_name,website,lead_bucket,opportunity_reason")
+              .in("id", topLeadOppIds),
+          bootstrapIssues
+        )
+      : { data: [] as Record<string, unknown>[] };
+  const topLeadOppRows = topLeadOppResult?.data || [];
   const topLeadOppById = new Map(
     ((topLeadOppRows || []) as OpportunityRow[]).map((opp) => [String(opp.id), opp])
   );
@@ -182,6 +263,44 @@ export default async function DailyCommandCenterPage() {
 
   return (
     <div className="space-y-4">
+      {(fromLogin || bootstrapIssues.length > 0 || minimalMode) && (
+        <section
+          className="admin-card"
+          style={{
+            borderColor: "rgba(251, 191, 36, 0.45)",
+            background: "rgba(146, 64, 14, 0.18)",
+          }}
+        >
+          <h2 className="text-lg font-semibold" style={{ color: "#fde68a" }}>
+            {minimalMode
+              ? "Minimal admin mode"
+              : bootstrapIssues.length > 0
+                ? "Signed in, but admin data failed to load"
+                : "Signed in successfully"}
+          </h2>
+          <p className="text-sm mt-1" style={{ color: "#fde68a" }}>
+            {minimalMode
+              ? "Loaded with reduced bootstrap to keep admin available while background services recover."
+              : bootstrapIssues.length > 0
+                ? "Core shell loaded. Some dashboard data requests failed, but admin remains usable."
+                : "Session handoff succeeded and admin shell loaded."}
+          </p>
+          {bootstrapIssues.length > 0 && (
+            <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+              First failing request: {bootstrapIssues[0].label} - {bootstrapIssues[0].message}
+            </p>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href="/admin" className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
+              Retry Admin Bootstrap
+            </a>
+            <a href="/admin/minimal?minimal=1&fromLogin=1" className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
+              Continue Minimal Admin Mode
+            </a>
+          </div>
+        </section>
+      )}
+
       <section className="admin-card">
         <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
           Daily Command Center

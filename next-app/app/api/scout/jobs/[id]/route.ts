@@ -10,6 +10,22 @@ function scoutBaseUrl() {
   return process.env.SCOUT_BRAIN_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 }
 
+function pollJobCandidates(baseUrl: string, jobId: string): string[] {
+  if (!baseUrl) return [];
+  const safeId = encodeURIComponent(jobId);
+  const out: string[] = [];
+  out.push(`${baseUrl}/job/${safeId}`);
+  try {
+    const parsed = new URL(baseUrl);
+    const originOnly = parsed.origin.replace(/\/+$/, "");
+    const originPoll = `${originOnly}/job/${safeId}`;
+    if (!out.includes(originPoll)) out.push(originPoll);
+  } catch {
+    // Ignore malformed base URL; downstream fetch will surface errors.
+  }
+  return out;
+}
+
 function isScoutJobStatusResponse(
   body: ScoutJobStatusResponse | { error: string }
 ): body is ScoutJobStatusResponse {
@@ -66,46 +82,61 @@ export async function GET(
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-    const response = await fetch(`${baseUrl}/job/${encodeURIComponent(id)}`, {
-      method: "GET",
-      headers,
-      signal: controller.signal,
-      cache: "no-store",
-    });
-    clearTimeout(timer);
+    const candidates = pollJobCandidates(baseUrl, id);
+    let body: ScoutJobStatusResponse | { error: string } = {
+      error: "Scout polling failed.",
+    };
+    let responseStatus = 502;
+    let success = false;
+    for (const targetUrl of candidates) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+      const response = await fetch(targetUrl, {
+        method: "GET",
+        headers,
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      clearTimeout(timer);
 
-    const contentType = response.headers.get("content-type") || "";
-    const body: ScoutJobStatusResponse | { error: string } = contentType.includes(
-      "application/json"
-    )
-      ? ((await response.json()) as ScoutJobStatusResponse | { error: string })
-      : ({ error: await response.text() } as { error: string });
+      const contentType = response.headers.get("content-type") || "";
+      body = contentType.includes("application/json")
+        ? ((await response.json()) as ScoutJobStatusResponse | { error: string })
+        : ({ error: await response.text() } as { error: string });
+      responseStatus = response.status;
 
-    if (!response.ok) {
-      console.error("[Scout Proxy] poll failed", id, response.status, body);
-      if (response.status === 401) {
-        return NextResponse.json(
-          { error: "Scout authentication failed", detail: body },
-          { status: 401 }
-        );
+      if (!response.ok) {
+        if (response.status === 401) {
+          return NextResponse.json(
+            { error: "Scout authentication failed", detail: body },
+            { status: 401 }
+          );
+        }
+        continue;
       }
-      return NextResponse.json(body, { status: response.status });
+      if (!isScoutJobStatusResponse(body)) {
+        continue;
+      }
+      success = true;
+      break;
     }
 
-    if (!isScoutJobStatusResponse(body)) {
-      console.warn("[Scout Proxy] polling update error", id, body.error);
+    if (!success) {
+      console.error("[Scout Proxy] poll failed", id, responseStatus, body);
+      if (isScoutJobStatusResponse(body)) {
+        return NextResponse.json(body, { status: 200 });
+      }
       return NextResponse.json(
         { error: body.error || "Invalid polling response from Scout backend." },
-        { status: 502 }
+        { status: responseStatus >= 400 ? responseStatus : 502 }
       );
     }
 
-    console.info("[Scout Proxy] polling update", id, body.status, body.progress);
+    const statusBody = body as ScoutJobStatusResponse;
+    console.info("[Scout Proxy] polling update", id, statusBody.status, statusBody.progress);
 
     let refreshTriggered = false;
-    if (body.status === "finished" && !body.error) {
+    if (statusBody.status === "finished" && !statusBody.error) {
       revalidatePath("/admin");
       revalidatePath("/admin/scout");
       revalidatePath("/admin/leads");
@@ -125,7 +156,7 @@ export async function GET(
         if (!((existing || []).length > 0)) {
           try {
             const workspaceForEvent = await resolveWorkspaceIdForOwner(ownerId);
-            const startTime = String(body.finished_at || new Date().toISOString());
+            const startTime = String(statusBody.finished_at || new Date().toISOString());
             await createCalendarEvent({
               ownerId,
               workspaceId: workspaceForEvent,
@@ -140,11 +171,11 @@ export async function GET(
           }
         }
       }
-    } else if (body.status === "failed") {
+    } else if (statusBody.status === "failed") {
       console.info("[Scout Proxy] polling finished with failure", id);
     }
 
-    return NextResponse.json({ ...body, refreshTriggered }, { status: 200 });
+    return NextResponse.json({ ...statusBody, refreshTriggered }, { status: 200 });
   } catch (error) {
     console.error("[Scout Proxy] poll request exception", id, error);
     return NextResponse.json(

@@ -200,11 +200,17 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
 
       const tick = async () => {
         try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
           const res = await fetch(`/api/scout/jobs/${id}`, {
             method: "GET",
             cache: "no-store",
+            signal: controller.signal,
           });
-          const body = (await res.json()) as ScoutJobStatusResponse & {
+          clearTimeout(timeout);
+          const body = (await res
+            .json()
+            .catch(() => ({ error: "Load failed while parsing Scout polling response." }))) as ScoutJobStatusResponse & {
             error?: string;
             refreshTriggered?: boolean;
           };
@@ -334,12 +340,24 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const restoreActiveJobFromWorkspace = useCallback(async () => {
     try {
       console.info("restoring active scout job from jobs table");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const res = await fetch("/api/scout/jobs/active", {
         method: "GET",
         cache: "no-store",
+        signal: controller.signal,
       });
-      const body = (await res.json()) as ActiveScoutJobResponse;
-      if (!res.ok) return false;
+      clearTimeout(timeout);
+      const body = (await res
+        .json()
+        .catch(() => ({ error: "Load failed while parsing active Scout job response." }))) as ActiveScoutJobResponse;
+      if (!res.ok) {
+        console.error("[Admin Bootstrap] scout.jobs.active failed", {
+          status: res.status,
+          error: body.error || "Unknown active-job proxy failure.",
+        });
+        return false;
+      }
       const active = body.active_job;
       if (!active?.id) return false;
       const uiStatus = deriveUiStatus(active);
@@ -360,8 +378,10 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       console.info("cross-device scout restore success", active.id);
       void pollJob(active.id);
       return true;
-    } catch {
-      // Ignore remote restore errors.
+    } catch (error) {
+      console.error("[Admin Bootstrap] scout.jobs.active request threw", {
+        message: error instanceof Error ? error.message : "Active job restore failed.",
+      });
       return false;
     }
   }, [pollJob, writeAndSetState]);
@@ -404,13 +424,17 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       });
 
       try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
         const res = await fetch("/api/scout/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             scan_settings: selectedScanSettings || null,
           }),
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         const body = (await res.json()) as RunScoutResponse;
 
         if (!res.ok || !body.job_id) {
