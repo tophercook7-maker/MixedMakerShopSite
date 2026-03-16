@@ -259,10 +259,15 @@ export function ScoutConsole({
   };
 
   const runScout = async () => {
+    console.info("[Admin Click] Scout run click fired");
     setPageError(null);
+    console.info("[Admin Click] Scout handler entered");
     const result = await scout.startScout(integrationReady, buildScanSettings());
     if (!result.ok && result.error) {
+      console.error("[Admin Click] Scout start failed", { error: result.error });
       setPageError(result.error);
+    } else {
+      console.info("[Admin Click] Scout start succeeded");
     }
   };
 
@@ -272,11 +277,16 @@ export function ScoutConsole({
   };
 
   const runWithPreset = async (preset: ScanPreset) => {
+    console.info("[Admin Click] Scout preset run click fired", { preset: preset.id });
     setPageError(null);
     applySettings(preset.settings);
+    console.info("[Admin Click] Scout preset handler entered", { preset: preset.id });
     const result = await scout.startScout(integrationReady, preset.settings);
     if (!result.ok && result.error) {
+      console.error("[Admin Click] Scout preset start failed", { preset: preset.id, error: result.error });
       setPageError(result.error);
+    } else {
+      console.info("[Admin Click] Scout preset start succeeded", { preset: preset.id });
     }
   };
 

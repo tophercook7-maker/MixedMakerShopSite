@@ -111,6 +111,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const lastProgressAtRef = useRef(0);
   const completionNotifiedJobIdRef = useRef<string | null>(null);
   const clearCompletedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const restoringActiveJobRef = useRef(false);
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobUiStatus>("idle");
@@ -338,10 +339,13 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   }, [pollJob]);
 
   const restoreActiveJobFromWorkspace = useCallback(async () => {
+    if (restoringActiveJobRef.current) return false;
+    restoringActiveJobRef.current = true;
     try {
       console.info("restoring active scout job from jobs table");
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
+      console.info("[Admin Request] scout.jobs.active started");
       const res = await fetch("/api/scout/jobs/active", {
         method: "GET",
         cache: "no-store",
@@ -383,6 +387,8 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         message: error instanceof Error ? error.message : "Active job restore failed.",
       });
       return false;
+    } finally {
+      restoringActiveJobRef.current = false;
     }
   }, [pollJob, writeAndSetState]);
 

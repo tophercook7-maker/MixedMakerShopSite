@@ -66,15 +66,10 @@ function LoginForm() {
       console.info("[Auth Login] redirect started", { redirectTo: nextPath });
       fallbackTimerRef.current = window.setTimeout(() => {
         setShowPostLoginFallback(true);
-      }, 8000);
-
-      router.replace(nextPath);
-      router.refresh();
-      window.setTimeout(() => {
-        if (document.visibilityState === "visible") {
-          window.location.assign(nextPath);
-        }
-      }, 1500);
+      }, 5000);
+      // Use hard navigation for post-login handoff; avoids app-router transition stalls.
+      window.location.assign(nextPath);
+      return;
     } finally {
       setLoading(false);
     }

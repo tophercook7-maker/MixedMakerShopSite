@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
 import { HeaderActions } from "@/components/admin/HeaderActions";
 import { GlobalScoutJobProvider } from "@/components/admin/scout-job-provider";
@@ -25,18 +24,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <h1>MixedMakerShop Admin</h1>
             <div className="flex flex-wrap items-center gap-3">
               <div className="admin-quick-actions">
-                <Link href="/admin/leads">
+                <a href="/admin/leads">
                   <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Add Lead
-                </Link>
-                <Link href="/admin/scout">
+                </a>
+                <a href="/admin/scout">
                   <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Scout Console
-                </Link>
-                <Link href="/admin/outreach">
+                </a>
+                <a href="/admin/outreach">
                   <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Outreach Queue
-                </Link>
+                </a>
               </div>
               <HeaderActions />
             </div>

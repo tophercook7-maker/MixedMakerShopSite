@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Building, CalendarDays, Crosshair, FolderKanban, LayoutDashboard, Send, Settings, StickyNote, Users } from "lucide-react";
 
@@ -27,14 +26,17 @@ export default function Sidebar() {
       </div>
       <nav>
         {links.map(({ href, label, icon: Icon }) => (
-          <Link
+          <a
             key={href}
             href={href}
+            onClick={() => {
+              console.info("[Admin Click] sidebar link fired", { label, href });
+            }}
             data-active={pathname === href || (href !== "/admin" && pathname.startsWith(href))}
           >
             <Icon className="admin-nav-icon h-4 w-4 shrink-0" />
             {label}
-          </Link>
+          </a>
         ))}
       </nav>
     </>
