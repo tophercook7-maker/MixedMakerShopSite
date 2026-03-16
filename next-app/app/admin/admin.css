@@ -382,6 +382,11 @@
 .admin-badge-tier-hot { background: rgba(220, 38, 38, 0.22); color: #fca5a5; }
 .admin-badge-tier-warm { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
 .admin-badge-tier-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+.admin-badge-bucket-easy { background: rgba(40, 180, 120, 0.22); color: #4ade80; }
+.admin-badge-bucket-high { background: rgba(240, 165, 26, 0.22); color: #fcd34d; }
+.admin-badge-bucket-good { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
+.admin-badge-bucket-review { background: rgba(96, 165, 250, 0.2); color: #93c5fd; }
+.admin-badge-bucket-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
 /* Empty states */
 .admin-empty {

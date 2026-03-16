@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView, type WorkflowLead } from "@/components/admin/leads-workflow-view";
+import { buildLeadAssessment, scoreToLeadBucket } from "@/lib/lead-assessment";
+import { canonicalLeadBucket } from "@/lib/lead-bucket";
 
 type LeadRow = {
   id: string;
@@ -23,9 +25,12 @@ type OpportunityRow = {
   id: string;
   business_name?: string;
   category?: string;
+  city?: string | null;
+  address?: string | null;
   website?: string;
   website_status?: string | null;
   opportunity_score?: number;
+  lead_bucket?: string | null;
   opportunity_reason?: string | null;
   opportunity_signals?: string[] | null;
   close_probability?: "low" | "medium" | "high" | null;
@@ -60,7 +65,10 @@ type CaseByOpportunityRow = {
   status?: string | null;
   email?: string | null;
   contact_page?: string | null;
+  contact_form_url?: string | null;
   phone_from_site?: string | null;
+  facebook?: string | null;
+  facebook_url?: string | null;
   audit_issues?: string[] | null;
   strongest_problems?: string[] | null;
   screenshot_url?: string | null;
@@ -69,6 +77,11 @@ type CaseByOpportunityRow = {
   annotated_screenshot_url?: string | null;
   notes?: string | null;
   outcome?: string | null;
+  google_review_count?: number | null;
+  reviews_last_30_days?: number | null;
+  owner_post_detected?: boolean | null;
+  new_photos_detected?: boolean | null;
+  listing_recently_updated?: boolean | null;
   created_at?: string | null;
 };
 
@@ -153,7 +166,7 @@ export default async function AdminLeadsPage({
   const { data: fallbackOppRows } = opportunityIds.length
     ? await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals")
+        .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_reason,opportunity_signals")
         .in("id", opportunityIds)
     : { data: [] as OpportunityRow[] };
   const fallbackOppById = new Map(
@@ -169,7 +182,7 @@ export default async function AdminLeadsPage({
     ? await supabase
         .from("case_files")
         .select(
-          "id,opportunity_id,status,email,contact_page,phone_from_site,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,created_at"
+          "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
         )
         .in("opportunity_id", opportunityIds)
         .order("created_at", { ascending: false })
@@ -211,34 +224,70 @@ export default async function AdminLeadsPage({
       .filter(Boolean);
     const email = String(row.email || caseRow?.email || "").trim();
     const phone = String(caseRow?.phone_from_site || row.phone || "").trim();
-    const contactPage = String(caseRow?.contact_page || "").trim();
+    const contactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
+    const facebookUrl = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
     const website = String(opp?.website || row.website || "").trim();
+    const assessment = buildLeadAssessment({
+      website,
+      website_status: opp?.website_status || null,
+      opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
+      issue_summary: opportunityReason || issueList[0] || "",
+      issue_list: issueList,
+      category: opp?.category || row.industry || null,
+      email,
+      phone,
+      contact_page: contactPage,
+      facebook_url: facebookUrl,
+      reviews_last_30_days: caseRow?.reviews_last_30_days ?? null,
+      google_review_count: caseRow?.google_review_count ?? null,
+      owner_post_detected: caseRow?.owner_post_detected ?? null,
+      new_photos_detected: caseRow?.new_photos_detected ?? null,
+      listing_recently_updated: caseRow?.listing_recently_updated ?? null,
+      lead_status: row.status || null,
+    });
     return {
       id: String(row.id || ""),
       related_case_id: String(caseRow?.id || "") || null,
       opportunity_id: linkedOppId || null,
       business_name: String(opp?.business_name || row.business_name || "Unknown business"),
       category: String(opp?.category || row.industry || "").trim() || null,
+      city: String(opp?.city || "").trim() || null,
+      address: String(opp?.address || "").trim() || null,
       website_status: String(opp?.website_status || "").trim() || null,
       opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
+      lead_bucket:
+        canonicalLeadBucket(
+          String(opp?.lead_bucket || "").trim(),
+          opp?.opportunity_score ?? row.opportunity_score ?? null
+        ) ||
+        assessment.lead_bucket ||
+        scoreToLeadBucket(opp?.opportunity_score ?? row.opportunity_score ?? null),
       close_probability:
         (String(opp?.close_probability || "").trim().toLowerCase() as "low" | "medium" | "high") ||
+        assessment.close_probability ||
         deriveCloseProbability(opp?.opportunity_score ?? row.opportunity_score, opp?.category || row.industry, issueList),
       website: website || null,
       email: email || null,
       phone_from_site: phone || null,
       contact_page: contactPage || null,
+      facebook_url: facebookUrl || null,
       contact_method: email
         ? "email"
-        : phone
-          ? "phone"
-          : contactPage
+        : contactPage
             ? "contact page"
+          : phone
+            ? "phone"
+            : facebookUrl
+              ? "facebook"
             : website
               ? "website"
               : "none",
-      detected_issue_summary: opportunityReason || issueList[0] || "No immediate website breakage detected",
+      detected_issue_summary: opportunityReason || issueList[0] || "Website needs manual review",
       detected_issues: issueList,
+      lead_type: assessment.lead_type,
+      best_contact_method: assessment.best_contact_method || null,
+      best_pitch_angle: assessment.best_pitch_angle,
+      recommended_next_action: assessment.recommended_next_action,
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
       screenshot_urls: screenshotCandidates,
@@ -272,10 +321,14 @@ export default async function AdminLeadsPage({
       (a, b) => Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0)
     );
   } else {
-    workflowLeads = [...workflowLeads].sort(
-      (a, b) =>
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-    );
+    workflowLeads = [...workflowLeads].sort((a, b) => {
+      const easyA = a.lead_bucket === "Easy Win" ? 1 : 0;
+      const easyB = b.lead_bucket === "Easy Win" ? 1 : 0;
+      if (easyA !== easyB) return easyB - easyA;
+      const scoreDelta = Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0);
+      if (scoreDelta !== 0) return scoreDelta;
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
   }
   const leadIds = workflowLeads.map((lead) => lead.id).filter(Boolean);
   const { data: directLeadMessages } = leadIds.length

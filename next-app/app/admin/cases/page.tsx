@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FileSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
+import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
 type CaseSearchParams = {
   audited?: string;
@@ -25,6 +26,7 @@ type CaseRow = {
     category?: string;
     website?: string;
     opportunity_score?: number;
+    lead_bucket?: string | null;
     opportunity_reason?: string | null;
   } | null;
 };
@@ -36,6 +38,7 @@ type MappedCaseRow = {
   category: string;
   website: string;
   score: number;
+  lead_bucket: string | null;
   opportunity_reason: string;
   opportunity_reason_items: string[];
   lane: string;
@@ -90,7 +93,7 @@ export default async function AdminCasesPage({
       email,
       contact_page,
       phone_from_site,
-      opportunity:opportunities(id, business_name, category, website, opportunity_score, opportunity_reason)
+      opportunity:opportunities(id, business_name, category, website, opportunity_score, lead_bucket, opportunity_reason)
     `)
     .order("created_at", { ascending: false })
     .limit(500);
@@ -113,7 +116,7 @@ export default async function AdminCasesPage({
     ? await (async () => {
         let oppQuery = supabase
           .from("opportunities")
-          .select("id,business_name,category,website,opportunity_score,opportunity_reason,lane,no_website,website_speed,mobile_ready")
+          .select("id,business_name,category,website,opportunity_score,lead_bucket,opportunity_reason,lane,no_website,website_speed,mobile_ready")
           .in("id", fallbackOppIds);
         if (workspaceId) {
           oppQuery = oppQuery.eq("workspace_id", workspaceId);
@@ -154,7 +157,8 @@ export default async function AdminCasesPage({
       category: String(opp?.category || "—"),
       website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
-      opportunity_reason: String(opp?.opportunity_reason || "No immediate website breakage detected"),
+      lead_bucket: String(opp?.lead_bucket || "").trim() || null,
+      opportunity_reason: String(opp?.opportunity_reason || "Website needs manual review"),
       opportunity_reason_items: String(opp?.opportunity_reason || "")
         .split("|")
         .map((v) => v.trim())
@@ -223,6 +227,7 @@ export default async function AdminCasesPage({
                   <th>Category</th>
                   <th>Website</th>
                   <th>Score</th>
+                  <th>Lead Bucket</th>
                   <th>Lane</th>
                   <th>Opportunity Reason</th>
                   <th>Website Audit</th>
@@ -245,6 +250,7 @@ export default async function AdminCasesPage({
                       )}
                     </td>
                     <td>{row.score || "—"}</td>
+                    <td><LeadBucketBadge bucket={row.lead_bucket} score={row.score} /></td>
                     <td>{row.lane.replace("_", " ")}</td>
                     <td>
                       {row.opportunity_reason_items.length > 0

@@ -52,6 +52,51 @@ function categoryTemplate(category: string): Template {
       testimonials: ["Same-day service and clear communication.", "Quote form was easy and fast."],
     };
   }
+  if (c.includes("hvac") || c.includes("heating") || c.includes("cooling")) {
+    return {
+      heroTitle: "Comfort starts with one quick call.",
+      heroSubtitle: "A conversion-focused HVAC homepage built for service calls and quote requests.",
+      cta: "Call Now / Get Quote",
+      services: ["Emergency HVAC Repair", "Seasonal Tune-Ups", "System Installation", "Indoor Air Quality"],
+      testimonials: ["Fast response and clear communication.", "Easy to request service online."],
+    };
+  }
+  if (c.includes("roof")) {
+    return {
+      heroTitle: "Protect your home with trusted roofing service.",
+      heroSubtitle: "A lead-ready website concept designed for inspections, quotes, and booked jobs.",
+      cta: "Request Roof Inspection",
+      services: ["Roof Repair", "Roof Replacement", "Storm Damage", "Insurance Support"],
+      testimonials: ["They made the estimate process simple.", "Easy scheduling and fast follow-up."],
+    };
+  }
+  if (c.includes("church")) {
+    return {
+      heroTitle: "Welcome home.",
+      heroSubtitle: "A clear church homepage to help visitors find service times, location, and next steps.",
+      cta: "Plan Your Visit",
+      services: ["Service Times", "Ministries", "Events Calendar", "Prayer Request"],
+      testimonials: ["Easy to find where and when to attend.", "The new site feels warm and welcoming."],
+    };
+  }
+  if (c.includes("auto")) {
+    return {
+      heroTitle: "Reliable auto care, easy to schedule.",
+      heroSubtitle: "A practical auto repair homepage focused on calls, trust, and booked appointments.",
+      cta: "Schedule Service",
+      services: ["Diagnostics", "Brakes & Suspension", "Oil & Maintenance", "Engine Repair"],
+      testimonials: ["Quick estimate and easy booking.", "Trusted local shop with a great new site."],
+    };
+  }
+  if (c.includes("landscap")) {
+    return {
+      heroTitle: "Outdoor spaces that stand out.",
+      heroSubtitle: "A lead-focused landscaping site concept for quote requests and seasonal service plans.",
+      cta: "Get Landscaping Quote",
+      services: ["Lawn Maintenance", "Landscape Design", "Hardscape Projects", "Seasonal Cleanup"],
+      testimonials: ["Quote request took less than a minute.", "Beautiful work and great communication."],
+    };
+  }
   if (c.includes("salon")) {
     return {
       heroTitle: "Look great. Book instantly.",

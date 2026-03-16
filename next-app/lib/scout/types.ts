@@ -18,6 +18,7 @@ export type ScoutLead = {
   city?: string | null;
   distance?: number | null;
   score?: number | null;
+  lead_bucket?: string | null;
   lead_tier?: string | null;
   lane?: string | null;
   best_contact_method?: string | null;
@@ -43,6 +44,18 @@ export type RunScoutResponse = {
   user_message?: string;
 };
 
+export type ScoutScanScope = "single_city" | "nearby_cities" | "arkansas_region" | "all_arkansas";
+export type ScoutScanDepth = "quick" | "normal" | "deep";
+
+export type ScoutScanSettings = {
+  scope: ScoutScanScope;
+  single_city?: string | null;
+  region?: string | null;
+  categories: string[];
+  issue_filters: string[];
+  depth: ScoutScanDepth;
+};
+
 export type ScoutJobStatusResponse = {
   id: string;
   status: "queued" | "running" | "finished" | "failed" | string;
@@ -54,6 +67,7 @@ export type ScoutJobStatusResponse = {
   created_at?: string | null;
   started_at?: string | null;
   finished_at?: string | null;
+  scan_settings?: ScoutScanSettings | null;
   persistence_debug?: {
     scout_run_saved?: boolean;
     opportunities_created?: number;

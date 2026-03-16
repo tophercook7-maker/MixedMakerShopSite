@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
+import { buildLeadAssessment } from "@/lib/lead-assessment";
+import { canonicalLeadBucket } from "@/lib/lead-bucket";
+import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
 type LeadRow = {
   id: string;
@@ -23,7 +26,12 @@ type CaseRow = {
   status?: string | null;
   email?: string | null;
   contact_page?: string | null;
+  contact_form_url?: string | null;
   phone_from_site?: string | null;
+  facebook?: string | null;
+  facebook_url?: string | null;
+  instagram?: string | null;
+  instagram_url?: string | null;
   activity_summary?: string[] | null;
   website_audit?: {
     mobile_score?: number | null;
@@ -68,12 +76,19 @@ type CaseRow = {
   annotated_screenshot_url?: string | null;
   notes?: string | null;
   outcome?: string | null;
+  google_review_count?: number | null;
+  reviews_last_30_days?: number | null;
+  owner_post_detected?: boolean | null;
+  new_photos_detected?: boolean | null;
+  listing_recently_updated?: boolean | null;
 };
 
 type OpportunityRow = {
   id: string;
   business_name?: string | null;
   category?: string | null;
+  city?: string | null;
+  address?: string | null;
   website?: string | null;
   website_status?: string | null;
   opportunity_score?: number | null;
@@ -166,6 +181,45 @@ function categorizeWebsiteIssue(rawIssue: string): { category: string; issue: st
   return { category: "Website", issue };
 }
 
+function quickFixSuggestions(category: string, issueTexts: string[]) {
+  const cat = String(category || "").toLowerCase();
+  const text = issueTexts.join(" | ").toLowerCase();
+  const suggestions: string[] = [];
+  const push = (value: string) => {
+    if (!suggestions.includes(value)) suggestions.push(value);
+  };
+
+  if (text.includes("call to action") || text.includes("cta")) {
+    push("Add a clear action button near the top of the homepage.");
+  }
+  if (text.includes("contact") || text.includes("phone")) {
+    push("Move contact options higher on the page so visitors can act quickly.");
+  }
+  if (text.includes("mobile") || text.includes("viewport") || text.includes("small text") || text.includes("buttons too close")) {
+    push("Simplify the mobile header/navigation and increase tap target sizes.");
+  }
+  if (text.includes("slow") || text.includes("pagespeed") || text.includes("load")) {
+    push("Compress large images and reduce heavy scripts to improve load speed.");
+  }
+
+  if (cat.includes("restaurant") || cat.includes("cafe") || cat.includes("bakery")) {
+    push("Add a prominent Menu / Order Now button above the fold.");
+  } else if (cat.includes("plumber") || cat.includes("hvac") || cat.includes("electrician") || cat.includes("roofer")) {
+    push("Add Call Now and Get Quote buttons in the hero section.");
+  } else if (cat.includes("gym")) {
+    push("Add Join Now and Membership Plans calls to action near the top.");
+  } else if (cat.includes("church")) {
+    push("Add Service Times and Plan Your Visit buttons on the homepage.");
+  }
+
+  if (suggestions.length === 0) {
+    push("Add a clear top-of-page call to action that matches your main service.");
+    push("Make contact options visible in the header and first screen.");
+    push("Reduce clutter on mobile so visitors can find key actions faster.");
+  }
+  return suggestions.slice(0, 3);
+}
+
 export default async function AdminLeadDetailPage({
   params,
   searchParams,
@@ -217,7 +271,7 @@ export default async function AdminLeadDetailPage({
     const { data: caseByOppRows } = await supabase
       .from("case_files")
       .select(
-        "id,opportunity_id,created_at,status,email,contact_page,phone_from_site,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome"
+        "id,opportunity_id,created_at,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,instagram,instagram_url,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated"
       )
       .eq("opportunity_id", linkedOppId)
       .order("created_at", { ascending: false })
@@ -230,7 +284,7 @@ export default async function AdminLeadDetailPage({
   if (oppId) {
     const { data: oppRows } = await supabase
       .from("opportunities")
-      .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+      .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
       .eq("id", oppId)
       .limit(1);
     opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
@@ -240,7 +294,7 @@ export default async function AdminLeadDetailPage({
     if (leadWebsite) {
       const { data: fallbackOppRows } = await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+        .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
         .eq("website", leadWebsite)
         .order("opportunity_score", { ascending: false, nullsFirst: false })
         .limit(1);
@@ -387,14 +441,22 @@ export default async function AdminLeadDetailPage({
     String(lead?.website || "").trim();
   const displayEmail = String(lead?.email || caseRow?.email || "").trim();
   const displayPhone = String(caseRow?.phone_from_site || lead?.phone || "").trim();
-  const displayContactPage = String(caseRow?.contact_page || "").trim();
+  const displayContactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
+  const displayFacebook = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
+  const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
   const displayStatus = String(lead?.status || caseRow?.status || "new");
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
+  const displayCity = String(opp?.city || "").trim() || "—";
+  const displayAddress = String(opp?.address || "").trim() || "—";
   const closeProbability =
     String(opp?.close_probability || "").toLowerCase() ||
     deriveCloseProbability(opp?.opportunity_score ?? lead?.opportunity_score, opp?.category || lead?.industry, issueList);
   const displayCreatedAt = lead?.created_at || caseRow?.created_at || null;
   const caseHref = caseRow?.id ? `/admin/cases/${encodeURIComponent(caseRow.id)}` : null;
+  const quickFixCurrentIssues = topIssues.length
+    ? topIssues.map((item) => item.issue).slice(0, 3)
+    : issueList.slice(0, 3);
+  const quickFixImprovements = quickFixSuggestions(displayCategory, quickFixCurrentIssues);
   const preferredContact = displayEmail
     ? "Email"
     : displayPhone
@@ -402,6 +464,32 @@ export default async function AdminLeadDetailPage({
       : displayContactPage
         ? "Contact Page"
         : "Website";
+  const assessment = buildLeadAssessment({
+    website: displayWebsite || null,
+    website_status: displayWebsiteStatus,
+    opportunity_score: displayScore,
+    issue_summary: String(opp?.opportunity_reason || topIssues[0]?.issue || "").trim(),
+    issue_list: issueList,
+    category: displayCategory,
+    email: displayEmail || null,
+    phone: displayPhone || null,
+    contact_page: displayContactPage || null,
+    facebook_url: displayFacebook || null,
+    reviews_last_30_days: caseRow?.reviews_last_30_days ?? null,
+    google_review_count: caseRow?.google_review_count ?? null,
+    owner_post_detected: caseRow?.owner_post_detected ?? null,
+    new_photos_detected: caseRow?.new_photos_detected ?? null,
+    listing_recently_updated: caseRow?.listing_recently_updated ?? null,
+    lead_status: displayStatus,
+  });
+  const displayLeadBucket = canonicalLeadBucket(assessment.lead_bucket, displayScore);
+  const recommendedActionHref =
+    assessment.recommended_next_action === "Generate Email"
+      ? `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}?generate=1`
+      : assessment.recommended_next_action === "Send First Touch"
+        ? `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}?compose=1`
+        : `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}`;
+  const quickFixSummary = quickFixImprovements[0] || null;
 
   return (
     <div className="space-y-6">
@@ -412,10 +500,10 @@ export default async function AdminLeadDetailPage({
               {displayBusinessName}
             </h1>
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-              {displayCategory} · Score {displayScore || "—"} · Status {displayStatus.replace(/_/g, " ")}
+              {displayCategory} · {displayCity} · Score {displayScore || "—"} · {displayLeadBucket} · Status {displayStatus.replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "No immediate website breakage detected").trim()}
+              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Website needs manual review").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Website: {displayWebsite ? (
@@ -426,6 +514,9 @@ export default async function AdminLeadDetailPage({
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Website status: {displayWebsiteStatus}
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+              Address: {displayAddress}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Close probability: {closeProbability}
@@ -447,6 +538,93 @@ export default async function AdminLeadDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
+          <section className="admin-card">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+              Lead Assessment
+            </h2>
+            <div className="grid gap-2 md:grid-cols-2 text-sm">
+              <div>
+                <span style={{ color: "var(--admin-muted)" }}>Lead Bucket:</span>{" "}
+                <LeadBucketBadge bucket={displayLeadBucket} score={displayScore} />
+              </div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Lead Type:</span> {assessment.lead_type}</div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Close Probability:</span> {assessment.close_probability}</div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "review manually"}</div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Recommended Next Action:</span> {assessment.recommended_next_action}</div>
+            </div>
+            <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
+              <span style={{ color: "var(--admin-fg)" }}>Best Pitch Angle:</span> {assessment.best_pitch_angle}
+            </p>
+          </section>
+
+          <section className="admin-card">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+              What’s Really Going On
+            </h2>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Top issues</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {(quickFixCurrentIssues.length ? quickFixCurrentIssues : ["Website needs manual review"]).slice(0, 3).map((issue, idx) => (
+                    <li key={`${issue}-${idx}`}>{issue}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Why it matters</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {[
+                    "Customers may have trouble contacting the business quickly.",
+                    "Mobile visitors may leave before taking action.",
+                    "A weaker web presence can reduce trust and conversions.",
+                  ].map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+              <p style={{ color: "var(--admin-muted)" }}>
+                <span style={{ color: "var(--admin-fg)" }}>Best pitch angle:</span> {assessment.best_pitch_angle}
+              </p>
+              <p style={{ color: "var(--admin-muted)" }}>
+                <span style={{ color: "var(--admin-fg)" }}>Recommended next action:</span> {assessment.recommended_next_action}
+              </p>
+            </div>
+          </section>
+
+          <section className="admin-card">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+              Quick Fix Preview
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>
+                  Current Issues
+                </p>
+                {quickFixCurrentIssues.length ? (
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    {quickFixCurrentIssues.map((issue, idx) => (
+                      <li key={`${issue}-${idx}`}>{issue}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                    Website needs manual review.
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>
+                  Suggested Fixes
+                </p>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  {quickFixImprovements.map((item, idx) => (
+                    <li key={`${item}-${idx}`}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               Website Preview
@@ -670,6 +848,43 @@ export default async function AdminLeadDetailPage({
                   "—"
                 )}
               </div>
+              <div>
+                <span style={{ color: "var(--admin-muted)" }}>Facebook: </span>
+                {displayFacebook ? (
+                  <a href={displayFacebook} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
+                    Open
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              {displayEmail ? (
+                <a href={`mailto:${displayEmail}`} className="admin-btn-primary">
+                  Email
+                </a>
+              ) : null}
+              {displayContactPage ? (
+                <a href={displayContactPage} target="_blank" rel="noreferrer" className="admin-btn-ghost">
+                  Contact Form/Page
+                </a>
+              ) : null}
+              {displayPhone ? (
+                <a href={`tel:${displayPhone}`} className="admin-btn-ghost">
+                  Call
+                </a>
+              ) : null}
+              {displayFacebook ? (
+                <a href={displayFacebook} target="_blank" rel="noreferrer" className="admin-btn-ghost">
+                  Facebook
+                </a>
+              ) : null}
+              {displayInstagram ? (
+                <a href={displayInstagram} target="_blank" rel="noreferrer" className="admin-btn-ghost">
+                  Instagram
+                </a>
+              ) : null}
             </div>
           </section>
 
@@ -701,21 +916,44 @@ export default async function AdminLeadDetailPage({
           </section>
         </div>
 
-        <LeadWorkspaceActions
-          leadId={String(lead?.id || targetId)}
-          linkedOpportunityId={oppId || null}
-          initialBusinessName={displayBusinessName}
-          initialCategory={displayCategory}
-          initialIssue={topIssues[0]?.issue || "No immediate website breakage detected"}
-          initialEmail={displayEmail || null}
-          initialPhone={displayPhone || null}
-          website={displayWebsite || null}
-          contactPage={displayContactPage || null}
-          caseHref={caseHref}
-          initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
-          autoGenerate={generate === "1"}
-          autoCompose={compose === "1"}
-        />
+        <div className="space-y-6">
+          <section className="admin-card">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+              What to do next
+            </h2>
+            <ol className="list-decimal pl-5 text-sm space-y-1" style={{ color: "var(--admin-muted)" }}>
+              <li>Review screenshot</li>
+              <li>Check issue summary</li>
+              <li>Use best pitch angle</li>
+              <li>Click Generate Email</li>
+              <li>Click Send Email</li>
+            </ol>
+            <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+              Recommended action: {assessment.recommended_next_action}
+            </p>
+            <div className="mt-3">
+              <Link href={recommendedActionHref} className="admin-btn-primary text-sm">
+                {assessment.recommended_next_action}
+              </Link>
+            </div>
+          </section>
+          <LeadWorkspaceActions
+            leadId={String(lead?.id || targetId)}
+            linkedOpportunityId={oppId || null}
+            initialBusinessName={displayBusinessName}
+            initialCategory={displayCategory}
+            initialIssue={topIssues[0]?.issue || "Website needs manual review"}
+            initialEmail={displayEmail || null}
+            initialPhone={displayPhone || null}
+            website={displayWebsite || null}
+            contactPage={displayContactPage || null}
+            caseHref={caseHref}
+            initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
+            quickFixSummary={quickFixSummary}
+            autoGenerate={generate === "1"}
+            autoCompose={compose === "1"}
+          />
+        </div>
       </div>
     </div>
   );

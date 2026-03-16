@@ -14,6 +14,7 @@ type LeadWorkspaceActionsProps = {
   contactPage: string | null;
   caseHref: string | null;
   initialNotes: string[];
+  quickFixSummary?: string | null;
   autoGenerate?: boolean;
   autoCompose?: boolean;
 };
@@ -53,6 +54,7 @@ export function LeadWorkspaceActions({
   contactPage,
   caseHref,
   initialNotes,
+  quickFixSummary = null,
   autoGenerate = false,
   autoCompose = false,
 }: LeadWorkspaceActionsProps) {
@@ -95,11 +97,17 @@ export function LeadWorkspaceActions({
 
       const fallback = fallbackDraft(initialBusinessName, initialIssue);
       const nextSubject = fallback.subject;
-      const nextBody =
+      let nextBody =
         String(data.short_email || "").trim() ||
         String(data.longer_email || "").trim() ||
         String(data.follow_up_note || "").trim() ||
         fallback.body;
+      if (
+        quickFixSummary &&
+        !/quick improvement idea|quick fix/i.test(nextBody)
+      ) {
+        nextBody = `${nextBody}\n\nI put together a quick improvement idea: ${quickFixSummary}`;
+      }
 
       setSubject(nextSubject);
       setBody(nextBody);
@@ -107,7 +115,11 @@ export function LeadWorkspaceActions({
     } catch (e) {
       const fallback = fallbackDraft(initialBusinessName, initialIssue);
       setSubject(fallback.subject);
-      setBody(fallback.body);
+      setBody(
+        quickFixSummary
+          ? `${fallback.body}\n\nI put together a quick improvement idea: ${quickFixSummary}`
+          : fallback.body
+      );
       setError(e instanceof Error ? e.message : "Could not generate outreach draft.");
     } finally {
       setIsGenerating(false);
@@ -221,6 +233,9 @@ export function LeadWorkspaceActions({
         <div className="flex flex-wrap gap-2">
           <button className="admin-btn-primary text-xs" onClick={() => void generateDraft()} disabled={isGenerating}>
             {isGenerating ? "Generating..." : "Generate Email"}
+          </button>
+          <button className="admin-btn-ghost text-xs" onClick={() => void generateDraft()} disabled={isGenerating}>
+            Preview Email
           </button>
           <button className="admin-btn-ghost text-xs" onClick={() => void copyEmail()}>
             Copy Email

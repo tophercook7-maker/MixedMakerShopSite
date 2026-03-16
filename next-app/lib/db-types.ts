@@ -140,7 +140,12 @@ export type EmailMessage = {
   owner_id: string;
 };
 
-export type CalendarEventType = "meeting" | "followup" | "task" | "scout";
+export type CalendarEventType =
+  | "appointment"
+  | "client_call"
+  | "followup"
+  | "task"
+  | "scout";
 export type CalendarEvent = {
   id: string;
   workspace_id: string | null;

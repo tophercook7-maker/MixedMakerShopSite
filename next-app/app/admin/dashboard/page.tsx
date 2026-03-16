@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
 type LeadRow = {
   id: string;
@@ -16,6 +17,7 @@ type OpportunityRow = {
   id: string;
   business_name?: string | null;
   website?: string | null;
+  lead_bucket?: string | null;
   opportunity_reason?: string | null;
 };
 
@@ -111,7 +113,10 @@ export default async function DailyCommandCenterPage() {
     .map((lead) => String(lead.linked_opportunity_id || "").trim())
     .filter(Boolean);
   const { data: topLeadOppRows } = topLeadOppIds.length
-    ? await supabase.from("opportunities").select("id,business_name,website,opportunity_reason").in("id", topLeadOppIds)
+    ? await supabase
+        .from("opportunities")
+        .select("id,business_name,website,lead_bucket,opportunity_reason")
+        .in("id", topLeadOppIds)
     : { data: [] as Record<string, unknown>[] };
   const topLeadOppById = new Map(
     ((topLeadOppRows || []) as OpportunityRow[]).map((opp) => [String(opp.id), opp])
@@ -131,9 +136,30 @@ export default async function DailyCommandCenterPage() {
       return ad - bd;
     })
     .slice(0, 12);
+  const workToday = topLeads.slice(0, 5).map((lead) => {
+    const reason = String(
+      topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.opportunity_reason || ""
+    ).trim();
+    const status = String(lead.status || "new").toLowerCase();
+    const nextAction =
+      status === "new"
+        ? "Send First Touch"
+        : status === "follow_up_due"
+          ? "Follow Up"
+          : "Open Lead";
+    return {
+      id: String(lead.id || ""),
+      businessName: String(lead.business_name || "Lead"),
+      reason: reason || "Strong local business with clear website opportunity.",
+      nextAction,
+    };
+  });
 
   const emailsReady = draftRows
     .filter((row) => String(row.lead_id || "").trim())
+    .slice(0, 12);
+  const repliesWaiting = allLeads
+    .filter((lead) => String(lead.status || "").toLowerCase() === "replied")
     .slice(0, 12);
 
   const snapshot = {
@@ -160,13 +186,38 @@ export default async function DailyCommandCenterPage() {
         </h1>
       </section>
 
+      <section className="admin-card">
+        <h2 className="text-lg font-semibold mb-3">Work Today</h2>
+        {workToday.length === 0 ? (
+          <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+            No priority leads queued yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {workToday.map((item) => (
+              <div key={item.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">{item.businessName}</p>
+                  <a href={`/admin/leads/${encodeURIComponent(item.id)}`} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
+                    {item.nextAction}
+                  </a>
+                </div>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  {item.reason}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2">
         <article className="admin-card">
-          <h2 className="text-lg font-semibold mb-3">Today’s Top Leads</h2>
+          <h2 className="text-lg font-semibold mb-3">Easy Win</h2>
           <div className="space-y-3">
             {topLeads.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                No top leads in last 24h.
+                No Easy Win leads in last 24h.
               </p>
             ) : (
               topLeads.slice(0, 12).map((lead) => {
@@ -179,6 +230,9 @@ export default async function DailyCommandCenterPage() {
                   "Lead";
                 const opportunityReason = String(
                   topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.opportunity_reason || ""
+                ).trim();
+                const leadBucket = String(
+                  topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.lead_bucket || ""
                 ).trim();
                 return (
                   <div
@@ -193,7 +247,8 @@ export default async function DailyCommandCenterPage() {
                       </span>
                     </div>
                     <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-                      {opportunityReason || "Website improvement opportunity"}
+                      <LeadBucketBadge bucket={leadBucket} score={Number(lead.opportunity_score ?? 0)} />{" "}
+                      {opportunityReason || "Website needs manual review"}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a
@@ -275,6 +330,40 @@ export default async function DailyCommandCenterPage() {
                   </div>
                 );
               })
+            )}
+          </div>
+        </article>
+
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Replies Waiting</h2>
+          <div className="space-y-3">
+            {repliesWaiting.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                No unread replies.
+              </p>
+            ) : (
+              repliesWaiting.map((lead) => (
+                <div
+                  key={lead.id}
+                  className="rounded-lg border px-3 py-2"
+                  style={{ borderColor: "var(--admin-border)" }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">{String(lead.business_name || "Lead")}</p>
+                    <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      replied
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <a
+                      href={`/admin/leads/${encodeURIComponent(String(lead.id))}`}
+                      className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Reply
+                    </a>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </article>

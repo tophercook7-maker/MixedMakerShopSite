@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 
-export type CalendarEventType = "meeting" | "followup" | "task" | "scout";
+export type CalendarEventType =
+  | "appointment"
+  | "client_call"
+  | "followup"
+  | "task"
+  | "scout"
+  | "meeting"
+  | "follow_up_reminder"
+  | "scout_run";
 
 type CreateCalendarEventInput = {
   ownerId: string;
@@ -29,16 +37,49 @@ export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<strin
 
 export async function createCalendarEvent(input: CreateCalendarEventInput) {
   const supabase = await createClient();
+  const workspaceId = String(input.workspaceId || "").trim() || (await resolveWorkspaceIdForOwner(input.ownerId));
+  if (!workspaceId) {
+    return {
+      data: null,
+      error: { message: "Workspace is required to create calendar events." },
+    };
+  }
+  const normalizedType = normalizeCalendarEventType(input.eventType);
   const payload = {
     owner_id: input.ownerId,
-    workspace_id: input.workspaceId || null,
+    workspace_id: workspaceId,
     lead_id: input.leadId || null,
     title: input.title,
-    event_type: input.eventType,
+    event_type: normalizedType,
+    is_blocking: isHardBlockEventType(normalizedType),
+    source: "crm",
     start_time: input.startTime,
     end_time: input.endTime || null,
     notes: input.notes || null,
   };
   const { data, error } = await supabase.from("calendar_events").insert(payload).select("*").single();
   return { data, error };
+}
+
+export function normalizeCalendarEventType(raw: string | null | undefined): CalendarEventType {
+  const value = String(raw || "").trim().toLowerCase();
+  if (value === "meeting") return "appointment";
+  if (value === "follow-up reminder" || value === "follow_up_reminder") return "followup";
+  if (value === "scout run" || value === "scout_run") return "scout";
+  if (value === "client call") return "client_call";
+  if (value === "appointment") return "appointment";
+  if (value === "client_call") return "client_call";
+  if (value === "followup") return "followup";
+  if (value === "task") return "task";
+  if (value === "scout") return "scout";
+  return "task";
+}
+
+export function isHardBlockEventType(raw: string | null | undefined): boolean {
+  const type = normalizeCalendarEventType(raw);
+  return type === "appointment" || type === "client_call";
+}
+
+export function isSoftEventType(raw: string | null | undefined): boolean {
+  return !isHardBlockEventType(raw);
 }

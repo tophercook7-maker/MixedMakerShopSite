@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -17,7 +17,7 @@ type CalendarEventRow = {
   id: string;
   lead_id?: string | null;
   title: string;
-  event_type: "meeting" | "followup" | "task" | "scout" | string;
+  event_type: "appointment" | "client_call" | "followup" | "task" | "scout" | string;
   start_time: string;
   end_time?: string | null;
   notes?: string | null;
@@ -38,7 +38,8 @@ async function fetchEvents(startIso: string, endIso: string): Promise<CalendarEv
 
 function toEventInput(row: CalendarEventRow): EventInput {
   const colorByType: Record<string, string> = {
-    meeting: "#22c55e",
+    appointment: "#22c55e",
+    client_call: "#16a34a",
     followup: "#f59e0b",
     task: "#60a5fa",
     scout: "#a78bfa",
@@ -65,6 +66,8 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [showSoftOnMain, setShowSoftOnMain] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const [taskTitle, setTaskTitle] = useState("");
   const [taskStart, setTaskStart] = useState("");
@@ -80,6 +83,24 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       })),
     [leads]
   );
+
+  useEffect(() => {
+    void loadCalendarSettings();
+  }, []);
+
+  async function loadCalendarSettings() {
+    try {
+      const res = await fetch("/api/calendar/settings", { cache: "no-store" });
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        show_soft_events_on_main_calendar?: boolean;
+      };
+      if (!res.ok) throw new Error(body.error || "Could not load calendar settings.");
+      setShowSoftOnMain(Boolean(body.show_soft_events_on_main_calendar));
+    } catch {
+      // Do not block calendar rendering for settings failure.
+    }
+  }
 
   async function loadForRange(arg: DatesSetArg) {
     setLoading(true);
@@ -145,7 +166,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
     if (!taskTitle.trim()) setTaskTitle("Follow-up task");
   }
 
-  async function createTask(eventType: "task" | "followup" | "meeting") {
+  async function createTask(eventType: "task" | "followup" | "client_call" | "appointment") {
     setError(null);
     setMessage(null);
     const title = taskTitle.trim();
@@ -185,8 +206,38 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       <section className="admin-card">
         <h1 className="text-2xl font-bold mb-2">CRM Calendar</h1>
         <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-          Month, week, and day planning for meetings, follow-ups, tasks, and scout events.
+          Month, week, and day planning for appointments, client calls, follow-up reminders, tasks, and scout runs.
         </p>
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            id="soft-events-setting"
+            type="checkbox"
+            checked={showSoftOnMain}
+            onChange={async (e) => {
+              const next = Boolean(e.target.checked);
+              setShowSoftOnMain(next);
+              setSavingSettings(true);
+              try {
+                const res = await fetch("/api/calendar/settings", {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ show_soft_events_on_main_calendar: next }),
+                });
+                const body = (await res.json().catch(() => ({}))) as { error?: string };
+                if (!res.ok) throw new Error(body.error || "Could not save calendar setting.");
+                setError(null);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Could not save setting.");
+              } finally {
+                setSavingSettings(false);
+              }
+            }}
+          />
+          <label htmlFor="soft-events-setting" className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Show soft events on main calendar availability feed
+            {savingSettings ? " (saving...)" : ""}
+          </label>
+        </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -211,6 +262,11 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
             height="auto"
           />
           {loading ? <p className="text-xs mt-2">Loading events...</p> : null}
+          {!loading && events.length === 0 ? (
+            <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+              No calendar events yet. Create your first appointment or reminder.
+            </p>
+          ) : null}
         </section>
 
         <aside className="space-y-3">
@@ -249,10 +305,13 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
                 Create Task
               </button>
               <button className="admin-btn-ghost text-xs" onClick={() => void createTask("followup")}>
-                Create Follow-up
+                Create Follow-up Reminder
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("meeting")}>
-                Create Meeting
+              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("client_call")}>
+                Create Client Call
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("appointment")}>
+                Create Appointment
               </button>
             </div>
           </section>

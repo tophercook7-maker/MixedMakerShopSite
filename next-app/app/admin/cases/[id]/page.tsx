@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
 type CaseFileRow = {
   id: string;
@@ -26,6 +27,7 @@ type OpportunityRow = {
   category?: string | null;
   website?: string | null;
   opportunity_score?: number | null;
+  lead_bucket?: string | null;
   opportunity_reason?: string | null;
 };
 
@@ -77,7 +79,7 @@ export default async function AdminCaseDetailPage({
   if (oppId) {
     const { data: oppRows } = await supabase
       .from("opportunities")
-      .select("id,business_name,category,website,opportunity_score,opportunity_reason")
+      .select("id,business_name,category,website,opportunity_score,lead_bucket,opportunity_reason")
       .eq("id", oppId)
       .limit(1);
     opportunity = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
@@ -106,7 +108,10 @@ export default async function AdminCaseDetailPage({
               {String(caseRow.status || "new").replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opportunity?.opportunity_reason || "No immediate website breakage detected").trim()}
+              Lead bucket: <LeadBucketBadge bucket={opportunity?.lead_bucket || null} score={Number(opportunity?.opportunity_score ?? 0)} />
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+              Opportunity reason: {String(opportunity?.opportunity_reason || "Website needs manual review").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Created {fmtDate(caseRow.created_at)}

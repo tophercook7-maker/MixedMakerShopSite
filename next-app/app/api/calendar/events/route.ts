@@ -1,8 +1,45 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createCalendarEvent, resolveWorkspaceIdForOwner, type CalendarEventType } from "@/lib/calendar-events";
+import {
+  createCalendarEvent,
+  isHardBlockEventType,
+  isSoftEventType,
+  normalizeCalendarEventType,
+  resolveWorkspaceIdForOwner,
+  type CalendarEventType,
+} from "@/lib/calendar-events";
 
-const VALID_EVENT_TYPES = new Set<CalendarEventType>(["meeting", "followup", "task", "scout"]);
+const VALID_EVENT_TYPES = new Set<CalendarEventType>([
+  "appointment",
+  "client_call",
+  "follow_up_reminder",
+  "task",
+  "scout_run",
+  "meeting",
+  "followup",
+  "scout",
+]);
+
+async function hasHardBlockConflict(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ownerId: string,
+  startIso: string,
+  endIso: string,
+  excludeId?: string | null
+) {
+  let query = supabase
+    .from("calendar_events")
+    .select("id,title,event_type,start_time,end_time")
+    .eq("owner_id", ownerId)
+    .lt("start_time", endIso)
+    .or(`end_time.is.null,end_time.gt.${startIso}`)
+    .limit(50);
+  if (excludeId) query = query.neq("id", excludeId);
+  const { data, error } = await query;
+  if (error) return { conflict: false, error: error.message, row: null };
+  const hardBlock = (data || []).find((row) => isHardBlockEventType(String(row.event_type || "")));
+  return { conflict: Boolean(hardBlock), error: null, row: hardBlock || null };
+}
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -15,6 +52,8 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const start = String(url.searchParams.get("start") || "").trim();
   const end = String(url.searchParams.get("end") || "").trim();
+  const view = String(url.searchParams.get("view") || "crm").trim().toLowerCase();
+  const forMainCalendar = view === "main";
 
   let query = supabase
     .from("calendar_events")
@@ -28,16 +67,30 @@ export async function GET(request: Request) {
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { data: settingsRows } = await supabase
+    .from("calendar_settings")
+    .select("show_soft_events_on_main_calendar")
+    .eq("owner_id", ownerId)
+    .limit(1);
+  const showSoftOnMain = Boolean(settingsRows?.[0]?.show_soft_events_on_main_calendar);
+  const filteredRows = (data || []).filter((row) => {
+    const type = String(row.event_type || "");
+    if (!forMainCalendar) return true;
+    if (!isSoftEventType(type)) return true;
+    return showSoftOnMain;
+  });
 
-  const leadIds = Array.from(new Set((data || []).map((row) => String(row.lead_id || "").trim()).filter(Boolean)));
+  const leadIds = Array.from(new Set(filteredRows.map((row) => String(row.lead_id || "").trim()).filter(Boolean)));
   const { data: leadRows } = leadIds.length
     ? await supabase.from("leads").select("id,business_name").in("id", leadIds).eq("owner_id", ownerId)
     : { data: [] as Array<{ id: string; business_name?: string | null }> };
   const leadMap = new Map((leadRows || []).map((row) => [String(row.id), String(row.business_name || "Lead")]));
 
   return NextResponse.json(
-    (data || []).map((row) => ({
+    filteredRows.map((row) => ({
       ...row,
+      event_type: normalizeCalendarEventType(String(row.event_type || "")),
+      hard_block: isHardBlockEventType(String(row.event_type || "")),
       lead_business_name: row.lead_id ? leadMap.get(String(row.lead_id)) || null : null,
     })),
     { status: 200 }
@@ -54,16 +107,39 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   const title = String(body.title || "").trim();
-  const eventTypeRaw = String(body.event_type || "task").trim().toLowerCase() as CalendarEventType;
+  const eventTypeInput = String(body.event_type || "task").trim().toLowerCase() as CalendarEventType;
   const startTime = String(body.start_time || "").trim();
   const endTime = String(body.end_time || "").trim();
   const notes = String(body.notes || "").trim();
   const leadId = String(body.lead_id || "").trim();
+  const eventTypeRaw = normalizeCalendarEventType(eventTypeInput);
 
   if (!title) return NextResponse.json({ error: "Title is required." }, { status: 400 });
   if (!startTime) return NextResponse.json({ error: "start_time is required." }, { status: 400 });
   if (!VALID_EVENT_TYPES.has(eventTypeRaw)) {
     return NextResponse.json({ error: "Invalid event_type." }, { status: 400 });
+  }
+  const start = new Date(startTime);
+  if (Number.isNaN(start.getTime())) return NextResponse.json({ error: "Invalid start_time." }, { status: 400 });
+  const end = endTime ? new Date(endTime) : new Date(start.getTime() + 30 * 60 * 1000);
+  if (Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
+    return NextResponse.json({ error: "end_time must be after start_time." }, { status: 400 });
+  }
+  if (isHardBlockEventType(eventTypeRaw)) {
+    const conflict = await hasHardBlockConflict(
+      supabase,
+      ownerId,
+      start.toISOString(),
+      end.toISOString(),
+      null
+    );
+    if (conflict.error) return NextResponse.json({ error: conflict.error }, { status: 500 });
+    if (conflict.conflict) {
+      return NextResponse.json(
+        { error: "This time conflicts with an existing hard-block appointment or client call." },
+        { status: 409 }
+      );
+    }
   }
 
   const workspaceId = await resolveWorkspaceIdForOwner(ownerId);

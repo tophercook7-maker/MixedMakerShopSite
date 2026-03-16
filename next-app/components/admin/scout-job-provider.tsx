@@ -12,7 +12,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
-import type { RunScoutResponse, ScoutJobStatusResponse } from "@/lib/scout/types";
+import type { RunScoutResponse, ScoutJobStatusResponse, ScoutScanSettings } from "@/lib/scout/types";
 
 type JobUiStatus =
   | "idle"
@@ -31,6 +31,7 @@ type StoredScoutJobState = {
   jobError: string | null;
   stage: string | null;
   persistenceDebug: ScoutJobStatusResponse["persistence_debug"] | null;
+  scanSettings: ScoutScanSettings | null;
   updatedAt: number;
 };
 
@@ -57,10 +58,11 @@ type GlobalScoutJobContextValue = {
   jobError: string | null;
   stage: string | null;
   persistenceDebug: ScoutJobStatusResponse["persistence_debug"] | null;
+  scanSettings: ScoutScanSettings | null;
   statusMessage: string;
   isStarting: boolean;
   isBusy: boolean;
-  startScout: (integrationReady: boolean) => Promise<StartScoutResult>;
+  startScout: (integrationReady: boolean, scanSettings?: ScoutScanSettings | null) => Promise<StartScoutResult>;
   cancelScout: () => Promise<CancelScoutResult>;
   clearScoutState: () => void;
 };
@@ -117,6 +119,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const [jobError, setJobError] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
   const [persistenceDebug, setPersistenceDebug] = useState<ScoutJobStatusResponse["persistence_debug"] | null>(null);
+  const [scanSettings, setScanSettings] = useState<ScoutScanSettings | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
   const isBusy = isStarting || jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing";
@@ -137,6 +140,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     setJobError(null);
     setStage(null);
     setPersistenceDebug(null);
+    setScanSettings(null);
     pollingJobIdRef.current = null;
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
@@ -162,6 +166,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       setJobError((prev) => next.jobError ?? prev ?? null);
       setStage((prev) => next.stage ?? prev ?? null);
       setPersistenceDebug((prev) => next.persistenceDebug ?? prev ?? null);
+      setScanSettings((prev) => next.scanSettings ?? prev ?? null);
 
       const state: StoredScoutJobState = {
         jobId: next.jobId ?? jobId,
@@ -171,11 +176,12 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         jobError: next.jobError ?? jobError ?? null,
         stage: next.stage ?? stage ?? null,
         persistenceDebug: next.persistenceDebug ?? persistenceDebug ?? null,
+        scanSettings: next.scanSettings ?? scanSettings ?? null,
         updatedAt: Date.now(),
       };
       persistScoutState(state);
     },
-    [jobError, jobId, jobMessage, jobProgress, jobStatus, persistScoutState, stage, persistenceDebug]
+    [jobError, jobId, jobMessage, jobProgress, jobStatus, persistScoutState, stage, persistenceDebug, scanSettings]
   );
 
   const stopPolling = useCallback(() => {
@@ -238,6 +244,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
             jobError: body.error ?? null,
             stage: body.stage ?? null,
             persistenceDebug: body.persistence_debug ?? null,
+            scanSettings: body.scan_settings ?? null,
           });
 
           if (uiStatus === "finished") {
@@ -259,6 +266,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
                 jobError: null,
                 stage: body.stage ?? "finished",
                 persistenceDebug: body.persistence_debug ?? null,
+                scanSettings: body.scan_settings ?? null,
               });
             }
             stopPolling();
@@ -311,6 +319,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       setJobError(saved.jobError || null);
       setStage(saved.stage || null);
       setPersistenceDebug(saved.persistenceDebug || null);
+      setScanSettings(saved.scanSettings || null);
       lastProgressRef.current = Number(saved.jobProgress || 0);
       lastProgressAtRef.current = Date.now();
       console.info("scout job restored after navigation", saved.jobId);
@@ -346,6 +355,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         jobError: active.error ?? null,
         stage: active.stage ?? null,
         persistenceDebug: active.persistence_debug ?? null,
+        scanSettings: active.scan_settings ?? null,
       });
       console.info("cross-device scout restore success", active.id);
       void pollJob(active.id);
@@ -383,7 +393,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   }, [isBusy, pathname]);
 
   const startScout = useCallback(
-    async (integrationReady: boolean): Promise<StartScoutResult> => {
+    async (integrationReady: boolean, selectedScanSettings?: ScoutScanSettings | null): Promise<StartScoutResult> => {
       if (!integrationReady) return { ok: false, error: "Scout integration is not configured." };
       if (isBusy) return { ok: false, error: "Scout is already running." };
 
@@ -397,7 +407,9 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         const res = await fetch("/api/scout/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            scan_settings: selectedScanSettings || null,
+          }),
         });
         const body = (await res.json()) as RunScoutResponse;
 
@@ -422,6 +434,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           jobMessage: body.message || "Scout job started",
           stage: "queued",
           jobError: null,
+          scanSettings: selectedScanSettings || null,
         });
         console.info("global scout job started", body.job_id);
         void pollJob(body.job_id);
@@ -505,6 +518,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       jobError,
       stage,
       persistenceDebug,
+      scanSettings,
       statusMessage,
       isStarting,
       isBusy,
@@ -523,6 +537,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       jobStatus,
       stage,
       persistenceDebug,
+      scanSettings,
       startScout,
       cancelScout,
       statusMessage,

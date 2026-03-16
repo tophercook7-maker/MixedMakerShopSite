@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { canonicalLeadBucket } from "@/lib/lead-bucket";
+import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
 type TimelineEntry = {
   id: string;
@@ -19,13 +21,21 @@ export type WorkflowLead = {
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
+  city?: string | null;
+  address?: string | null;
   website_status?: string | null;
   opportunity_score: number | null;
+  lead_bucket?: "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority" | null;
   close_probability?: "low" | "medium" | "high" | null;
+  lead_type?: "Easy Win" | "Active Business, Weak Website" | "Church Website Opportunity" | "Needs Review" | "Low Priority" | null;
+  best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | null;
+  best_pitch_angle?: string | null;
+  recommended_next_action?: "Generate Email" | "Send First Touch" | "Review Site Manually" | "Skip For Now" | null;
   website: string | null;
   email: string | null;
   phone_from_site: string | null;
   contact_page: string | null;
+  facebook_url?: string | null;
   contact_method: string;
   detected_issue_summary: string;
   detected_issues: string[];
@@ -60,17 +70,34 @@ export function LeadsWorkflowView({
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
+  const [segment, setSegment] = useState<
+    "easy_wins" | "no_website" | "broken_website" | "facebook_only" | "churches" | "needs_review" | "all"
+  >("easy_wins");
   const error: string | null = null;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return leads;
-    return leads.filter((lead) =>
+    const bySegment = leads.filter((lead) => {
+      const ws = String(lead.website_status || "").toLowerCase();
+      const cat = String(lead.category || "").toLowerCase();
+      if (segment === "easy_wins") return canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score) === "Easy Win";
+      if (segment === "no_website") return ws === "no_website";
+      if (segment === "broken_website") return ws === "broken_website";
+      if (segment === "facebook_only") return ws === "facebook_only";
+      if (segment === "churches") return cat.includes("church");
+      if (segment === "needs_review") return lead.lead_type === "Needs Review";
+      return true;
+    });
+    if (!q) return bySegment;
+    return bySegment.filter((lead) =>
       [
         lead.business_name,
         lead.category || "",
+        lead.city || "",
+        lead.address || "",
         lead.status,
         lead.website || "",
+        lead.website_status || "",
         lead.contact_method || "",
         lead.detected_issue_summary || "",
       ]
@@ -78,7 +105,7 @@ export function LeadsWorkflowView({
         .toLowerCase()
         .includes(q)
     );
-  }, [leads, search]);
+  }, [leads, search, segment]);
 
   const queueCounts = useMemo(() => {
     const counts = {
@@ -131,6 +158,26 @@ export function LeadsWorkflowView({
               Showing {filtered.length} of {leads.length}
             </span>
           </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {[
+              ["easy_wins", "Easy Win"],
+              ["no_website", "No Website"],
+              ["broken_website", "Broken Website"],
+              ["facebook_only", "Facebook Only"],
+              ["churches", "Churches"],
+              ["needs_review", "Needs Review"],
+              ["all", "All"],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                className={segment === id ? "admin-btn-primary" : "admin-btn-ghost"}
+                onClick={() => setSegment(id as typeof segment)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-2 text-xs">
             <button
               type="button"
@@ -164,27 +211,50 @@ export function LeadsWorkflowView({
                 className="rounded-xl border p-4 space-y-3"
                 style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.2)" }}
               >
+                {(() => {
+                  const bucket = canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score);
+                  return (
+                    <div className="flex items-center justify-between gap-2">
+                      <LeadBucketBadge bucket={bucket} score={lead.opportunity_score} />
+                    </div>
+                  );
+                })()}
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-semibold">{lead.business_name}</h3>
                     <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                      {lead.category || "—"} · Score {lead.opportunity_score ?? "—"} · Website {lead.website_status || "unknown"}
+                      {lead.city || "—"} · {lead.category || "—"} · Score {lead.opportunity_score ?? "—"} · Website {lead.website_status || "unknown"}
                     </p>
                   </div>
                   <span className={badgeClass(lead.status)}>{prettyStatus(lead.status)}</span>
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
                   <p>
-                    <span className="font-semibold">Opportunity reason:</span> {lead.detected_issue_summary || "Website improvement opportunity"}
+                    <span className="font-semibold">Lead bucket:</span> {canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score)}
                   </p>
                   <p>
-                    <span className="font-semibold">Best contact:</span> {lead.contact_method}
+                    <span className="font-semibold">Lead type:</span> {lead.lead_type || "Needs Review"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Close probability:</span> {lead.close_probability || "medium"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Opportunity reason:</span> {lead.detected_issue_summary || "Website needs manual review"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Best contact:</span> {lead.best_contact_method || lead.contact_method}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Next action:</span> {lead.recommended_next_action || "Review Site Manually"}
                   </p>
                   <p>
                     <span className="font-semibold">Phone:</span> {lead.phone_from_site || "—"}
                   </p>
                   <p>
                     <span className="font-semibold">Contact page:</span> {lead.contact_page || "—"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Facebook:</span> {lead.facebook_url || "—"}
                   </p>
                   <p>
                     <span className="font-semibold">Email:</span> {lead.email || "—"}
@@ -194,6 +264,13 @@ export function LeadsWorkflowView({
                   <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="admin-btn-primary text-xs">
                     Open Lead
                   </Link>
+                  {lead.website ? (
+                    <a href={lead.website} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                      Open Website
+                    </a>
+                  ) : (
+                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">Open Website</span>
+                  )}
                   {lead.related_case_id ? (
                     <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="admin-btn-ghost text-xs">
                       Open Case
@@ -217,14 +294,20 @@ export function LeadsWorkflowView({
               <thead>
                 <tr>
                   <th>Business</th>
+                  <th>City</th>
                   <th>Category</th>
                   <th>Website Status</th>
                   <th>Score</th>
+                  <th>Lead Bucket</th>
                   <th>Opportunity Reason</th>
+                  <th>Lead Type</th>
+                  <th>Close Probability</th>
                   <th>Phone</th>
                   <th>Contact Page</th>
+                  <th>Facebook</th>
                   <th>Email</th>
                   <th>Best Contact</th>
+                  <th>Next Action</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -233,22 +316,37 @@ export function LeadsWorkflowView({
                 {filtered.map((lead) => (
                   <tr key={lead.id}>
                     <td>{lead.business_name}</td>
+                    <td>{lead.city || "—"}</td>
                     <td>{lead.category || "—"}</td>
                     <td>{lead.website_status || "unknown"}</td>
                     <td>{lead.opportunity_score ?? "—"}</td>
                     <td>
-                      {lead.detected_issue_summary || "Website improvement opportunity"}
+                      <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score} />
                     </td>
+                    <td>
+                      {lead.detected_issue_summary || "Website needs manual review"}
+                    </td>
+                    <td>{lead.lead_type || "Needs Review"}</td>
+                    <td>{lead.close_probability || "medium"}</td>
                     <td>{lead.phone_from_site || "—"}</td>
                     <td>{lead.contact_page || "—"}</td>
+                    <td>{lead.facebook_url || "—"}</td>
                     <td>{lead.email || "—"}</td>
-                    <td>{lead.contact_method}</td>
+                    <td>{lead.best_contact_method || lead.contact_method}</td>
+                    <td>{lead.recommended_next_action || "Review Site Manually"}</td>
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Open Lead
                         </Link>
+                        {lead.website ? (
+                          <a href={lead.website} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline text-xs">
+                            Open Website
+                          </a>
+                        ) : (
+                          <span className="text-xs opacity-60">Open Website</span>
+                        )}
                         {lead.related_case_id ? (
                           <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
                             Open Case

@@ -1,5 +1,6 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { isHardBlockEventType } from "@/lib/calendar-events";
 
 type BookingPayload = {
   name?: string;
@@ -9,6 +10,58 @@ type BookingPayload = {
   preferred_time?: string;
   notes?: string;
 };
+
+function chooseWorkspaceId(candidate: string | null | undefined): string {
+  return String(candidate || process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+}
+
+async function findNextOpening(
+  supabase: any,
+  ownerId: string,
+  fromDate: Date,
+  daysAhead = 14
+) {
+  const openHour = Number(process.env.BOOKING_OPEN_HOUR || 9);
+  const closeHour = Number(process.env.BOOKING_CLOSE_HOUR || 17);
+  const slotMinutes = Number(process.env.BOOKING_SLOT_MINUTES || 30);
+  for (let dayOffset = 0; dayOffset < daysAhead; dayOffset += 1) {
+    const day = new Date(fromDate.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    const dayIso = day.toISOString().slice(0, 10);
+    const dayStart = new Date(`${dayIso}T00:00:00.000Z`);
+    const dayEnd = new Date(`${dayIso}T23:59:59.999Z`);
+    const { data: rows } = await supabase
+      .from("calendar_events")
+      .select("id,event_type,start_time,end_time")
+      .eq("owner_id", ownerId)
+      .lt("start_time", dayEnd.toISOString())
+      .or(`end_time.is.null,end_time.gt.${dayStart.toISOString()}`);
+    const hardBlocks = ((rows || []) as Array<Record<string, unknown>>)
+      .filter((row) => isHardBlockEventType(String(row.event_type || "")))
+      .map((row) => ({
+        start: new Date(String(row.start_time || "")),
+        end: new Date(String(row.end_time || row.start_time || "")),
+      }))
+      .filter((b) => !Number.isNaN(b.start.getTime()) && !Number.isNaN(b.end.getTime()) && b.end > b.start);
+    for (let hour = openHour; hour < closeHour; hour += 1) {
+      for (let min = 0; min < 60; min += slotMinutes) {
+        const slotStart = new Date(
+          `${dayIso}T${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:00.000Z`
+        );
+        if (slotStart.getTime() < fromDate.getTime()) continue;
+        const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000);
+        if (
+          slotEnd.getUTCHours() > closeHour ||
+          (slotEnd.getUTCHours() === closeHour && slotEnd.getUTCMinutes() > 0)
+        ) {
+          continue;
+        }
+        const conflict = hardBlocks.some((block) => slotStart < block.end && slotEnd > block.start);
+        if (!conflict) return { start_time: slotStart.toISOString(), end_time: slotEnd.toISOString() };
+      }
+    }
+  }
+  return null;
+}
 
 async function sendBookingConfirmationEmail(toEmail: string, name: string, whenIso: string) {
   const apiKey = String(process.env.RESEND_API_KEY || "").trim();
@@ -96,17 +149,50 @@ export async function POST(request: Request) {
   const titleName = businessName || matchedLead?.business_name || name;
   const meetingTitle = `Website review: ${titleName}`;
   const eventNotes = notes || `Public booking request from ${name}${phone ? ` (${phone})` : ""}`;
+  const startIso = start.toISOString();
+  const endIso = end.toISOString();
+
+  const { data: overlapRows, error: overlapError } = await supabase
+    .from("calendar_events")
+    .select("id,event_type,title,start_time,end_time")
+    .eq("owner_id", ownerId)
+    .lt("start_time", endIso)
+    .or(`end_time.is.null,end_time.gt.${startIso}`)
+    .limit(50);
+  if (overlapError) {
+    return NextResponse.json({ error: overlapError.message }, { status: 500 });
+  }
+  const hardConflict = (overlapRows || []).some((row) => isHardBlockEventType(String(row.event_type || "")));
+  if (hardConflict) {
+    const nextOpening = await findNextOpening(supabase, ownerId, new Date(start.getTime() + 5 * 60 * 1000));
+    return NextResponse.json(
+      {
+        error: "That time is not available. Here is the next available opening.",
+        next_available_opening: nextOpening,
+      },
+      { status: 409 }
+    );
+  }
+  const workspaceId = chooseWorkspaceId(matchedLead?.workspace_id);
+  if (!workspaceId) {
+    return NextResponse.json(
+      { error: "Workspace not configured for calendar booking. Set SCOUT_BRAIN_WORKSPACE_ID or create a lead with workspace." },
+      { status: 500 }
+    );
+  }
 
   const { data: eventRow, error: eventError } = await supabase
     .from("calendar_events")
     .insert({
       owner_id: ownerId,
-      workspace_id: matchedLead?.workspace_id || null,
+      workspace_id: workspaceId,
       lead_id: matchedLead?.id || null,
       title: meetingTitle,
-      event_type: "meeting",
-      start_time: start.toISOString(),
-      end_time: end.toISOString(),
+      event_type: "appointment",
+      is_blocking: true,
+      source: "public_booking",
+      start_time: startIso,
+      end_time: endIso,
       notes: eventNotes,
     })
     .select("id,start_time,end_time,lead_id")
