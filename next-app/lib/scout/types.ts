@@ -54,6 +54,19 @@ export type ScoutJobStatusResponse = {
   created_at?: string | null;
   started_at?: string | null;
   finished_at?: string | null;
+  persistence_debug?: {
+    scout_run_saved?: boolean;
+    opportunities_created?: number;
+    opportunities_updated?: number;
+    case_files_created?: number;
+    case_files_updated?: number;
+    leads_created?: number;
+    duplicates_skipped?: number;
+    workspace_id?: string | null;
+    backend_supabase_url?: string | null;
+    admin_supabase_url?: string | null;
+    errors?: Array<Record<string, unknown>>;
+  } | null;
 };
 
 export type ScoutIntegrationResult<T> = {

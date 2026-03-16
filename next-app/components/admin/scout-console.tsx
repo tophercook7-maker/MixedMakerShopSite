@@ -30,6 +30,7 @@ export function ScoutConsole({
 }: Props) {
   const scout = useGlobalScoutJob();
   const [pageError, setPageError] = useState<string | null>(initialError);
+  const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
   const runScout = async () => {
     setPageError(null);
@@ -144,6 +145,37 @@ export function ScoutConsole({
               {pageError || scout.jobError}
             </p>
           )}
+        </section>
+      )}
+
+      {(scout.jobStatus === "finished" || scout.jobStatus === "failed") && (
+        <section className="admin-card">
+          <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+            Scout Persistence Debug
+          </h2>
+          <pre
+            className="text-xs overflow-auto rounded-md border p-3"
+            style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.25)", color: "var(--admin-muted)" }}
+          >
+{JSON.stringify(
+  {
+    scout_run_saved: scout.persistenceDebug?.scout_run_saved ?? false,
+    opportunities_created: scout.persistenceDebug?.opportunities_created ?? 0,
+    opportunities_updated: scout.persistenceDebug?.opportunities_updated ?? 0,
+    case_files_created: scout.persistenceDebug?.case_files_created ?? 0,
+    case_files_updated: scout.persistenceDebug?.case_files_updated ?? 0,
+    leads_created: scout.persistenceDebug?.leads_created ?? 0,
+    duplicates_skipped: scout.persistenceDebug?.duplicates_skipped ?? 0,
+    workspace_id: scout.persistenceDebug?.workspace_id ?? null,
+    backend_supabase_url: scout.persistenceDebug?.backend_supabase_url ?? null,
+    admin_next_public_supabase_url: adminSupabaseUrl || null,
+    backend_admin_supabase_url: scout.persistenceDebug?.admin_supabase_url ?? null,
+    errors: scout.persistenceDebug?.errors ?? [],
+  },
+  null,
+  2
+)}
+          </pre>
         </section>
       )}
 

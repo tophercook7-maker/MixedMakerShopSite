@@ -30,6 +30,7 @@ type StoredScoutJobState = {
   jobMessage: string | null;
   jobError: string | null;
   stage: string | null;
+  persistenceDebug: ScoutJobStatusResponse["persistence_debug"] | null;
   updatedAt: number;
 };
 
@@ -55,6 +56,7 @@ type GlobalScoutJobContextValue = {
   jobMessage: string | null;
   jobError: string | null;
   stage: string | null;
+  persistenceDebug: ScoutJobStatusResponse["persistence_debug"] | null;
   statusMessage: string;
   isStarting: boolean;
   isBusy: boolean;
@@ -114,6 +116,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const [jobMessage, setJobMessage] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
+  const [persistenceDebug, setPersistenceDebug] = useState<ScoutJobStatusResponse["persistence_debug"] | null>(null);
   const [isStarting, setIsStarting] = useState(false);
 
   const isBusy = isStarting || jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing";
@@ -133,6 +136,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     setJobMessage(null);
     setJobError(null);
     setStage(null);
+    setPersistenceDebug(null);
     pollingJobIdRef.current = null;
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
@@ -157,6 +161,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       setJobMessage((prev) => next.jobMessage ?? prev ?? null);
       setJobError((prev) => next.jobError ?? prev ?? null);
       setStage((prev) => next.stage ?? prev ?? null);
+      setPersistenceDebug((prev) => next.persistenceDebug ?? prev ?? null);
 
       const state: StoredScoutJobState = {
         jobId: next.jobId ?? jobId,
@@ -165,11 +170,12 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         jobMessage: next.jobMessage ?? jobMessage ?? null,
         jobError: next.jobError ?? jobError ?? null,
         stage: next.stage ?? stage ?? null,
+        persistenceDebug: next.persistenceDebug ?? persistenceDebug ?? null,
         updatedAt: Date.now(),
       };
       persistScoutState(state);
     },
-    [jobError, jobId, jobMessage, jobProgress, jobStatus, persistScoutState, stage]
+    [jobError, jobId, jobMessage, jobProgress, jobStatus, persistScoutState, stage, persistenceDebug]
   );
 
   const stopPolling = useCallback(() => {
@@ -231,6 +237,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
             jobMessage: message,
             jobError: body.error ?? null,
             stage: body.stage ?? null,
+            persistenceDebug: body.persistence_debug ?? null,
           });
 
           if (uiStatus === "finished") {
@@ -251,6 +258,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
                 jobMessage: completionMessage,
                 jobError: null,
                 stage: body.stage ?? "finished",
+                persistenceDebug: body.persistence_debug ?? null,
               });
             }
             stopPolling();
@@ -302,6 +310,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       setJobMessage(saved.jobMessage || null);
       setJobError(saved.jobError || null);
       setStage(saved.stage || null);
+      setPersistenceDebug(saved.persistenceDebug || null);
       lastProgressRef.current = Number(saved.jobProgress || 0);
       lastProgressAtRef.current = Date.now();
       console.info("scout job restored after navigation", saved.jobId);
@@ -336,6 +345,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         jobMessage: active.message ?? active.summary ?? "Scout running...",
         jobError: active.error ?? null,
         stage: active.stage ?? null,
+        persistenceDebug: active.persistence_debug ?? null,
       });
       console.info("cross-device scout restore success", active.id);
       void pollJob(active.id);
@@ -494,6 +504,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       jobMessage,
       jobError,
       stage,
+      persistenceDebug,
       statusMessage,
       isStarting,
       isBusy,
@@ -511,6 +522,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       jobProgress,
       jobStatus,
       stage,
+      persistenceDebug,
       startScout,
       cancelScout,
       statusMessage,
