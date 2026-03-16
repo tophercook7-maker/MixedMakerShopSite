@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type LeadRow = {
   id: string;
@@ -150,6 +151,7 @@ export default async function DailyCommandCenterPage() {
     return {
       id: String(lead.id || ""),
       businessName: String(lead.business_name || "Lead"),
+      leadPath: buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead")),
       reason: reason || "Strong local business with clear website opportunity.",
       nextAction,
     };
@@ -198,7 +200,7 @@ export default async function DailyCommandCenterPage() {
               <div key={item.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium">{item.businessName}</p>
-                  <a href={`/admin/leads/${encodeURIComponent(item.id)}`} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
+                  <a href={item.leadPath} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
                     {item.nextAction}
                   </a>
                 </div>
@@ -252,7 +254,7 @@ export default async function DailyCommandCenterPage() {
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a
-                        href={`/admin/leads/${encodeURIComponent(String(lead.id))}`}
+                        href={buildLeadPath(String(lead.id || ""), businessName)}
                         className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
                       >
                         Open Lead
@@ -268,7 +270,7 @@ export default async function DailyCommandCenterPage() {
                         </a>
                       ) : null}
                       <a
-                        href={`/admin/leads/${encodeURIComponent(String(lead.id))}?generate=1`}
+                        href={`${buildLeadPath(String(lead.id || ""), businessName)}?generate=1`}
                         className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
                       >
                         Generate Email
@@ -309,19 +311,19 @@ export default async function DailyCommandCenterPage() {
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a
-                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        href={`${buildLeadPath(leadId, String(lead?.business_name || "Lead"))}?compose=1`}
                         className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
                       >
                         Preview
                       </a>
                       <a
-                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        href={`${buildLeadPath(leadId, String(lead?.business_name || "Lead"))}?compose=1`}
                         className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
                       >
                         Edit
                       </a>
                       <a
-                        href={`/admin/leads/${encodeURIComponent(leadId)}?compose=1`}
+                        href={`${buildLeadPath(leadId, String(lead?.business_name || "Lead"))}?compose=1`}
                         className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
                       >
                         Send
@@ -356,7 +358,7 @@ export default async function DailyCommandCenterPage() {
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <a
-                      href={`/admin/leads/${encodeURIComponent(String(lead.id))}`}
+                      href={buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead"))}
                       className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
                     >
                       Reply
@@ -390,7 +392,7 @@ export default async function DailyCommandCenterPage() {
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <a
-                      href={`/admin/leads/${encodeURIComponent(String(lead.id))}?compose=1`}
+                      href={`${buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead"))}?compose=1`}
                       className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
                     >
                       Send Follow Up

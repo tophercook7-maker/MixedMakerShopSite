@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type TimelineEntry = {
   id: string;
@@ -46,6 +47,11 @@ export type WorkflowLead = {
   timeline: TimelineEntry[];
   notes: string[];
 };
+
+function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
+  const base = buildLeadPath(lead.id, lead.business_name);
+  return query ? `${base}?${query}` : base;
+}
 
 function prettyStatus(status: string) {
   return String(status || "new")
@@ -261,7 +267,7 @@ export function LeadsWorkflowView({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="admin-btn-primary text-xs">
+                  <Link href={leadHref(lead)} className="admin-btn-primary text-xs">
                     Open Lead
                   </Link>
                   {lead.website ? (
@@ -278,10 +284,10 @@ export function LeadsWorkflowView({
                   ) : (
                     <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">Open Case</span>
                   )}
-                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`} className="admin-btn-ghost text-xs">
+                  <Link href={leadHref(lead, "generate=1")} className="admin-btn-ghost text-xs">
                     Generate Email
                   </Link>
-                  <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="admin-btn-ghost text-xs">
+                  <Link href={leadHref(lead, "compose=1")} className="admin-btn-ghost text-xs">
                     Send Email
                   </Link>
                 </div>
@@ -337,7 +343,7 @@ export function LeadsWorkflowView({
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
-                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <Link href={leadHref(lead)} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Open Lead
                         </Link>
                         {lead.website ? (
@@ -354,10 +360,10 @@ export function LeadsWorkflowView({
                         ) : (
                           <span className="text-xs opacity-60">Open Case</span>
                         )}
-                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <Link href={leadHref(lead, "generate=1")} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Generate Email
                         </Link>
-                        <Link href={`/admin/leads/${encodeURIComponent(lead.id)}?compose=1`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <Link href={leadHref(lead, "compose=1")} className="text-[var(--admin-gold)] hover:underline text-xs">
                           Send Email
                         </Link>
                       </div>

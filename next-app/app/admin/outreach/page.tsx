@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { EmailTestPanel } from "@/components/admin/email-test-panel";
 import { getCurrentUser, getProfile } from "@/lib/auth";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type EmailEvent = {
   lead_id: string | null;
@@ -123,7 +124,7 @@ export default async function AdminOutreachPage({
                       <td>{lead.next_follow_up_at ? new Date(lead.next_follow_up_at).toLocaleDateString() : "—"}</td>
                       <td>
                         <Link
-                          href={`/admin/leads/${encodeURIComponent(lead.id)}?generate=1`}
+                          href={`${buildLeadPath(lead.id, lead.business_name)}?generate=1`}
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Generate Email
@@ -172,7 +173,10 @@ export default async function AdminOutreachPage({
                     <td>
                       {thread.lead_id ? (
                         <Link
-                          href={`/admin/leads/${encodeURIComponent(thread.lead_id)}`}
+                          href={buildLeadPath(
+                            thread.lead_id,
+                            String(replyLeadMap.get(thread.lead_id) || "Lead")
+                          )}
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Open Timeline

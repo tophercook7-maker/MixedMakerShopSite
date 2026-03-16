@@ -4,6 +4,7 @@ import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions"
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
+import { buildLeadPath, isUuidLike, leadRouteMatches } from "@/lib/lead-route";
 
 type LeadRow = {
   id: string;
@@ -254,58 +255,160 @@ export default async function AdminLeadDetailPage({
     );
   }
 
-  const { data: leadRows } = await supabase
-    .from("leads")
-    .select(
-      "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
-    )
-    .eq("owner_id", ownerId)
-    .eq("id", targetId)
-    .limit(1);
-  const lead = ((leadRows || [])[0] as LeadRow | undefined) || null;
+  const loadWarnings: string[] = [];
+  const normalizedTargetToken = targetId.toLowerCase();
+  let lead: LeadRow | null = null;
+  try {
+    if (isUuidLike(targetId)) {
+      const { data: leadRows, error: leadError } = await supabase
+        .from("leads")
+        .select(
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
+        )
+        .eq("owner_id", ownerId)
+        .eq("id", targetId)
+        .limit(1);
+      if (leadError) {
+        console.error("[Lead Detail] lead fetch failed", {
+          stage: "lead_fetch",
+          lead_token: targetId,
+          error: leadError,
+        });
+        loadWarnings.push("Lead base record could not be loaded.");
+      }
+      lead = ((leadRows || [])[0] as LeadRow | undefined) || null;
+    }
+    if (!lead) {
+      const { data: candidateRows, error: candidateError } = await supabase
+        .from("leads")
+        .select(
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
+        )
+        .eq("owner_id", ownerId)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      if (candidateError) {
+        console.error("[Lead Detail] lead slug lookup failed", {
+          stage: "lead_slug_lookup",
+          lead_token: targetId,
+          error: candidateError,
+        });
+        loadWarnings.push("Lead route lookup failed.");
+      } else {
+        lead =
+          ((candidateRows || []) as LeadRow[]).find((row) =>
+            leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
+          ) || null;
+      }
+    }
+  } catch (error) {
+    console.error("[Lead Detail] lead fetch threw", {
+      stage: "lead_fetch",
+      lead_token: targetId,
+      error,
+    });
+    loadWarnings.push("Lead base record could not be loaded.");
+  }
 
   let caseRow: CaseRow | null = null;
 
   const linkedOppId = String(lead?.linked_opportunity_id || "").trim();
   if (!caseRow && linkedOppId) {
-    const { data: caseByOppRows } = await supabase
-      .from("case_files")
-      .select(
-        "id,opportunity_id,created_at,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,instagram,instagram_url,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated"
-      )
-      .eq("opportunity_id", linkedOppId)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    caseRow = ((caseByOppRows || [])[0] as CaseRow | undefined) || null;
+    try {
+      const { data: caseByOppRows, error: caseError } = await supabase
+        .from("case_files")
+        .select(
+          "id,opportunity_id,created_at,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,instagram,instagram_url,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated"
+        )
+        .eq("opportunity_id", linkedOppId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (caseError) {
+        console.error("[Lead Detail] case_files fetch failed", {
+          stage: "case_files_fetch",
+          lead_id: lead?.id || null,
+          opportunity_id: linkedOppId,
+          error: caseError,
+        });
+        loadWarnings.push("Related case data is unavailable.");
+      }
+      caseRow = ((caseByOppRows || [])[0] as CaseRow | undefined) || null;
+    } catch (error) {
+      console.error("[Lead Detail] case_files fetch threw", {
+        stage: "case_files_fetch",
+        lead_id: lead?.id || null,
+        opportunity_id: linkedOppId,
+        error,
+      });
+      loadWarnings.push("Related case data is unavailable.");
+    }
   }
 
   let oppId = linkedOppId || String(caseRow?.opportunity_id || "").trim();
   let opp: OpportunityRow | null = null;
   if (oppId) {
-    const { data: oppRows } = await supabase
-      .from("opportunities")
-      .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
-      .eq("id", oppId)
-      .limit(1);
-    opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
+    try {
+      const { data: oppRows, error: oppError } = await supabase
+        .from("opportunities")
+        .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+        .eq("id", oppId)
+        .limit(1);
+      if (oppError) {
+        console.error("[Lead Detail] opportunity fetch failed", {
+          stage: "opportunity_fetch",
+          lead_id: lead?.id || null,
+          opportunity_id: oppId,
+          error: oppError,
+        });
+        loadWarnings.push("Related opportunity data is unavailable.");
+      }
+      opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
+    } catch (error) {
+      console.error("[Lead Detail] opportunity fetch threw", {
+        stage: "opportunity_fetch",
+        lead_id: lead?.id || null,
+        opportunity_id: oppId,
+        error,
+      });
+      loadWarnings.push("Related opportunity data is unavailable.");
+    }
   }
   if (!opp && lead) {
     const leadWebsite = String(lead.website || "").trim();
     if (leadWebsite) {
-      const { data: fallbackOppRows } = await supabase
-        .from("opportunities")
-        .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
-        .eq("website", leadWebsite)
-        .order("opportunity_score", { ascending: false, nullsFirst: false })
-        .limit(1);
-      opp = ((fallbackOppRows || [])[0] as OpportunityRow | undefined) || null;
-      if (opp) {
-        oppId = String(opp.id || "").trim() || oppId;
-        console.info("[Lead Detail] fallback relationship fetch used", {
-          lead_id: targetId,
-          fallback: "website",
-          resolved_opportunity_id: oppId,
+      try {
+        const { data: fallbackOppRows, error: fallbackOppError } = await supabase
+          .from("opportunities")
+          .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
+          .eq("website", leadWebsite)
+          .order("opportunity_score", { ascending: false, nullsFirst: false })
+          .limit(1);
+        if (fallbackOppError) {
+          console.error("[Lead Detail] fallback opportunity fetch failed", {
+            stage: "opportunity_fallback_fetch",
+            lead_id: lead?.id || null,
+            website: leadWebsite,
+            error: fallbackOppError,
+          });
+          loadWarnings.push("Opportunity fallback lookup failed.");
+        }
+        opp = ((fallbackOppRows || [])[0] as OpportunityRow | undefined) || null;
+        if (opp) {
+          oppId = String(opp.id || "").trim() || oppId;
+          console.info("[Lead Detail] fallback relationship fetch used", {
+            lead_id: lead?.id || targetId,
+            fallback: "website",
+            resolved_opportunity_id: oppId,
+          });
+        }
+      } catch (error) {
+        console.error("[Lead Detail] fallback opportunity fetch threw", {
+          stage: "opportunity_fallback_fetch",
+          lead_id: lead?.id || null,
+          website: leadWebsite,
+          error,
         });
+        loadWarnings.push("Opportunity fallback lookup failed.");
       }
     }
   }
@@ -374,32 +477,79 @@ export default async function AdminLeadDetailPage({
 
   const leadEmail = String(lead?.email || caseRow?.email || "").trim().toLowerCase();
   const leadIdForTimeline = String(lead?.id || "").trim();
-  const { data: threadRows } = leadEmail
-    ? await supabase
+  let threadRows: Array<Record<string, unknown>> = [];
+  if (leadEmail) {
+    try {
+      const { data, error } = await supabase
         .from("email_threads")
         .select("id,contact_email,subject,status,last_message_at")
         .eq("contact_email", leadEmail)
         .order("last_message_at", { ascending: false })
-        .limit(20)
-    : { data: [] as Array<Record<string, unknown>> };
+        .limit(20);
+      if (error) {
+        console.error("[Lead Detail] email thread fetch failed", {
+          stage: "email_thread_fetch",
+          lead_id: leadIdForTimeline || null,
+          error,
+        });
+        loadWarnings.push("Timeline threads are temporarily unavailable.");
+      }
+      threadRows = (data || []) as Array<Record<string, unknown>>;
+    } catch (error) {
+      console.error("[Lead Detail] email thread fetch threw", {
+        stage: "email_thread_fetch",
+        lead_id: leadIdForTimeline || null,
+        error,
+      });
+      loadWarnings.push("Timeline threads are temporarily unavailable.");
+    }
+  }
   const threadIds = (threadRows || [])
     .map((r) => String(r.id || "").trim())
     .filter(Boolean);
-  const { data: messageRows } = threadIds.length
-    ? await supabase
+  let messageRows: Array<Record<string, unknown>> = [];
+  try {
+    if (threadIds.length) {
+      const { data, error } = await supabase
         .from("email_messages")
         .select("id,thread_id,direction,subject,body,delivery_status,sent_at,received_at,created_at")
         .in("thread_id", threadIds)
         .order("created_at", { ascending: true })
-        .limit(1500)
-    : leadIdForTimeline
-      ? await supabase
-          .from("email_messages")
-          .select("id,thread_id,direction,subject,body,delivery_status,sent_at,received_at,created_at")
-          .eq("lead_id", leadIdForTimeline)
-          .order("created_at", { ascending: true })
-          .limit(1500)
-    : { data: [] as Array<Record<string, unknown>> };
+        .limit(1500);
+      if (error) {
+        console.error("[Lead Detail] email message fetch failed", {
+          stage: "email_message_fetch",
+          lead_id: leadIdForTimeline || null,
+          error,
+        });
+        loadWarnings.push("Timeline messages are temporarily unavailable.");
+      }
+      messageRows = (data || []) as Array<Record<string, unknown>>;
+    } else if (leadIdForTimeline) {
+      const { data, error } = await supabase
+        .from("email_messages")
+        .select("id,thread_id,direction,subject,body,delivery_status,sent_at,received_at,created_at")
+        .eq("lead_id", leadIdForTimeline)
+        .order("created_at", { ascending: true })
+        .limit(1500);
+      if (error) {
+        console.error("[Lead Detail] email message fallback fetch failed", {
+          stage: "email_message_fetch_by_lead_id",
+          lead_id: leadIdForTimeline || null,
+          error,
+        });
+        loadWarnings.push("Timeline messages are temporarily unavailable.");
+      }
+      messageRows = (data || []) as Array<Record<string, unknown>>;
+    }
+  } catch (error) {
+    console.error("[Lead Detail] email message fetch threw", {
+      stage: "email_message_fetch",
+      lead_id: leadIdForTimeline || null,
+      error,
+    });
+    loadWarnings.push("Timeline messages are temporarily unavailable.");
+  }
 
   const hasAnyData = Boolean(lead || caseRow || opp);
   if (!hasAnyData) {
@@ -452,6 +602,10 @@ export default async function AdminLeadDetailPage({
     String(opp?.close_probability || "").toLowerCase() ||
     deriveCloseProbability(opp?.opportunity_score ?? lead?.opportunity_score, opp?.category || lead?.industry, issueList);
   const displayCreatedAt = lead?.created_at || caseRow?.created_at || null;
+  const resolvedLeadId = String(lead?.id || "").trim();
+  const leadPath = resolvedLeadId
+    ? buildLeadPath(resolvedLeadId, displayBusinessName)
+    : `/admin/leads/${encodeURIComponent(targetId)}`;
   const caseHref = caseRow?.id ? `/admin/cases/${encodeURIComponent(caseRow.id)}` : null;
   const quickFixCurrentIssues = topIssues.length
     ? topIssues.map((item) => item.issue).slice(0, 3)
@@ -485,14 +639,33 @@ export default async function AdminLeadDetailPage({
   const displayLeadBucket = canonicalLeadBucket(assessment.lead_bucket, displayScore);
   const recommendedActionHref =
     assessment.recommended_next_action === "Generate Email"
-      ? `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}?generate=1`
+      ? `${leadPath}?generate=1`
       : assessment.recommended_next_action === "Send First Touch"
-        ? `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}?compose=1`
-        : `/admin/leads/${encodeURIComponent(String(lead?.id || targetId))}`;
+        ? `${leadPath}?compose=1`
+        : leadPath;
   const quickFixSummary = quickFixImprovements[0] || null;
 
   return (
     <div className="space-y-6">
+      {loadWarnings.length > 0 ? (
+        <section className="admin-card">
+          <p className="text-sm" style={{ color: "#fca5a5" }}>
+            Lead found, but related website/case data is missing.
+          </p>
+          <ul className="list-disc pl-5 mt-2 text-xs" style={{ color: "var(--admin-muted)" }}>
+            {Array.from(new Set(loadWarnings)).map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {!lead && (opp || caseRow) ? (
+        <section className="admin-card">
+          <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+            Lead could not be fully loaded. Showing available related data.
+          </p>
+        </section>
+      ) : null}
       <section className="admin-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -937,22 +1110,31 @@ export default async function AdminLeadDetailPage({
               </Link>
             </div>
           </section>
-          <LeadWorkspaceActions
-            leadId={String(lead?.id || targetId)}
-            linkedOpportunityId={oppId || null}
-            initialBusinessName={displayBusinessName}
-            initialCategory={displayCategory}
-            initialIssue={topIssues[0]?.issue || "Website needs manual review"}
-            initialEmail={displayEmail || null}
-            initialPhone={displayPhone || null}
-            website={displayWebsite || null}
-            contactPage={displayContactPage || null}
-            caseHref={caseHref}
-            initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
-            quickFixSummary={quickFixSummary}
-            autoGenerate={generate === "1"}
-            autoCompose={compose === "1"}
-          />
+          {resolvedLeadId ? (
+            <LeadWorkspaceActions
+              leadId={resolvedLeadId}
+              linkedOpportunityId={oppId || null}
+              initialBusinessName={displayBusinessName}
+              initialCategory={displayCategory}
+              initialIssue={topIssues[0]?.issue || "Website needs manual review"}
+              initialEmail={displayEmail || null}
+              initialPhone={displayPhone || null}
+              website={displayWebsite || null}
+              contactPage={displayContactPage || null}
+              caseHref={caseHref}
+              initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
+              quickFixSummary={quickFixSummary}
+              autoGenerate={generate === "1"}
+              autoCompose={compose === "1"}
+            />
+          ) : (
+            <section className="admin-card">
+              <h3 className="text-sm font-semibold">Outreach Panel</h3>
+              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+                Outreach actions are disabled because the lead row could not be resolved.
+              </p>
+            </section>
+          )}
         </div>
       </div>
     </div>

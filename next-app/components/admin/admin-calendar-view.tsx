@@ -7,6 +7,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { DateSelectArg, DatesSetArg, EventClickArg, EventInput } from "@fullcalendar/core";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type LeadLite = {
   id: string;
@@ -154,8 +155,9 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
 
   function onEventClick(arg: EventClickArg) {
     const leadId = String(arg.event.extendedProps?.leadId || "").trim();
+    const leadBusinessName = String(arg.event.extendedProps?.leadBusinessName || "").trim();
     if (!leadId) return;
-    window.location.href = `/admin/leads/${encodeURIComponent(leadId)}`;
+    window.location.href = buildLeadPath(leadId, leadBusinessName || null);
   }
 
   function onDateSelect(arg: DateSelectArg) {

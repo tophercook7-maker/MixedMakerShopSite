@@ -3,6 +3,7 @@ import { FileSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type CaseSearchParams = {
   audited?: string;
@@ -269,7 +270,7 @@ export default async function AdminCasesPage({
                         </Link>
                         {row.linked_lead_id ? (
                           <Link
-                            href={`/admin/leads/${encodeURIComponent(row.linked_lead_id)}`}
+                            href={buildLeadPath(row.linked_lead_id, row.business_name)}
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                           >
                             Open Lead
