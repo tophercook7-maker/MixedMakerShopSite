@@ -65,6 +65,20 @@ export type ScoutJobStatusResponse = {
     workspace_id?: string | null;
     backend_supabase_url?: string | null;
     admin_supabase_url?: string | null;
+    intake?: {
+      workspace_id?: string | null;
+      opportunities_loaded?: number;
+      evaluated?: number;
+      eligible?: number;
+      created?: number;
+      duplicate_skipped?: number;
+      insert_failed?: number;
+      filtered_low_score?: number;
+      filtered_missing_contact_path?: number;
+      filtered_closed_or_dnc?: number;
+      query_error?: string | null;
+      intake_threshold_used?: number;
+    } | null;
     errors?: Array<Record<string, unknown>>;
   } | null;
 };

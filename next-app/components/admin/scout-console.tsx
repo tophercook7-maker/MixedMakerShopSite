@@ -170,6 +170,7 @@ export function ScoutConsole({
     backend_supabase_url: scout.persistenceDebug?.backend_supabase_url ?? null,
     admin_next_public_supabase_url: adminSupabaseUrl || null,
     backend_admin_supabase_url: scout.persistenceDebug?.admin_supabase_url ?? null,
+    intake: scout.persistenceDebug?.intake ?? null,
     errors: scout.persistenceDebug?.errors ?? [],
   },
   null,
