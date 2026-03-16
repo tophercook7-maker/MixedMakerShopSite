@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const DEFAULT_TIMEOUT_MS = 12000;
 
@@ -30,6 +31,15 @@ function splitReferences(value: unknown): string[] {
     .split(/[,\s]+/)
     .map((v) => v.trim())
     .filter(Boolean);
+}
+
+function createAdminSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 export async function POST(request: Request) {
@@ -169,6 +179,63 @@ export async function POST(request: Request) {
       );
     }
     console.info("[Email Webhook] reply matched to lead");
+
+    // Best-effort local timeline sync for case-based outreach threads.
+    try {
+      const adminSb = createAdminSupabase();
+      if (adminSb) {
+        const { data: threadRows } = await adminSb
+          .from("email_threads")
+          .select("id,owner_id,provider_thread_id")
+          .ilike("contact_email", fromEmail)
+          .order("last_message_at", { ascending: false })
+          .limit(20);
+        const thread = (threadRows || []).find((row) => {
+          const key = String((row as { provider_thread_id?: string | null }).provider_thread_id || "").trim();
+          return key.startsWith("case:");
+        }) || (threadRows || [])[0];
+        const threadId = String((thread as { id?: string | null })?.id || "").trim();
+        const ownerId = String((thread as { owner_id?: string | null })?.owner_id || "").trim();
+        const providerThreadId = String((thread as { provider_thread_id?: string | null })?.provider_thread_id || "").trim();
+        const nowIso = new Date().toISOString();
+        if (threadId && ownerId) {
+          await adminSb.from("email_messages").insert({
+            thread_id: threadId,
+            lead_id: null,
+            direction: "inbound",
+            provider_message_id: messageId || null,
+            subject: subject || null,
+            body,
+            delivery_status: "received",
+            received_at: nowIso,
+            owner_id: ownerId,
+          });
+          await adminSb
+            .from("email_threads")
+            .update({ status: "active", last_message_at: nowIso })
+            .eq("id", threadId);
+
+          if (providerThreadId.startsWith("case:")) {
+            const caseId = providerThreadId.slice(5).trim();
+            if (caseId) {
+              const { data: caseRows } = await adminSb
+                .from("case_files")
+                .select("notes")
+                .eq("id", caseId)
+                .limit(1);
+              const prevNotes = String(caseRows?.[0]?.notes || "").trim();
+              const mergedNotes = [prevNotes, `Reply received ${nowIso}`].filter(Boolean).join("\n");
+              await adminSb
+                .from("case_files")
+                .update({ status: "replied", notes: mergedNotes })
+                .eq("id", caseId);
+            }
+          }
+        }
+      }
+    } catch (localSyncError) {
+      console.warn("[Email Webhook] local case reply sync failed", localSyncError);
+    }
     return NextResponse.json(bodyJson, { status: 200 });
   } catch (error) {
     return NextResponse.json(

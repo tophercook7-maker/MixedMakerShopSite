@@ -15,10 +15,11 @@ const STATUSES = [
 
 type Col = { status: string; leads: Lead[] };
 
-export function PipelineBoard({ initialStatuses }: { initialStatuses: Col[] }) {
+export function PipelineBoard({ initialStatuses, readonly = false }: { initialStatuses: Col[]; readonly?: boolean }) {
   const router = useRouter();
 
   async function updateStatus(leadId: string, newStatus: string) {
+    if (readonly) return;
     const res = await fetch(`/api/leads/${leadId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -45,6 +46,7 @@ export function PipelineBoard({ initialStatuses }: { initialStatuses: Col[] }) {
                     value={l.status}
                     onChange={(e) => updateStatus(l.id, e.target.value)}
                     className="admin-select mt-2 w-full text-xs"
+                    disabled={readonly}
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>{s.replace("_", " ")}</option>

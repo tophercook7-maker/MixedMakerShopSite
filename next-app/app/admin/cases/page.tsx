@@ -25,6 +25,7 @@ type CaseRow = {
     category?: string;
     website?: string;
     opportunity_score?: number;
+    opportunity_reason?: string | null;
   } | null;
 };
 
@@ -56,7 +57,7 @@ export default async function AdminCasesPage({
       email,
       contact_page,
       phone_from_site,
-      opportunity:opportunities(id, business_name, category, website, opportunity_score)
+      opportunity:opportunities(id, business_name, category, website, opportunity_score, opportunity_reason)
     `)
     .order("created_at", { ascending: false })
     .limit(500);
@@ -75,7 +76,7 @@ export default async function AdminCasesPage({
   const { data: opportunities } = fallbackOppIds.length
     ? await supabase
         .from("opportunities")
-        .select("id,business_name,category,website,opportunity_score,lane,no_website,website_speed,mobile_ready")
+        .select("id,business_name,category,website,opportunity_score,opportunity_reason,lane,no_website,website_speed,mobile_ready")
         .in("id", fallbackOppIds)
     : { data: [] as Record<string, unknown>[] };
   const oppById = new Map((opportunities || []).map((row) => [String(row.id || ""), row]));
@@ -99,6 +100,7 @@ export default async function AdminCasesPage({
       category: String(opp?.category || "—"),
       website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
+      opportunity_reason: String(opp?.opportunity_reason || "Website pain signal detected"),
       lane: String(opp?.lane || (opp?.no_website ? "no_website" : "weak_website")),
       website_speed: opp?.website_speed as number | null | undefined,
       mobile_ready: opp?.mobile_ready as boolean | null | undefined,
@@ -163,6 +165,7 @@ export default async function AdminCasesPage({
                   <th>Website</th>
                   <th>Score</th>
                   <th>Lane</th>
+                  <th>Opportunity Reason</th>
                   <th>Website Audit</th>
                   <th>Status</th>
                   <th>Quick Open</th>
@@ -184,6 +187,7 @@ export default async function AdminCasesPage({
                     </td>
                     <td>{row.score || "—"}</td>
                     <td>{row.lane.replace("_", " ")}</td>
+                    <td>{row.opportunity_reason || "—"}</td>
                     <td>{row.has_audit ? `audited (${row.audit_issues_count} issues)` : "not audited"}</td>
                     <td>{row.status.replace("_", " ")}</td>
                     <td>

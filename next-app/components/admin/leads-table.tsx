@@ -13,6 +13,7 @@ type Props = {
   initialGenerate?: string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
+  readonly?: boolean;
 };
 
 export function LeadsTable({
@@ -22,6 +23,7 @@ export function LeadsTable({
   initialGenerate,
   emptyStateTitle,
   emptyStateDescription,
+  readonly = false,
 }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -145,9 +147,11 @@ export function LeadsTable({
           <option value="closed_lost">Closed lost</option>
           <option value="do_not_contact">Do not contact</option>
         </select>
-        <button type="button" onClick={() => setAdding(true)} className="admin-btn-primary">
-          Add lead
-        </button>
+        {!readonly ? (
+          <button type="button" onClick={() => setAdding(true)} className="admin-btn-primary">
+            Add lead
+          </button>
+        ) : null}
       </div>
       <div className="admin-table-wrap overflow-x-auto">
         <table className="w-full text-sm">
@@ -183,15 +187,26 @@ export function LeadsTable({
                 <td style={{ color: "var(--admin-muted)" }}>{l.created_at?.slice(0, 10)}</td>
                 <td>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setEditing(l)} className="text-[var(--admin-gold)] hover:underline text-xs">
-                      Edit
-                    </button>
-                    <Link
-                      href={`/admin/leads?lead=${encodeURIComponent(l.id)}&focus=outreach&generate=1`}
-                      className="text-[var(--admin-gold)] hover:underline text-xs"
-                    >
-                      Generate Outreach
-                    </Link>
+                    {!readonly ? (
+                      <>
+                        <button type="button" onClick={() => setEditing(l)} className="text-[var(--admin-gold)] hover:underline text-xs">
+                          Edit
+                        </button>
+                        <Link
+                          href={`/admin/leads?lead=${encodeURIComponent(l.id)}&focus=outreach&generate=1`}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                        >
+                          Generate Outreach
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        href="/admin/cases"
+                        className="text-[var(--admin-gold)] hover:underline text-xs"
+                      >
+                        Open Case
+                      </Link>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -206,7 +221,7 @@ export function LeadsTable({
           <div className="admin-empty-desc">{emptyStateDescription || "Try a different search or status"}</div>
         </div>
       )}
-      {editing && (
+      {!readonly && editing && (
         <LeadForm
           lead={editing}
           onClose={() => setEditing(null)}
@@ -217,7 +232,7 @@ export function LeadsTable({
           initialGenerate={initialGenerate}
         />
       )}
-      {adding && (
+      {!readonly && adding && (
         <LeadForm
           onClose={() => setAdding(false)}
           onSave={(payload) => createLead(payload)}
