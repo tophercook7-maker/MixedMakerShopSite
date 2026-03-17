@@ -72,6 +72,11 @@ function missingOpportunityReasonColumn(message: string): boolean {
   return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
 }
 
+function missingIsHotLeadColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
+}
+
 function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
 }
@@ -188,8 +193,8 @@ export default async function DailyCommandCenterPage({
     const [topLeadRaw, allLeadsRaw, draftRaw, repliesRaw] = await Promise.all([
       runBootstrapTask(
         "leads.top-24h",
-        async () =>
-          (await supabase
+        async () => {
+          let res = (await supabase
             .from("leads")
             .select(
               "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
@@ -197,20 +202,45 @@ export default async function DailyCommandCenterPage({
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
             .order("opportunity_score", { ascending: false, nullsFirst: false })
-            .limit(40)) as { data: LeadRow[] | null; error: unknown },
+            .limit(40)) as { data: LeadRow[] | null; error: { message?: string } | null };
+          if (res.error?.message && missingIsHotLeadColumn(res.error.message)) {
+            res = (await supabase
+              .from("leads")
+              .select(
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,last_reply_at,last_reply_preview,recommended_next_action"
+              )
+              .eq("owner_id", ownerId)
+              .gte("created_at", cutoff24h)
+              .order("opportunity_score", { ascending: false, nullsFirst: false })
+              .limit(40)) as { data: LeadRow[] | null; error: { message?: string } | null };
+          }
+          return res as { data: LeadRow[] | null; error: unknown };
+        },
         bootstrapIssues
       ),
       runBootstrapTask(
         "leads.all",
-        async () =>
-          (await supabase
+        async () => {
+          let res = (await supabase
             .from("leads")
             .select(
               "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
-            .limit(3000)) as { data: LeadRow[] | null; error: unknown },
+            .limit(3000)) as { data: LeadRow[] | null; error: { message?: string } | null };
+          if (res.error?.message && missingIsHotLeadColumn(res.error.message)) {
+            res = (await supabase
+              .from("leads")
+              .select(
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,last_reply_at,last_reply_preview,recommended_next_action"
+              )
+              .eq("owner_id", ownerId)
+              .order("created_at", { ascending: false })
+              .limit(3000)) as { data: LeadRow[] | null; error: { message?: string } | null };
+          }
+          return res as { data: LeadRow[] | null; error: unknown };
+        },
         bootstrapIssues
       ),
       runBootstrapTask("email_messages.drafts", async () => fetchDraftMessages(supabase, ownerId), bootstrapIssues),

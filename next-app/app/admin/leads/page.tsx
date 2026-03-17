@@ -44,6 +44,16 @@ function missingOpportunityReasonColumn(message: string): boolean {
   return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
 }
 
+function missingOpportunitySignalsColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_signals") || text.includes("column opportunity_signals");
+}
+
+function missingIsHotLeadColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
+}
+
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
   const cat = String(category || "").toLowerCase();
@@ -163,7 +173,18 @@ export default async function AdminLeadsPage({
     .limit(500);
   if (date === "today") baseQuery = baseQuery.gte("created_at", dayStart);
 
-  const { data: joinedRows, error: joinedError } = await baseQuery;
+  let joinedResult = await baseQuery;
+  if (joinedResult.error?.message && missingIsHotLeadColumn(joinedResult.error.message)) {
+    joinedResult = await supabase
+      .from("leads")
+      .select(
+        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,last_reply_at,last_reply_preview"
+      )
+      .eq("owner_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(500);
+  }
+  const { data: joinedRows, error: joinedError } = joinedResult;
   let queryMode: "relationship" | "failed" = "relationship";
   let queryError: string | null = joinedError?.message || null;
   let rows: LeadRow[] = [];
@@ -189,14 +210,19 @@ export default async function AdminLeadsPage({
       .from("opportunities")
       .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_reason,opportunity_signals")
       .in("id", opportunityIds);
-    if (withReason.error?.message && missingOpportunityReasonColumn(withReason.error.message)) {
+    if (
+      withReason.error?.message &&
+      (missingOpportunityReasonColumn(withReason.error.message) ||
+        missingOpportunitySignalsColumn(withReason.error.message))
+    ) {
       const fallback = await supabase
         .from("opportunities")
-        .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_signals")
+        .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket")
         .in("id", opportunityIds);
       fallbackOppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
         ...row,
         opportunity_reason: null,
+        opportunity_signals: null,
       }));
     } else {
       fallbackOppRows = (withReason.data || []) as OpportunityRow[];

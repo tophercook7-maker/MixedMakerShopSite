@@ -103,6 +103,11 @@ function missingOpportunityReasonColumn(message: string): boolean {
   return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
 }
 
+function missingOpportunitySignalsColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_signals") || text.includes("column opportunity_signals");
+}
+
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
   const cat = String(category || "").toLowerCase();
@@ -362,15 +367,20 @@ export default async function AdminLeadDetailPage({
         .limit(1);
       oppRows = (withReason.data || []) as OpportunityRow[];
       oppError = withReason.error as { message?: string } | null;
-      if (oppError?.message && missingOpportunityReasonColumn(oppError.message)) {
+      if (
+        oppError?.message &&
+        (missingOpportunityReasonColumn(oppError.message) ||
+          missingOpportunitySignalsColumn(oppError.message))
+      ) {
         const fallback = await supabase
           .from("opportunities")
-          .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_signals,close_probability")
+          .select("id,business_name,category,city,address,website,website_status,opportunity_score,close_probability")
           .eq("id", oppId)
           .limit(1);
         oppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
           ...row,
           opportunity_reason: null,
+          opportunity_signals: null,
         }));
         oppError = fallback.error as { message?: string } | null;
       }
@@ -408,16 +418,21 @@ export default async function AdminLeadDetailPage({
           .limit(1);
         fallbackOppRows = (withReason.data || []) as OpportunityRow[];
         fallbackOppError = withReason.error as { message?: string } | null;
-        if (fallbackOppError?.message && missingOpportunityReasonColumn(fallbackOppError.message)) {
+        if (
+          fallbackOppError?.message &&
+          (missingOpportunityReasonColumn(fallbackOppError.message) ||
+            missingOpportunitySignalsColumn(fallbackOppError.message))
+        ) {
           const fallback = await supabase
             .from("opportunities")
-            .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_signals,close_probability")
+            .select("id,business_name,category,city,address,website,website_status,opportunity_score,close_probability")
             .eq("website", leadWebsite)
             .order("opportunity_score", { ascending: false, nullsFirst: false })
             .limit(1);
           fallbackOppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
             ...row,
             opportunity_reason: null,
+            opportunity_signals: null,
           }));
           fallbackOppError = fallback.error as { message?: string } | null;
         }

@@ -32,6 +32,11 @@ function missingOpportunityReasonColumn(message: string): boolean {
   return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
 }
 
+function missingOpportunitySignalsColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_signals") || text.includes("column opportunity_signals");
+}
+
 export async function POST(
   _request: Request,
   { params }: { params: { id: string } }
@@ -91,14 +96,22 @@ export async function POST(
     .limit(1);
   oppRows = (withReason.data || []) as OpportunityRow[];
   oppError = withReason.error as { message?: string } | null;
-  if (oppError?.message && missingOpportunityReasonColumn(oppError.message)) {
+  if (
+    oppError?.message &&
+    (missingOpportunityReasonColumn(oppError.message) ||
+      missingOpportunitySignalsColumn(oppError.message))
+  ) {
     console.warn("[Action Debug] create-lead fallback without opportunity_reason", { opportunityId });
     const fallback = await supabase
       .from("opportunities")
-      .select("id,workspace_id,business_name,category,city,address,website,opportunity_score,opportunity_signals")
+      .select("id,workspace_id,business_name,category,city,address,website,opportunity_score")
       .eq("id", opportunityId)
       .limit(1);
-    oppRows = (fallback.data || []) as OpportunityRow[];
+    oppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
+      ...row,
+      opportunity_reason: null,
+      opportunity_signals: null,
+    }));
     oppError = fallback.error as { message?: string } | null;
   }
   if (oppError?.message) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -284,15 +284,35 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   }
 
   async function createTask() {
+    const rawPayload = {
+      title: taskTitle.trim(),
+      event_type: taskType,
+      start_time: taskStart ? new Date(taskStart).toISOString() : null,
+      end_time: taskEnd ? new Date(taskEnd).toISOString() : null,
+      notes: taskNotes.trim() || null,
+      is_blocking: taskIsBlocking,
+      lead_id: taskLeadId || null,
+    };
+    // Reflect click/submit immediately in debug panel, even if validation fails.
+    setSaveDebug({
+      save_attempted: true,
+      payload: rawPayload,
+      workspace_id: null,
+      owner_id: null,
+      save_succeeded: false,
+      error: null,
+    });
     setError(null);
     setMessage(null);
     const title = taskTitle.trim();
     if (!title) {
       setError("Task title is required.");
+      setSaveDebug((prev) => ({ ...prev, error: "Task title is required." }));
       return;
     }
     if (!taskStart) {
       setError("Start time is required.");
+      setSaveDebug((prev) => ({ ...prev, error: "Start time is required." }));
       return;
     }
     const requestPayload = {
@@ -304,14 +324,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       is_blocking: taskIsBlocking,
       lead_id: taskLeadId || null,
     };
-    setSaveDebug({
-      save_attempted: true,
-      payload: requestPayload,
-      workspace_id: null,
-      owner_id: null,
-      save_succeeded: false,
-      error: null,
-    });
+    setSaveDebug((prev) => ({ ...prev, payload: requestPayload }));
     setSavingEvent(true);
     try {
       const res = await fetch("/api/calendar/events", {
@@ -336,11 +349,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       }
       const created = body && body.id ? toEventInput(body) : null;
       if (created) {
-        setEvents((prev) => {
-          const next = prev.filter((ev) => String(ev.id || "") !== String(created.id || ""));
-          next.push(created);
-          return next;
-        });
+        setEvents((prev) => [...prev.filter((ev) => String(ev.id || "") !== String(created.id || "")), created]);
       }
       await refreshCurrentRange();
       setTaskTitle("");
@@ -355,9 +364,18 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
         save_succeeded: true,
         error: null,
       });
+    } catch (e) {
+      const errText = e instanceof Error ? e.message : "Could not create event.";
+      setError(errText);
+      setSaveDebug((prev) => ({ ...prev, save_succeeded: false, error: errText }));
     } finally {
       setSavingEvent(false);
     }
+  }
+
+  function onCreateEventSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    void createTask();
   }
 
   async function saveSelectedEvent() {
@@ -493,56 +511,58 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
         </section>
 
         <aside className="space-y-3">
-          <section className="admin-card space-y-2">
+          <section className="admin-card">
             <h2 className="text-sm font-semibold">Manual Event Creation</h2>
-            <input
-              className="admin-input h-9"
-              placeholder="Event title"
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-            />
-            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Event type
-            </label>
-            <select className="admin-input h-9" value={taskType} onChange={(e) => setTaskType(e.target.value as typeof taskType)}>
-              <option value="appointment">appointment</option>
-              <option value="client_call">client_call</option>
-              <option value="personal">personal</option>
-              <option value="followup">followup</option>
-              <option value="task">task</option>
-              <option value="scout">scout</option>
-            </select>
-            <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
-              <input type="checkbox" checked={taskIsBlocking} onChange={(e) => setTaskIsBlocking(Boolean(e.target.checked))} />
-              blocking event
-            </label>
-            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Start time
-            </label>
-            <input className="admin-input h-9" type="datetime-local" value={taskStart} onChange={(e) => setTaskStart(e.target.value)} />
-            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              End time
-            </label>
-            <input className="admin-input h-9" type="datetime-local" value={taskEnd} onChange={(e) => setTaskEnd(e.target.value)} />
-            <select className="admin-input h-9" value={taskLeadId} onChange={(e) => setTaskLeadId(e.target.value)}>
-              <option value="">No lead attached</option>
-              {leadOptions.map((lead) => (
-                <option key={lead.id} value={lead.id}>
-                  {lead.label}
-                </option>
-              ))}
-            </select>
-            <textarea
-              className="admin-input min-h-[100px]"
-              placeholder="Notes"
-              value={taskNotes}
-              onChange={(e) => setTaskNotes(e.target.value)}
-            />
-            <div className="flex flex-wrap gap-2">
-              <button className="admin-btn-primary text-xs" onClick={() => void createTask()} disabled={savingEvent}>
-                {savingEvent ? "Saving..." : "Create Event"}
-              </button>
-            </div>
+            <form className="space-y-2 mt-2" onSubmit={onCreateEventSubmit}>
+              <input
+                className="admin-input h-9"
+                placeholder="Event title"
+                value={taskTitle}
+                onChange={(e) => setTaskTitle(e.target.value)}
+              />
+              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Event type
+              </label>
+              <select className="admin-input h-9" value={taskType} onChange={(e) => setTaskType(e.target.value as typeof taskType)}>
+                <option value="appointment">appointment</option>
+                <option value="client_call">client_call</option>
+                <option value="personal">personal</option>
+                <option value="followup">followup</option>
+                <option value="task">task</option>
+                <option value="scout">scout</option>
+              </select>
+              <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
+                <input type="checkbox" checked={taskIsBlocking} onChange={(e) => setTaskIsBlocking(Boolean(e.target.checked))} />
+                blocking event
+              </label>
+              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Start time
+              </label>
+              <input className="admin-input h-9" type="datetime-local" value={taskStart} onChange={(e) => setTaskStart(e.target.value)} />
+              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                End time
+              </label>
+              <input className="admin-input h-9" type="datetime-local" value={taskEnd} onChange={(e) => setTaskEnd(e.target.value)} />
+              <select className="admin-input h-9" value={taskLeadId} onChange={(e) => setTaskLeadId(e.target.value)}>
+                <option value="">No lead attached</option>
+                {leadOptions.map((lead) => (
+                  <option key={lead.id} value={lead.id}>
+                    {lead.label}
+                  </option>
+                ))}
+              </select>
+              <textarea
+                className="admin-input min-h-[100px]"
+                placeholder="Notes"
+                value={taskNotes}
+                onChange={(e) => setTaskNotes(e.target.value)}
+              />
+              <div className="flex flex-wrap gap-2">
+                <button type="submit" className="admin-btn-primary text-xs" disabled={savingEvent}>
+                  {savingEvent ? "Saving..." : "Create Event"}
+                </button>
+              </div>
+            </form>
           </section>
 
           <section className="admin-card">
