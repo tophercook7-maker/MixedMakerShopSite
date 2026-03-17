@@ -93,6 +93,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [taskNotes, setTaskNotes] = useState("");
   const [taskLeadId, setTaskLeadId] = useState("");
   const [savingEvent, setSavingEvent] = useState(false);
+  const [loadingEventDetails, setLoadingEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<{
     id: string;
     title: string;
@@ -213,8 +214,8 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
     }
   }
 
-  function onEventClick(arg: EventClickArg) {
-    setSelectedEvent({
+  async function onEventClick(arg: EventClickArg) {
+    const fallback = {
       id: String(arg.event.id || ""),
       title: String(arg.event.title || ""),
       eventType: String(arg.event.extendedProps?.eventType || "task"),
@@ -226,7 +227,31 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       isBlocking: Boolean(arg.event.extendedProps?.isBlocking),
       workspaceId: String(arg.event.extendedProps?.workspaceId || ""),
       ownerId: String(arg.event.extendedProps?.ownerId || ""),
-    });
+    };
+    setSelectedEvent(fallback);
+    setLoadingEventDetails(true);
+    try {
+      const res = await fetch(`/api/calendar/events/${encodeURIComponent(fallback.id)}`, { cache: "no-store" });
+      const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      if (!res.ok) throw new Error(body.error || "Could not load event details.");
+      setSelectedEvent({
+        id: String(body.id || fallback.id),
+        title: String(body.title || fallback.title),
+        eventType: String(body.event_type || fallback.eventType),
+        start: body.start_time ? new Date(body.start_time).toISOString().slice(0, 16) : fallback.start,
+        end: body.end_time ? new Date(body.end_time).toISOString().slice(0, 16) : "",
+        notes: String(body.notes || ""),
+        leadId: String(body.lead_id || fallback.leadId || ""),
+        leadBusinessName: String(body.lead_business_name || fallback.leadBusinessName || ""),
+        isBlocking: Boolean(body.is_blocking ?? fallback.isBlocking),
+        workspaceId: String(body.workspace_id || fallback.workspaceId || ""),
+        ownerId: String(body.owner_id || fallback.ownerId || ""),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load event details.");
+    } finally {
+      setLoadingEventDetails(false);
+    }
   }
 
   function onDateSelect(arg: DateSelectArg) {
@@ -376,6 +401,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
 
   async function deleteSelectedEvent() {
     if (!selectedEvent) return;
+    if (!window.confirm("Delete this event? This cannot be undone.")) return;
     setSavingEvent(true);
     setError(null);
     setMessage(null);
@@ -536,6 +562,11 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       {selectedEvent ? (
         <section className="admin-card space-y-2">
           <h2 className="text-sm font-semibold">Event Details</h2>
+          {loadingEventDetails ? (
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Loading event details...
+            </p>
+          ) : null}
           <input
             className="admin-input h-9"
             value={selectedEvent.title}
@@ -576,6 +607,9 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
           <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
             Type: {selectedEvent.eventType} · {selectedEvent.isBlocking ? "blocking" : "non-blocking"} · owner:{" "}
             {selectedEvent.ownerId || "—"} · workspace: {selectedEvent.workspaceId || "—"}
+          </div>
+          <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Lead ID: {selectedEvent.leadId || "—"}
           </div>
           {selectedEvent.leadId ? (
             <div className="flex flex-wrap gap-2">
