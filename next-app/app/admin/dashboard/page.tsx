@@ -29,6 +29,7 @@ type OpportunityRow = {
 };
 
 type CaseContactRow = {
+  id?: string | null;
   opportunity_id?: string | null;
   email?: string | null;
   phone_from_site?: string | null;
@@ -229,7 +230,7 @@ export default async function DailyCommandCenterPage({
             await supabase
               .from("case_files")
               .select(
-                "opportunity_id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+                "id,opportunity_id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
               )
               .in("opportunity_id", topLeadOppIds)
               .order("created_at", { ascending: false })
@@ -307,6 +308,9 @@ export default async function DailyCommandCenterPage({
         recommendedNextAction: assessment.recommended_next_action,
         whyThisLeadIsHere: assessment.why_this_lead_is_here,
         leadPath: buildLeadPath(leadId, businessName),
+        casePath: String(caseRow?.id || "").trim()
+          ? `/admin/cases/${encodeURIComponent(String(caseRow?.id || ""))}`
+          : null,
         website,
       };
     })
@@ -429,7 +433,16 @@ export default async function DailyCommandCenterPage({
                     </a>
                   ) : (
                     <span className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center opacity-60">
-                      Open Website
+                      No website found
+                    </span>
+                  )}
+                  {item.casePath ? (
+                    <a href={item.casePath} className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
+                      Open Case
+                    </a>
+                  ) : (
+                    <span className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center opacity-60">
+                      No case yet
                     </span>
                   )}
                   <a href={`${item.leadPath}?generate=1`} className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
@@ -464,6 +477,9 @@ export default async function DailyCommandCenterPage({
                   "Lead";
                 const opportunityReason = String(
                   topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.opportunity_reason || ""
+                ).trim();
+                const casePath = String(
+                  topLeadCaseByOppId.get(String(lead.linked_opportunity_id || ""))?.id || ""
                 ).trim();
                 const leadBucket = String(
                   topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.lead_bucket || ""
@@ -500,12 +516,34 @@ export default async function DailyCommandCenterPage({
                         >
                           Open Website
                         </a>
-                      ) : null}
+                      ) : (
+                        <span className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center opacity-60">
+                          No website found
+                        </span>
+                      )}
+                      {casePath ? (
+                        <a
+                          href={`/admin/cases/${encodeURIComponent(casePath)}`}
+                          className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                        >
+                          Open Case
+                        </a>
+                      ) : (
+                        <span className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center opacity-60">
+                          No case yet
+                        </span>
+                      )}
                       <a
                         href={`${buildLeadPath(String(lead.id || ""), businessName)}?generate=1`}
                         className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
                       >
                         Generate Email
+                      </a>
+                      <a
+                        href={`${buildLeadPath(String(lead.id || ""), businessName)}?compose=1`}
+                        className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                      >
+                        Send Email
                       </a>
                     </div>
                   </div>

@@ -89,15 +89,38 @@ export type ScoutJobStatusResponse = {
     admin_supabase_url?: string | null;
     intake?: {
       workspace_id?: string | null;
+      opportunities_found?: number;
       opportunities_loaded?: number;
+      opportunities_evaluated?: number;
       evaluated?: number;
+      eligible_for_lead_creation?: number;
       eligible?: number;
+      leads_created?: number;
       created?: number;
+      duplicates_skipped?: number;
       duplicate_skipped?: number;
       insert_failed?: number;
+      filtered_out?: number;
       filtered_low_score?: number;
       filtered_missing_contact_path?: number;
       filtered_closed_or_dnc?: number;
+      filtered_missing_business_name?: number;
+      filtered_missing_workspace?: number;
+      filtered_existing_linked_opportunity?: number;
+      duplicate_by_website?: number;
+      duplicate_by_phone?: number;
+      duplicate_by_business_name_city?: number;
+      reason_counts?: {
+        missing_business_name?: number;
+        missing_workspace_id?: number;
+        missing_contact_path?: number;
+        score_below_threshold?: number;
+        duplicate_by_linked_opportunity_id?: number;
+        duplicate_by_website?: number;
+        duplicate_by_phone?: number;
+        duplicate_by_business_name_city?: number;
+        insert_error?: number;
+      };
       query_error?: string | null;
       intake_threshold_used?: number;
     } | null;

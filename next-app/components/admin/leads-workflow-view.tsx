@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
@@ -67,6 +66,10 @@ function badgeClass(status: WorkflowLead["status"]) {
   if (status === "closed_lost" || status === "do_not_contact") return "admin-badge admin-badge-lost";
   if (status === "contacted" || status === "follow_up_due") return "admin-badge admin-badge-progress";
   return "admin-badge admin-badge-new";
+}
+
+function actionDebug(action: string, payload: Record<string, unknown>) {
+  console.info("[Action Debug]", action, payload);
 }
 
 export function LeadsWorkflowView({
@@ -279,29 +282,51 @@ export function LeadsWorkflowView({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
-                  <Link href={leadHref(lead)} className="admin-btn-primary text-xs">
+                  <a
+                    href={leadHref(lead)}
+                    className="admin-btn-primary text-xs"
+                    onClick={() => actionDebug("Open Lead clicked", { leadId: lead.id })}
+                  >
                     Open Lead
-                  </Link>
+                  </a>
                   {lead.website ? (
-                    <a href={lead.website} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                    <a
+                      href={lead.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-btn-ghost text-xs"
+                      onClick={() => actionDebug("Open Website clicked", { leadId: lead.id, website: lead.website })}
+                    >
                       Open Website
                     </a>
                   ) : (
-                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">Open Website</span>
+                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">No website found</span>
                   )}
                   {lead.related_case_id ? (
-                    <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="admin-btn-ghost text-xs">
+                    <a
+                      href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`}
+                      className="admin-btn-ghost text-xs"
+                      onClick={() => actionDebug("Open Case clicked", { leadId: lead.id, caseId: lead.related_case_id })}
+                    >
                       Open Case
-                    </Link>
+                    </a>
                   ) : (
-                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">Open Case</span>
+                    <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">No case yet</span>
                   )}
-                  <Link href={leadHref(lead, "generate=1")} className="admin-btn-ghost text-xs">
+                  <a
+                    href={leadHref(lead, "generate=1")}
+                    className="admin-btn-ghost text-xs"
+                    onClick={() => actionDebug("Generate Email clicked", { leadId: lead.id })}
+                  >
                     Generate Email
-                  </Link>
-                  <Link href={leadHref(lead, "compose=1")} className="admin-btn-ghost text-xs">
+                  </a>
+                  <a
+                    href={leadHref(lead, "compose=1")}
+                    className="admin-btn-ghost text-xs"
+                    onClick={() => actionDebug("Send Email clicked", { leadId: lead.id })}
+                  >
                     Send Email
-                  </Link>
+                  </a>
                 </div>
               </article>
             ))}
@@ -363,29 +388,51 @@ export function LeadsWorkflowView({
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">
-                        <Link href={leadHref(lead)} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <a
+                          href={leadHref(lead)}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={() => actionDebug("Open Lead clicked", { leadId: lead.id })}
+                        >
                           Open Lead
-                        </Link>
+                        </a>
                         {lead.website ? (
-                          <a href={lead.website} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline text-xs">
+                          <a
+                            href={lead.website}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                            onClick={() => actionDebug("Open Website clicked", { leadId: lead.id, website: lead.website })}
+                          >
                             Open Website
                           </a>
                         ) : (
-                          <span className="text-xs opacity-60">Open Website</span>
+                          <span className="text-xs opacity-60">No website found</span>
                         )}
                         {lead.related_case_id ? (
-                          <Link href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`} className="text-[var(--admin-gold)] hover:underline text-xs">
+                          <a
+                            href={`/admin/cases/${encodeURIComponent(lead.related_case_id)}`}
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                            onClick={() => actionDebug("Open Case clicked", { leadId: lead.id, caseId: lead.related_case_id })}
+                          >
                             Open Case
-                          </Link>
+                          </a>
                         ) : (
-                          <span className="text-xs opacity-60">Open Case</span>
+                          <span className="text-xs opacity-60">No case yet</span>
                         )}
-                        <Link href={leadHref(lead, "generate=1")} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        <a
+                          href={leadHref(lead, "generate=1")}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={() => actionDebug("Generate Email clicked", { leadId: lead.id })}
+                        >
                           Generate Email
-                        </Link>
-                        <Link href={leadHref(lead, "compose=1")} className="text-[var(--admin-gold)] hover:underline text-xs">
+                        </a>
+                        <a
+                          href={leadHref(lead, "compose=1")}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={() => actionDebug("Send Email clicked", { leadId: lead.id })}
+                        >
                           Send Email
-                        </Link>
+                        </a>
                       </div>
                     </td>
                   </tr>

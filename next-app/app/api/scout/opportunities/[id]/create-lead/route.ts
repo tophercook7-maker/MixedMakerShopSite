@@ -16,6 +16,7 @@ type OpportunityRow = {
 };
 
 type CaseRow = {
+  id?: string | null;
   email?: string | null;
   phone_from_site?: string | null;
   contact_page?: string | null;
@@ -51,11 +52,19 @@ export async function POST(
     .eq("linked_opportunity_id", opportunityId)
     .limit(1);
   const existingLead = (existingRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
+  const { data: existingCaseRows } = await supabase
+    .from("case_files")
+    .select("id,created_at")
+    .eq("opportunity_id", opportunityId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const existingCaseId = String((existingCaseRows || [])[0]?.id || "").trim() || null;
   if (existingLead?.id) {
     return NextResponse.json({
       ok: true,
       created: false,
       lead_id: String(existingLead.id),
+      case_id: existingCaseId,
       business_name: String(existingLead.business_name || ""),
       message: "Lead already exists for this opportunity.",
     });
@@ -79,7 +88,7 @@ export async function POST(
   const { data: caseRows } = await supabase
     .from("case_files")
     .select(
-      "email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+      "id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
     )
     .eq("opportunity_id", opportunityId)
     .order("created_at", { ascending: false })
@@ -145,6 +154,7 @@ export async function POST(
     ok: true,
     created: true,
     lead_id: String(inserted.id),
+    case_id: String(caseRow?.id || "").trim() || null,
     business_name: String(inserted.business_name || insertPayload.business_name || ""),
     message: "Lead created from top opportunity.",
   });

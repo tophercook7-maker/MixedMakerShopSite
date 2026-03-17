@@ -80,10 +80,12 @@ export function LeadWorkspaceActions({
   }, [autoGenerate, leadId]);
 
   async function generateDraft() {
+    console.info("[Action Debug] Generate Email clicked", { leadId });
     setIsGenerating(true);
     setError(null);
     setMessage(null);
     try {
+      console.info("[Action Debug] Generate Email request started", { leadId });
       const res = await fetch("/api/scout/outreach/template", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,6 +114,7 @@ export function LeadWorkspaceActions({
       setSubject(nextSubject);
       setBody(nextBody);
       setMessage("Outreach draft generated.");
+      console.info("[Action Debug] Generate Email request succeeded", { leadId });
     } catch (e) {
       const fallback = fallbackDraft(initialBusinessName, initialIssue);
       setSubject(fallback.subject);
@@ -121,12 +124,17 @@ export function LeadWorkspaceActions({
           : fallback.body
       );
       setError(e instanceof Error ? e.message : "Could not generate outreach draft.");
+      console.error("[Action Debug] Generate Email request failed", {
+        leadId,
+        error: e instanceof Error ? e.message : "unknown",
+      });
     } finally {
       setIsGenerating(false);
     }
   }
 
   async function sendEmail() {
+    console.info("[Action Debug] Send Email clicked", { leadId });
     if (!body.trim()) {
       setError("Draft body is empty.");
       return;
@@ -135,6 +143,7 @@ export function LeadWorkspaceActions({
     setError(null);
     setMessage(null);
     try {
+      console.info("[Action Debug] Send Email request started", { leadId });
       const res = await fetch("/api/scout/outreach/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,18 +158,25 @@ export function LeadWorkspaceActions({
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) throw new Error(data.error || "Could not send outreach email.");
       setMessage("Outreach email sent.");
+      console.info("[Action Debug] Send Email request succeeded", { leadId });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not send outreach email.");
+      console.error("[Action Debug] Send Email request failed", {
+        leadId,
+        error: e instanceof Error ? e.message : "unknown",
+      });
     } finally {
       setIsSending(false);
     }
   }
 
   async function updateLead(payload: Record<string, unknown>, successMessage: string) {
+    console.info("[Action Debug] Lead status action clicked", { leadId, payload });
     setIsUpdating(true);
     setError(null);
     setMessage(null);
     try {
+      console.info("[Action Debug] Lead status request started", { leadId, payload });
       const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -169,8 +185,14 @@ export function LeadWorkspaceActions({
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) throw new Error(data.error || "Could not update lead.");
       setMessage(successMessage);
+      console.info("[Action Debug] Lead status request succeeded", { leadId, payload });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update lead.");
+      console.error("[Action Debug] Lead status request failed", {
+        leadId,
+        payload,
+        error: e instanceof Error ? e.message : "unknown",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -323,17 +345,27 @@ export function LeadWorkspaceActions({
             <a href={website} target="_blank" rel="noreferrer" className="admin-btn-ghost">
               Open Website
             </a>
-          ) : null}
+          ) : (
+            <span className="admin-btn-ghost opacity-60 cursor-not-allowed">No website found</span>
+          )}
           {contactPage ? (
             <a href={contactPage} target="_blank" rel="noreferrer" className="admin-btn-ghost">
               Open Contact Page
             </a>
-          ) : null}
+          ) : (
+            <span className="admin-btn-ghost opacity-60 cursor-not-allowed">No contact page</span>
+          )}
           {caseHref ? (
-            <a href={caseHref} className="admin-btn-ghost">
+            <a
+              href={caseHref}
+              className="admin-btn-ghost"
+              onClick={() => console.info("[Action Debug] Open Case clicked", { leadId, caseHref })}
+            >
               Open Case
             </a>
-          ) : null}
+          ) : (
+            <span className="admin-btn-ghost opacity-60 cursor-not-allowed">No case yet</span>
+          )}
           {initialEmail ? (
             <a href={`mailto:${initialEmail}`} className="admin-btn-ghost">
               Open Email App

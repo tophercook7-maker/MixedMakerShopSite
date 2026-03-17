@@ -275,13 +275,15 @@ export default async function AdminCasesPage({
                           >
                             Open Lead
                           </Link>
-                        ) : (
+                        ) : row.opportunity_id ? (
                           <Link
-                            href={`/admin/leads?source=scout-brain&sort=score_desc`}
+                            href={`/admin/opportunities/${encodeURIComponent(row.opportunity_id)}/open-lead`}
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                           >
-                            Open Leads
+                            Create Lead + Open
                           </Link>
+                        ) : (
+                          <span className="text-xs opacity-60">No opportunity id</span>
                         )}
                       </div>
                     </td>

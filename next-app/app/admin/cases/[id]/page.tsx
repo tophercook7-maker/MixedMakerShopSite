@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 
@@ -118,13 +117,13 @@ export default async function AdminCaseDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/admin/cases" className="admin-btn-ghost">
+            <a href="/admin/cases" className="admin-btn-ghost">
               Back to Cases
-            </Link>
+            </a>
             {oppId ? (
-              <Link href="/admin/leads?source=scout-brain&sort=score_desc" className="admin-btn-ghost">
-                Open Leads
-              </Link>
+              <a href={`/admin/opportunities/${encodeURIComponent(oppId)}/open-lead`} className="admin-btn-ghost">
+                Create Lead + Open
+              </a>
             ) : null}
           </div>
         </div>

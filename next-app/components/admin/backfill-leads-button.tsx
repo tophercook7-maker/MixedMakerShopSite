@@ -10,14 +10,24 @@ type BackfillResponse = {
   crm_supabase_host?: string;
   scout_supabase_host?: string;
   stats?: {
+    opportunities_found?: number;
+    opportunities_evaluated?: number;
+    eligible_for_lead_creation?: number;
+    leads_created?: number;
+    duplicates_skipped?: number;
+    filtered_out?: number;
     evaluated?: number;
     eligible?: number;
     created?: number;
     duplicate_skipped?: number;
     filtered_low_score?: number;
+    filtered_missing_business_name?: number;
     filtered_missing_contact_path?: number;
     filtered_missing_workspace?: number;
     filtered_existing_linked_opportunity?: number;
+    duplicate_by_website?: number;
+    duplicate_by_phone?: number;
+    duplicate_by_business_name_city?: number;
     insert_attempted?: number;
     insert_succeeded?: number;
     insert_failed?: number;
@@ -39,6 +49,17 @@ type BackfillResponse = {
     insert_errors?: number;
     insert_error_samples?: string[];
     query_error?: string | null;
+    reason_counts?: {
+      missing_business_name?: number;
+      missing_workspace_id?: number;
+      missing_contact_path?: number;
+      score_below_threshold?: number;
+      duplicate_by_linked_opportunity_id?: number;
+      duplicate_by_website?: number;
+      duplicate_by_phone?: number;
+      duplicate_by_business_name_city?: number;
+      insert_error?: number;
+    };
   };
   error?: string;
   detail?: string;
@@ -107,14 +128,26 @@ export function BackfillLeadsButton() {
             {result.message || "Backfill completed."}
           </div>
           <div>
-            opportunities evaluated: {Number(result.stats?.evaluated || 0)} | leads eligible: {Number(result.stats?.eligible || 0)} | leads created:{" "}
-            {Number(result.stats?.created || 0)} | duplicates skipped: {Number(result.stats?.duplicate_skipped || 0)} | insert failures:{" "}
-            {Number(result.stats?.insert_failed || 0)}
+            opportunities_found: {Number(result.stats?.opportunities_found || 0)} | opportunities_evaluated:{" "}
+            {Number(result.stats?.opportunities_evaluated || result.stats?.evaluated || 0)} | eligible_for_lead_creation:{" "}
+            {Number(result.stats?.eligible_for_lead_creation || result.stats?.eligible || 0)} | leads_created:{" "}
+            {Number(result.stats?.leads_created || result.stats?.created || 0)} | duplicates_skipped:{" "}
+            {Number(result.stats?.duplicates_skipped || result.stats?.duplicate_skipped || 0)} | insert_failed:{" "}
+            {Number(result.stats?.insert_failed || 0)} | filtered_out: {Number(result.stats?.filtered_out || 0)}
           </div>
           <div>
-            filtered_low_score: {Number(result.stats?.filtered_low_score || 0)} | filtered_missing_contact_path:{" "}
-            {Number(result.stats?.filtered_missing_contact_path || 0)} | filtered_existing_linked_opportunity:{" "}
-            {Number(result.stats?.filtered_existing_linked_opportunity || 0)}
+            missing_business_name: {Number(result.stats?.reason_counts?.missing_business_name || result.stats?.filtered_missing_business_name || 0)} | missing_workspace_id:{" "}
+            {Number(result.stats?.reason_counts?.missing_workspace_id || result.stats?.filtered_missing_workspace || 0)} | missing_contact_path:{" "}
+            {Number(result.stats?.reason_counts?.missing_contact_path || result.stats?.filtered_missing_contact_path || 0)} | score_below_threshold:{" "}
+            {Number(result.stats?.reason_counts?.score_below_threshold || result.stats?.filtered_low_score || 0)}
+          </div>
+          <div>
+            duplicate_by_linked_opportunity_id:{" "}
+            {Number(result.stats?.reason_counts?.duplicate_by_linked_opportunity_id || result.stats?.filtered_existing_linked_opportunity || 0)} | duplicate_by_website:{" "}
+            {Number(result.stats?.reason_counts?.duplicate_by_website || result.stats?.duplicate_by_website || 0)} | duplicate_by_phone:{" "}
+            {Number(result.stats?.reason_counts?.duplicate_by_phone || result.stats?.duplicate_by_phone || 0)} | duplicate_by_business_name_city:{" "}
+            {Number(result.stats?.reason_counts?.duplicate_by_business_name_city || result.stats?.duplicate_by_business_name_city || 0)} | insert_error:{" "}
+            {Number(result.stats?.reason_counts?.insert_error || result.stats?.insert_failed || 0)}
           </div>
           <div>
             insert_attempted: {Number(result.stats?.insert_attempted || 0)} | insert_succeeded:{" "}

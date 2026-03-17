@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Mail, MessageSquareMore, SearchCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
@@ -123,12 +122,12 @@ export default async function AdminOutreachPage({
                       <td>{event?.sent_at ? new Date(event.sent_at).toLocaleString() : "—"}</td>
                       <td>{lead.next_follow_up_at ? new Date(lead.next_follow_up_at).toLocaleDateString() : "—"}</td>
                       <td>
-                        <Link
+                        <a
                           href={`${buildLeadPath(lead.id, lead.business_name)}?generate=1`}
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Generate Email
-                        </Link>
+                        </a>
                       </td>
                     </tr>
                   );
@@ -172,7 +171,7 @@ export default async function AdminOutreachPage({
                     <td>{String(thread.status || "").replace("_", " ") || "—"}</td>
                     <td>
                       {thread.lead_id ? (
-                        <Link
+                        <a
                           href={buildLeadPath(
                             thread.lead_id,
                             String(replyLeadMap.get(thread.lead_id) || "Lead")
@@ -180,7 +179,7 @@ export default async function AdminOutreachPage({
                           className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                         >
                           Open Timeline
-                        </Link>
+                        </a>
                       ) : (
                         "—"
                       )}
@@ -207,9 +206,9 @@ export default async function AdminOutreachPage({
           <h2 className="text-lg font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
             Fast actions
           </h2>
-          <Link href="/admin/leads" className="text-sm font-semibold text-[var(--admin-gold)] hover:underline">
+          <a href="/admin/leads" className="text-sm font-semibold text-[var(--admin-gold)] hover:underline">
             Open Leads to preview/send outreach →
-          </Link>
+          </a>
         </div>
       </section>
 

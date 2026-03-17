@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Crosshair, ExternalLink, RefreshCw } from "lucide-react";
 import type { ScoutLead, ScoutScanSettings, ScoutSummary } from "@/lib/scout/types";
 import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
@@ -164,7 +163,6 @@ export function ScoutConsole({
   initialTopLeads,
   initialError,
 }: Props) {
-  const router = useRouter();
   const scout = useGlobalScoutJob();
   const [pageError, setPageError] = useState<string | null>(initialError);
   const [scope, setScope] = useState<ScoutScanSettings["scope"]>("single_city");
@@ -292,18 +290,33 @@ export function ScoutConsole({
         error?: string;
         lead_id?: string;
         business_name?: string;
+        case_id?: string | null;
       };
       if (!res.ok || !body.lead_id) {
         setPageError(body.error || "Could not create lead from top opportunity.");
         return null;
       }
-      return { leadId: String(body.lead_id || ""), businessName: String(body.business_name || "Lead") };
+      return {
+        leadId: String(body.lead_id || ""),
+        businessName: String(body.business_name || "Lead"),
+        caseId: String(body.case_id || "").trim() || null,
+      };
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Could not create lead from top opportunity.");
       return null;
     } finally {
       setCreatingLeadForOppId(null);
     }
+  };
+
+  const hardNavigate = (href: string) => {
+    if (!href) return;
+    if (typeof window !== "undefined") window.location.assign(href);
+  };
+
+  const openExternal = (href: string) => {
+    if (!href) return;
+    if (typeof window !== "undefined") window.open(href, "_blank", "noopener,noreferrer");
   };
 
   const runWithPreset = async (preset: ScanPreset) => {
@@ -397,7 +410,7 @@ export function ScoutConsole({
               type="button"
               className="admin-btn-ghost text-xs"
               onClick={() => {
-                router.refresh();
+                if (typeof window !== "undefined") window.location.reload();
               }}
             >
               Retry Load
@@ -677,10 +690,26 @@ export function ScoutConsole({
             </p>
           </div>
           <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
-            opportunities evaluated: {Number(scout.persistenceDebug?.intake?.evaluated || 0)} | leads created:{" "}
-            {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)} | duplicates skipped:{" "}
-            {Number(scout.persistenceDebug?.intake?.duplicate_skipped || scout.persistenceDebug?.duplicates_skipped || 0)} | insert failures:{" "}
-            {Number(scout.persistenceDebug?.intake?.insert_failed || 0)}
+            opportunities_found: {Number(scout.persistenceDebug?.intake?.opportunities_found || scout.persistenceDebug?.intake?.opportunities_loaded || 0)} | opportunities_evaluated:{" "}
+            {Number(scout.persistenceDebug?.intake?.opportunities_evaluated || scout.persistenceDebug?.intake?.evaluated || 0)} | eligible_for_lead_creation:{" "}
+            {Number(scout.persistenceDebug?.intake?.eligible_for_lead_creation || scout.persistenceDebug?.intake?.eligible || 0)} | leads_created:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_created || scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)} | duplicates_skipped:{" "}
+            {Number(scout.persistenceDebug?.intake?.duplicates_skipped || scout.persistenceDebug?.intake?.duplicate_skipped || scout.persistenceDebug?.duplicates_skipped || 0)} | insert_failed:{" "}
+            {Number(scout.persistenceDebug?.intake?.insert_failed || 0)} | filtered_out: {Number(scout.persistenceDebug?.intake?.filtered_out || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            missing_business_name: {Number(scout.persistenceDebug?.intake?.reason_counts?.missing_business_name || scout.persistenceDebug?.intake?.filtered_missing_business_name || 0)} | missing_workspace_id:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.missing_workspace_id || scout.persistenceDebug?.intake?.filtered_missing_workspace || 0)} | missing_contact_path:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.missing_contact_path || scout.persistenceDebug?.intake?.filtered_missing_contact_path || 0)} | score_below_threshold:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.score_below_threshold || scout.persistenceDebug?.intake?.filtered_low_score || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            duplicate_by_linked_opportunity_id:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_linked_opportunity_id || scout.persistenceDebug?.intake?.filtered_existing_linked_opportunity || 0)} | duplicate_by_website:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_website || scout.persistenceDebug?.intake?.duplicate_by_website || 0)} | duplicate_by_phone:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_phone || scout.persistenceDebug?.intake?.duplicate_by_phone || 0)} | duplicate_by_business_name_city:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_business_name_city || scout.persistenceDebug?.intake?.duplicate_by_business_name_city || 0)} | insert_error:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.insert_error || scout.persistenceDebug?.intake?.insert_failed || 0)}
           </p>
           {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0) === 0 && (
             <p className="text-xs mb-2" style={{ color: "#fca5a5" }}>
@@ -800,34 +829,59 @@ export function ScoutConsole({
                           <button
                             type="button"
                             className="admin-btn-primary text-xs"
-                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
                             onClick={async () => {
-                              const opportunityId = String(lead.slug || lead.id || "").trim();
-                              if (!opportunityId) return;
+                              console.info("[Action Debug] Open Lead clicked", { opportunityId: String(lead.id || lead.slug || "") });
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Could not open lead: missing opportunity id.");
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead request started", { opportunityId });
                               const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) return;
-                              router.push(buildLeadPath(created.leadId, created.businessName));
+                              if (!created?.leadId) {
+                                console.error("[Action Debug] Create Lead failed", { opportunityId });
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead succeeded", { opportunityId, leadId: created.leadId });
+                              hardNavigate(buildLeadPath(created.leadId, created.businessName));
                             }}
                           >
-                            Open Lead
+                            Create Lead + Open
                           </button>
                           {lead.website ? (
-                            <a href={lead.website} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                            <button
+                              type="button"
+                              className="admin-btn-ghost text-xs"
+                              onClick={() => {
+                                console.info("[Action Debug] Open Website clicked", { website: lead.website });
+                                openExternal(String(lead.website || ""));
+                              }}
+                            >
                               Open Website
-                            </a>
+                            </button>
                           ) : (
-                            <span className="admin-btn-ghost text-xs opacity-60">Open Website</span>
+                            <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">No website found</span>
                           )}
                           <button
                             type="button"
                             className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
                             onClick={async () => {
-                              const opportunityId = String(lead.slug || lead.id || "").trim();
-                              if (!opportunityId) return;
+                              console.info("[Action Debug] Generate Email clicked", { opportunityId: String(lead.id || lead.slug || "") });
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Could not generate email: missing opportunity id.");
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead request started", { opportunityId });
                               const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) return;
-                              router.push(`${buildLeadPath(created.leadId, created.businessName)}?generate=1`);
+                              if (!created?.leadId) {
+                                console.error("[Action Debug] Generate Email failed before navigation", { opportunityId });
+                                return;
+                              }
+                              console.info("[Action Debug] Generate Email request succeeded", { opportunityId, leadId: created.leadId });
+                              hardNavigate(`${buildLeadPath(created.leadId, created.businessName)}?generate=1`);
                             }}
                           >
                             Generate Email
@@ -835,13 +889,22 @@ export function ScoutConsole({
                           <button
                             type="button"
                             className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
                             onClick={async () => {
-                              const opportunityId = String(lead.slug || lead.id || "").trim();
-                              if (!opportunityId) return;
+                              console.info("[Action Debug] Send Email clicked", { opportunityId: String(lead.id || lead.slug || "") });
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Could not open compose email: missing opportunity id.");
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead request started", { opportunityId });
                               const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) return;
-                              router.push(`${buildLeadPath(created.leadId, created.businessName)}?compose=1`);
+                              if (!created?.leadId) {
+                                console.error("[Action Debug] Send Email failed before navigation", { opportunityId });
+                                return;
+                              }
+                              console.info("[Action Debug] Send Email request succeeded", { opportunityId, leadId: created.leadId });
+                              hardNavigate(`${buildLeadPath(created.leadId, created.businessName)}?compose=1`);
                             }}
                           >
                             Send Email
@@ -849,12 +912,45 @@ export function ScoutConsole({
                           <button
                             type="button"
                             className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
                             onClick={async () => {
-                              const opportunityId = String(lead.slug || lead.id || "").trim();
-                              if (!opportunityId) return;
-                              await createLeadFromOpportunity(opportunityId);
-                              router.refresh();
+                              console.info("[Action Debug] Open Case clicked", { opportunityId: String(lead.id || lead.slug || "") });
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Could not open case: missing opportunity id.");
+                                return;
+                              }
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.caseId) {
+                                setPageError("No case yet");
+                                console.warn("[Action Debug] Open Case failed: no case", { opportunityId });
+                                return;
+                              }
+                              console.info("[Action Debug] Open Case succeeded", { opportunityId, caseId: created.caseId });
+                              hardNavigate(`/admin/cases/${encodeURIComponent(created.caseId)}`);
+                            }}
+                          >
+                            Open Case
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn-ghost text-xs"
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
+                            onClick={async () => {
+                              console.info("[Action Debug] Create Lead clicked", { opportunityId: String(lead.id || lead.slug || "") });
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Could not create lead: missing opportunity id.");
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead request started", { opportunityId });
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.leadId) {
+                                console.error("[Action Debug] Create Lead failed", { opportunityId });
+                                return;
+                              }
+                              console.info("[Action Debug] Create Lead request succeeded", { opportunityId, leadId: created.leadId });
+                              if (typeof window !== "undefined") window.location.reload();
                             }}
                           >
                             Create Lead
