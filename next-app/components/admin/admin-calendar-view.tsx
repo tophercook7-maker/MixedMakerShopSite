@@ -88,7 +88,6 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskType, setTaskType] = useState<"appointment" | "client_call" | "personal" | "followup" | "task" | "scout">("task");
   const [taskIsBlocking, setTaskIsBlocking] = useState(false);
-  const [taskWorkspaceId, setTaskWorkspaceId] = useState("");
   const [taskStart, setTaskStart] = useState("");
   const [taskEnd, setTaskEnd] = useState("");
   const [taskNotes, setTaskNotes] = useState("");
@@ -279,12 +278,11 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       notes: taskNotes.trim() || null,
       is_blocking: taskIsBlocking,
       lead_id: taskLeadId || null,
-      workspace_id: taskWorkspaceId.trim() || null,
     };
     setSaveDebug({
       save_attempted: true,
       payload: requestPayload,
-      workspace_id: taskWorkspaceId.trim() || null,
+      workspace_id: null,
       owner_id: null,
       save_succeeded: false,
       error: null,
@@ -304,7 +302,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
         setSaveDebug({
           save_attempted: true,
           payload: requestPayload,
-          workspace_id: String(debug.workspace_id || taskWorkspaceId || "").trim() || null,
+          workspace_id: String(debug.workspace_id || "").trim() || null,
           owner_id: String(debug.owner_id || "").trim() || null,
           save_succeeded: false,
           error: errText,
@@ -327,7 +325,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setSaveDebug({
         save_attempted: true,
         payload: requestPayload,
-        workspace_id: String(debug.workspace_id || taskWorkspaceId || "").trim() || null,
+        workspace_id: String(debug.workspace_id || "").trim() || null,
         owner_id: String(debug.owner_id || "").trim() || null,
         save_succeeded: true,
         error: null,
@@ -488,15 +486,6 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
               <option value="task">task</option>
               <option value="scout">scout</option>
             </select>
-            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Workspace ID (optional if default is configured)
-            </label>
-            <input
-              className="admin-input h-9"
-              placeholder="workspace_id"
-              value={taskWorkspaceId}
-              onChange={(e) => setTaskWorkspaceId(e.target.value)}
-            />
             <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
               <input type="checkbox" checked={taskIsBlocking} onChange={(e) => setTaskIsBlocking(Boolean(e.target.checked))} />
               blocking event

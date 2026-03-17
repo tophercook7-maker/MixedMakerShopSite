@@ -153,19 +153,18 @@ export async function POST(request: Request) {
     notes: notes || null,
     is_blocking: effectiveIsBlocking,
     lead_id: leadId || null,
-    workspace_id: String(body.workspace_id || "").trim() || null,
   };
 
-  if (!title) return NextResponse.json({ error: "Title is required.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
-  if (!startTime) return NextResponse.json({ error: "start_time is required.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
+  if (!title) return NextResponse.json({ error: "Title is required.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 400 });
+  if (!startTime) return NextResponse.json({ error: "start_time is required.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 400 });
   if (!VALID_EVENT_TYPES.has(eventTypeRaw)) {
-    return NextResponse.json({ error: "Invalid event_type.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
+    return NextResponse.json({ error: "Invalid event_type.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 400 });
   }
   const start = new Date(startTime);
-  if (Number.isNaN(start.getTime())) return NextResponse.json({ error: "Invalid start_time.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
+  if (Number.isNaN(start.getTime())) return NextResponse.json({ error: "Invalid start_time.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 400 });
   const end = endTime ? new Date(endTime) : new Date(start.getTime() + 30 * 60 * 1000);
   if (Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
-    return NextResponse.json({ error: "end_time must be after start_time.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
+    return NextResponse.json({ error: "end_time must be after start_time.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 400 });
   }
   if (effectiveIsBlocking) {
     const conflict = await hasHardBlockConflict(
@@ -175,20 +174,23 @@ export async function POST(request: Request) {
       end.toISOString(),
       null
     );
-    if (conflict.error) return NextResponse.json({ error: conflict.error, debug: { payload: debugPayload, owner_id: ownerId } }, { status: 500 });
+    if (conflict.error) return NextResponse.json({ error: conflict.error, save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } }, { status: 500 });
     if (conflict.conflict) {
       return NextResponse.json(
-        { error: "This time conflicts with another blocking appointment.", debug: { payload: debugPayload, owner_id: ownerId } },
+        { error: "This time conflicts with another blocking appointment.", save_succeeded: false, debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null } },
         { status: 409 }
       );
     }
   }
 
-  const requestedWorkspaceId = String(body.workspace_id || "").trim();
-  const workspaceId = requestedWorkspaceId || (await resolveWorkspaceIdForOwner(ownerId));
+  const workspaceId = await resolveWorkspaceIdForOwner(ownerId);
   if (!workspaceId) {
     return NextResponse.json(
-      { error: "workspace_id is required. Set a workspace or SCOUT_BRAIN_WORKSPACE_ID.", debug: { payload: debugPayload, owner_id: ownerId } },
+      {
+        error: "workspace_id could not be resolved from DB/env/owner fallback.",
+        save_succeeded: false,
+        debug: { payload: debugPayload, owner_id: ownerId, workspace_id: null },
+      },
       { status: 400 }
     );
   }
@@ -196,6 +198,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: `workspace_id must be a UUID. Received: ${workspaceId}`,
+        save_succeeded: false,
         debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
       },
       { status: 400 }
@@ -222,6 +225,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: error.message,
+        save_succeeded: false,
         debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
       },
       { status: 500 }
@@ -229,6 +233,9 @@ export async function POST(request: Request) {
   }
   return NextResponse.json(
     {
+      save_succeeded: true,
+      owner_id: ownerId,
+      workspace_id: workspaceId,
       ...data,
       debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
     },

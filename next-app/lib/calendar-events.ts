@@ -30,8 +30,6 @@ type CreateCalendarEventInput = {
 };
 
 export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<string | null> {
-  const fromEnv = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
-  if (fromEnv && isUuid(fromEnv)) return fromEnv;
   const supabase = await createClient();
   const { data } = await supabase
     .from("leads")
@@ -42,11 +40,19 @@ export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<strin
     .limit(1);
   const fromLead = String((data || [])[0]?.workspace_id || "").trim();
   if (fromLead && isUuid(fromLead)) return fromLead;
+  const fromEnv = String(process.env.SCOUT_WORKSPACE_ID || process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+  if (fromEnv && isUuid(fromEnv)) return fromEnv;
   return isUuid(ownerId) ? ownerId : null;
 }
 
 export async function createCalendarEvent(input: CreateCalendarEventInput) {
   const supabase = await createClient();
+  if (!isUuid(input.ownerId)) {
+    return {
+      data: null,
+      error: { message: `owner_id must be a UUID. Got: ${input.ownerId}` },
+    };
+  }
   const workspaceId = String(input.workspaceId || "").trim() || (await resolveWorkspaceIdForOwner(input.ownerId));
   if (!workspaceId) {
     return {
