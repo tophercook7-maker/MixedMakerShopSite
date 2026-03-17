@@ -28,7 +28,7 @@ export type WorkflowLead = {
   lead_bucket?: "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority" | null;
   close_probability?: "low" | "medium" | "high" | null;
   lead_type?: "Easy Win" | "Active Business, Weak Website" | "Church Website Opportunity" | "Needs Review" | "Low Priority" | null;
-  best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | null;
+  best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | "none" | null;
   primary_problem?: string | null;
   why_it_matters?: string | null;
   why_this_lead_is_here?: string | null;
@@ -83,7 +83,7 @@ export function LeadsWorkflowView({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
-    "easy_wins" | "no_website" | "broken_website" | "facebook_only" | "churches" | "needs_review" | "all"
+    "easy_wins" | "no_website" | "broken_website" | "facebook_only" | "churches" | "needs_review" | "no_contact_info" | "all"
   >("all");
   const error: string | null = null;
 
@@ -92,12 +92,19 @@ export function LeadsWorkflowView({
     const bySegment = leads.filter((lead) => {
       const ws = String(lead.website_status || "").toLowerCase();
       const cat = String(lead.category || "").toLowerCase();
+      const hasContactPath = Boolean(
+        String(lead.email || "").trim() ||
+          String(lead.contact_page || "").trim() ||
+          String(lead.phone_from_site || "").trim() ||
+          String(lead.facebook_url || "").trim()
+      );
       if (segment === "easy_wins") return canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score) === "Easy Win";
       if (segment === "no_website") return ws === "no_website";
       if (segment === "broken_website") return ws === "broken_website";
       if (segment === "facebook_only") return ws === "facebook_only";
       if (segment === "churches") return cat.includes("church");
       if (segment === "needs_review") return lead.lead_type === "Needs Review";
+      if (segment === "no_contact_info") return !hasContactPath;
       return true;
     });
     if (!q) return bySegment;
@@ -178,6 +185,7 @@ export function LeadsWorkflowView({
               ["facebook_only", "Facebook Only"],
               ["churches", "Churches"],
               ["needs_review", "Needs Review"],
+              ["no_contact_info", "No Contact Info"],
               ["all", "All"],
             ].map(([id, label]) => (
               <button
@@ -262,7 +270,7 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">Why this lead is here:</span> {lead.why_this_lead_is_here || "Clear website improvement opportunity."}
                   </p>
                   <p>
-                    <span className="font-semibold">Best contact:</span> {lead.best_contact_method || lead.contact_method}
+                    <span className="font-semibold">Best contact:</span> {lead.best_contact_method || lead.contact_method || "none"}
                   </p>
                   <p>
                     <span className="font-semibold">What to say:</span> {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
@@ -282,8 +290,15 @@ export function LeadsWorkflowView({
                   <p>
                     <span className="font-semibold">Email:</span> {lead.email || "—"}
                   </p>
+                  {!lead.email && !lead.phone_from_site && !lead.contact_page && !lead.facebook_url ? (
+                    <p style={{ color: "#fca5a5" }}>No direct contact info found yet</p>
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
+                  {(() => {
+                    const hasContactPath = Boolean(lead.email || lead.phone_from_site || lead.contact_page || lead.facebook_url);
+                    return (
+                      <>
                   <a
                     href={leadHref(lead)}
                     className="admin-btn-primary text-xs"
@@ -318,17 +333,36 @@ export function LeadsWorkflowView({
                   <a
                     href={leadHref(lead, "generate=1")}
                     className="admin-btn-ghost text-xs"
-                    onClick={() => actionDebug("Generate Email clicked", { leadId: lead.id })}
+                    aria-disabled={!hasContactPath}
+                    onClick={(event) => {
+                      if (!hasContactPath) {
+                        event.preventDefault();
+                        actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
+                        return;
+                      }
+                      actionDebug("Generate Email clicked", { leadId: lead.id });
+                    }}
                   >
                     Generate Email
                   </a>
                   <a
                     href={leadHref(lead, "compose=1")}
                     className="admin-btn-ghost text-xs"
-                    onClick={() => actionDebug("Send Email clicked", { leadId: lead.id })}
+                    aria-disabled={!hasContactPath}
+                    onClick={(event) => {
+                      if (!hasContactPath) {
+                        event.preventDefault();
+                        actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
+                        return;
+                      }
+                      actionDebug("Send Email clicked", { leadId: lead.id });
+                    }}
                   >
                     Send Email
                   </a>
+                      </>
+                    );
+                  })()}
                 </div>
               </article>
             ))}
@@ -362,6 +396,10 @@ export function LeadsWorkflowView({
               <tbody>
                 {filtered.map((lead) => (
                   <tr key={lead.id}>
+                    {(() => {
+                      const hasContactPath = Boolean(lead.email || lead.phone_from_site || lead.contact_page || lead.facebook_url);
+                      return (
+                        <>
                     <td>{lead.business_name}</td>
                     <td>{lead.city || "—"}</td>
                     <td>{lead.category || "—"}</td>
@@ -385,7 +423,7 @@ export function LeadsWorkflowView({
                     <td>{lead.contact_page || "—"}</td>
                     <td>{lead.facebook_url || "—"}</td>
                     <td>{lead.email || "—"}</td>
-                    <td>{lead.best_contact_method || lead.contact_method}</td>
+                    <td>{lead.best_contact_method || lead.contact_method || "none"}</td>
                     <td>{lead.recommended_next_action || "Review Website"}</td>
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
@@ -424,19 +462,36 @@ export function LeadsWorkflowView({
                         <a
                           href={leadHref(lead, "generate=1")}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
-                          onClick={() => actionDebug("Generate Email clicked", { leadId: lead.id })}
+                          onClick={(event) => {
+                            if (!hasContactPath) {
+                              event.preventDefault();
+                              actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
+                              return;
+                            }
+                            actionDebug("Generate Email clicked", { leadId: lead.id });
+                          }}
                         >
                           Generate Email
                         </a>
                         <a
                           href={leadHref(lead, "compose=1")}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
-                          onClick={() => actionDebug("Send Email clicked", { leadId: lead.id })}
+                          onClick={(event) => {
+                            if (!hasContactPath) {
+                              event.preventDefault();
+                              actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
+                              return;
+                            }
+                            actionDebug("Send Email clicked", { leadId: lead.id });
+                          }}
                         >
                           Send Email
                         </a>
                       </div>
                     </td>
+                        </>
+                      );
+                    })()}
                   </tr>
                 ))}
               </tbody>

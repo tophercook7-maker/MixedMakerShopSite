@@ -7,7 +7,7 @@ export type LeadType =
 export type LeadBucket = "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority";
 
 export type CloseProbability = "low" | "medium" | "high";
-export type BestContactMethod = "email" | "phone" | "contact_page" | "facebook";
+export type BestContactMethod = "email" | "phone" | "contact_page" | "facebook" | "none";
 export type RecommendedNextAction =
   | "Generate Email"
   | "Send First Touch"
@@ -100,7 +100,7 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
         ? "phone"
         : hasFacebook
           ? "facebook"
-          : null;
+          : "none";
 
   let leadType: LeadType = "Needs Review";
   if (noWebsite || brokenWebsite || insecureHttp || missingContactPage) {
@@ -172,7 +172,7 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
 
   let recommendedNextAction: RecommendedNextAction = "Review Website";
   if (leadType === "Low Priority") recommendedNextAction = "Skip For Now";
-  else if (!bestContactMethod) recommendedNextAction = "Review Website";
+  else if (bestContactMethod === "none") recommendedNextAction = "Review Website";
   else if (leadStatus === "new") recommendedNextAction = "Send First Touch";
   else recommendedNextAction = "Generate Email";
 

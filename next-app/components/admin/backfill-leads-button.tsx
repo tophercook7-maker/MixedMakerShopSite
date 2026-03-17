@@ -28,6 +28,11 @@ type BackfillResponse = {
     duplicate_by_website?: number;
     duplicate_by_phone?: number;
     duplicate_by_business_name_city?: number;
+    leads_with_email?: number;
+    leads_with_phone?: number;
+    leads_with_contact_page?: number;
+    leads_with_facebook?: number;
+    leads_with_no_contact_path?: number;
     insert_attempted?: number;
     insert_succeeded?: number;
     insert_failed?: number;
@@ -152,6 +157,13 @@ export function BackfillLeadsButton() {
           <div>
             insert_attempted: {Number(result.stats?.insert_attempted || 0)} | insert_succeeded:{" "}
             {Number(result.stats?.insert_succeeded || 0)} | insert_errors: {Number(result.stats?.insert_errors || 0)}
+          </div>
+          <div>
+            leads_with_email: {Number(result.stats?.leads_with_email || 0)} | leads_with_phone:{" "}
+            {Number(result.stats?.leads_with_phone || 0)} | leads_with_contact_page:{" "}
+            {Number(result.stats?.leads_with_contact_page || 0)} | leads_with_facebook:{" "}
+            {Number(result.stats?.leads_with_facebook || 0)} | leads_with_no_contact_path:{" "}
+            {Number(result.stats?.leads_with_no_contact_path || 0)}
           </div>
           <div>
             debug_mode: {String(Boolean(result.stats?.debug_mode))} | threshold: {Number(result.stats?.intake_threshold_used || 0)} | contact_rule:{" "}

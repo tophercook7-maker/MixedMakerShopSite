@@ -253,6 +253,7 @@ export default async function AdminLeadsPage({
     const phone = String(caseRow?.phone_from_site || row.phone || "").trim();
     const contactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
     const facebookUrl = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
+    const hasContactPath = Boolean(email || phone || contactPage || facebookUrl);
     const website = String(opp?.website || row.website || "").trim();
     const assessment = buildLeadAssessment({
       website,
@@ -306,18 +307,16 @@ export default async function AdminLeadsPage({
             ? "phone"
             : facebookUrl
               ? "facebook"
-            : website
-              ? "website"
               : "none",
       detected_issue_summary: opportunityReason || issueList[0] || "Contact info is hard to find",
       detected_issues: issueList,
-      lead_type: assessment.lead_type,
-      best_contact_method: assessment.best_contact_method || null,
+      lead_type: hasContactPath ? assessment.lead_type : "Needs Review",
+      best_contact_method: hasContactPath ? assessment.best_contact_method || null : "none",
       primary_problem: assessment.primary_problem,
       why_it_matters: assessment.why_it_matters,
       why_this_lead_is_here: assessment.why_this_lead_is_here,
       best_pitch_angle: assessment.best_pitch_angle,
-      recommended_next_action: assessment.recommended_next_action,
+      recommended_next_action: hasContactPath ? assessment.recommended_next_action : "Review Website",
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
       screenshot_urls: screenshotCandidates,

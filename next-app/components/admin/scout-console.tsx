@@ -711,6 +711,13 @@ export function ScoutConsole({
             {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_business_name_city || scout.persistenceDebug?.intake?.duplicate_by_business_name_city || 0)} | insert_error:{" "}
             {Number(scout.persistenceDebug?.intake?.reason_counts?.insert_error || scout.persistenceDebug?.intake?.insert_failed || 0)}
           </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            leads_with_email: {Number(scout.persistenceDebug?.intake?.leads_with_email || 0)} | leads_with_phone:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_with_phone || 0)} | leads_with_contact_page:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_with_contact_page || 0)} | leads_with_facebook:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_with_facebook || 0)} | leads_with_no_contact_path:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_with_no_contact_path || 0)}
+          </p>
           {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0) === 0 && (
             <p className="text-xs mb-2" style={{ color: "#fca5a5" }}>
               no_leads_created_reason:{" "}

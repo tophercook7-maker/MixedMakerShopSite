@@ -632,6 +632,7 @@ export default async function AdminLeadDetailPage({
   const displayContactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
   const displayFacebook = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
   const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
+  const hasContactPath = Boolean(displayEmail || displayPhone || displayContactPage || displayFacebook);
   const displayStatus = String(lead?.status || caseRow?.status || "new");
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
   const displayCity = String(opp?.city || "").trim() || "—";
@@ -762,7 +763,7 @@ export default async function AdminLeadDetailPage({
               </div>
               <div><span style={{ color: "var(--admin-muted)" }}>Lead Type:</span> {assessment.lead_type}</div>
               <div><span style={{ color: "var(--admin-muted)" }}>Close Probability:</span> {assessment.close_probability}</div>
-              <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "review website"}</div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "none"}</div>
               <div><span style={{ color: "var(--admin-muted)" }}>Recommended Next Action:</span> {assessment.recommended_next_action}</div>
             </div>
             <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
@@ -1072,6 +1073,11 @@ export default async function AdminLeadDetailPage({
                 )}
               </div>
             </div>
+            {!hasContactPath ? (
+              <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
+                No direct contact info found yet
+              </p>
+            ) : null}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {displayEmail ? (
                 <a href={`mailto:${displayEmail}`} className="admin-btn-primary">

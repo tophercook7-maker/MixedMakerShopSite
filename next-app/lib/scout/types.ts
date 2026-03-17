@@ -110,6 +110,11 @@ export type ScoutJobStatusResponse = {
       duplicate_by_website?: number;
       duplicate_by_phone?: number;
       duplicate_by_business_name_city?: number;
+      leads_with_email?: number;
+      leads_with_phone?: number;
+      leads_with_contact_page?: number;
+      leads_with_facebook?: number;
+      leads_with_no_contact_path?: number;
       reason_counts?: {
         missing_business_name?: number;
         missing_workspace_id?: number;
