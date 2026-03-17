@@ -19,6 +19,9 @@ export type LeadAssessment = {
   lead_type: LeadType;
   close_probability: CloseProbability;
   best_contact_method: BestContactMethod | null;
+  primary_problem: string;
+  why_it_matters: string;
+  why_this_lead_is_here: string;
   best_pitch_angle: string;
   recommended_next_action: RecommendedNextAction;
 };
@@ -125,6 +128,48 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
   else if (mobileIssue) bestPitchAngle = "Your mobile layout could make it harder for customers to contact you.";
   else if (slowSite) bestPitchAngle = "Your homepage loads slowly, which can reduce calls and form submissions.";
 
+  let primaryProblem = "No clear website issue captured yet";
+  if (noWebsite) primaryProblem = "No website found";
+  else if (brokenWebsite) primaryProblem = "Website does not load";
+  else if (insecureHttp) primaryProblem = "Website uses insecure HTTP";
+  else if (missingContactPage) primaryProblem = "Contact page missing";
+  else if (mobileIssue) primaryProblem = "Mobile layout difficult to use";
+  else if (slowSite) primaryProblem = "Homepage loads slowly";
+  else if (hasAny(issueTexts, ["no clear call-to-action", "missing call-to-action", "cta missing"])) {
+    primaryProblem = "No clear call-to-action";
+  } else if (summary) {
+    primaryProblem = summary;
+  } else if (issues.length) {
+    primaryProblem = issues[0];
+  }
+
+  let whyItMatters = "Visitors may leave before taking action.";
+  if (noWebsite || missingContactPage) {
+    whyItMatters = "Customers may have trouble contacting the business.";
+  } else if (brokenWebsite) {
+    whyItMatters = "A broken site can stop new customers from reaching out.";
+  } else if (insecureHttp) {
+    whyItMatters = "Insecure pages reduce trust and can lower conversions.";
+  } else if (mobileIssue) {
+    whyItMatters = "Visitors on phones may leave before finding contact info.";
+  } else if (slowSite) {
+    whyItMatters = "Slow pages can reduce calls, form submissions, and bookings.";
+  } else if (activeBusiness) {
+    whyItMatters = "Active business with good reviews but weak website.";
+  }
+
+  let whyThisLeadIsHere = "Clear website improvement opportunity for outreach.";
+  if (noWebsite) whyThisLeadIsHere = "No website found for active local business.";
+  else if (activeBusiness && (mobileIssue || slowSite || outdatedDesign)) {
+    whyThisLeadIsHere = "Business has strong reviews but weak website.";
+  } else if (missingContactPage) {
+    whyThisLeadIsHere = "Contact page missing on service business website.";
+  } else if (brokenWebsite) {
+    whyThisLeadIsHere = "Website appears broken and likely losing leads.";
+  } else if (insecureHttp) {
+    whyThisLeadIsHere = "Website is still on HTTP and needs trust/security fixes.";
+  }
+
   let recommendedNextAction: RecommendedNextAction = "Review Site Manually";
   if (leadType === "Low Priority") recommendedNextAction = "Skip For Now";
   else if (!bestContactMethod) recommendedNextAction = "Review Site Manually";
@@ -136,6 +181,9 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
     lead_type: leadType,
     close_probability: closeProbability,
     best_contact_method: bestContactMethod,
+    primary_problem: primaryProblem,
+    why_it_matters: whyItMatters,
+    why_this_lead_is_here: whyThisLeadIsHere,
     best_pitch_angle: bestPitchAngle,
     recommended_next_action: recommendedNextAction,
   };

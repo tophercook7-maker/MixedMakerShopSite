@@ -30,6 +30,9 @@ export type WorkflowLead = {
   close_probability?: "low" | "medium" | "high" | null;
   lead_type?: "Easy Win" | "Active Business, Weak Website" | "Church Website Opportunity" | "Needs Review" | "Low Priority" | null;
   best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | null;
+  primary_problem?: string | null;
+  why_it_matters?: string | null;
+  why_this_lead_is_here?: string | null;
   best_pitch_angle?: string | null;
   recommended_next_action?: "Generate Email" | "Send First Touch" | "Review Site Manually" | "Skip For Now" | null;
   website: string | null;
@@ -245,13 +248,22 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">Close probability:</span> {lead.close_probability || "medium"}
                   </p>
                   <p>
-                    <span className="font-semibold">Opportunity reason:</span> {lead.detected_issue_summary || "Website needs manual review"}
+                    <span className="font-semibold">What is wrong:</span> {lead.primary_problem || lead.detected_issue_summary || "Website needs manual review"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Why it matters:</span> {lead.why_it_matters || "Visitors may leave before taking action."}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Why this lead is here:</span> {lead.why_this_lead_is_here || "Clear website improvement opportunity."}
                   </p>
                   <p>
                     <span className="font-semibold">Best contact:</span> {lead.best_contact_method || lead.contact_method}
                   </p>
                   <p>
-                    <span className="font-semibold">Next action:</span> {lead.recommended_next_action || "Review Site Manually"}
+                    <span className="font-semibold">What to say:</span> {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
+                  </p>
+                  <p>
+                    <span className="font-semibold">What to do next:</span> {lead.recommended_next_action || "Review Site Manually"}
                   </p>
                   <p>
                     <span className="font-semibold">Phone:</span> {lead.phone_from_site || "—"}
@@ -306,6 +318,8 @@ export function LeadsWorkflowView({
                   <th>Score</th>
                   <th>Lead Bucket</th>
                   <th>Opportunity Reason</th>
+                  <th>Why It Matters</th>
+                  <th>What To Say</th>
                   <th>Lead Type</th>
                   <th>Close Probability</th>
                   <th>Phone</th>
@@ -330,7 +344,13 @@ export function LeadsWorkflowView({
                       <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score} />
                     </td>
                     <td>
-                      {lead.detected_issue_summary || "Website needs manual review"}
+                      {lead.primary_problem || lead.detected_issue_summary || "Website needs manual review"}
+                    </td>
+                    <td>
+                      {lead.why_it_matters || "Visitors may leave before taking action."}
+                    </td>
+                    <td>
+                      {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
                     </td>
                     <td>{lead.lead_type || "Needs Review"}</td>
                     <td>{lead.close_probability || "medium"}</td>

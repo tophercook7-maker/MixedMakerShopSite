@@ -255,6 +255,27 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           });
 
           if (uiStatus === "finished") {
+            const leadsCreated = Number(
+              body.persistence_debug?.intake?.created ?? body.persistence_debug?.leads_created ?? 0
+            );
+            const opportunitiesCreated = Number(body.persistence_debug?.opportunities_created ?? 0);
+            if (leadsCreated === 0 && opportunitiesCreated > 0) {
+              try {
+                console.info("[Admin Request] auto intake backfill started after scout run");
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 12000);
+                await fetch("/api/scout/intake/backfill", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ debug_mode: true, source: "auto_after_scout" }),
+                  cache: "no-store",
+                  signal: controller.signal,
+                });
+                clearTimeout(timeout);
+              } catch (autoIntakeError) {
+                console.error("[Admin Request] auto intake backfill failed", autoIntakeError);
+              }
+            }
             console.info("scout job finished, refreshing admin data", id);
             router.refresh();
             if (completionNotifiedJobIdRef.current !== id) {

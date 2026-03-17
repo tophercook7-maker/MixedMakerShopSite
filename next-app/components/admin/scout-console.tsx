@@ -632,6 +632,22 @@ export function ScoutConsole({
           <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
             Scout Persistence Debug
           </h2>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            opportunities evaluated: {Number(scout.persistenceDebug?.intake?.evaluated || 0)} | leads created:{" "}
+            {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)} | duplicates skipped:{" "}
+            {Number(scout.persistenceDebug?.intake?.duplicate_skipped || scout.persistenceDebug?.duplicates_skipped || 0)} | insert failures:{" "}
+            {Number(scout.persistenceDebug?.intake?.insert_failed || 0)}
+          </p>
+          {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0) === 0 && (
+            <p className="text-xs mb-2" style={{ color: "#fca5a5" }}>
+              no_leads_created_reason:{" "}
+              {String(
+                scout.persistenceDebug?.intake?.query_error ||
+                  scout.persistenceDebug?.errors?.[0]?.message ||
+                  "No leads were created from this run. Use backfill and inspect intake filters."
+              )}
+            </p>
+          )}
           <pre
             className="text-xs overflow-auto rounded-md border p-3"
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.25)", color: "var(--admin-muted)" }}

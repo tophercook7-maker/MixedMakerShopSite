@@ -85,6 +85,13 @@ type CaseByOpportunityRow = {
   created_at?: string | null;
 };
 
+type IntakeDiagnostics = {
+  workspaceId: string | null;
+  opportunitiesInWorkspace: number;
+  leadsForOwner: number;
+  linkedLeadsForOwner: number;
+};
+
 function normalizeStatus(value: string | null | undefined): WorkflowLead["status"] {
   const normalized = String(value || "")
     .trim()
@@ -286,6 +293,9 @@ export default async function AdminLeadsPage({
       detected_issues: issueList,
       lead_type: assessment.lead_type,
       best_contact_method: assessment.best_contact_method || null,
+      primary_problem: assessment.primary_problem,
+      why_it_matters: assessment.why_it_matters,
+      why_this_lead_is_here: assessment.why_this_lead_is_here,
       best_pitch_angle: assessment.best_pitch_angle,
       recommended_next_action: assessment.recommended_next_action,
       status: normalizeStatus(row.status),
@@ -316,6 +326,20 @@ export default async function AdminLeadsPage({
     const wanted = normalizeStatus(status);
     workflowLeads = workflowLeads.filter((l) => l.status === wanted);
   }
+
+  const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+  const opportunitiesCountResult = workspaceId
+    ? await supabase
+        .from("opportunities")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", workspaceId)
+    : null;
+  const intakeDiagnostics: IntakeDiagnostics = {
+    workspaceId: workspaceId || null,
+    opportunitiesInWorkspace: Number(opportunitiesCountResult?.count || 0),
+    leadsForOwner: rows.length,
+    linkedLeadsForOwner: rows.filter((row) => String(row.linked_opportunity_id || "").trim()).length,
+  };
   if (sort === "score_desc") {
     workflowLeads = [...workflowLeads].sort(
       (a, b) => Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0)
@@ -422,7 +446,6 @@ export default async function AdminLeadsPage({
 
   let emptyStateReason = "";
   if (workflowLeads.length === 0) {
-    const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
     const [{ count: opportunitiesCount }, { count: casesCount }] = await Promise.all([
       workspaceId
         ? supabase
@@ -438,15 +461,20 @@ export default async function AdminLeadsPage({
         : Promise.resolve({ count: null }),
     ]);
     if (source) {
-      emptyStateReason = `No leads found for source "${source}".`;
+      emptyStateReason = `No leads found for source "${source}". Filters may be too strict for current intake data.`;
     } else if (status) {
-      emptyStateReason = `No leads currently match status "${status.replace(/_/g, " ")}".`;
-    } else if ((opportunitiesCount || 0) > 0 && (casesCount || 0) > 0) {
+      emptyStateReason = `No leads currently match status "${status.replace(/_/g, " ")}". Filters may be too strict.`;
+    } else if ((opportunitiesCount || 0) === 0) {
+      emptyStateReason = "Scout created no opportunities yet. Run Scout first, then re-open Leads.";
+    } else if ((opportunitiesCount || 0) > 0 && (casesCount || 0) > 0 && rows.length === 0) {
       emptyStateReason =
-        "Scout opportunities/cases exist, but no CRM leads are linked yet. Run intake backfill and confirm workspace alignment.";
+        "Opportunities exist, but intake created no leads for this owner yet. Run intake backfill and check workspace/owner alignment.";
+    } else if ((opportunitiesCount || 0) > 0 && rows.length === 0) {
+      emptyStateReason =
+        "Scout opportunities exist, but no CRM leads were inserted yet. Run intake backfill and inspect insert failures.";
     } else {
       emptyStateReason =
-        "No leads created yet. Run Scout and use intake/backfill to convert opportunities into leads. If opportunities exist but leads do not, verify workspace alignment and intake results.";
+        "No leads created yet. Run Scout and backfill to convert opportunities into leads.";
     }
   }
 
@@ -458,6 +486,20 @@ export default async function AdminLeadsPage({
           <BackfillLeadsButton />
         </div>
       </div>
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+          Lead Intake Diagnostics
+        </h2>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          opportunities evaluated: {intakeDiagnostics.opportunitiesInWorkspace} | leads created: {intakeDiagnostics.leadsForOwner} | linked opportunities:{" "}
+          {intakeDiagnostics.linkedLeadsForOwner} | workspace: {intakeDiagnostics.workspaceId || "not configured"}
+        </p>
+        {intakeDiagnostics.opportunitiesInWorkspace > 0 && intakeDiagnostics.leadsForOwner === 0 ? (
+          <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
+            Opportunities exist but no leads were created for this owner. Run backfill and review insert failure details below.
+          </p>
+        ) : null}
+      </section>
       {queryMode === "failed" ? (
         <section className="admin-card">
           <p className="text-sm" style={{ color: "#fca5a5" }}>

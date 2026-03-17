@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type BackfillResponse = {
   ok?: boolean;
@@ -43,7 +44,30 @@ type BackfillResponse = {
   detail?: string;
 };
 
+function emptyCreationReason(result: BackfillResponse | null): string | null {
+  if (!result) return null;
+  const created = Number(result.stats?.created || 0);
+  if (created > 0) return null;
+  const queryError = String(result.stats?.query_error || "").trim();
+  if (queryError) return queryError;
+  const sample = Array.isArray(result.stats?.insert_error_samples)
+    ? String(result.stats?.insert_error_samples[0] || "").trim()
+    : "";
+  if (sample) return sample;
+  if (Number(result.stats?.filtered_existing_linked_opportunity || 0) > 0) {
+    return "All eligible opportunities were already linked to leads (duplicates skipped).";
+  }
+  if (Number(result.stats?.filtered_missing_contact_path || 0) > 0) {
+    return "Most opportunities were missing contact paths (email/phone/contact page).";
+  }
+  if (Number(result.stats?.filtered_low_score || 0) > 0) {
+    return "Most opportunities were filtered below the intake threshold.";
+  }
+  return "No leads were created. Review debug samples below for the first exclusion/insert failure.";
+}
+
 export function BackfillLeadsButton() {
+  const router = useRouter();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<BackfillResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +88,7 @@ export function BackfillLeadsButton() {
         return;
       }
       setResult(body);
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Backfill failed.");
     } finally {
@@ -82,8 +107,8 @@ export function BackfillLeadsButton() {
             {result.message || "Backfill completed."}
           </div>
           <div>
-            evaluated: {Number(result.stats?.evaluated || 0)} | eligible: {Number(result.stats?.eligible || 0)} | created:{" "}
-            {Number(result.stats?.created || 0)} | duplicate_skipped: {Number(result.stats?.duplicate_skipped || 0)} | insert_failed:{" "}
+            opportunities evaluated: {Number(result.stats?.evaluated || 0)} | leads eligible: {Number(result.stats?.eligible || 0)} | leads created:{" "}
+            {Number(result.stats?.created || 0)} | duplicates skipped: {Number(result.stats?.duplicate_skipped || 0)} | insert failures:{" "}
             {Number(result.stats?.insert_failed || 0)}
           </div>
           <div>
@@ -116,7 +141,12 @@ export function BackfillLeadsButton() {
               decision_samples:{" "}
               {result.stats.debug_decisions
                 .slice(0, 3)
-                .map((d) => `${d.decision || "unknown"}(${d.business_name || d.opportunity_id || "n/a"}): ${d.reason || "n/a"}`)
+                .map(
+                  (d) =>
+                    `${d.decision || "unknown"}(${d.business_name || d.opportunity_id || "n/a"}): ${d.reason || "n/a"} (opportunity_score=${Number(
+                      d.score ?? 0
+                    ).toFixed(0)})`
+                )
                 .join(" | ")}
             </div>
           ) : null}
@@ -130,6 +160,11 @@ export function BackfillLeadsButton() {
                     `${d.business_name || "n/a"} (${Number(d.score ?? 0).toFixed(0)}): ${d.exclusion_reason || "unknown"}`
                 )
                 .join(" | ")}
+            </div>
+          ) : null}
+          {emptyCreationReason(result) ? (
+            <div style={{ color: "#fca5a5" }}>
+              no_leads_created_reason: {emptyCreationReason(result)}
             </div>
           ) : null}
           <details className="mt-2">

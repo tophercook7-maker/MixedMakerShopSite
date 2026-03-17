@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
+import { buildLeadAssessment } from "@/lib/lead-assessment";
+import { canonicalLeadBucket } from "@/lib/lead-bucket";
 
 type LeadRow = {
   id: string;
@@ -18,8 +20,24 @@ type OpportunityRow = {
   id: string;
   business_name?: string | null;
   website?: string | null;
+  category?: string | null;
+  city?: string | null;
+  address?: string | null;
+  opportunity_score?: number | null;
   lead_bucket?: string | null;
   opportunity_reason?: string | null;
+};
+
+type CaseContactRow = {
+  opportunity_id?: string | null;
+  email?: string | null;
+  phone_from_site?: string | null;
+  contact_page?: string | null;
+  contact_form_url?: string | null;
+  facebook_url?: string | null;
+  facebook?: string | null;
+  audit_issues?: string[] | null;
+  strongest_problems?: string[] | null;
 };
 
 type EmailDraftRow = {
@@ -194,7 +212,7 @@ export default async function DailyCommandCenterPage({
           async () =>
             await supabase
               .from("opportunities")
-              .select("id,business_name,website,lead_bucket,opportunity_reason")
+              .select("id,business_name,website,category,city,address,opportunity_score,lead_bucket,opportunity_reason")
               .in("id", topLeadOppIds),
           bootstrapIssues
         )
@@ -203,6 +221,29 @@ export default async function DailyCommandCenterPage({
   const topLeadOppById = new Map(
     ((topLeadOppRows || []) as OpportunityRow[]).map((opp) => [String(opp.id), opp])
   );
+  const topLeadCaseResult =
+    topLeadOppIds.length && !minimalMode
+      ? await runBootstrapTask(
+          "case_files.top-lead-contact",
+          async () =>
+            await supabase
+              .from("case_files")
+              .select(
+                "opportunity_id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+              )
+              .in("opportunity_id", topLeadOppIds)
+              .order("created_at", { ascending: false })
+              .limit(500),
+          bootstrapIssues
+        )
+      : { data: [] as Record<string, unknown>[] };
+  const topLeadCases = ((topLeadCaseResult?.data || []) as unknown[]) as CaseContactRow[];
+  const topLeadCaseByOppId = new Map<string, CaseContactRow>();
+  for (const row of topLeadCases) {
+    const oppId = String(row.opportunity_id || "").trim();
+    if (!oppId || topLeadCaseByOppId.has(oppId)) continue;
+    topLeadCaseByOppId.set(oppId, row);
+  }
 
   const followUpsDue = allLeads
     .filter((lead) => {
@@ -218,25 +259,59 @@ export default async function DailyCommandCenterPage({
       return ad - bd;
     })
     .slice(0, 12);
-  const workToday = topLeads.slice(0, 5).map((lead) => {
-    const reason = String(
-      topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.opportunity_reason || ""
-    ).trim();
-    const status = String(lead.status || "new").toLowerCase();
-    const nextAction =
-      status === "new"
-        ? "Send First Touch"
-        : status === "follow_up_due"
-          ? "Follow Up"
-          : "Open Lead";
-    return {
-      id: String(lead.id || ""),
-      businessName: String(lead.business_name || "Lead"),
-      leadPath: buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead")),
-      reason: reason || "Strong local business with clear website opportunity.",
-      nextAction,
-    };
-  });
+  const workToday = topLeads
+    .map((lead) => {
+      const leadId = String(lead.id || "").trim();
+      const linkedOppId = String(lead.linked_opportunity_id || "").trim();
+      const opp = linkedOppId ? topLeadOppById.get(linkedOppId) : null;
+      const caseRow = linkedOppId ? topLeadCaseByOppId.get(linkedOppId) : null;
+      const businessName = String(lead.business_name || opp?.business_name || "").trim();
+      const reason = String(opp?.opportunity_reason || "").trim();
+      const website = String(lead.website || opp?.website || "").trim();
+      const issueList = [
+        ...(Array.isArray(caseRow?.audit_issues) ? caseRow?.audit_issues || [] : []),
+        ...(Array.isArray(caseRow?.strongest_problems) ? caseRow?.strongest_problems || [] : []),
+      ]
+        .map((v) => String(v || "").trim())
+        .filter(Boolean);
+      const assessment = buildLeadAssessment({
+        website,
+        opportunity_score: opp?.opportunity_score ?? lead.opportunity_score ?? null,
+        category: opp?.category || null,
+        issue_summary: reason,
+        issue_list: issueList,
+        email: caseRow?.email || null,
+        phone: caseRow?.phone_from_site || null,
+        contact_page: caseRow?.contact_page || caseRow?.contact_form_url || null,
+        facebook_url: caseRow?.facebook_url || caseRow?.facebook || null,
+        lead_status: lead.status || null,
+      });
+      const bestContact = String(assessment.best_contact_method || "").trim();
+      const nextAction = String(assessment.recommended_next_action || "").trim();
+      const qualified = Boolean(businessName && reason && bestContact && nextAction);
+      if (!qualified) return null;
+      return {
+        id: leadId,
+        businessName,
+        city: String(opp?.city || "").trim() || "—",
+        category: String(opp?.category || "").trim() || "—",
+        leadBucket: canonicalLeadBucket(
+          String(opp?.lead_bucket || "").trim(),
+          opp?.opportunity_score ?? lead.opportunity_score ?? null
+        ),
+        leadType: assessment.lead_type,
+        opportunityScore: Number(opp?.opportunity_score ?? lead.opportunity_score ?? 0),
+        opportunityReason: reason,
+        bestContactMethod: assessment.best_contact_method || "email",
+        bestPitchAngle: assessment.best_pitch_angle,
+        recommendedNextAction: assessment.recommended_next_action,
+        whyThisLeadIsHere: assessment.why_this_lead_is_here,
+        leadPath: buildLeadPath(leadId, businessName),
+        website,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .slice(0, 8);
 
   const emailsReady = draftRows
     .filter((row) => String(row.lead_id || "").trim())
@@ -311,21 +386,59 @@ export default async function DailyCommandCenterPage({
         <h2 className="text-lg font-semibold mb-3">Work Today</h2>
         {workToday.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-            No priority leads queued yet.
+            No actionable leads yet. Run Scout or backfill leads, then review Easy Wins.
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {workToday.map((item) => (
-              <div key={item.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{item.businessName}</p>
-                  <a href={item.leadPath} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
-                    {item.nextAction}
-                  </a>
+              <div key={item.id} className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold">{item.businessName}</p>
+                  <LeadBucketBadge bucket={item.leadBucket} score={item.opportunityScore} />
                 </div>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-                  {item.reason}
+                  {item.city} · {item.category} · {item.leadType} · Score {item.opportunityScore}
                 </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">Why this lead is here:</span> {item.whyThisLeadIsHere}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">Opportunity reason:</span> {item.opportunityReason}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">Best contact:</span> {item.bestContactMethod}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">What to say:</span> {item.bestPitchAngle}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">What to do next:</span> {item.recommendedNextAction}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <a href={item.leadPath} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center">
+                    Open Lead
+                  </a>
+                  {item.website ? (
+                    <a
+                      href={item.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Open Website
+                    </a>
+                  ) : (
+                    <span className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center opacity-60">
+                      Open Website
+                    </span>
+                  )}
+                  <a href={`${item.leadPath}?generate=1`} className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
+                    Generate Email
+                  </a>
+                  <a href={`${item.leadPath}?compose=1`} className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center">
+                    Send Email
+                  </a>
+                </div>
               </div>
             ))}
           </div>
