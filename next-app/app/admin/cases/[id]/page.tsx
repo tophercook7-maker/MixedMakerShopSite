@@ -111,7 +111,7 @@ export default async function AdminCaseDetailPage({
               Lead bucket: <LeadBucketBadge bucket={opportunity?.lead_bucket || null} score={Number(opportunity?.opportunity_score ?? 0)} />
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opportunity?.opportunity_reason || "Website needs manual review").trim()}
+              Opportunity reason: {String(opportunity?.opportunity_reason || "Contact info is hard to find").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Created {fmtDate(caseRow.created_at)}

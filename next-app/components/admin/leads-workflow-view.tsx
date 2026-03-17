@@ -34,7 +34,7 @@ export type WorkflowLead = {
   why_it_matters?: string | null;
   why_this_lead_is_here?: string | null;
   best_pitch_angle?: string | null;
-  recommended_next_action?: "Generate Email" | "Send First Touch" | "Review Site Manually" | "Skip For Now" | null;
+  recommended_next_action?: "Generate Email" | "Send First Touch" | "Review Website" | "Skip For Now" | null;
   website: string | null;
   email: string | null;
   phone_from_site: string | null;
@@ -248,7 +248,7 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">Close probability:</span> {lead.close_probability || "medium"}
                   </p>
                   <p>
-                    <span className="font-semibold">What is wrong:</span> {lead.primary_problem || lead.detected_issue_summary || "Website needs manual review"}
+                    <span className="font-semibold">What is wrong:</span> {lead.primary_problem || lead.detected_issue_summary || "Contact info is hard to find"}
                   </p>
                   <p>
                     <span className="font-semibold">Why it matters:</span> {lead.why_it_matters || "Visitors may leave before taking action."}
@@ -263,7 +263,7 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">What to say:</span> {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
                   </p>
                   <p>
-                    <span className="font-semibold">What to do next:</span> {lead.recommended_next_action || "Review Site Manually"}
+                    <span className="font-semibold">What to do next:</span> {lead.recommended_next_action || "Review Website"}
                   </p>
                   <p>
                     <span className="font-semibold">Phone:</span> {lead.phone_from_site || "—"}
@@ -344,7 +344,7 @@ export function LeadsWorkflowView({
                       <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score} />
                     </td>
                     <td>
-                      {lead.primary_problem || lead.detected_issue_summary || "Website needs manual review"}
+                      {lead.primary_problem || lead.detected_issue_summary || "Contact info is hard to find"}
                     </td>
                     <td>
                       {lead.why_it_matters || "Visitors may leave before taking action."}
@@ -359,7 +359,7 @@ export function LeadsWorkflowView({
                     <td>{lead.facebook_url || "—"}</td>
                     <td>{lead.email || "—"}</td>
                     <td>{lead.best_contact_method || lead.contact_method}</td>
-                    <td>{lead.recommended_next_action || "Review Site Manually"}</td>
+                    <td>{lead.recommended_next_action || "Review Website"}</td>
                     <td>{prettyStatus(lead.status)}</td>
                     <td>
                       <div className="flex flex-wrap gap-2">

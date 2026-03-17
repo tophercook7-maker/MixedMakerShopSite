@@ -482,7 +482,7 @@ export default async function DailyCommandCenterPage({
                     </div>
                     <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                       <LeadBucketBadge bucket={leadBucket} score={Number(lead.opportunity_score ?? 0)} />{" "}
-                      {opportunityReason || "Website needs manual review"}
+                      {opportunityReason || "Contact info is hard to find"}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a

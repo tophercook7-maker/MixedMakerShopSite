@@ -289,7 +289,7 @@ export default async function AdminLeadsPage({
             : website
               ? "website"
               : "none",
-      detected_issue_summary: opportunityReason || issueList[0] || "Website needs manual review",
+      detected_issue_summary: opportunityReason || issueList[0] || "Contact info is hard to find",
       detected_issues: issueList,
       lead_type: assessment.lead_type,
       best_contact_method: assessment.best_contact_method || null,

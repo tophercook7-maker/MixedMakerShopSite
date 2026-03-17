@@ -642,7 +642,9 @@ export default async function AdminLeadDetailPage({
       ? `${leadPath}?generate=1`
       : assessment.recommended_next_action === "Send First Touch"
         ? `${leadPath}?compose=1`
-        : leadPath;
+        : displayWebsite
+          ? displayWebsite
+          : caseHref || leadPath;
   const quickFixSummary = quickFixImprovements[0] || null;
 
   return (
@@ -676,7 +678,7 @@ export default async function AdminLeadDetailPage({
               {displayCategory} · {displayCity} · Score {displayScore || "—"} · {displayLeadBucket} · Status {displayStatus.replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Website needs manual review").trim()}
+              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Contact info is hard to find").trim()}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Website: {displayWebsite ? (
@@ -722,7 +724,7 @@ export default async function AdminLeadDetailPage({
               </div>
               <div><span style={{ color: "var(--admin-muted)" }}>Lead Type:</span> {assessment.lead_type}</div>
               <div><span style={{ color: "var(--admin-muted)" }}>Close Probability:</span> {assessment.close_probability}</div>
-              <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "review manually"}</div>
+              <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "review website"}</div>
               <div><span style={{ color: "var(--admin-muted)" }}>Recommended Next Action:</span> {assessment.recommended_next_action}</div>
             </div>
             <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
@@ -738,7 +740,7 @@ export default async function AdminLeadDetailPage({
               <div>
                 <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Top issues</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  {(quickFixCurrentIssues.length ? quickFixCurrentIssues : ["Website needs manual review"]).slice(0, 3).map((issue, idx) => (
+                  {(quickFixCurrentIssues.length ? quickFixCurrentIssues : ["Contact info is hard to find"]).slice(0, 3).map((issue, idx) => (
                     <li key={`${issue}-${idx}`}>{issue}</li>
                   ))}
                 </ul>
@@ -781,7 +783,7 @@ export default async function AdminLeadDetailPage({
                   </ul>
                 ) : (
                   <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    Website needs manual review.
+                    Contact info is hard to find.
                   </p>
                 )}
               </div>
@@ -882,7 +884,7 @@ export default async function AdminLeadDetailPage({
             </h2>
             {topIssues.length === 0 ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No issue summary available.
+                Contact info is hard to find.
               </p>
             ) : (
               <div className="space-y-2">
@@ -1116,7 +1118,7 @@ export default async function AdminLeadDetailPage({
               linkedOpportunityId={oppId || null}
               initialBusinessName={displayBusinessName}
               initialCategory={displayCategory}
-              initialIssue={topIssues[0]?.issue || "Website needs manual review"}
+              initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
               initialEmail={displayEmail || null}
               initialPhone={displayPhone || null}
               website={displayWebsite || null}

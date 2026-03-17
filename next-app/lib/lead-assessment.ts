@@ -11,7 +11,7 @@ export type BestContactMethod = "email" | "phone" | "contact_page" | "facebook";
 export type RecommendedNextAction =
   | "Generate Email"
   | "Send First Touch"
-  | "Review Site Manually"
+  | "Review Website"
   | "Skip For Now";
 
 export type LeadAssessment = {
@@ -128,7 +128,7 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
   else if (mobileIssue) bestPitchAngle = "Your mobile layout could make it harder for customers to contact you.";
   else if (slowSite) bestPitchAngle = "Your homepage loads slowly, which can reduce calls and form submissions.";
 
-  let primaryProblem = "No clear website issue captured yet";
+  let primaryProblem = "Contact info is hard to find";
   if (noWebsite) primaryProblem = "No website found";
   else if (brokenWebsite) primaryProblem = "Website does not load";
   else if (insecureHttp) primaryProblem = "Website uses insecure HTTP";
@@ -170,9 +170,9 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
     whyThisLeadIsHere = "Website is still on HTTP and needs trust/security fixes.";
   }
 
-  let recommendedNextAction: RecommendedNextAction = "Review Site Manually";
+  let recommendedNextAction: RecommendedNextAction = "Review Website";
   if (leadType === "Low Priority") recommendedNextAction = "Skip For Now";
-  else if (!bestContactMethod) recommendedNextAction = "Review Site Manually";
+  else if (!bestContactMethod) recommendedNextAction = "Review Website";
   else if (leadStatus === "new") recommendedNextAction = "Send First Touch";
   else recommendedNextAction = "Generate Email";
 

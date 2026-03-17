@@ -7,6 +7,7 @@ import { Crosshair, ExternalLink, RefreshCw } from "lucide-react";
 import type { ScoutLead, ScoutScanSettings, ScoutSummary } from "@/lib/scout/types";
 import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
+import { buildLeadPath } from "@/lib/lead-route";
 
 type Props = {
   integrationReady: boolean;
@@ -184,6 +185,7 @@ export function ScoutConsole({
   const [depth, setDepth] = useState<ScoutScanSettings["depth"]>("normal");
   const [customPresetName, setCustomPresetName] = useState("");
   const [customPresets, setCustomPresets] = useState<ScanPreset[]>([]);
+  const [creatingLeadForOppId, setCreatingLeadForOppId] = useState<string | null>(null);
   const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
   const activeScanSettings = scout.scanSettings;
@@ -274,6 +276,34 @@ export function ScoutConsole({
   const resetScoutUiState = () => {
     setPageError(null);
     scout.clearScoutState();
+  };
+
+  const createLeadFromOpportunity = async (opportunityId: string) => {
+    const oppId = String(opportunityId || "").trim();
+    if (!oppId) return null;
+    setPageError(null);
+    setCreatingLeadForOppId(oppId);
+    try {
+      const res = await fetch(`/api/scout/opportunities/${encodeURIComponent(oppId)}/create-lead`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        lead_id?: string;
+        business_name?: string;
+      };
+      if (!res.ok || !body.lead_id) {
+        setPageError(body.error || "Could not create lead from top opportunity.");
+        return null;
+      }
+      return { leadId: String(body.lead_id || ""), businessName: String(body.business_name || "Lead") };
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : "Could not create lead from top opportunity.");
+      return null;
+    } finally {
+      setCreatingLeadForOppId(null);
+    }
   };
 
   const runWithPreset = async (preset: ScanPreset) => {
@@ -632,6 +662,20 @@ export function ScoutConsole({
           <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
             Scout Persistence Debug
           </h2>
+          <div className="text-xs mb-2 space-y-1" style={{ color: "var(--admin-muted)" }}>
+            <p>
+              businesses scanned: {Number(initialSummary?.today_businesses_discovered || initialSummary?.dashboard_businesses_discovered || 0)} |
+              opportunities created: {Number(scout.persistenceDebug?.opportunities_created || 0)} |
+              leads created: {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)}
+            </p>
+            <p>
+              easy wins found: {
+                initialTopLeads.filter((lead) => String(lead.lead_bucket || "").toLowerCase() === "easy win").length
+              } | contact-ready leads: {
+                initialTopLeads.filter((lead) => String(lead.best_contact_method || "").trim().length > 0).length
+              }
+            </p>
+          </div>
           <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
             opportunities evaluated: {Number(scout.persistenceDebug?.intake?.evaluated || 0)} | leads created:{" "}
             {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)} | duplicates skipped:{" "}
@@ -727,8 +771,10 @@ export function ScoutConsole({
                     <th>City</th>
                     <th>Score</th>
                     <th>Lead Bucket</th>
-                    <th>Detected Issues</th>
+                    <th>Opportunity Reason</th>
                     <th>Best Contact</th>
+                    <th>Next Action</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -737,16 +783,84 @@ export function ScoutConsole({
                       <td>{lead.business_name ?? "Unknown"}</td>
                       <td>{lead.category ?? "—"}</td>
                       <td>{lead.city ?? "—"}</td>
-                      <td>{lead.score ?? "—"}</td>
+                      <td>{lead.opportunity_score ?? lead.score ?? "—"}</td>
                       <td>
-                        <LeadBucketBadge bucket={lead.lead_bucket} score={lead.score} />
+                        <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score ?? lead.score} />
                       </td>
                       <td>
-                        {Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
-                          ? lead.opportunity_signals.slice(0, 3).join(", ")
-                          : "—"}
+                        {String(lead.opportunity_reason || "").trim() ||
+                          (Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
+                            ? lead.opportunity_signals.slice(0, 3).join(", ")
+                            : "Contact info is hard to find")}
                       </td>
                       <td>{lead.best_contact_method ?? "—"}</td>
+                      <td>{lead.recommended_next_action ?? "Send First Touch"}</td>
+                      <td>
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <button
+                            type="button"
+                            className="admin-btn-primary text-xs"
+                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            onClick={async () => {
+                              const opportunityId = String(lead.slug || lead.id || "").trim();
+                              if (!opportunityId) return;
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.leadId) return;
+                              router.push(buildLeadPath(created.leadId, created.businessName));
+                            }}
+                          >
+                            Open Lead
+                          </button>
+                          {lead.website ? (
+                            <a href={lead.website} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                              Open Website
+                            </a>
+                          ) : (
+                            <span className="admin-btn-ghost text-xs opacity-60">Open Website</span>
+                          )}
+                          <button
+                            type="button"
+                            className="admin-btn-ghost text-xs"
+                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            onClick={async () => {
+                              const opportunityId = String(lead.slug || lead.id || "").trim();
+                              if (!opportunityId) return;
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.leadId) return;
+                              router.push(`${buildLeadPath(created.leadId, created.businessName)}?generate=1`);
+                            }}
+                          >
+                            Generate Email
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn-ghost text-xs"
+                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            onClick={async () => {
+                              const opportunityId = String(lead.slug || lead.id || "").trim();
+                              if (!opportunityId) return;
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.leadId) return;
+                              router.push(`${buildLeadPath(created.leadId, created.businessName)}?compose=1`);
+                            }}
+                          >
+                            Send Email
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn-ghost text-xs"
+                            disabled={creatingLeadForOppId === String(lead.slug || lead.id || "")}
+                            onClick={async () => {
+                              const opportunityId = String(lead.slug || lead.id || "").trim();
+                              if (!opportunityId) return;
+                              await createLeadFromOpportunity(opportunityId);
+                              router.refresh();
+                            }}
+                          >
+                            Create Lead
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

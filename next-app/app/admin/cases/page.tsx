@@ -159,7 +159,7 @@ export default async function AdminCasesPage({
       website: String(opp?.website || ""),
       score: Number(opp?.opportunity_score ?? 0),
       lead_bucket: String(opp?.lead_bucket || "").trim() || null,
-      opportunity_reason: String(opp?.opportunity_reason || "Website needs manual review"),
+      opportunity_reason: String(opp?.opportunity_reason || "Contact info is hard to find"),
       opportunity_reason_items: String(opp?.opportunity_reason || "")
         .split("|")
         .map((v) => v.trim())

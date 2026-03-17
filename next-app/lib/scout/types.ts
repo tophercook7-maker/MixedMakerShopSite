@@ -13,15 +13,23 @@ export type ScoutSummary = {
 };
 
 export type ScoutLead = {
+  id?: string | null;
   business_name?: string | null;
   category?: string | null;
   city?: string | null;
+  address?: string | null;
+  website?: string | null;
   distance?: number | null;
   score?: number | null;
+  opportunity_score?: number | null;
   lead_bucket?: string | null;
-  lead_tier?: string | null;
+  lead_type?: string | null;
   lane?: string | null;
   best_contact_method?: string | null;
+  best_pitch_angle?: string | null;
+  recommended_next_action?: string | null;
+  opportunity_reason?: string | null;
+  close_probability?: string | null;
   opportunity_signals?: string[];
   slug?: string | null;
 };
