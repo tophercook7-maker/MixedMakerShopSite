@@ -37,6 +37,8 @@ type BackfillResponse = {
     leads_with_no_contact_path?: number;
     actionable_email_leads_created?: number;
     leads_skipped_due_no_email?: number;
+    leads_created_with_low_score?: number;
+    leads_created_high_score?: number;
     insert_attempted?: number;
     insert_succeeded?: number;
     insert_failed?: number;
@@ -181,6 +183,10 @@ export function BackfillLeadsButton() {
           <div>
             actionable_email_leads_created: {Number(result.stats?.actionable_email_leads_created || 0)} | leads_skipped_due_no_email:{" "}
             {Number(result.stats?.leads_skipped_due_no_email || 0)}
+          </div>
+          <div>
+            leads_created_with_low_score: {Number(result.stats?.leads_created_with_low_score || 0)} | leads_created_high_score:{" "}
+            {Number(result.stats?.leads_created_high_score || 0)}
           </div>
           <div>
             debug_mode: {String(Boolean(result.stats?.debug_mode))} | threshold: {Number(result.stats?.intake_threshold_used || 0)} | contact_rule:{" "}

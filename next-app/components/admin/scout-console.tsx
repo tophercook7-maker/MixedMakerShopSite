@@ -728,6 +728,10 @@ export function ScoutConsole({
             actionable_email_leads_created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} | leads_skipped_due_no_email:{" "}
             {Number(scout.persistenceDebug?.intake?.leads_skipped_due_no_email || 0)}
           </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            leads_created_with_low_score: {Number(scout.persistenceDebug?.intake?.leads_created_with_low_score || 0)} | leads_created_high_score:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_created_high_score || 0)}
+          </p>
           {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0) === 0 && (
             <p className="text-xs mb-2" style={{ color: "#fca5a5" }}>
               no_leads_created_reason:{" "}

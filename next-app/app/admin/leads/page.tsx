@@ -381,19 +381,18 @@ export default async function AdminLeadsPage({
     leadsForOwner: rows.length,
     linkedLeadsForOwner: rows.filter((row) => String(row.linked_opportunity_id || "").trim()).length,
   };
-  if (sort === "score_desc") {
+  if (sort === "created_desc") {
     workflowLeads = [...workflowLeads].sort(
-      (a, b) => Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0)
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
     );
   } else {
-    workflowLeads = [...workflowLeads].sort((a, b) => {
-      const easyA = a.lead_bucket === "Easy Win" ? 1 : 0;
-      const easyB = b.lead_bucket === "Easy Win" ? 1 : 0;
-      if (easyA !== easyB) return easyB - easyA;
-      const scoreDelta = Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0);
-      if (scoreDelta !== 0) return scoreDelta;
-      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-    });
+    workflowLeads = [...workflowLeads].sort(
+      (a, b) => {
+        const scoreDelta = Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0);
+        if (scoreDelta !== 0) return scoreDelta;
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      }
+    );
   }
   const leadIds = workflowLeads.map((lead) => lead.id).filter(Boolean);
   const { data: directLeadMessages } = leadIds.length

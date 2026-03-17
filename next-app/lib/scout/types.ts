@@ -119,6 +119,8 @@ export type ScoutJobStatusResponse = {
       leads_with_no_contact_path?: number;
       actionable_email_leads_created?: number;
       leads_skipped_due_no_email?: number;
+      leads_created_with_low_score?: number;
+      leads_created_high_score?: number;
       reason_counts?: {
         missing_business_name?: number;
         missing_workspace_id?: number;
