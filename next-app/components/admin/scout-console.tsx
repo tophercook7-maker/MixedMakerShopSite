@@ -24,6 +24,27 @@ function formatDate(value: string | null) {
   }
 }
 
+function conversionFocusScore(lead: ScoutLead): number {
+  const baseScore = Number(lead.opportunity_score ?? lead.score ?? 0);
+  const contact = String(lead.best_contact_method || "").toLowerCase();
+  const reason = String(lead.opportunity_reason || "").toLowerCase();
+  const category = String(lead.category || "").toLowerCase();
+  const lane = String(lead.lane || "").toLowerCase();
+  const signals = Array.isArray(lead.opportunity_signals) ? lead.opportunity_signals.map((v) => String(v || "").toLowerCase()) : [];
+  let score = Math.max(0, Math.min(100, baseScore));
+  if (contact === "email") score += 18;
+  else if (contact === "contact_page") score += 10;
+  else if (contact === "phone" || contact === "facebook") score += 2;
+  else score -= 20;
+  if (reason) score += 8;
+  if (signals.length > 0) score += 4;
+  if (lane.includes("easy") || lane.includes("high")) score += 6;
+  if (["plumber", "roofer", "hvac", "electrician", "church", "landscaping", "auto repair"].some((token) => category.includes(token))) {
+    score += 8;
+  }
+  return Math.max(0, Math.min(100, score));
+}
+
 const SCAN_CITIES = [
   "Hot Springs",
   "Benton",
@@ -340,6 +361,14 @@ export function ScoutConsole({
     if (scout.jobStatus === "idle") return "admin-badge admin-badge-pending";
     return "admin-badge admin-badge-progress";
   }, [scout.jobStatus]);
+
+  const prioritizedTopLeads = useMemo(() => {
+    return [...initialTopLeads].sort((a, b) => {
+      const delta = conversionFocusScore(b) - conversionFocusScore(a);
+      if (delta !== 0) return delta;
+      return Number(b.opportunity_score ?? b.score ?? 0) - Number(a.opportunity_score ?? a.score ?? 0);
+    });
+  }, [initialTopLeads]);
 
   return (
     <div className="space-y-6">
@@ -673,15 +702,18 @@ export function ScoutConsole({
       {(scout.jobStatus === "finished" || scout.jobStatus === "failed") && (
         <section className="admin-card">
           <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-            Scout Persistence Debug
+            This Scan Summary
           </h2>
           <div className="text-xs mb-2 space-y-1" style={{ color: "var(--admin-muted)" }}>
             <p>
-              businesses scanned: {Number(initialSummary?.today_businesses_discovered || initialSummary?.dashboard_businesses_discovered || 0)} |
-              opportunities created: {Number(scout.persistenceDebug?.opportunities_created || 0)} |
+              businesses scanned: {Number(scout.persistenceDebug?.intake?.scanned_count || 0)} |
+              opportunities found: {Number(scout.persistenceDebug?.intake?.opportunities_found || scout.persistenceDebug?.intake?.opportunities_loaded || 0)} |
+              enriched leads created: {Number(scout.persistenceDebug?.intake?.leads_created || scout.persistenceDebug?.intake?.created || 0)} |
               emails found: {Number(scout.persistenceDebug?.intake?.leads_with_email || 0)} |
-              actionable email leads created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} |
-              leads skipped due no email: {Number(scout.persistenceDebug?.intake?.leads_skipped_due_no_email || 0)}
+              actionable leads created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} |
+              research later created: {Number(scout.persistenceDebug?.intake?.research_later_leads_created || 0)} |
+              door-to-door created: {Number(scout.persistenceDebug?.intake?.door_to_door_candidates_created || 0)} |
+              skipped leads: {Number(scout.persistenceDebug?.intake?.filtered_out || 0)}
             </p>
             <p>
               easy wins found: {
@@ -778,7 +810,7 @@ export function ScoutConsole({
             </div>
           </div>
           <div className="admin-stat-card">
-            <div className="admin-stat-label">Leads found today</div>
+            <div className="admin-stat-label">New Leads Today</div>
             <div className="admin-stat-value">{initialSummary.leads_found_today}</div>
           </div>
           <div className="admin-stat-card">
@@ -800,7 +832,7 @@ export function ScoutConsole({
         <section className="admin-card">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Top Opportunities
+              Top Opportunities (Conversion Prioritized)
             </h2>
             <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
               <ExternalLink className="h-4 w-4" />
@@ -828,7 +860,7 @@ export function ScoutConsole({
                   </tr>
                 </thead>
                 <tbody>
-                  {initialTopLeads.slice(0, 10).map((lead, idx) => (
+                  {prioritizedTopLeads.slice(0, 10).map((lead, idx) => (
                     <tr key={`${lead.slug ?? lead.business_name ?? "lead"}-${idx}`}>
                       <td>{lead.business_name ?? "Unknown"}</td>
                       <td>{lead.category ?? "—"}</td>

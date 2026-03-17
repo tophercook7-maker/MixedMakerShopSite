@@ -18,6 +18,8 @@ type LeadRow = {
   industry?: string | null;
   notes?: string | null;
   opportunity_score?: number | null;
+  conversion_score?: number | null;
+  score_breakdown?: Record<string, unknown> | null;
   lead_source?: string | null;
   is_hot_lead?: boolean | null;
   last_reply_at?: string | null;
@@ -53,6 +55,16 @@ function missingOpportunitySignalsColumn(message: string): boolean {
 function missingIsHotLeadColumn(message: string): boolean {
   const text = String(message || "").toLowerCase();
   return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
+}
+
+function missingConversionColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.conversion_score") ||
+    text.includes("column conversion_score") ||
+    text.includes("leads.score_breakdown") ||
+    text.includes("column score_breakdown")
+  );
 }
 
 function missingReplyDetectionColumns(message: string): boolean {
@@ -230,7 +242,98 @@ type IntakeDiagnostics = {
   opportunitiesInWorkspace: number;
   leadsForOwner: number;
   linkedLeadsForOwner: number;
+  latestScoutRunAt: string | null;
 };
+
+function computeConversionScore(input: {
+  hasEmail: boolean;
+  hasContactPage: boolean;
+  hasPhone: boolean;
+  hasFacebook: boolean;
+  websiteStatus: string;
+  reviewCount: number;
+  category: string;
+  businessName: string;
+  hasClearBusinessInfo: boolean;
+}): { conversion_score: number; score_breakdown: Record<string, unknown> } {
+  let score = 0;
+  const status = String(input.websiteStatus || "").toLowerCase();
+  const category = String(input.category || "").toLowerCase();
+  const businessName = String(input.businessName || "").toLowerCase();
+  const score_breakdown: Record<string, unknown> = { positive: [] as string[], negative: [] as string[], raw_score: 0 };
+
+  if (input.hasEmail) {
+    score += 40;
+    (score_breakdown.positive as string[]).push("email_exists:+40");
+  }
+  if (input.hasContactPage) score += 15;
+  if (input.hasContactPage) (score_breakdown.positive as string[]).push("contact_page_exists:+15");
+  if (input.hasPhone && !input.hasEmail && !input.hasContactPage) {
+    score += 5;
+    (score_breakdown.positive as string[]).push("phone_only:+5");
+  }
+
+  if (status === "no_website") {
+    score += 30;
+    (score_breakdown.positive as string[]).push("no_website:+30");
+  } else if (status === "broken_website") {
+    score += 25;
+    (score_breakdown.positive as string[]).push("broken_website:+25");
+  } else if (status === "outdated_website") {
+    score += 20;
+    (score_breakdown.positive as string[]).push("outdated_website:+20");
+  } else if (status === "missing_contact_page" || status === "missing_contact_info") {
+    score += 15;
+    (score_breakdown.positive as string[]).push("missing_contact_info:+15");
+  }
+
+  if (input.reviewCount >= 10) {
+    score += 15;
+    (score_breakdown.positive as string[]).push("reviews_10_plus:+15");
+  } else if (input.reviewCount >= 3) {
+    score += 10;
+    (score_breakdown.positive as string[]).push("reviews_3_10:+10");
+  } else if (input.reviewCount >= 1) {
+    score += 5;
+    (score_breakdown.positive as string[]).push("reviews_1_2:+5");
+  }
+
+  if (["plumber", "roofer", "hvac", "electrician", "landscaping", "cleaning", "auto repair", "contractor"].some((v) => category.includes(v))) {
+    score += 15;
+    (score_breakdown.positive as string[]).push("service_business:+15");
+  } else if (category.includes("church")) {
+    score += 10;
+    (score_breakdown.positive as string[]).push("church:+10");
+  } else if (["shop", "store", "retail", "cafe", "restaurant", "salon"].some((v) => category.includes(v))) {
+    score += 10;
+    (score_breakdown.positive as string[]).push("local_shop:+10");
+  }
+
+  if (!input.hasEmail && !input.hasContactPage && !input.hasPhone && !input.hasFacebook) {
+    score -= 40;
+    (score_breakdown.negative as string[]).push("no_contact_path:-40");
+  }
+  if (input.reviewCount <= 0) {
+    score -= 20;
+    (score_breakdown.negative as string[]).push("no_reviews:-20");
+  }
+  if (["franchise", "chain", "walmart", "target", "mcdonald", "starbucks"].some((v) => businessName.includes(v))) {
+    score -= 25;
+    (score_breakdown.negative as string[]).push("chain_or_franchise:-25");
+  }
+  if (status === "healthy_website" || status === "strong_website" || status === "modern_website") {
+    score -= 20;
+    (score_breakdown.negative as string[]).push("strong_existing_website:-20");
+  }
+  if (!input.hasClearBusinessInfo) {
+    score -= 15;
+    (score_breakdown.negative as string[]).push("unclear_business_info:-15");
+  }
+  const bounded = Math.max(0, Math.min(100, score));
+  score_breakdown.raw_score = score;
+  score_breakdown.final_score = bounded;
+  return { conversion_score: bounded, score_breakdown };
+}
 
 function normalizeStatus(value: string | null | undefined): WorkflowLead["status"] {
   const normalized = String(value || "")
@@ -288,7 +391,7 @@ export default async function AdminLeadsPage({
   let baseQuery = supabase
     .from("leads")
     .select(
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
     )
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false })
@@ -302,7 +405,8 @@ export default async function AdminLeadsPage({
   if (
     joinedResult.error?.message &&
     (missingIsHotLeadColumn(joinedResult.error.message) ||
-      missingReplyDetectionColumns(joinedResult.error.message))
+      missingReplyDetectionColumns(joinedResult.error.message) ||
+      missingConversionColumns(joinedResult.error.message))
   ) {
     joinedResult = (await supabase
       .from("leads")
@@ -545,6 +649,37 @@ export default async function AdminLeadsPage({
       issue: opportunityReason || issueList[0] || "website issues",
       contactType: outreachChannel,
     });
+    const computedConversion = computeConversionScore({
+      hasEmail,
+      hasContactPage: Boolean(contactPage),
+      hasPhone: Boolean(phone),
+      hasFacebook: Boolean(facebookUrl),
+      websiteStatus: String(opp?.website_status || "").trim(),
+      reviewCount: Number(caseRow?.google_review_count || 0),
+      category: String(opp?.category || row.industry || "").trim(),
+      businessName: String(opp?.business_name || row.business_name || "").trim(),
+      hasClearBusinessInfo: Boolean(
+        String(opp?.business_name || row.business_name || "").trim() &&
+          String(opp?.category || row.industry || "").trim() &&
+          (String(opp?.website || row.website || "").trim() || opportunityReason)
+      ),
+    });
+    const conversionScore = Number(row.conversion_score ?? computedConversion.conversion_score ?? 0);
+    const scoreBreakdown =
+      (row.score_breakdown && typeof row.score_breakdown === "object" ? row.score_breakdown : null) ||
+      computedConversion.score_breakdown;
+    const createdAtIso = String(row.created_at || "").trim();
+    const fromLatestScan = Boolean(
+      latestScoutRunAt &&
+        createdAtIso &&
+        new Date(createdAtIso).getTime() >= new Date(latestScoutRunAt).getTime()
+    );
+    const isArchived =
+      Boolean(createdAtIso) &&
+      Date.now() - new Date(createdAtIso).getTime() > 1000 * 60 * 60 * 24 * 21 &&
+      ["new", "contacted", "follow_up_due", "research_later"].includes(normalizeStatus(row.status)) &&
+      !Boolean(String(row.last_reply_at || "").trim()) &&
+      !Boolean(row.is_hot_lead);
     return {
       id: String(row.id || ""),
       workspace_id: String(row.workspace_id || "").trim() || null,
@@ -623,6 +758,10 @@ export default async function AdminLeadsPage({
       is_hot_lead: Boolean(row.is_hot_lead),
       last_reply_at: String(row.last_reply_at || "").trim() || null,
       last_reply_preview: String(row.last_reply_preview || "").trim() || null,
+      conversion_score: conversionScore,
+      score_breakdown: scoreBreakdown,
+      from_latest_scan: fromLatestScan,
+      is_archived: isArchived,
     };
   });
   console.info("[Leads List] related data resolved", {
@@ -646,6 +785,13 @@ export default async function AdminLeadsPage({
   }
 
   const workspaceId = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
+  const latestScoutRunResult = await supabase
+    .from("scout_runs")
+    .select("created_at")
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const latestScoutRunAt = String((latestScoutRunResult.data || [])[0]?.created_at || "").trim() || null;
   const opportunitiesCountResult = workspaceId
     ? await supabase
         .from("opportunities")
@@ -657,6 +803,7 @@ export default async function AdminLeadsPage({
     opportunitiesInWorkspace: Number(opportunitiesCountResult?.count || 0),
     leadsForOwner: rows.length,
     linkedLeadsForOwner: rows.filter((row) => String(row.linked_opportunity_id || "").trim()).length,
+    latestScoutRunAt,
   };
   if (sort === "created_desc") {
     workflowLeads = [...workflowLeads].sort(
@@ -665,6 +812,10 @@ export default async function AdminLeadsPage({
   } else {
     workflowLeads = [...workflowLeads].sort(
       (a, b) => {
+        const conversionDelta =
+          Number((b as WorkflowLead & { conversion_score?: number }).conversion_score || 0) -
+          Number((a as WorkflowLead & { conversion_score?: number }).conversion_score || 0);
+        if (conversionDelta !== 0) return conversionDelta;
         const scoreDelta = Number(b.opportunity_score ?? 0) - Number(a.opportunity_score ?? 0);
         if (scoreDelta !== 0) return scoreDelta;
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
@@ -816,7 +967,8 @@ export default async function AdminLeadsPage({
         </h2>
         <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
           opportunities evaluated: {intakeDiagnostics.opportunitiesInWorkspace} | leads created: {intakeDiagnostics.leadsForOwner} | linked opportunities:{" "}
-          {intakeDiagnostics.linkedLeadsForOwner} | workspace: {intakeDiagnostics.workspaceId || "not configured"}
+          {intakeDiagnostics.linkedLeadsForOwner} | latest scan: {intakeDiagnostics.latestScoutRunAt || "not recorded"} | workspace:{" "}
+          {intakeDiagnostics.workspaceId || "not configured"}
         </p>
         {intakeDiagnostics.opportunitiesInWorkspace > 0 && intakeDiagnostics.leadsForOwner === 0 ? (
           <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>

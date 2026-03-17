@@ -41,6 +41,8 @@ export type Lead = {
   referral_source?: string | null;
   is_referred_client?: boolean | null;
   opportunity_score?: number | null;
+  conversion_score?: number | null;
+  score_breakdown?: Record<string, unknown> | null;
   auto_intake?: boolean;
   status: LeadStatus;
   deal_status?: DealStatus | null;

@@ -88,6 +88,10 @@ export type WorkflowLead = {
   is_hot_lead?: boolean | null;
   last_reply_at?: string | null;
   last_reply_preview?: string | null;
+  conversion_score?: number | null;
+  score_breakdown?: Record<string, unknown> | null;
+  from_latest_scan?: boolean | null;
+  is_archived?: boolean | null;
 };
 
 function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
@@ -121,6 +125,14 @@ function valueClass(value: "low" | "medium" | "high" | null | undefined): string
   return "admin-priority-door-gray";
 }
 
+function conversionLabel(score: number | null | undefined): "High Conversion" | "Good Lead" | "Low Priority" | "Skip" {
+  const s = Number(score || 0);
+  if (s >= 80) return "High Conversion";
+  if (s >= 60) return "Good Lead";
+  if (s >= 40) return "Low Priority";
+  return "Skip";
+}
+
 function websiteStatusDisplay(status: string | null | undefined): string {
   const s = String(status || "").trim().toLowerCase();
   if (s === "no_website") return "No Website";
@@ -148,6 +160,8 @@ export function LeadsWorkflowView({
     | "contact_available"
     | "door_to_door_candidates"
     | "low_priority"
+    | "from_this_scan"
+    | "archived"
     | "phone_leads"
     | "textable_leads"
     | "replies_waiting"
@@ -272,17 +286,20 @@ export function LeadsWorkflowView({
       const cat = String(lead.category || "").toLowerCase();
       const hasEmail = Boolean(String(lead.email || "").trim());
       const hasContactAvailable = Boolean(String(lead.contact_page || "").trim() || String(lead.facebook_url || "").trim());
+      const archived = Boolean(lead.is_archived);
       const hasRequired = Boolean(
         String(lead.business_name || "").trim() &&
           String(lead.workspace_id || "").trim() &&
           String(lead.detected_issue_summary || "").trim() &&
           hasEmail
       );
-      if (segment === "actionable_email") return hasRequired;
+      if (segment === "actionable_email") return hasRequired && !archived;
       if (segment === "contact_available") return !hasEmail && hasContactAvailable;
       if (segment === "door_to_door_candidates")
         return String(lead.outreach_channel || "").trim() === "door_to_door" || Boolean(lead.is_door_to_door_candidate);
       if (segment === "low_priority") return String(lead.outreach_channel || "").trim() === "skip";
+      if (segment === "from_this_scan") return Boolean(lead.from_latest_scan) && !archived;
+      if (segment === "archived") return archived || String(lead.outreach_channel || "").trim() === "skip";
       if (segment === "phone_leads") return Boolean(String(lead.phone_from_site || "").trim());
       if (segment === "textable_leads") return Boolean(String(lead.phone_from_site || "").trim()) && !hasEmail;
       if (segment === "replies_waiting") return lead.status === "replied" || Boolean(lead.is_hot_lead);
@@ -314,43 +331,71 @@ export function LeadsWorkflowView({
     if (segment === "door_to_door_candidates") {
       return [...searched].sort((a, b) => Number(b.door_score || 0) - Number(a.door_score || 0));
     }
-    return searched;
+    return [...searched].sort((a, b) => {
+      const conversionDelta = Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
+      if (conversionDelta !== 0) return conversionDelta;
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
   }, [leads, search, segment]);
 
   const queueCounts = useMemo(() => {
     const counts = {
-      newLeads: 0,
-      repliesWaiting: 0,
-      followUpsDue: 0,
-      contacted: 0,
+      totalStoredLeads: leads.length,
+      actionableNow: 0,
+      newToday: 0,
+      fromThisScan: 0,
+      researchLater: 0,
+      doorToDoor: 0,
+      archived: 0,
     };
-    for (const lead of filtered) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    for (const lead of leads) {
       const s = String(lead.status || "").toLowerCase();
-      if (s === "new") counts.newLeads += 1;
-      if (s === "replied") counts.repliesWaiting += 1;
-      if (s === "follow_up_due") counts.followUpsDue += 1;
-      if (s === "contacted") counts.contacted += 1;
+      const hasEmail = Boolean(String(lead.email || "").trim());
+      const isActionable = hasEmail && !Boolean(lead.is_archived);
+      const isDoor =
+        String(lead.outreach_channel || "").trim() === "door_to_door" || Boolean(lead.is_door_to_door_candidate);
+      const createdAt = new Date(lead.created_at || 0).getTime();
+      if (isActionable) counts.actionableNow += 1;
+      if (createdAt >= todayStart.getTime()) counts.newToday += 1;
+      if (Boolean(lead.from_latest_scan)) counts.fromThisScan += 1;
+      if (s === "research_later") counts.researchLater += 1;
+      if (isDoor) counts.doorToDoor += 1;
+      if (Boolean(lead.is_archived) || String(lead.outreach_channel || "").trim() === "skip") counts.archived += 1;
     }
     return counts;
-  }, [filtered]);
+  }, [leads]);
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>New Leads</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.newLeads}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Total Stored Leads</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.totalStoredLeads}</p>
         </div>
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Replies Waiting</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.repliesWaiting}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Actionable Now</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.actionableNow}</p>
         </div>
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Follow Ups Due</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.followUpsDue}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>New Today</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.newToday}</p>
         </div>
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Contacted</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.contacted}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>From This Scan</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.fromThisScan}</p>
+        </div>
+        <div className="admin-card">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Archived</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.archived}</p>
+        </div>
+        <div className="admin-card">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Research Later</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.researchLater}</p>
+        </div>
+        <div className="admin-card">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Door-to-Door</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.doorToDoor}</p>
         </div>
       </section>
 
@@ -395,10 +440,12 @@ export function LeadsWorkflowView({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
-              ["actionable_email", "Actionable Email Leads"],
+              ["actionable_email", "Actionable Now"],
+              ["from_this_scan", "From This Scan"],
+              ["archived", "Archived"],
               ["contact_available", "Contact Available"],
               ["door_to_door_candidates", "Door-to-Door Candidates"],
-              ["low_priority", "Low Priority"],
+              ["low_priority", "Low Priority / Skip"],
               ["phone_leads", "Phone Leads"],
               ["textable_leads", "Textable Leads"],
               ["replies_waiting", "Replies Waiting"],
@@ -467,6 +514,9 @@ export function LeadsWorkflowView({
                     <h3 className="font-semibold">{lead.business_name}</h3>
                     <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
                       {lead.city || "—"} · {lead.category || "—"} · Score {lead.opportunity_score ?? "—"} · Website {websiteStatusDisplay(lead.website_status)}
+                    </p>
+                    <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      <span className="font-semibold text-base">Conversion {Number(lead.conversion_score || 0)}</span> · {conversionLabel(lead.conversion_score)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -749,6 +799,7 @@ export function LeadsWorkflowView({
                   <th>Category</th>
                   <th>Website Status</th>
                   <th>Score</th>
+                  <th>Conversion</th>
                   <th>Lead Bucket</th>
                   <th>Opportunity Reason</th>
                   <th>Why It Matters</th>
@@ -789,6 +840,7 @@ export function LeadsWorkflowView({
                     <td>{lead.category || "—"}</td>
                     <td>{websiteStatusDisplay(lead.website_status)}</td>
                     <td>{lead.opportunity_score ?? "—"}</td>
+                    <td>{Number(lead.conversion_score || 0)} · {conversionLabel(lead.conversion_score)}</td>
                     <td>
                       <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score} />
                     </td>

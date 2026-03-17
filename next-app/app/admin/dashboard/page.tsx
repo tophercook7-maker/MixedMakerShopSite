@@ -12,6 +12,8 @@ type LeadRow = {
   website?: string | null;
   linked_opportunity_id?: string | null;
   opportunity_score?: number | null;
+  conversion_score?: number | null;
+  score_breakdown?: Record<string, unknown> | null;
   status?: string | null;
   created_at?: string | null;
   follow_up_date?: string | null;
@@ -104,6 +106,16 @@ function missingOpportunityReasonColumn(message: string): boolean {
 function missingIsHotLeadColumn(message: string): boolean {
   const text = String(message || "").toLowerCase();
   return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
+}
+
+function missingConversionColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.conversion_score") ||
+    text.includes("column conversion_score") ||
+    text.includes("leads.score_breakdown") ||
+    text.includes("column score_breakdown")
+  );
 }
 
 function missingDealColumns(message: string): boolean {
@@ -208,6 +220,28 @@ function estimateBeginnerDealValue(lead: LeadRow): number {
   return score >= 75 ? 400 : 225;
 }
 
+function conversionPriorityScore(input: {
+  hasEmail: boolean;
+  hasContactPage: boolean;
+  hasFacebook: boolean;
+  hasPhone: boolean;
+  hasReason: boolean;
+  category: string;
+  opportunityScore: number;
+}): number {
+  let score = Math.max(0, Math.min(100, Number(input.opportunityScore || 0)));
+  if (input.hasEmail) score += 20;
+  if (input.hasContactPage) score += 10;
+  if (input.hasFacebook) score += 4;
+  if (input.hasPhone) score += 3;
+  if (input.hasReason) score += 8;
+  if (["plumber", "roofer", "hvac", "electrician", "landscaping", "auto repair", "church"].some((token) => input.category.includes(token))) {
+    score += 8;
+  }
+  if (!input.hasEmail && !input.hasContactPage && !input.hasFacebook && !input.hasPhone) score -= 25;
+  return Math.max(0, Math.min(100, score));
+}
+
 async function fetchDraftMessages(supabase: Awaited<ReturnType<typeof createClient>>, ownerId: string) {
   const queryOptions = [
     "id,lead_id,subject,body,created_at,status,direction",
@@ -286,18 +320,20 @@ export default async function DailyCommandCenterPage({
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
-            .order("opportunity_score", { ascending: false, nullsFirst: false })
+            .order("conversion_score", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false })
             .limit(40)) as { data: LeadRow[] | null; error: { message?: string } | null };
           if (
             res.error?.message &&
             (missingIsHotLeadColumn(res.error.message) ||
               missingDealColumns(res.error.message) ||
               missingTrackingColumns(res.error.message) ||
-              missingReplyDetectionColumns(res.error.message))
+              missingReplyDetectionColumns(res.error.message) ||
+              missingConversionColumns(res.error.message))
           ) {
             res = (await supabase
               .from("leads")
@@ -319,7 +355,7 @@ export default async function DailyCommandCenterPage({
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
@@ -329,7 +365,8 @@ export default async function DailyCommandCenterPage({
             (missingIsHotLeadColumn(res.error.message) ||
               missingDealColumns(res.error.message) ||
               missingTrackingColumns(res.error.message) ||
-              missingReplyDetectionColumns(res.error.message))
+              missingReplyDetectionColumns(res.error.message) ||
+              missingConversionColumns(res.error.message))
           ) {
             res = (await supabase
               .from("leads")
@@ -534,18 +571,28 @@ export default async function DailyCommandCenterPage({
       const bestContact = String(assessment.best_contact_method || "").trim();
       const nextAction = String(assessment.recommended_next_action || "").trim();
       const email = String(lead.email || caseRow?.email || "").trim();
-      const contactAvailable = Boolean(
-        String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim() ||
-          String(caseRow?.facebook_url || caseRow?.facebook || "").trim()
-      );
+      const contactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
+      const facebook = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
+      const phone = String(caseRow?.phone_from_site || "").trim();
       const signalEmailSource =
         issueList
           .find((signal) => signal.toLowerCase().startsWith("email_source:"))
           ?.split(":")[1]
           ?.trim() || "";
       const emailSource = email ? String(caseRow?.email_source || signalEmailSource || "unknown").trim() : null;
+      const computedConversion = conversionPriorityScore({
+        hasEmail: Boolean(email),
+        hasContactPage: Boolean(contactPage),
+        hasFacebook: Boolean(facebook),
+        hasPhone: Boolean(phone),
+        hasReason: Boolean(reason),
+        category: String(opp?.category || "").toLowerCase(),
+        opportunityScore: Number(opp?.opportunity_score ?? lead.opportunity_score ?? 0),
+      });
+      const conversionScore = Number(lead.conversion_score ?? computedConversion);
+      const hasContactPath = Boolean(email || contactPage || facebook || phone);
       const qualified = Boolean(
-        businessName && reason && (email || contactAvailable) && nextAction
+        businessName && reason && hasContactPath && nextAction && conversionScore >= 60
       );
       if (!qualified) return null;
       const tierRank = email ? 1 : 2;
@@ -580,11 +627,14 @@ export default async function DailyCommandCenterPage({
           ? `/admin/cases/${encodeURIComponent(String(caseRow?.id || ""))}`
           : null,
         website,
+        conversionScore,
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
     .sort((a, b) => {
       if (a.tierRank !== b.tierRank) return a.tierRank - b.tierRank;
+      const conversionDelta = Number(b.conversionScore || 0) - Number(a.conversionScore || 0);
+      if (conversionDelta !== 0) return conversionDelta;
       return Number(b.opportunityScore || 0) - Number(a.opportunityScore || 0);
     })
     .slice(0, 8);
@@ -873,7 +923,7 @@ export default async function DailyCommandCenterPage({
         <h2 className="text-lg font-semibold mb-3">Work Today</h2>
         {workToday.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-            No actionable email leads yet. Run Scout or backfill, then review Actionable Email Leads.
+            No high-conversion leads yet (requires conversion score 60+ and contact path). Run Scout/backfill, then review Actionable Now.
           </p>
         ) : (
           <div className="space-y-3">
@@ -898,6 +948,9 @@ export default async function DailyCommandCenterPage({
                 </div>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                   {item.city} · {item.category} · {item.leadType} · Score {item.opportunityScore}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">Conversion score:</span> {Number(item.conversionScore || 0)}
                 </p>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                   <span className="font-semibold">Why this lead is here:</span> {item.whyThisLeadIsHere}

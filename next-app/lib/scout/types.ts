@@ -91,6 +91,8 @@ export type ScoutJobStatusResponse = {
       workspace_id?: string | null;
       opportunities_found?: number;
       opportunities_loaded?: number;
+      scanned_count?: number;
+      enriched_count?: number;
       opportunities_evaluated?: number;
       evaluated?: number;
       eligible_for_lead_creation?: number;
@@ -118,6 +120,9 @@ export type ScoutJobStatusResponse = {
       leads_with_facebook?: number;
       leads_with_no_contact_path?: number;
       actionable_email_leads_created?: number;
+      research_later_leads_created?: number;
+      door_to_door_candidates_created?: number;
+      archived_low_priority_created?: number;
       leads_skipped_due_no_email?: number;
       leads_created_with_low_score?: number;
       leads_created_high_score?: number;
