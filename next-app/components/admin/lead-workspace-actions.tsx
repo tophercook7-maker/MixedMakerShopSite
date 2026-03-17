@@ -16,6 +16,10 @@ type LeadWorkspaceActionsProps = {
   contactPage: string | null;
   caseHref: string | null;
   initialNotes: string[];
+  initialDoorStatus?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
+  initialRealWorldWhyTarget?: string | null;
+  initialRealWorldWalkInPitch?: string | null;
+  initialBestTimeToVisit?: string | null;
   quickFixSummary?: string | null;
   autoGenerate?: boolean;
   autoCompose?: boolean;
@@ -73,6 +77,10 @@ export function LeadWorkspaceActions({
   contactPage,
   caseHref,
   initialNotes,
+  initialDoorStatus = "not_visited",
+  initialRealWorldWhyTarget = null,
+  initialRealWorldWalkInPitch = null,
+  initialBestTimeToVisit = null,
   quickFixSummary = null,
   autoGenerate = false,
   autoCompose = false,
@@ -89,6 +97,10 @@ export function LeadWorkspaceActions({
   const [savedNotes, setSavedNotes] = useState<string[]>(initialNotes);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [proposalText, setProposalText] = useState("");
+  const [doorStatus, setDoorStatus] = useState<string>(String(initialDoorStatus || "not_visited"));
+  const [realWorldWhyTarget, setRealWorldWhyTarget] = useState(String(initialRealWorldWhyTarget || ""));
+  const [realWorldWalkInPitch, setRealWorldWalkInPitch] = useState(String(initialRealWorldWalkInPitch || ""));
+  const [bestTimeToVisit, setBestTimeToVisit] = useState(String(initialBestTimeToVisit || ""));
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -369,6 +381,33 @@ export function LeadWorkspaceActions({
     );
   }
 
+  async function updateDoorStatus(nextDoorStatus: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost") {
+    const statusPatch: Record<string, unknown> =
+      nextDoorStatus === "closed_won"
+        ? { status: "closed_won" }
+        : nextDoorStatus === "closed_lost"
+          ? { status: "closed_lost" }
+          : nextDoorStatus === "follow_up"
+            ? { status: "follow_up_due" }
+            : {};
+    const ok = await updateLead(
+      { door_status: nextDoorStatus, ...statusPatch },
+      `Door status updated to ${nextDoorStatus.replace(/_/g, " ")}.`
+    );
+    if (ok) setDoorStatus(nextDoorStatus);
+  }
+
+  async function saveRealWorldPlan() {
+    await updateLead(
+      {
+        real_world_why_target: realWorldWhyTarget.trim() || null,
+        real_world_walk_in_pitch: realWorldWalkInPitch.trim() || null,
+        best_time_to_visit: bestTimeToVisit.trim() || null,
+      },
+      "Real World Plan saved."
+    );
+  }
+
   async function copyEmail() {
     if (!body.trim()) {
       setError("Generate a draft first.");
@@ -620,6 +659,43 @@ export function LeadWorkspaceActions({
       </div>
 
       <div className="admin-card space-y-2">
+        <h3 className="text-sm font-semibold">Real World Plan</h3>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Door status: <strong>{doorStatus.replace(/_/g, " ")}</strong>
+        </p>
+        <div>
+          <label className="block text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Why this is a good target</label>
+          <textarea
+            className="admin-input min-h-[72px]"
+            value={realWorldWhyTarget}
+            onChange={(e) => setRealWorldWhyTarget(e.target.value)}
+            placeholder="Active business, local visibility, clear website gap..."
+          />
+        </div>
+        <div>
+          <label className="block text-xs mb-1" style={{ color: "var(--admin-muted)" }}>What to say when I walk in</label>
+          <textarea
+            className="admin-input min-h-[72px]"
+            value={realWorldWalkInPitch}
+            onChange={(e) => setRealWorldWalkInPitch(e.target.value)}
+            placeholder="Quick intro and value statement for walk-ins."
+          />
+        </div>
+        <div>
+          <label className="block text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Best time to visit</label>
+          <input
+            className="admin-input"
+            value={bestTimeToVisit}
+            onChange={(e) => setBestTimeToVisit(e.target.value)}
+            placeholder="Weekday mornings, after lunch, etc."
+          />
+        </div>
+        <button className="admin-btn-primary text-xs" onClick={() => void saveRealWorldPlan()} disabled={isUpdating}>
+          Save Real World Plan
+        </button>
+      </div>
+
+      <div className="admin-card space-y-2">
         <h3 className="text-sm font-semibold">Quick Actions</h3>
         <div className="flex flex-wrap gap-2">
           <button
@@ -656,6 +732,43 @@ export function LeadWorkspaceActions({
             disabled={isUpdating}
           >
             Do Not Contact
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="admin-btn-ghost text-xs"
+            onClick={() => void updateDoorStatus("planned")}
+            disabled={isUpdating}
+          >
+            Mark Planned
+          </button>
+          <button
+            className="admin-btn-ghost text-xs"
+            onClick={() => void updateDoorStatus("visited")}
+            disabled={isUpdating}
+          >
+            Mark Visited
+          </button>
+          <button
+            className="admin-btn-ghost text-xs"
+            onClick={() => void updateDoorStatus("follow_up")}
+            disabled={isUpdating}
+          >
+            Mark Follow Up
+          </button>
+          <button
+            className="admin-btn-primary text-xs"
+            onClick={() => void updateDoorStatus("closed_won")}
+            disabled={isUpdating}
+          >
+            Mark Won
+          </button>
+          <button
+            className="admin-btn-danger text-xs"
+            onClick={() => void updateDoorStatus("closed_lost")}
+            disabled={isUpdating}
+          >
+            Mark Lost
           </button>
         </div>
         <div className="flex flex-wrap gap-2">

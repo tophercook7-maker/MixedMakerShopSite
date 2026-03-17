@@ -29,9 +29,10 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const supabase = await createClient();
+  const payload = { ...parsed.data, last_updated_at: new Date().toISOString() };
   const { data, error } = await supabase
     .from("leads")
-    .update(parsed.data)
+    .update(payload)
     .eq("id", id)
     .select()
     .single();

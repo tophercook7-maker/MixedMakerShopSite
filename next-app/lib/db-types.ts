@@ -18,6 +18,7 @@ export type LeadStatus =
   | "research_later"
   | "do_not_contact";
 export type DealStatus = "none" | "interested" | "proposal_sent" | "won" | "lost";
+export type DoorStatus = "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost";
 export type Lead = {
   id: string;
   business_name: string;
@@ -34,6 +35,16 @@ export type Lead = {
   best_contact_method?: string | null;
   contact_method?: string | null;
   category?: string | null;
+  city?: string | null;
+  lead_bucket?: string | null;
+  is_manual?: boolean | null;
+  known_owner_name?: string | null;
+  known_context?: string | null;
+  door_status?: DoorStatus | null;
+  real_world_why_target?: string | null;
+  real_world_walk_in_pitch?: string | null;
+  best_time_to_visit?: string | null;
+  last_updated_at?: string | null;
   is_recurring_client?: boolean | null;
   monthly_value?: number | null;
   subscription_started_at?: string | null;

@@ -13,6 +13,7 @@ const leadStatuses = [
   "do_not_contact",
 ] as const;
 const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
+const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;
@@ -52,6 +53,9 @@ export const leadSchema = z.object({
   phone: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   website: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
   industry: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
+  category: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  city: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
+  address: z.string().max(300).optional().transform((v) => (v === "" ? undefined : v)),
   lead_source: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   status: z.enum(leadStatuses),
   deal_status: z.enum(dealStatuses).optional(),
@@ -60,7 +64,14 @@ export const leadSchema = z.object({
   replied_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
   outreach_sent_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
   contact_method: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
-  category: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  lead_bucket: z.string().max(60).optional().transform((v) => (v === "" ? undefined : v)),
+  is_manual: z.boolean().optional(),
+  known_owner_name: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  known_context: z.string().max(2000).optional().transform((v) => (v === "" ? undefined : v)),
+  door_status: z.enum(doorStatuses).optional(),
+  real_world_why_target: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  real_world_walk_in_pitch: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  best_time_to_visit: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
   is_recurring_client: z.boolean().optional(),
   monthly_value: z.number().min(0).optional(),
   subscription_started_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),

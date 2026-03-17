@@ -30,6 +30,11 @@ type LeadRow = {
   notes?: string | null;
   created_at?: string | null;
   is_hot_lead?: boolean | null;
+  door_status?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
+  known_context?: string | null;
+  real_world_why_target?: string | null;
+  real_world_walk_in_pitch?: string | null;
+  best_time_to_visit?: string | null;
 };
 
 type CaseRow = {
@@ -330,7 +335,7 @@ export default async function AdminLeadDetailPage({
       const { data: leadRows, error: leadError } = await supabase
         .from("leads")
         .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead"
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
         )
         .eq("owner_id", ownerId)
         .eq("id", targetId)
@@ -349,7 +354,7 @@ export default async function AdminLeadDetailPage({
       const { data: candidateRows, error: candidateError } = await supabase
         .from("leads")
         .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead"
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
         )
         .eq("owner_id", ownerId)
         .order("created_at", { ascending: false })
@@ -1408,6 +1413,10 @@ export default async function AdminLeadDetailPage({
               contactPage={displayContactPage || null}
               caseHref={caseHref}
               initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
+              initialDoorStatus={lead?.door_status || "not_visited"}
+              initialRealWorldWhyTarget={lead?.real_world_why_target || lead?.known_context || null}
+              initialRealWorldWalkInPitch={lead?.real_world_walk_in_pitch || null}
+              initialBestTimeToVisit={lead?.best_time_to_visit || null}
               quickFixSummary={quickFixSummary}
               autoGenerate={generate === "1"}
               autoCompose={compose === "1"}

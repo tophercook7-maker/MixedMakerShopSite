@@ -30,7 +30,7 @@ export type WorkflowLead = {
   address?: string | null;
   website_status?: string | null;
   opportunity_score: number | null;
-  lead_bucket?: "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority" | null;
+  lead_bucket?: "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority" | "door_to_door" | null;
   close_probability?: "low" | "medium" | "high" | null;
   lead_type?: "Easy Win" | "Active Business, Weak Website" | "Church Website Opportunity" | "Needs Review" | "Low Priority" | null;
   best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | "none" | null;
@@ -92,6 +92,11 @@ export type WorkflowLead = {
   score_breakdown?: Record<string, unknown> | null;
   from_latest_scan?: boolean | null;
   is_archived?: boolean | null;
+  is_manual?: boolean | null;
+  known_owner_name?: string | null;
+  known_context?: string | null;
+  door_status?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
+  last_updated_at?: string | null;
 };
 
 function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
@@ -123,6 +128,21 @@ function valueClass(value: "low" | "medium" | "high" | null | undefined): string
   if (value === "high") return "admin-priority-hot";
   if (value === "medium") return "admin-priority-easy";
   return "admin-priority-door-gray";
+}
+
+function prettyDoorStatus(status: WorkflowLead["door_status"]): string {
+  return String(status || "not_visited").replace(/_/g, " ");
+}
+
+function doorStatusRank(status: WorkflowLead["door_status"]): number {
+  const normalized = String(status || "not_visited");
+  if (normalized === "planned") return 0;
+  if (normalized === "not_visited") return 1;
+  if (normalized === "follow_up") return 2;
+  if (normalized === "visited") return 3;
+  if (normalized === "closed_won") return 4;
+  if (normalized === "closed_lost") return 5;
+  return 6;
 }
 
 function conversionLabel(score: number | null | undefined): "High Conversion" | "Good Lead" | "Low Priority" | "Skip" {
@@ -221,11 +241,18 @@ export function LeadsWorkflowView({
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(target)}`;
   }
 
-  async function appendLeadNoteAndStatus(lead: WorkflowLead, note: string, status?: WorkflowLead["status"]) {
+  async function appendLeadNoteAndStatus(
+    lead: WorkflowLead,
+    note: string,
+    status?: WorkflowLead["status"],
+    doorStatus?: WorkflowLead["door_status"]
+  ) {
     const existingNotes = Array.isArray(lead.notes) ? lead.notes : [];
     const nextNotes = [...existingNotes, note].join("\n");
-    const payload: Record<string, unknown> = { notes: nextNotes };
+    const nowIso = new Date().toISOString();
+    const payload: Record<string, unknown> = { notes: nextNotes, last_updated_at: nowIso };
     if (status) payload.status = status;
+    if (doorStatus) payload.door_status = doorStatus;
     const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -239,7 +266,13 @@ export function LeadsWorkflowView({
     setLeads((prev) =>
       prev.map((item) =>
         item.id === lead.id
-          ? { ...item, notes: [...existingNotes, note], status: status || item.status }
+          ? {
+              ...item,
+              notes: [...existingNotes, note],
+              status: status || item.status,
+              door_status: doorStatus || item.door_status,
+              last_updated_at: nowIso,
+            }
           : item
       )
     );
@@ -248,12 +281,27 @@ export function LeadsWorkflowView({
 
   async function markVisited(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door visited ${ts}`, "contacted");
+    await appendLeadNoteAndStatus(lead, `Door-to-door visited ${ts}`, "contacted", "visited");
   }
 
   async function markInterested(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "follow_up_due");
+    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "follow_up_due", "follow_up");
+  }
+
+  async function markDoorPlanned(lead: WorkflowLead) {
+    const ts = new Date().toISOString();
+    await appendLeadNoteAndStatus(lead, `Door-to-door planned ${ts}`, undefined, "planned");
+  }
+
+  async function markDoorWon(lead: WorkflowLead) {
+    const ts = new Date().toISOString();
+    await appendLeadNoteAndStatus(lead, `Door-to-door won ${ts}`, "closed_won", "closed_won");
+  }
+
+  async function markDoorLost(lead: WorkflowLead) {
+    const ts = new Date().toISOString();
+    await appendLeadNoteAndStatus(lead, `Door-to-door lost ${ts}`, "closed_lost", "closed_lost");
   }
 
   async function addDoorNote(lead: WorkflowLead) {
@@ -295,8 +343,16 @@ export function LeadsWorkflowView({
       );
       if (segment === "actionable_email") return hasRequired && !archived;
       if (segment === "contact_available") return !hasEmail && hasContactAvailable;
-      if (segment === "door_to_door_candidates")
-        return String(lead.outreach_channel || "").trim() === "door_to_door" || Boolean(lead.is_door_to_door_candidate);
+      if (segment === "door_to_door_candidates") {
+        const bucket = String(lead.lead_bucket || "").toLowerCase();
+        return (
+          bucket.includes("door_to_door") ||
+          String(lead.outreach_channel || "").trim() === "door_to_door" ||
+          Boolean(lead.is_door_to_door_candidate) ||
+          Boolean(lead.is_manual) ||
+          Boolean(lead.door_status)
+        );
+      }
       if (segment === "low_priority") return String(lead.outreach_channel || "").trim() === "skip";
       if (segment === "from_this_scan") return Boolean(lead.from_latest_scan) && !archived;
       if (segment === "archived") return archived || String(lead.outreach_channel || "").trim() === "skip";
@@ -329,7 +385,16 @@ export function LeadsWorkflowView({
         .includes(q)
     );
     if (segment === "door_to_door_candidates") {
-      return [...searched].sort((a, b) => Number(b.door_score || 0) - Number(a.door_score || 0));
+      return [...searched].sort((a, b) => {
+        const rankDelta = doorStatusRank(a.door_status) - doorStatusRank(b.door_status);
+        if (rankDelta !== 0) return rankDelta;
+        const scoreDelta = Number(b.door_score || 0) - Number(a.door_score || 0);
+        if (scoreDelta !== 0) return scoreDelta;
+        return (
+          new Date(b.last_updated_at || b.created_at || 0).getTime() -
+          new Date(a.last_updated_at || a.created_at || 0).getTime()
+        );
+      });
     }
     return [...searched].sort((a, b) => {
       const conversionDelta = Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
@@ -401,6 +466,38 @@ export function LeadsWorkflowView({
 
       {segment === "door_to_door_candidates" ? (
         <section className="admin-card">
+          <div className="grid gap-3 md:grid-cols-3 mb-3">
+            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Total Door Leads</p>
+              <p className="text-xl font-semibold">{filtered.length}</p>
+            </div>
+            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Planned Today</p>
+              <p className="text-xl font-semibold">
+                {
+                  filtered.filter((lead) => {
+                    if (lead.door_status !== "planned") return false;
+                    const stamp = new Date(lead.last_updated_at || lead.created_at || 0);
+                    const today = new Date();
+                    return stamp.toDateString() === today.toDateString();
+                  }).length
+                }
+              </p>
+            </div>
+            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Visited Today</p>
+              <p className="text-xl font-semibold">
+                {
+                  filtered.filter((lead) => {
+                    if (lead.door_status !== "visited") return false;
+                    const stamp = new Date(lead.last_updated_at || lead.created_at || 0);
+                    const today = new Date();
+                    return stamp.toDateString() === today.toDateString();
+                  }).length
+                }
+              </p>
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className="admin-btn-primary text-xs" onClick={buildRoute}>
               Build Route
@@ -444,7 +541,7 @@ export function LeadsWorkflowView({
               ["from_this_scan", "From This Scan"],
               ["archived", "Archived"],
               ["contact_available", "Contact Available"],
-              ["door_to_door_candidates", "Door-to-Door Candidates"],
+              ["door_to_door_candidates", "Door-to-Door"],
               ["low_priority", "Low Priority / Skip"],
               ["phone_leads", "Phone Leads"],
               ["textable_leads", "Textable Leads"],
@@ -576,6 +673,30 @@ export function LeadsWorkflowView({
                   <p>
                     <span className="font-semibold">Business profile:</span> {lead.category || "—"} · {lead.city || "—"} · {lead.address || "—"}
                   </p>
+                  {lead.known_context ? (
+                    <p>
+                      <span className="font-semibold">Known context:</span> {lead.known_context}
+                    </p>
+                  ) : null}
+                  {lead.notes?.length ? (
+                    <p>
+                      <span className="font-semibold">Notes:</span> {String(lead.notes[lead.notes.length - 1] || "").slice(0, 120)}
+                    </p>
+                  ) : null}
+                  <p>
+                    <span className="font-semibold">Door status:</span> {prettyDoorStatus(lead.door_status)}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Last updated:</span>{" "}
+                    {lead.last_updated_at ? new Date(lead.last_updated_at).toLocaleString() : "—"}
+                  </p>
+                  {lead.address ? (
+                    <p>
+                      <a href={mapDirectionsHref(lead)} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline text-sm font-semibold">
+                        {lead.address}
+                      </a>
+                    </p>
+                  ) : null}
                   <p>
                     <span className="font-semibold">Website:</span> {lead.website || "—"} ({websiteStatusDisplay(lead.website_status)})
                   </p>
@@ -733,7 +854,7 @@ export function LeadsWorkflowView({
                       </button>
                     </>
                   ) : null}
-                  {lead.outreach_channel === "door_to_door" ? (
+                  {segment === "door_to_door_candidates" || lead.outreach_channel === "door_to_door" ? (
                     <>
                       <a
                         href={mapDirectionsHref(lead)}
@@ -746,8 +867,17 @@ export function LeadsWorkflowView({
                       <button type="button" className="admin-btn-ghost text-xs" onClick={() => void markVisited(lead)}>
                         Mark Visited
                       </button>
+                      <button type="button" className="admin-btn-ghost text-xs" onClick={() => void markDoorPlanned(lead)}>
+                        Mark Planned
+                      </button>
                       <button type="button" className="admin-btn-ghost text-xs" onClick={() => void markInterested(lead)}>
-                        Mark Interested
+                        Mark Follow Up
+                      </button>
+                      <button type="button" className="admin-btn-ghost text-xs" onClick={() => void markDoorWon(lead)}>
+                        Mark Won
+                      </button>
+                      <button type="button" className="admin-btn-ghost text-xs" onClick={() => void markDoorLost(lead)}>
+                        Mark Lost
                       </button>
                       <button type="button" className="admin-btn-ghost text-xs" onClick={() => void addDoorNote(lead)}>
                         Add Notes
@@ -805,6 +935,9 @@ export function LeadsWorkflowView({
                   <th>Why It Matters</th>
                   <th>What To Say</th>
                   <th>Address</th>
+                  <th>Notes</th>
+                  <th>Door Status</th>
+                  <th>Last Updated</th>
                   <th>Website</th>
                   <th>Lead Type</th>
                   <th>Close Probability</th>
@@ -853,7 +986,18 @@ export function LeadsWorkflowView({
                     <td>
                       {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
                     </td>
-                    <td>{lead.address || "—"}</td>
+                    <td>
+                      {lead.address ? (
+                        <a href={mapDirectionsHref(lead)} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline font-semibold">
+                          {lead.address}
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>{String(lead.notes?.[lead.notes.length - 1] || lead.known_context || "—").slice(0, 90)}</td>
+                    <td>{prettyDoorStatus(lead.door_status)}</td>
+                    <td>{lead.last_updated_at ? new Date(lead.last_updated_at).toLocaleString() : "—"}</td>
                     <td>{lead.website || "—"}</td>
                     <td>{lead.lead_type || "Needs Review"}</td>
                     <td>{lead.close_probability || "medium"}</td>
@@ -991,7 +1135,7 @@ export function LeadsWorkflowView({
                             </button>
                           </>
                         ) : null}
-                        {lead.outreach_channel === "door_to_door" ? (
+                        {segment === "door_to_door_candidates" || lead.outreach_channel === "door_to_door" ? (
                           <>
                             <a
                               href={mapDirectionsHref(lead)}
@@ -1011,9 +1155,30 @@ export function LeadsWorkflowView({
                             <button
                               type="button"
                               className="text-[var(--admin-gold)] hover:underline text-xs"
+                              onClick={() => void markDoorPlanned(lead)}
+                            >
+                              Mark Planned
+                            </button>
+                            <button
+                              type="button"
+                              className="text-[var(--admin-gold)] hover:underline text-xs"
                               onClick={() => void markInterested(lead)}
                             >
-                              Mark Interested
+                              Mark Follow Up
+                            </button>
+                            <button
+                              type="button"
+                              className="text-[var(--admin-gold)] hover:underline text-xs"
+                              onClick={() => void markDoorWon(lead)}
+                            >
+                              Mark Won
+                            </button>
+                            <button
+                              type="button"
+                              className="text-[var(--admin-gold)] hover:underline text-xs"
+                              onClick={() => void markDoorLost(lead)}
+                            >
+                              Mark Lost
                             </button>
                             <button
                               type="button"

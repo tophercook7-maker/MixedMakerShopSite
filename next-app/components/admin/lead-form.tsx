@@ -14,6 +14,7 @@ const STATUSES = [
   "research_later",
   "do_not_contact",
 ] as const;
+const DOOR_STATUSES = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const MESSAGE_TYPES = ["short_email", "long_email", "follow_up"] as const;
 const COPY_TYPES = [
   "short_email",
@@ -126,6 +127,9 @@ export function LeadForm({
   });
   const [form, setForm] = useState({
     business_name: lead?.business_name ?? "",
+    category: lead?.category ?? "",
+    city: lead?.city ?? "",
+    address: lead?.address ?? "",
     contact_name: lead?.contact_name ?? "",
     email: lead?.email ?? "",
     phone: lead?.phone ?? "",
@@ -135,6 +139,11 @@ export function LeadForm({
     status: (lead?.status ?? "new") as (typeof STATUSES)[number],
     notes: lead?.notes ?? "",
     follow_up_date: lead?.follow_up_date ?? "",
+    is_manual: Boolean(lead?.is_manual ?? !lead),
+    known_owner_name: lead?.known_owner_name ?? "",
+    known_context: lead?.known_context ?? "",
+    lead_bucket: lead?.lead_bucket ?? "",
+    door_status: (lead?.door_status ?? "not_visited") as (typeof DOOR_STATUSES)[number],
   });
   const outreachSectionRef = useRef<HTMLDivElement | null>(null);
   const autoGenerateRef = useRef(false);
@@ -149,6 +158,9 @@ export function LeadForm({
     const payload = {
       ...form,
       business_name: businessName,
+      category: form.category?.trim() || undefined,
+      city: form.city?.trim() || undefined,
+      address: form.address?.trim() || undefined,
       contact_name: form.contact_name?.trim() || undefined,
       email: form.email?.trim() || undefined,
       phone: form.phone?.trim() || undefined,
@@ -157,6 +169,10 @@ export function LeadForm({
       lead_source: form.lead_source?.trim() || undefined,
       notes: form.notes?.trim() || undefined,
       follow_up_date: form.follow_up_date?.trim() || undefined,
+      known_owner_name: form.known_owner_name?.trim() || undefined,
+      known_context: form.known_context?.trim() || undefined,
+      lead_bucket: form.lead_bucket?.trim() || undefined,
+      door_status: form.is_manual || form.lead_bucket === "door_to_door" ? form.door_status : undefined,
     };
     onSave(payload);
   };
@@ -531,6 +547,32 @@ export function LeadForm({
               className="admin-input"
             />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Category</label>
+              <input
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="admin-input"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>City</label>
+              <input
+                value={form.city}
+                onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                className="admin-input"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Address</label>
+            <input
+              value={form.address}
+              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+              className="admin-input"
+            />
+          </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Contact name</label>
             <input
@@ -580,6 +622,60 @@ export function LeadForm({
               placeholder="e.g. contact_form, website_check"
               className="admin-input"
             />
+          </div>
+          <label className="flex items-center gap-2 text-xs font-medium" style={{ color: "var(--admin-muted)" }}>
+            <input
+              type="checkbox"
+              checked={form.is_manual}
+              onChange={(e) => setForm((f) => ({ ...f, is_manual: e.target.checked }))}
+            />
+            Manual lead
+          </label>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Known owner name</label>
+            <input
+              value={form.known_owner_name}
+              onChange={(e) => setForm((f) => ({ ...f, known_owner_name: e.target.value }))}
+              className="admin-input"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Known context</label>
+            <textarea
+              value={form.known_context}
+              onChange={(e) => setForm((f) => ({ ...f, known_context: e.target.value }))}
+              rows={2}
+              className="admin-input"
+              placeholder="I know this owner, busy shop, local referral..."
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Lead bucket</label>
+              <select
+                value={form.lead_bucket}
+                onChange={(e) => setForm((f) => ({ ...f, lead_bucket: e.target.value }))}
+                className="admin-select w-full"
+              >
+                <option value="">Auto</option>
+                <option value="actionable_email">Actionable Email Leads</option>
+                <option value="contact_available">Contact Available</option>
+                <option value="door_to_door">Door-to-Door</option>
+                <option value="low_priority">Low Priority / Skip</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Door status</label>
+              <select
+                value={form.door_status}
+                onChange={(e) => setForm((f) => ({ ...f, door_status: e.target.value as (typeof DOOR_STATUSES)[number] }))}
+                className="admin-select w-full"
+              >
+                {DOOR_STATUSES.map((s) => (
+                  <option key={s} value={s}>{s.replace(/_/g, " ")}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Status</label>

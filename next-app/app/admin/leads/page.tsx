@@ -16,6 +16,15 @@ type LeadRow = {
   phone?: string | null;
   website?: string | null;
   industry?: string | null;
+  category?: string | null;
+  city?: string | null;
+  address?: string | null;
+  lead_bucket?: string | null;
+  is_manual?: boolean | null;
+  known_owner_name?: string | null;
+  known_context?: string | null;
+  door_status?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
+  last_updated_at?: string | null;
   notes?: string | null;
   opportunity_score?: number | null;
   conversion_score?: number | null;
@@ -76,6 +85,25 @@ function missingReplyDetectionColumns(message: string): boolean {
     text.includes("column last_reply_preview")
   );
 }
+
+function missingManualDoorColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.is_manual") ||
+    text.includes("column is_manual") ||
+    text.includes("leads.known_owner_name") ||
+    text.includes("column known_owner_name") ||
+    text.includes("leads.known_context") ||
+    text.includes("column known_context") ||
+    text.includes("leads.door_status") ||
+    text.includes("column door_status") ||
+    text.includes("leads.last_updated_at") ||
+    text.includes("column last_updated_at")
+  );
+}
+
+const SAFE_LEADS_SELECT =
+  "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address";
 
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
@@ -390,9 +418,7 @@ export default async function AdminLeadsPage({
 
   let baseQuery = supabase
     .from("leads")
-    .select(
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
-    )
+    .select(SAFE_LEADS_SELECT)
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false })
     .limit(500);
@@ -402,17 +428,10 @@ export default async function AdminLeadsPage({
     data: LeadRow[] | null;
     error: { message?: string } | null;
   };
-  if (
-    joinedResult.error?.message &&
-    (missingIsHotLeadColumn(joinedResult.error.message) ||
-      missingReplyDetectionColumns(joinedResult.error.message) ||
-      missingConversionColumns(joinedResult.error.message))
-  ) {
+  if (joinedResult.error?.message) {
     joinedResult = (await supabase
       .from("leads")
-      .select(
-        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source"
-      )
+      .select("id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes")
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
       .limit(500)) as {
@@ -428,6 +447,7 @@ export default async function AdminLeadsPage({
   if (joinedError) {
     queryMode = "failed";
     queryError = joinedError.message || null;
+    console.error("[Leads] query failed, falling back to empty state", { queryError });
     rows = [];
   } else {
     rows = (joinedRows || []) as LeadRow[];
@@ -566,8 +586,8 @@ export default async function AdminLeadsPage({
     const hasOnlineContactPath = Boolean(email || contactPage || facebookUrl);
     const hasBaseBusinessInfo = Boolean(
       String(opp?.business_name || row.business_name || "").trim() &&
-        String(opp?.address || "").trim() &&
-        String(opp?.city || "").trim()
+        String(opp?.address || row.address || "").trim() &&
+        String(opp?.city || row.city || "").trim()
     );
     const websiteStatus = String(opp?.website_status || "").trim().toLowerCase();
     const hasStrongWebsiteOpportunity =
@@ -599,7 +619,7 @@ export default async function AdminLeadsPage({
       caseRow?.new_photos_detected ||
       caseRow?.listing_recently_updated
     );
-    const hasAddress = Boolean(String(opp?.address || "").trim());
+    const hasAddress = Boolean(String(opp?.address || row.address || "").trim());
     const localProximityAvailable = opportunitySignals.some((signal) => {
       const text = String(signal || "").toLowerCase();
       return text.includes("local_proximity") || text.includes("distance_km") || text.includes("nearby");
@@ -616,6 +636,7 @@ export default async function AdminLeadsPage({
       hasContactPage: Boolean(contactPage),
       hasFacebookUrl: Boolean(facebookUrl),
     });
+    const manualDoor = String(row.lead_bucket || "").toLowerCase().includes("door_to_door") || Boolean(row.is_manual);
     const isDoorToDoorCandidate = Boolean(
       !hasOnlineContactPath &&
         hasBaseBusinessInfo &&
@@ -627,7 +648,7 @@ export default async function AdminLeadsPage({
       ? "email"
       : contactPage || facebookUrl
         ? "contact"
-        : isDoorToDoorCandidate
+        : isDoorToDoorCandidate || manualDoor
           ? "door_to_door"
           : "skip";
     const nextAction =
@@ -686,15 +707,18 @@ export default async function AdminLeadsPage({
       related_case_id: String(caseRow?.id || "") || null,
       opportunity_id: linkedOppId || null,
       business_name: String(opp?.business_name || row.business_name || "Unknown business"),
-      category: String(opp?.category || row.industry || "").trim() || null,
-      city: String(opp?.city || "").trim() || null,
-      address: String(opp?.address || "").trim() || null,
+      category: String(opp?.category || row.category || row.industry || "").trim() || null,
+      city: String(opp?.city || row.city || "").trim() || null,
+      address: String(opp?.address || row.address || "").trim() || null,
       website_status: String(opp?.website_status || "").trim() || null,
       opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
       lead_bucket:
+        manualDoor
+          ? "door_to_door"
+          :
         hasEmail
           ? canonicalLeadBucket(
-              String(opp?.lead_bucket || "").trim(),
+              String(opp?.lead_bucket || row.lead_bucket || "").trim(),
               opp?.opportunity_score ?? row.opportunity_score ?? null
             ) ||
             assessment.lead_bucket ||
@@ -762,6 +786,11 @@ export default async function AdminLeadsPage({
       score_breakdown: scoreBreakdown,
       from_latest_scan: fromLatestScan,
       is_archived: isArchived,
+      is_manual: Boolean(row.is_manual),
+      known_owner_name: String(row.known_owner_name || "").trim() || null,
+      known_context: String(row.known_context || "").trim() || null,
+      door_status: (String(row.door_status || "").trim().toLowerCase() as WorkflowLead["door_status"]) || "not_visited",
+      last_updated_at: String(row.last_updated_at || row.created_at || "").trim() || null,
     };
   });
   console.info("[Leads List] related data resolved", {
@@ -914,35 +943,10 @@ export default async function AdminLeadsPage({
 
   let emptyStateReason = "";
   if (workflowLeads.length === 0) {
-    const [{ count: opportunitiesCount }, { count: casesCount }] = await Promise.all([
-      workspaceId
-        ? supabase
-            .from("opportunities")
-            .select("id", { count: "exact", head: true })
-            .eq("workspace_id", workspaceId)
-        : Promise.resolve({ count: null }),
-      workspaceId
-        ? supabase
-            .from("case_files")
-            .select("id", { count: "exact", head: true })
-            .eq("workspace_id", workspaceId)
-        : Promise.resolve({ count: null }),
-    ]);
-    if (source) {
-      emptyStateReason = `No leads found for source "${source}". Filters may be too strict for current intake data.`;
-    } else if (status) {
-      emptyStateReason = `No leads currently match status "${status.replace(/_/g, " ")}". Filters may be too strict.`;
-    } else if ((opportunitiesCount || 0) === 0) {
-      emptyStateReason = "Scout created no opportunities yet. Run Scout first, then re-open Leads.";
-    } else if ((opportunitiesCount || 0) > 0 && (casesCount || 0) > 0 && rows.length === 0) {
-      emptyStateReason =
-        "Opportunities exist, but intake created no leads for this owner yet. Run intake backfill and check workspace/owner alignment.";
-    } else if ((opportunitiesCount || 0) > 0 && rows.length === 0) {
-      emptyStateReason =
-        "Scout opportunities exist, but no CRM leads were inserted yet. Run intake backfill and inspect insert failures.";
+    if (queryMode === "failed") {
+      emptyStateReason = "Leads temporarily unavailable";
     } else {
-      emptyStateReason =
-        "No leads created yet. Run Scout and backfill to convert opportunities into leads.";
+      emptyStateReason = "No leads yet";
     }
   }
 
@@ -978,13 +982,12 @@ export default async function AdminLeadsPage({
       </section>
       {queryMode === "failed" ? (
         <section className="admin-card">
-          <p className="text-sm" style={{ color: "#fca5a5" }}>
-            Could not load leads: {queryError || "unknown error"}
+          <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+            Leads temporarily unavailable
           </p>
         </section>
-      ) : (
-        <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
-      )}
+      ) : null}
+      <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
     </div>
   );
 }
