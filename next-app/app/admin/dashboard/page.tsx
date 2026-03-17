@@ -133,6 +133,16 @@ function missingTrackingColumns(message: string): boolean {
   );
 }
 
+function missingReplyDetectionColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.last_reply_at") ||
+    text.includes("leads.last_reply_preview") ||
+    text.includes("column last_reply_at") ||
+    text.includes("column last_reply_preview")
+  );
+}
+
 function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
 }
@@ -286,12 +296,13 @@ export default async function DailyCommandCenterPage({
             res.error?.message &&
             (missingIsHotLeadColumn(res.error.message) ||
               missingDealColumns(res.error.message) ||
-              missingTrackingColumns(res.error.message))
+              missingTrackingColumns(res.error.message) ||
+              missingReplyDetectionColumns(res.error.message))
           ) {
             res = (await supabase
               .from("leads")
               .select(
-                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,last_reply_at,last_reply_preview,recommended_next_action"
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,recommended_next_action"
               )
               .eq("owner_id", ownerId)
               .gte("created_at", cutoff24h)
@@ -317,12 +328,13 @@ export default async function DailyCommandCenterPage({
             res.error?.message &&
             (missingIsHotLeadColumn(res.error.message) ||
               missingDealColumns(res.error.message) ||
-              missingTrackingColumns(res.error.message))
+              missingTrackingColumns(res.error.message) ||
+              missingReplyDetectionColumns(res.error.message))
           ) {
             res = (await supabase
               .from("leads")
               .select(
-                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,last_reply_at,last_reply_preview,recommended_next_action"
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,recommended_next_action"
               )
               .eq("owner_id", ownerId)
               .order("created_at", { ascending: false })

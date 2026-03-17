@@ -55,6 +55,16 @@ function missingIsHotLeadColumn(message: string): boolean {
   return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
 }
 
+function missingReplyDetectionColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.last_reply_at") ||
+    text.includes("leads.last_reply_preview") ||
+    text.includes("column last_reply_at") ||
+    text.includes("column last_reply_preview")
+  );
+}
+
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
   const cat = String(category || "").toLowerCase();
@@ -285,16 +295,26 @@ export default async function AdminLeadsPage({
     .limit(500);
   if (date === "today") baseQuery = baseQuery.gte("created_at", dayStart);
 
-  let joinedResult = await baseQuery;
-  if (joinedResult.error?.message && missingIsHotLeadColumn(joinedResult.error.message)) {
-    joinedResult = await supabase
+  let joinedResult = (await baseQuery) as {
+    data: LeadRow[] | null;
+    error: { message?: string } | null;
+  };
+  if (
+    joinedResult.error?.message &&
+    (missingIsHotLeadColumn(joinedResult.error.message) ||
+      missingReplyDetectionColumns(joinedResult.error.message))
+  ) {
+    joinedResult = (await supabase
       .from("leads")
       .select(
-        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
+        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source"
       )
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(500)) as {
+      data: LeadRow[] | null;
+      error: { message?: string } | null;
+    };
   }
   const { data: joinedRows, error: joinedError } = joinedResult;
   let queryMode: "relationship" | "failed" = "relationship";
@@ -303,7 +323,7 @@ export default async function AdminLeadsPage({
 
   if (joinedError) {
     queryMode = "failed";
-    queryError = joinedError.message;
+    queryError = joinedError.message || null;
     rows = [];
   } else {
     rows = (joinedRows || []) as LeadRow[];
