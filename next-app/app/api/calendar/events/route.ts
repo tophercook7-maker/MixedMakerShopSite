@@ -12,6 +12,7 @@ import {
 const VALID_EVENT_TYPES = new Set<CalendarEventType>([
   "appointment",
   "client_call",
+  "personal",
   "follow_up_reminder",
   "task",
   "scout_run",
@@ -29,7 +30,7 @@ async function hasHardBlockConflict(
 ) {
   let query = supabase
     .from("calendar_events")
-    .select("id,title,event_type,start_time,end_time")
+    .select("id,title,event_type,is_blocking,start_time,end_time")
     .eq("owner_id", ownerId)
     .lt("start_time", endIso)
     .or(`end_time.is.null,end_time.gt.${startIso}`)
@@ -37,7 +38,12 @@ async function hasHardBlockConflict(
   if (excludeId) query = query.neq("id", excludeId);
   const { data, error } = await query;
   if (error) return { conflict: false, error: error.message, row: null };
-  const hardBlock = (data || []).find((row) => isHardBlockEventType(String(row.event_type || "")));
+  const hardBlock = (data || []).find((row) => {
+    const explicitBlocking = typeof row.is_blocking === "boolean" ? row.is_blocking : null;
+    return explicitBlocking !== null
+      ? explicitBlocking
+      : isHardBlockEventType(String(row.event_type || ""));
+  });
   return { conflict: Boolean(hardBlock), error: null, row: hardBlock || null };
 }
 
@@ -62,7 +68,7 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from("calendar_events")
-    .select("id,lead_id,title,event_type,start_time,end_time,notes,workspace_id,created_at")
+    .select("id,lead_id,title,event_type,start_time,end_time,notes,workspace_id,owner_id,is_blocking,created_at")
     .eq("owner_id", ownerId)
     .order("start_time", { ascending: true })
     .limit(1000);
@@ -129,6 +135,10 @@ export async function POST(request: Request) {
   const notes = String(body.notes || "").trim();
   const leadId = String(body.lead_id || "").trim();
   const eventTypeRaw = normalizeCalendarEventType(eventTypeInput);
+  const requestedIsBlocking =
+    typeof body.is_blocking === "boolean" ? Boolean(body.is_blocking) : null;
+  const effectiveIsBlocking =
+    requestedIsBlocking !== null ? requestedIsBlocking : isHardBlockEventType(eventTypeRaw);
 
   if (!title) return NextResponse.json({ error: "Title is required." }, { status: 400 });
   if (!startTime) return NextResponse.json({ error: "start_time is required." }, { status: 400 });
@@ -141,7 +151,7 @@ export async function POST(request: Request) {
   if (Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
     return NextResponse.json({ error: "end_time must be after start_time." }, { status: 400 });
   }
-  if (isHardBlockEventType(eventTypeRaw)) {
+  if (effectiveIsBlocking) {
     const conflict = await hasHardBlockConflict(
       supabase,
       ownerId,
@@ -152,13 +162,20 @@ export async function POST(request: Request) {
     if (conflict.error) return NextResponse.json({ error: conflict.error }, { status: 500 });
     if (conflict.conflict) {
       return NextResponse.json(
-        { error: "This time conflicts with an existing hard-block appointment or client call." },
+        { error: "This time conflicts with another blocking appointment." },
         { status: 409 }
       );
     }
   }
 
-  const workspaceId = await resolveWorkspaceIdForOwner(ownerId);
+  const requestedWorkspaceId = String(body.workspace_id || "").trim();
+  const workspaceId = requestedWorkspaceId || (await resolveWorkspaceIdForOwner(ownerId));
+  if (!workspaceId) {
+    return NextResponse.json(
+      { error: "workspace_id is required. Set a workspace or SCOUT_BRAIN_WORKSPACE_ID." },
+      { status: 400 }
+    );
+  }
   const { data, error } = await createCalendarEvent({
     ownerId,
     workspaceId,
@@ -168,6 +185,7 @@ export async function POST(request: Request) {
     startTime,
     endTime: endTime || null,
     notes: notes || null,
+    isBlocking: effectiveIsBlocking,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data, { status: 201 });

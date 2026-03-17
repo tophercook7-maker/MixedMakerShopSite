@@ -8,8 +8,10 @@ const STATUSES = [
   "contacted",
   "follow_up_due",
   "replied",
+  "closed",
   "closed_won",
   "closed_lost",
+  "research_later",
   "do_not_contact",
 ] as const;
 const MESSAGE_TYPES = ["short_email", "long_email", "follow_up"] as const;

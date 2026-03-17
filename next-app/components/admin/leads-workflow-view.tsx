@@ -55,6 +55,7 @@ export type WorkflowLead = {
     | "contacted"
     | "follow_up_due"
     | "replied"
+    | "closed"
     | "closed_won"
     | "closed_lost"
     | "do_not_contact"
@@ -64,6 +65,9 @@ export type WorkflowLead = {
   annotated_screenshot_url?: string | null;
   timeline: TimelineEntry[];
   notes: string[];
+  is_hot_lead?: boolean | null;
+  last_reply_at?: string | null;
+  last_reply_preview?: string | null;
 };
 
 function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
@@ -80,6 +84,7 @@ function prettyStatus(status: string) {
 function badgeClass(status: WorkflowLead["status"]) {
   if (status === "replied" || status === "closed_won") return "admin-badge admin-badge-won";
   if (status === "closed_lost" || status === "do_not_contact") return "admin-badge admin-badge-lost";
+  if (status === "closed") return "admin-badge admin-badge-won";
   if (status === "research_later") return "admin-badge admin-badge-progress";
   if (status === "contacted" || status === "follow_up_due") return "admin-badge admin-badge-progress";
   return "admin-badge admin-badge-new";
@@ -101,6 +106,8 @@ export function LeadsWorkflowView({
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
     | "actionable_email"
+    | "contact_available"
+    | "replies_waiting"
     | "no_website_email"
     | "broken_website_email"
     | "facebook_only_email"
@@ -116,6 +123,7 @@ export function LeadsWorkflowView({
       const ws = String(lead.website_status || "").toLowerCase();
       const cat = String(lead.category || "").toLowerCase();
       const hasEmail = Boolean(String(lead.email || "").trim());
+      const hasContactAvailable = Boolean(String(lead.contact_page || "").trim() || String(lead.facebook_url || "").trim());
       const hasRequired = Boolean(
         String(lead.business_name || "").trim() &&
           String(lead.workspace_id || "").trim() &&
@@ -123,6 +131,8 @@ export function LeadsWorkflowView({
           hasEmail
       );
       if (segment === "actionable_email") return hasRequired;
+      if (segment === "contact_available") return !hasEmail && hasContactAvailable;
+      if (segment === "replies_waiting") return lead.status === "replied" || Boolean(lead.is_hot_lead);
       if (segment === "no_website_email") return hasRequired && ws === "no_website";
       if (segment === "broken_website_email") return hasRequired && ws === "broken_website";
       if (segment === "facebook_only_email") return hasRequired && ws === "facebook_only";
@@ -203,6 +213,8 @@ export function LeadsWorkflowView({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
               ["actionable_email", "Actionable Email Leads"],
+              ["contact_available", "Contact Available"],
+              ["replies_waiting", "Replies Waiting"],
               ["no_website_email", "No Website + Email"],
               ["broken_website_email", "Broken Website + Email"],
               ["facebook_only_email", "Facebook Only + Email"],
@@ -270,9 +282,26 @@ export function LeadsWorkflowView({
                       {lead.city || "—"} · {lead.category || "—"} · Score {lead.opportunity_score ?? "—"} · Website {lead.website_status || "unknown"}
                     </p>
                   </div>
-                  <span className={badgeClass(lead.status)}>{prettyStatus(lead.status)}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={badgeClass(lead.status)}>{prettyStatus(lead.status)}</span>
+                    {(lead.status === "replied" || lead.is_hot_lead) ? (
+                      <span className="admin-badge admin-badge-won">Hot Lead</span>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
+                  {(() => {
+                    const latestInbound = (lead.timeline || []).find((item) => String(item.direction || "").toLowerCase() === "inbound");
+                    const replyPreview =
+                      String(lead.last_reply_preview || latestInbound?.body || "").replace(/\s+/g, " ").trim().slice(0, 160);
+                    const replyAt = String(lead.last_reply_at || latestInbound?.occurred_at || "").trim();
+                    if (!replyPreview && !replyAt) return null;
+                    return (
+                      <p>
+                        <span className="font-semibold">Latest reply:</span> {replyPreview || "Reply received"} {replyAt ? `(${new Date(replyAt).toLocaleString()})` : ""}
+                      </p>
+                    );
+                  })()}
                   <p>
                     <span className="font-semibold">Lead bucket:</span> {canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score)}
                   </p>
@@ -385,6 +414,25 @@ export function LeadsWorkflowView({
                   >
                     Send Email
                   </a>
+                  {lead.status === "replied" || lead.is_hot_lead ? (
+                    <>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs"
+                        onClick={() => {
+                          const latestInbound = (lead.timeline || []).find((item) => String(item.direction || "").toLowerCase() === "inbound");
+                          const text = String(lead.last_reply_preview || latestInbound?.body || "").trim();
+                          if (!text) return;
+                          navigator.clipboard.writeText(text).catch(() => undefined);
+                        }}
+                      >
+                        Copy Reply
+                      </button>
+                      <a href={`/book?lead=${encodeURIComponent(lead.id)}`} className="admin-btn-ghost text-xs">
+                        Send Booking Link
+                      </a>
+                    </>
+                  ) : null}
                       </>
                     );
                   })()}
@@ -514,6 +562,28 @@ export function LeadsWorkflowView({
                         >
                           Send Email
                         </a>
+                        {(lead.status === "replied" || lead.is_hot_lead) ? (
+                          <button
+                            type="button"
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                            onClick={() => {
+                              const latestInbound = (lead.timeline || []).find((item) => String(item.direction || "").toLowerCase() === "inbound");
+                              const text = String(lead.last_reply_preview || latestInbound?.body || "").trim();
+                              if (!text) return;
+                              navigator.clipboard.writeText(text).catch(() => undefined);
+                            }}
+                          >
+                            Copy Reply
+                          </button>
+                        ) : null}
+                        {(lead.status === "replied" || lead.is_hot_lead) ? (
+                          <a
+                            href={`/book?lead=${encodeURIComponent(lead.id)}`}
+                            className="text-[var(--admin-gold)] hover:underline text-xs"
+                          >
+                            Send Booking Link
+                          </a>
+                        ) : null}
                       </div>
                     </td>
                         </>

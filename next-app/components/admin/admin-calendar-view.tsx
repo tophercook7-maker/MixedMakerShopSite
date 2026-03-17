@@ -6,7 +6,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import type { DateSelectArg, DatesSetArg, EventClickArg, EventInput } from "@fullcalendar/core";
+import type { DateSelectArg, DatesSetArg, EventClickArg, EventInput, EventContentArg } from "@fullcalendar/core";
 import { buildLeadPath } from "@/lib/lead-route";
 
 type LeadLite = {
@@ -16,12 +16,16 @@ type LeadLite = {
 
 type CalendarEventRow = {
   id: string;
+  workspace_id?: string | null;
+  owner_id?: string | null;
   lead_id?: string | null;
   title: string;
-  event_type: "appointment" | "client_call" | "followup" | "task" | "scout" | string;
+  event_type: "appointment" | "client_call" | "personal" | "followup" | "task" | "scout" | string;
   start_time: string;
   end_time?: string | null;
   notes?: string | null;
+  is_blocking?: boolean | null;
+  hard_block?: boolean | null;
   lead_business_name?: string | null;
 };
 
@@ -41,11 +45,13 @@ function toEventInput(row: CalendarEventRow): EventInput {
   const colorByType: Record<string, string> = {
     appointment: "#22c55e",
     client_call: "#16a34a",
+    personal: "#0ea5e9",
     followup: "#f59e0b",
     task: "#60a5fa",
     scout: "#a78bfa",
   };
   const type = String(row.event_type || "task").toLowerCase();
+  const isBlocking = Boolean(row.is_blocking ?? row.hard_block);
   return {
     id: row.id,
     title: row.title,
@@ -58,12 +64,16 @@ function toEventInput(row: CalendarEventRow): EventInput {
       leadBusinessName: row.lead_business_name || null,
       eventType: row.event_type,
       notes: row.notes || "",
+      isBlocking,
+      workspaceId: row.workspace_id || null,
+      ownerId: row.owner_id || null,
     },
   };
 }
 
 export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
+  const [currentRange, setCurrentRange] = useState<{ start: string; end: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -71,10 +81,27 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [savingSettings, setSavingSettings] = useState(false);
 
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskType, setTaskType] = useState<"appointment" | "client_call" | "personal" | "followup" | "task" | "scout">("task");
+  const [taskIsBlocking, setTaskIsBlocking] = useState(false);
+  const [taskWorkspaceId, setTaskWorkspaceId] = useState("");
   const [taskStart, setTaskStart] = useState("");
   const [taskEnd, setTaskEnd] = useState("");
   const [taskNotes, setTaskNotes] = useState("");
   const [taskLeadId, setTaskLeadId] = useState("");
+  const [savingEvent, setSavingEvent] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<{
+    id: string;
+    title: string;
+    eventType: string;
+    start: string;
+    end: string;
+    notes: string;
+    leadId: string;
+    leadBusinessName: string;
+    isBlocking: boolean;
+    workspaceId: string;
+    ownerId: string;
+  } | null>(null);
 
   const leadOptions = useMemo(
     () =>
@@ -104,6 +131,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   }
 
   async function loadForRange(arg: DatesSetArg) {
+    setCurrentRange({ start: arg.startStr, end: arg.endStr });
     setLoading(true);
     setError(null);
     try {
@@ -111,6 +139,19 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setEvents(rows.map(toEventInput));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load calendar events.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function refreshCurrentRange() {
+    if (!currentRange) return;
+    setLoading(true);
+    try {
+      const rows = await fetchEvents(currentRange.start, currentRange.end);
+      setEvents(rows.map(toEventInput));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not refresh calendar events.");
     } finally {
       setLoading(false);
     }
@@ -154,10 +195,19 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   }
 
   function onEventClick(arg: EventClickArg) {
-    const leadId = String(arg.event.extendedProps?.leadId || "").trim();
-    const leadBusinessName = String(arg.event.extendedProps?.leadBusinessName || "").trim();
-    if (!leadId) return;
-    window.location.href = buildLeadPath(leadId, leadBusinessName || null);
+    setSelectedEvent({
+      id: String(arg.event.id || ""),
+      title: String(arg.event.title || ""),
+      eventType: String(arg.event.extendedProps?.eventType || "task"),
+      start: arg.event.start ? new Date(arg.event.start).toISOString().slice(0, 16) : "",
+      end: arg.event.end ? new Date(arg.event.end).toISOString().slice(0, 16) : "",
+      notes: String(arg.event.extendedProps?.notes || ""),
+      leadId: String(arg.event.extendedProps?.leadId || ""),
+      leadBusinessName: String(arg.event.extendedProps?.leadBusinessName || ""),
+      isBlocking: Boolean(arg.event.extendedProps?.isBlocking),
+      workspaceId: String(arg.event.extendedProps?.workspaceId || ""),
+      ownerId: String(arg.event.extendedProps?.ownerId || ""),
+    });
   }
 
   function onDateSelect(arg: DateSelectArg) {
@@ -168,7 +218,28 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
     if (!taskTitle.trim()) setTaskTitle("Follow-up task");
   }
 
-  async function createTask(eventType: "task" | "followup" | "client_call" | "appointment") {
+  useEffect(() => {
+    if (taskType === "appointment" || taskType === "client_call" || taskType === "personal") {
+      setTaskIsBlocking(true);
+    } else {
+      setTaskIsBlocking(false);
+    }
+  }, [taskType]);
+
+  function eventContent(arg: EventContentArg) {
+    const eventType = String(arg.event.extendedProps?.eventType || "task");
+    const isBlocking = Boolean(arg.event.extendedProps?.isBlocking);
+    return (
+      <div style={{ padding: "2px 4px" }}>
+        <div style={{ fontWeight: 700, fontSize: 12, lineHeight: 1.2 }}>{arg.timeText ? `${arg.timeText} ` : ""}{arg.event.title}</div>
+        <div style={{ fontSize: 10, opacity: 0.9 }}>
+          {eventType} · {isBlocking ? "blocking" : "non-blocking"}
+        </div>
+      </div>
+    );
+  }
+
+  async function createTask() {
     setError(null);
     setMessage(null);
     const title = taskTitle.trim();
@@ -180,27 +251,105 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setError("Start time is required.");
       return;
     }
-    const res = await fetch("/api/calendar/events", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        event_type: eventType,
-        start_time: new Date(taskStart).toISOString(),
-        end_time: taskEnd ? new Date(taskEnd).toISOString() : null,
-        notes: taskNotes.trim() || null,
-        lead_id: taskLeadId || null,
-      }),
-    });
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    if (!res.ok) {
-      setError(body.error || "Could not create event.");
+    setSavingEvent(true);
+    try {
+      const res = await fetch("/api/calendar/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          event_type: taskType,
+          start_time: new Date(taskStart).toISOString(),
+          end_time: taskEnd ? new Date(taskEnd).toISOString() : null,
+          notes: taskNotes.trim() || null,
+          is_blocking: taskIsBlocking,
+          lead_id: taskLeadId || null,
+          workspace_id: taskWorkspaceId.trim() || null,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      if (!res.ok) {
+        setError(body.error || "Could not create event.");
+        return;
+      }
+      const created = body && body.id ? toEventInput(body) : null;
+      if (created) {
+        setEvents((prev) => {
+          const next = prev.filter((ev) => String(ev.id || "") !== String(created.id || ""));
+          next.push(created);
+          return next;
+        });
+      }
+      await refreshCurrentRange();
+      setTaskTitle("");
+      setTaskNotes("");
+      setTaskLeadId("");
+      setMessage("Calendar event created successfully.");
+    } finally {
+      setSavingEvent(false);
+    }
+  }
+
+  async function saveSelectedEvent() {
+    if (!selectedEvent) return;
+    setError(null);
+    setMessage(null);
+    if (!selectedEvent.title.trim()) {
+      setError("Title is required.");
       return;
     }
-    setTaskTitle("");
-    setTaskNotes("");
-    setTaskLeadId("");
-    setMessage("Calendar event created.");
+    if (!selectedEvent.start) {
+      setError("Start time is required.");
+      return;
+    }
+    setSavingEvent(true);
+    try {
+      const res = await fetch(`/api/calendar/events/${encodeURIComponent(selectedEvent.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: selectedEvent.title,
+          event_type: selectedEvent.eventType,
+          start_time: new Date(selectedEvent.start).toISOString(),
+          end_time: selectedEvent.end ? new Date(selectedEvent.end).toISOString() : null,
+          notes: selectedEvent.notes || null,
+          lead_id: selectedEvent.leadId || null,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      if (!res.ok) {
+        setError(body.error || "Could not update event.");
+        return;
+      }
+      setMessage("Event updated successfully.");
+      setSelectedEvent(null);
+      await refreshCurrentRange();
+    } finally {
+      setSavingEvent(false);
+    }
+  }
+
+  async function deleteSelectedEvent() {
+    if (!selectedEvent) return;
+    setSavingEvent(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/calendar/events/${encodeURIComponent(selectedEvent.id)}`, {
+        method: "DELETE",
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(body.error || "Could not delete event.");
+        return;
+      }
+      setEvents((prev) => prev.filter((ev) => String(ev.id || "") !== selectedEvent.id));
+      setSelectedEvent(null);
+      setMessage("Event deleted.");
+      await refreshCurrentRange();
+    } finally {
+      setSavingEvent(false);
+    }
   }
 
   return (
@@ -261,6 +410,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
             eventDrop={onEventDrop}
             eventResize={onEventResize}
             eventClick={onEventClick}
+            eventContent={eventContent}
             height="auto"
           />
           {loading ? <p className="text-xs mt-2">Loading events...</p> : null}
@@ -273,13 +423,37 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
 
         <aside className="space-y-3">
           <section className="admin-card space-y-2">
-            <h2 className="text-sm font-semibold">Quick Task Creation</h2>
+            <h2 className="text-sm font-semibold">Manual Event Creation</h2>
             <input
               className="admin-input h-9"
-              placeholder="Task title"
+              placeholder="Event title"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
             />
+            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Event type
+            </label>
+            <select className="admin-input h-9" value={taskType} onChange={(e) => setTaskType(e.target.value as typeof taskType)}>
+              <option value="appointment">appointment</option>
+              <option value="client_call">client_call</option>
+              <option value="personal">personal</option>
+              <option value="followup">followup</option>
+              <option value="task">task</option>
+              <option value="scout">scout</option>
+            </select>
+            <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Workspace ID (optional if default is configured)
+            </label>
+            <input
+              className="admin-input h-9"
+              placeholder="workspace_id"
+              value={taskWorkspaceId}
+              onChange={(e) => setTaskWorkspaceId(e.target.value)}
+            />
+            <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
+              <input type="checkbox" checked={taskIsBlocking} onChange={(e) => setTaskIsBlocking(Boolean(e.target.checked))} />
+              blocking event
+            </label>
             <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
               Start time
             </label>
@@ -303,17 +477,8 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
               onChange={(e) => setTaskNotes(e.target.value)}
             />
             <div className="flex flex-wrap gap-2">
-              <button className="admin-btn-primary text-xs" onClick={() => void createTask("task")}>
-                Create Task
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("followup")}>
-                Create Follow-up Reminder
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("client_call")}>
-                Create Client Call
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void createTask("appointment")}>
-                Create Appointment
+              <button className="admin-btn-primary text-xs" onClick={() => void createTask()} disabled={savingEvent}>
+                {savingEvent ? "Saving..." : "Create Event"}
               </button>
             </div>
           </section>
@@ -331,6 +496,71 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
           </section>
         </aside>
       </div>
+
+      {selectedEvent ? (
+        <section className="admin-card space-y-2">
+          <h2 className="text-sm font-semibold">Event Details</h2>
+          <input
+            className="admin-input h-9"
+            value={selectedEvent.title}
+            onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, title: e.target.value } : prev))}
+          />
+          <select
+            className="admin-input h-9"
+            value={selectedEvent.eventType}
+            onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, eventType: e.target.value } : prev))}
+          >
+            <option value="appointment">appointment</option>
+            <option value="client_call">client_call</option>
+            <option value="personal">personal</option>
+            <option value="followup">followup</option>
+            <option value="task">task</option>
+            <option value="scout">scout</option>
+          </select>
+          <div className="grid gap-2 md:grid-cols-2">
+            <input
+              className="admin-input h-9"
+              type="datetime-local"
+              value={selectedEvent.start}
+              onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, start: e.target.value } : prev))}
+            />
+            <input
+              className="admin-input h-9"
+              type="datetime-local"
+              value={selectedEvent.end}
+              onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, end: e.target.value } : prev))}
+            />
+          </div>
+          <textarea
+            className="admin-input min-h-[100px]"
+            value={selectedEvent.notes}
+            onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, notes: e.target.value } : prev))}
+            placeholder="Notes"
+          />
+          <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Type: {selectedEvent.eventType} · {selectedEvent.isBlocking ? "blocking" : "non-blocking"} · owner:{" "}
+            {selectedEvent.ownerId || "—"} · workspace: {selectedEvent.workspaceId || "—"}
+          </div>
+          {selectedEvent.leadId ? (
+            <div className="flex flex-wrap gap-2">
+              <a href={buildLeadPath(selectedEvent.leadId, selectedEvent.leadBusinessName || null)} className="admin-btn-ghost text-xs">
+                Open Lead
+              </a>
+            </div>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <button className="admin-btn-primary text-xs" onClick={() => void saveSelectedEvent()} disabled={savingEvent}>
+              {savingEvent ? "Saving..." : "Save Changes"}
+            </button>
+            <button className="admin-btn-danger text-xs" onClick={() => void deleteSelectedEvent()} disabled={savingEvent}>
+              Delete Event
+            </button>
+            <button className="admin-btn-ghost text-xs" onClick={() => setSelectedEvent(null)} disabled={savingEvent}>
+              Close
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {message ? <p className="text-xs" style={{ color: "#86efac" }}>{message}</p> : null}
       {error ? <p className="text-xs" style={{ color: "#fca5a5" }}>{error}</p> : null}

@@ -15,6 +15,10 @@ type LeadRow = {
   created_at?: string | null;
   follow_up_date?: string | null;
   next_follow_up_at?: string | null;
+  is_hot_lead?: boolean | null;
+  last_reply_at?: string | null;
+  last_reply_preview?: string | null;
+  recommended_next_action?: string | null;
 };
 
 type OpportunityRow = {
@@ -48,6 +52,15 @@ type EmailDraftRow = {
   lead_id?: string | null;
   subject?: string | null;
   body?: string | null;
+  created_at?: string | null;
+};
+
+type ReplyMessageRow = {
+  id: string;
+  lead_id?: string | null;
+  recipient_email?: string | null;
+  body?: string | null;
+  received_at?: string | null;
   created_at?: string | null;
 };
 
@@ -169,16 +182,17 @@ export default async function DailyCommandCenterPage({
       }
     | null = null;
   let draftRows: EmailDraftRow[] = [];
+  let replyMessageRows: ReplyMessageRow[] = [];
 
   if (!minimalMode) {
-    const [topLeadRaw, allLeadsRaw, draftRaw] = await Promise.all([
+    const [topLeadRaw, allLeadsRaw, draftRaw, repliesRaw] = await Promise.all([
       runBootstrapTask(
         "leads.top-24h",
         async () =>
           (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
             )
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
@@ -192,7 +206,7 @@ export default async function DailyCommandCenterPage({
           (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
@@ -200,16 +214,36 @@ export default async function DailyCommandCenterPage({
         bootstrapIssues
       ),
       runBootstrapTask("email_messages.drafts", async () => fetchDraftMessages(supabase, ownerId), bootstrapIssues),
+      runBootstrapTask(
+        "email_messages.replies",
+        async () =>
+          (await supabase
+            .from("email_messages")
+            .select("id,lead_id,recipient_email,body,received_at,created_at,direction")
+            .eq("owner_id", ownerId)
+            .eq("direction", "inbound")
+            .order("received_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false })
+            .limit(500)) as { data: ReplyMessageRow[] | null; error: unknown },
+        bootstrapIssues
+      ),
     ]);
     topLeadResult = topLeadRaw;
     allLeadsResult = allLeadsRaw;
     draftRows = draftRaw || [];
+    replyMessageRows = (((repliesRaw as { data?: ReplyMessageRow[] | null })?.data || []) as ReplyMessageRow[]);
   }
 
   const topLeads = ((topLeadResult?.data || []) as unknown[]) as LeadRow[];
   const topLeadsEmailReady = topLeads.filter((lead) => Boolean(String(lead.email || "").trim()));
   const allLeads = ((allLeadsResult?.data || []) as unknown[]) as LeadRow[];
   const leadById = new Map(allLeads.map((lead) => [String(lead.id), lead]));
+  const latestReplyByLeadId = new Map<string, ReplyMessageRow>();
+  for (const row of replyMessageRows || []) {
+    const leadId = String(row.lead_id || "").trim();
+    if (!leadId || latestReplyByLeadId.has(leadId)) continue;
+    latestReplyByLeadId.set(leadId, row);
+  }
 
   const topLeadOppIds = topLeads
     .map((lead) => String(lead.linked_opportunity_id || "").trim())
@@ -341,14 +375,28 @@ export default async function DailyCommandCenterPage({
       const bestContact = String(assessment.best_contact_method || "").trim();
       const nextAction = String(assessment.recommended_next_action || "").trim();
       const email = String(lead.email || caseRow?.email || "").trim();
+      const contactAvailable = Boolean(
+        String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim() ||
+          String(caseRow?.facebook_url || caseRow?.facebook || "").trim()
+      );
       const signalEmailSource =
         issueList
           .find((signal) => signal.toLowerCase().startsWith("email_source:"))
           ?.split(":")[1]
           ?.trim() || "";
       const emailSource = email ? String(caseRow?.email_source || signalEmailSource || "unknown").trim() : null;
-      const qualified = Boolean(businessName && reason && email && bestContact && nextAction);
+      const qualified = Boolean(
+        businessName && reason && (email || contactAvailable) && nextAction
+      );
       if (!qualified) return null;
+      const tierRank = email ? 1 : 2;
+      const bestContactMethod = email
+        ? assessment.best_contact_method || "email"
+        : String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim()
+            ? "contact_page"
+            : String(caseRow?.facebook_url || caseRow?.facebook || "").trim()
+              ? "facebook"
+              : bestContact || "none";
       return {
         id: leadId,
         businessName,
@@ -363,11 +411,12 @@ export default async function DailyCommandCenterPage({
         opportunityReason: reason,
         email,
         emailSource,
-        bestContactMethod: assessment.best_contact_method || "email",
+        bestContactMethod,
         bestPitchAngle: assessment.best_pitch_angle,
         recommendedNextAction: assessment.recommended_next_action,
         whyThisLeadIsHere: assessment.why_this_lead_is_here,
         leadPath: buildLeadPath(leadId, businessName),
+        tierRank,
         casePath: String(caseRow?.id || "").trim()
           ? `/admin/cases/${encodeURIComponent(String(caseRow?.id || ""))}`
           : null,
@@ -375,28 +424,59 @@ export default async function DailyCommandCenterPage({
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((a, b) => {
+      if (a.tierRank !== b.tierRank) return a.tierRank - b.tierRank;
+      return Number(b.opportunityScore || 0) - Number(a.opportunityScore || 0);
+    })
     .slice(0, 8);
 
   const emailsReady = draftRows
     .filter((row) => String(row.lead_id || "").trim())
     .slice(0, 12);
   const repliesWaiting = allLeads
-    .filter((lead) => String(lead.status || "").toLowerCase() === "replied")
+    .filter((lead) => {
+      const status = String(lead.status || "").toLowerCase();
+      return status === "replied" || Boolean(lead.is_hot_lead);
+    })
+    .sort((a, b) => {
+      const aTs = new Date(
+        String(
+          a.last_reply_at ||
+            latestReplyByLeadId.get(String(a.id || ""))?.received_at ||
+            latestReplyByLeadId.get(String(a.id || ""))?.created_at ||
+            0
+        )
+      ).getTime();
+      const bTs = new Date(
+        String(
+          b.last_reply_at ||
+            latestReplyByLeadId.get(String(b.id || ""))?.received_at ||
+            latestReplyByLeadId.get(String(b.id || ""))?.created_at ||
+            0
+        )
+      ).getTime();
+      return bTs - aTs;
+    })
     .slice(0, 12);
+  const todayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const repliesToday = (replyMessageRows || []).filter((row) => {
+    const ts = String(row.received_at || row.created_at || "").trim();
+    return ts && ts >= todayStartIso;
+  }).length;
 
   const snapshot = {
     new: 0,
     contacted: 0,
-    interested: 0,
-    proposal_sent: 0,
+    replied: 0,
+    research_later: 0,
     closed: 0,
   };
   for (const lead of allLeads) {
     const status = String(lead.status || "").trim().toLowerCase();
     if (status === "new") snapshot.new += 1;
-    else if (status === "contacted" || status === "follow_up_due" || status === "replied") snapshot.contacted += 1;
-    else if (status === "interested") snapshot.interested += 1;
-    else if (status === "proposal_sent") snapshot.proposal_sent += 1;
+    else if (status === "contacted" || status === "follow_up_due") snapshot.contacted += 1;
+    else if (status === "replied") snapshot.replied += 1;
+    else if (status === "research_later") snapshot.research_later += 1;
     else if (status === "closed" || status === "closed_won" || status === "closed_lost") snapshot.closed += 1;
   }
 
@@ -671,6 +751,9 @@ export default async function DailyCommandCenterPage({
 
         <article className="admin-card">
           <h2 className="text-lg font-semibold mb-3">Replies Waiting</h2>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            Replies today: {repliesToday}. Unmatched replies are logged in webhook diagnostics.
+          </p>
           <div className="space-y-3">
             {repliesWaiting.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
@@ -683,20 +766,62 @@ export default async function DailyCommandCenterPage({
                   className="rounded-lg border px-3 py-2"
                   style={{ borderColor: "var(--admin-border)" }}
                 >
+                  {(() => {
+                    const latestReply = latestReplyByLeadId.get(String(lead.id || ""));
+                    const replyAt =
+                      String(lead.last_reply_at || latestReply?.received_at || latestReply?.created_at || "").trim() || null;
+                    const replyPreview =
+                      String(lead.last_reply_preview || latestReply?.body || "")
+                        .replace(/\s+/g, " ")
+                        .trim()
+                        .slice(0, 180) || "Reply received";
+                    const fromEmail = String(lead.email || latestReply?.recipient_email || "").trim() || "unknown";
+                    return (
+                      <>
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium">{String(lead.business_name || "Lead")}</p>
                     <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                      replied
+                      Replied / Hot Lead
                     </span>
                   </div>
+                  <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                    {fromEmail} · {fmtDate(replyAt)}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                    "{replyPreview}"
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                    Status: {String(lead.status || "replied")} · Next action: {String(lead.recommended_next_action || "Reply to Lead")}
+                  </p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <a
                       href={buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead"))}
                       className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center"
                     >
-                      Reply
+                      Open Lead
+                    </a>
+                    <a
+                      href={buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead"))}
+                      className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Copy Reply
+                    </a>
+                    <a
+                      href={`/book?lead=${encodeURIComponent(String(lead.id || ""))}`}
+                      className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Send Booking Link
+                    </a>
+                    <a
+                      href={buildLeadPath(String(lead.id || ""), String(lead.business_name || "Lead"))}
+                      className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center"
+                    >
+                      Mark Closed
                     </a>
                   </div>
+                      </>
+                    );
+                  })()}
                 </div>
               ))
             )}
@@ -749,12 +874,12 @@ export default async function DailyCommandCenterPage({
               <p className="text-2xl font-semibold mt-1">{snapshot.contacted}</p>
             </div>
             <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>interested</p>
-              <p className="text-2xl font-semibold mt-1">{snapshot.interested}</p>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>replied</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.replied}</p>
             </div>
             <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>proposal_sent</p>
-              <p className="text-2xl font-semibold mt-1">{snapshot.proposal_sent}</p>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>research_later</p>
+              <p className="text-2xl font-semibold mt-1">{snapshot.research_later}</p>
             </div>
             <div className="rounded-lg border px-3 py-3 col-span-2" style={{ borderColor: "var(--admin-border)" }}>
               <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>closed</p>

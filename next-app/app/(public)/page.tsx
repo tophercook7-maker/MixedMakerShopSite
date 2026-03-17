@@ -17,13 +17,12 @@ export default function HomePage() {
         <div className="container hero-grid">
           <div>
             <div className="kicker">
-              <span className="dot" /> MixedMakerShop.com • Custom 3D Prints • Small Business Web Design • Personalized
-              Products
+              <span className="dot" /> Small Business Website Design • Arkansas-Focused • Conversion-First
             </div>
             <h1 className="h1">
-              Websites that bring you customers — not just visitors.
+              Get more calls and customers with a better website
             </h1>
-            <p className="subhead">Custom web design for businesses in Hot Springs and beyond.</p>
+            <p className="subhead">Clear, mobile-first websites for small businesses across Arkansas.</p>
             <p className="small" style={{ margin: "8px 0 0" }}>
               <a href="https://share.google.com/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener noreferrer">
                 ⭐ Rated 5.0 by local clients
@@ -35,7 +34,7 @@ export default function HomePage() {
             </p>
             <div className="btn-row">
               <a className="btn gold" href="#free-mockup-request">
-                Get My Free Mockup
+                Request a Preview
               </a>
               <a className="btn ghost" href="#full-project-inquiry">
                 Start a Full Project
@@ -51,14 +50,14 @@ export default function HomePage() {
 
           <aside className="panel">
             <div className="small" style={{ fontWeight: 950, color: "rgba(255,255,255,.80)", marginBottom: 10 }}>
-              One studio, many small ventures
+              Built for small business results
             </div>
             <div className="btn-row" style={{ marginTop: 0 }}>
               <Link href="/website-samples" className="btn">
                 Website Samples ↗
               </Link>
               <a className="btn gold" href="#free-mockup-request">
-                Get My Free Mockup
+                Request a Preview
               </a>
             </div>
             <div className="icon-row">
@@ -92,29 +91,15 @@ export default function HomePage() {
               </div>
               <div className="ic">
                 <div>
-                  <span>🧩 Custom prints</span>
-                  <br />
-                  <strong>3D Prints</strong>
-                </div>
-              </div>
-              <div className="ic">
-                <div>
                   <span>📱 Website building</span>
                   <br />
                   <strong>Small Business Sites</strong>
                 </div>
               </div>
-              <div className="ic">
-                <div>
-                  <span>🎣 Product development</span>
-                  <br />
-                  <strong>Prototypes & Parts</strong>
-                </div>
-              </div>
             </div>
             <div className="card" style={{ marginTop: 14 }}>
               <p className="small" style={{ margin: 0 }}>
-                Web design and 3D printing — digital and physical builds under one roof.
+                Practical website upgrades focused on calls, quote requests, and local trust.
               </p>
             </div>
           </aside>
@@ -162,13 +147,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Problem / Solution */}
+      {/* Problem Awareness */}
       <section className="section" id="problem-solution">
         <div className="container">
-          <h2 className="section-heading">Is your website helping your business — or holding it back?</h2>
+          <h2 className="section-heading">Why many current websites lose customers</h2>
           <p className="transformations-subhead" style={{ margin: "0 0 28px" }}>
-            Many small business websites look outdated, load slowly, or make it hard for customers to find what they
-            need. A better website can make a huge difference in how your business is perceived online.
+            Across Arkansas, small business owners lose leads when websites are hard to use on phones, slow to load, or
+            unclear about what to do next.
           </p>
           <div className="how-it-works-grid" style={{ marginBottom: 28 }}>
             <div className="how-it-works-card">
@@ -177,7 +162,7 @@ export default function HomePage() {
                 If your website looks old or cluttered, visitors may assume your business is too.
               </p>
               <p className="how-it-works-copy" style={{ margin: 0, color: "var(--gold2)" }}>
-                A clean, modern design helps customers trust your business right away.
+                A modern, trustworthy layout helps local customers choose you faster.
               </p>
             </div>
             <div className="how-it-works-card">
@@ -186,7 +171,7 @@ export default function HomePage() {
                 If visitors can&apos;t quickly understand what you do or how to contact you, they leave.
               </p>
               <p className="how-it-works-copy" style={{ margin: 0, color: "var(--gold2)" }}>
-                Clear structure and simple navigation guide visitors toward becoming customers.
+                Clear structure turns visits into calls, form submissions, and bookings.
               </p>
             </div>
             <div className="how-it-works-card">
@@ -195,16 +180,16 @@ export default function HomePage() {
                 Websites that load slowly or feel frustrating on mobile devices lose potential customers.
               </p>
               <p className="how-it-works-copy" style={{ margin: 0, color: "var(--gold2)" }}>
-                Fast, responsive websites keep visitors engaged and ready to reach out.
+                Faster mobile pages keep visitors engaged long enough to contact you.
               </p>
             </div>
           </div>
           <p className="subhead" style={{ margin: "0 0 16px", textAlign: "center" }}>
-            See what your website could look like with a professional redesign.
+            See a cleaner, faster version of your site before committing.
           </p>
           <div className="btn-row" style={{ justifyContent: "center" }}>
             <a className="btn gold" href="#free-mockup-request">
-              Get My Free Mockup
+              Request a Preview
             </a>
           </div>
         </div>
@@ -253,7 +238,7 @@ export default function HomePage() {
           </div>
           <div className="btn-row" style={{ justifyContent: "center" }}>
             <a className="btn gold" href="#free-mockup-request">
-              Get My Free Mockup
+              Request a Preview
             </a>
             <Link href="/website-samples" className="btn ghost">
               View All Website Samples
@@ -301,7 +286,7 @@ export default function HomePage() {
           </div>
           <div className="btn-row" style={{ justifyContent: "center" }}>
             <a className="btn gold" href="#free-mockup-request">
-              Get My Free Mockup
+              Request a Preview
             </a>
             <Link href="/website-samples" className="btn ghost">
               View Website Samples
@@ -416,9 +401,9 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="btn-row">
-              <Link href="/website-samples" className="btn gold">
-                View all website samples →
-              </Link>
+              <a href="#free-mockup-request" className="btn gold">
+                Request a Preview
+              </a>
             </div>
           </div>
         </div>
@@ -499,25 +484,25 @@ export default function HomePage() {
       <section className="section" id="pricing">
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 14px" }}>Services</h2>
+            <h2 style={{ margin: "0 0 14px" }}>Simple Pricing</h2>
+            <p className="subhead" style={{ margin: "0 0 12px" }}>
+              Clear pricing options for Arkansas small businesses that need a better-performing website.
+            </p>
             <div className="price-grid" style={{ marginTop: 14 }}>
               <div className="price-card">
-                <div className="tag">FULL WEBSITE BUILD • MOST REQUESTED</div>
-                <div className="price">$950</div>
+                <div className="tag">STARTER</div>
+                <div className="price">$300-$500</div>
                 <p className="small">
-                  A clean, modern website built for your business — structured for long-term use, not just launch day.
+                  Best for newer businesses that need a clean one-page or simple starter site.
                 </p>
                 <ul>
-                  <li>Up to 5 pages (Home, About, Services/Menu, Gallery, Contact)</li>
+                  <li>Essential pages and clear service messaging</li>
                   <li>Mobile-first responsive layout</li>
-                  <li>Contact form + clear call-to-action</li>
-                  <li>Basic SEO structure</li>
-                  <li>2 revision rounds</li>
-                  <li>Launch support included</li>
+                  <li>Contact-focused calls to action</li>
                 </ul>
                 <div className="actions">
-                  <a className="mini gold" href="#full-project-inquiry">
-                    Start a Full Project
+                  <a className="mini gold" href="#free-mockup-request">
+                    Request a Preview
                   </a>
                   <Link href="/pricing" className="mini">
                     View Pricing
@@ -525,34 +510,37 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="price-card">
-                <div className="tag">HOSTING & SUPPORT</div>
-                <div className="price">$89/mo</div>
+                <div className="tag">STANDARD</div>
+                <div className="price">$600-$900</div>
                 <p className="small">
-                  Hosting, backups, monitoring, and direct support — your site stays secure and fast without you
-                  managing it.
+                  Best for established businesses that need a full small-business website designed to convert.
                 </p>
                 <ul>
-                  <li>Secure hosting</li>
-                  <li>Regular backups</li>
-                  <li>Minor content updates</li>
-                  <li>Direct support</li>
+                  <li>Multi-section website with stronger trust and offer clarity</li>
+                  <li>Conversion-focused homepage structure</li>
+                  <li>Mobile and speed optimization basics</li>
                 </ul>
                 <div className="actions">
-                  <a className="mini gold" href="#full-project-inquiry">
-                    Add hosting & support
+                  <a className="mini gold" href="#free-mockup-request">
+                    Request a Preview
                   </a>
                 </div>
               </div>
               <div className="price-card">
-                <div className="tag">3D PRINTING & CUSTOM BUILDS</div>
-                <div className="price">Quote</div>
+                <div className="tag">MONTHLY OPTION</div>
+                <div className="price">Monthly</div>
                 <p className="small">
-                  Custom prints, personalized products, prototypes. Quote-based, made-to-order.
+                  For owners who want ongoing support, edits, and improvements after launch.
                 </p>
+                <ul>
+                  <li>Hosting and routine updates</li>
+                  <li>Priority support for content changes</li>
+                  <li>Continuous website improvement</li>
+                </ul>
                 <div className="actions">
-                  <Link href="/3d-printing" className="mini gold">
-                    See 3D Printing
-                  </Link>
+                  <a className="mini gold" href="#free-mockup-request">
+                    Request a Preview
+                  </a>
                 </div>
               </div>
             </div>
@@ -615,9 +603,9 @@ export default function HomePage() {
                 <h3>Web Design</h3>
                 <p className="small">Clean, responsive small-business sites. You work directly with me.</p>
                 <div className="btn-row">
-                  <Link href="/web-design" className="btn gold">
-                    Browse Small Business Sites
-                  </Link>
+                  <a href="#free-mockup-request" className="btn gold">
+                    Request a Preview
+                  </a>
                   <Link href="/pricing" className="btn">
                     Pricing
                   </Link>
@@ -627,9 +615,9 @@ export default function HomePage() {
                 <h3>3D Printing</h3>
                 <p className="small">Custom prints, prototypes & parts. Quote-based, made-to-order.</p>
                 <div className="btn-row">
-                  <Link href="/custom-3d-printing" className="btn gold">
-                    Custom 3D Printing Service
-                  </Link>
+                  <a href="#free-mockup-request" className="btn gold">
+                    Request a Preview
+                  </a>
                   <Link href="/3d-printing" className="btn">
                     See 3D Printing
                   </Link>
@@ -649,11 +637,11 @@ export default function HomePage() {
           <div className="panel">
             <h2 style={{ margin: "0 0 14px" }}>Ready for a better website?</h2>
             <p className="subhead" style={{ margin: "0 0 14px" }}>
-              Get a free mockup or start a full project — no obligation.
+              Built for small businesses in Arkansas that want more calls, quote requests, and customers.
             </p>
             <div className="btn-row">
               <a className="btn gold" href="#free-mockup-request">
-                Get My Free Mockup
+                Request a Preview
               </a>
               <a className="btn ghost" href="#full-project-inquiry">
                 Start a Full Project

@@ -8,6 +8,18 @@ function scoutBaseUrl() {
   return process.env.SCOUT_BRAIN_API_BASE_URL?.trim().replace(/\/+$/, "") ?? "";
 }
 
+function pickString(...values: unknown[]): string {
+  for (const value of values) {
+    const next = String(value || "").trim();
+    if (next) return next;
+  }
+  return "";
+}
+
+function normalizeEmail(value: unknown): string {
+  return String(value || "").trim().toLowerCase();
+}
+
 export async function POST(request: Request) {
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
@@ -88,6 +100,141 @@ export async function POST(request: Request) {
     const ownerId = String(session?.user?.id || "").trim();
     const leadId = String(payload?.lead_id || "").trim();
     const subject = String(payload?.subject || "Follow up outreach").trim();
+    const sentAtIso = new Date().toISOString();
+    const recipientEmail = normalizeEmail(payload?.to || payload?.recipient_email || payload?.email);
+    const previewUrl = String(payload?.preview_url || "").trim() || null;
+    const providerMessageId = pickString(
+      (body as Record<string, unknown>)?.provider_message_id,
+      (body as Record<string, unknown>)?.message_id,
+      (body as Record<string, unknown>)?.id
+    ) || null;
+    const providerThreadId = pickString(
+      (body as Record<string, unknown>)?.provider_thread_id,
+      (body as Record<string, unknown>)?.thread_id,
+      (body as Record<string, unknown>)?.conversation_id
+    ) || null;
+    let leadUpdates: Record<string, unknown> | null = null;
+    if (ownerId && leadId) {
+      const nowIso = new Date().toISOString();
+      const { data: leadRows } = await supabase
+        .from("leads")
+        .select("id,status,email")
+        .eq("id", leadId)
+        .eq("owner_id", ownerId)
+        .limit(1);
+      const existing = (leadRows || [])[0] as { status?: string | null; email?: string | null } | undefined;
+      const currentStatus = String(existing?.status || "").trim().toLowerCase();
+      const hasEmail = Boolean(String(existing?.email || "").trim());
+      const nextStatus = hasEmail
+        ? (["replied", "closed", "closed_won", "closed_lost", "do_not_contact"].includes(currentStatus)
+            ? currentStatus
+            : "contacted")
+        : "research_later";
+      const updatePayload: Record<string, unknown> = {
+        status: nextStatus,
+        last_contacted_at: nowIso,
+      };
+      if (nextStatus !== "research_later") {
+        updatePayload.next_follow_up_at = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      }
+      const { error: leadUpdateError } = await supabase
+        .from("leads")
+        .update(updatePayload)
+        .eq("id", leadId)
+        .eq("owner_id", ownerId);
+      if (!leadUpdateError) {
+        leadUpdates = updatePayload;
+      }
+    }
+
+    // Persist outbound identifiers so inbound replies can be matched reliably.
+    if (ownerId && leadId && recipientEmail) {
+      let threadId: string | null = null;
+      try {
+        if (providerThreadId) {
+          const byProvider = await supabase
+            .from("email_threads")
+            .select("id")
+            .eq("owner_id", ownerId)
+            .eq("provider_thread_id", providerThreadId)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          threadId = String((byProvider.data || [])[0]?.id || "").trim() || null;
+        }
+        if (!threadId) {
+          const byLeadAndContact = await supabase
+            .from("email_threads")
+            .select("id")
+            .eq("owner_id", ownerId)
+            .eq("lead_id", leadId)
+            .ilike("contact_email", recipientEmail)
+            .order("last_message_at", { ascending: false, nullsFirst: false })
+            .limit(1);
+          threadId = String((byLeadAndContact.data || [])[0]?.id || "").trim() || null;
+        }
+        if (!threadId) {
+          const inserted = await supabase
+            .from("email_threads")
+            .insert({
+              workspace_id: workspaceId || null,
+              lead_id: leadId,
+              contact_email: recipientEmail,
+              subject,
+              provider_thread_id: providerThreadId,
+              status: "active",
+              last_message_at: sentAtIso,
+              owner_id: ownerId,
+            })
+            .select("id")
+            .limit(1);
+          threadId = String((inserted.data || [])[0]?.id || "").trim() || null;
+        } else {
+          await supabase
+            .from("email_threads")
+            .update({
+              provider_thread_id: providerThreadId || undefined,
+              subject,
+              status: "active",
+              last_message_at: sentAtIso,
+            })
+            .eq("id", threadId)
+            .eq("owner_id", ownerId);
+        }
+
+        let duplicateOutbound = false;
+        if (providerMessageId) {
+          const existing = await supabase
+            .from("email_messages")
+            .select("id")
+            .eq("owner_id", ownerId)
+            .eq("provider_message_id", providerMessageId)
+            .limit(1);
+          duplicateOutbound = Boolean((existing.data || [])[0]?.id);
+        }
+        if (!duplicateOutbound) {
+          await supabase.from("email_messages").insert({
+            thread_id: threadId,
+            lead_id: leadId,
+            direction: "outbound",
+            provider_message_id: providerMessageId,
+            subject,
+            body: String(payload?.body || "").trim(),
+            delivery_status: "sent",
+            sent_at: sentAtIso,
+            owner_id: ownerId,
+            recipient_email: recipientEmail,
+            preview_url: previewUrl,
+            message_kind: String(payload?.message_type || "").trim() || "outreach",
+          });
+        }
+      } catch (persistError) {
+        console.warn("[Scout Proxy] outbound identifier persistence failed", {
+          lead_id: leadId,
+          owner_id: ownerId,
+          error: persistError,
+        });
+      }
+    }
     if (ownerId) {
       const followUpStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
       const followUpEnd = new Date(followUpStart.getTime() + 30 * 60 * 1000);
@@ -108,7 +255,21 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json(body, { status: 200 });
+    return NextResponse.json(
+      {
+        ...(body as object),
+        lead_updates: leadUpdates,
+        outbound_tracking: {
+          lead_id: leadId || null,
+          provider_message_id: providerMessageId,
+          provider_thread_id: providerThreadId,
+          recipient_email: recipientEmail || null,
+          sent_at: sentAtIso,
+          preview_url: previewUrl,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     const aborted =
       (error instanceof Error && error.name === "AbortError") ||

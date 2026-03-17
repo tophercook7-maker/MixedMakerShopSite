@@ -5,8 +5,10 @@ const leadStatuses = [
   "contacted",
   "follow_up_due",
   "replied",
+  "closed",
   "closed_won",
   "closed_lost",
+  "research_later",
   "do_not_contact",
 ] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;

@@ -19,6 +19,9 @@ type LeadRow = {
   notes?: string | null;
   opportunity_score?: number | null;
   lead_source?: string | null;
+  is_hot_lead?: boolean | null;
+  last_reply_at?: string | null;
+  last_reply_preview?: string | null;
 };
 
 type OpportunityRow = {
@@ -109,6 +112,7 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
     normalized === "contacted" ||
     normalized === "follow_up_due" ||
     normalized === "replied" ||
+    normalized === "closed" ||
     normalized === "closed_won" ||
     normalized === "closed_lost" ||
     normalized === "do_not_contact" ||
@@ -152,7 +156,7 @@ export default async function AdminLeadsPage({
   let baseQuery = supabase
     .from("leads")
     .select(
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source"
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
     )
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false })
@@ -346,6 +350,9 @@ export default async function AdminLeadsPage({
       timeline: [],
       notes: [String(caseRow?.outcome || "").trim(), String(caseRow?.notes || "").trim(), String(row.notes || "").trim()].filter(Boolean),
       lead_source: String(row.lead_source || "").trim() || null,
+      is_hot_lead: Boolean(row.is_hot_lead),
+      last_reply_at: String(row.last_reply_at || "").trim() || null,
+      last_reply_preview: String(row.last_reply_preview || "").trim() || null,
     };
   });
   console.info("[Leads List] related data resolved", {

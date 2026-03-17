@@ -11,8 +11,10 @@ export type LeadStatus =
   | "contacted"
   | "follow_up_due"
   | "replied"
+  | "closed"
   | "closed_won"
   | "closed_lost"
+  | "research_later"
   | "do_not_contact";
 export type Lead = {
   id: string;
@@ -143,6 +145,7 @@ export type EmailMessage = {
 export type CalendarEventType =
   | "appointment"
   | "client_call"
+  | "personal"
   | "followup"
   | "task"
   | "scout";

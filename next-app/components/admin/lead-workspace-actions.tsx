@@ -64,6 +64,7 @@ export function LeadWorkspaceActions({
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSendingPreview, setIsSendingPreview] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
   const [savedNotes, setSavedNotes] = useState<string[]>(initialNotes);
@@ -170,6 +171,44 @@ export function LeadWorkspaceActions({
     }
   }
 
+  async function sendPreviewEmail() {
+    console.info("[Action Debug] Send Preview Email clicked", { leadId });
+    setIsSendingPreview(true);
+    setError(null);
+    setMessage(null);
+    try {
+      console.info("[Action Debug] Send Preview Email request started", { leadId });
+      const res = await fetch("/api/scout/outreach/send-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lead_id: leadId,
+          linked_opportunity_id: linkedOpportunityId,
+          business_name: initialBusinessName,
+          category: initialCategory,
+          email: initialEmail,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        preview_url?: string;
+        message?: string;
+      };
+      if (!res.ok) throw new Error(data.error || "Could not send preview email.");
+      if (data.preview_url) setPreviewUrl(data.preview_url);
+      setMessage(data.message || "Preview sent and follow-ups scheduled");
+      console.info("[Action Debug] Send Preview Email request succeeded", { leadId });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not send preview email.");
+      console.error("[Action Debug] Send Preview Email request failed", {
+        leadId,
+        error: e instanceof Error ? e.message : "unknown",
+      });
+    } finally {
+      setIsSendingPreview(false);
+    }
+  }
+
   async function updateLead(payload: Record<string, unknown>, successMessage: string) {
     console.info("[Action Debug] Lead status action clicked", { leadId, payload });
     setIsUpdating(true);
@@ -264,6 +303,13 @@ export function LeadWorkspaceActions({
           </button>
           <button className="admin-btn-primary text-xs" onClick={() => void sendEmail()} disabled={isSending}>
             {isSending ? "Sending..." : "Send Email"}
+          </button>
+          <button
+            className="admin-btn-primary text-xs"
+            onClick={() => void sendPreviewEmail()}
+            disabled={isSendingPreview}
+          >
+            {isSendingPreview ? "Sending Preview..." : "Send Preview Email"}
           </button>
         </div>
         {showCompose ? (
@@ -398,6 +444,28 @@ export function LeadWorkspaceActions({
         <p className="text-xs" style={{ color: "#86efac" }}>
           {message}
         </p>
+      ) : null}
+      {message === "Preview sent and follow-ups scheduled" ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: "fixed",
+            right: 16,
+            bottom: 16,
+            zIndex: 60,
+            background: "#14532d",
+            color: "#dcfce7",
+            border: "1px solid #166534",
+            borderRadius: 10,
+            padding: "10px 12px",
+            fontSize: 12,
+            fontWeight: 600,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+          }}
+        >
+          Preview sent and follow-ups scheduled
+        </div>
       ) : null}
       {error ? (
         <p className="text-xs" style={{ color: "#fca5a5" }}>

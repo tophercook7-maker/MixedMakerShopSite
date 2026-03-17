@@ -42,6 +42,18 @@ function createAdminSupabase() {
   });
 }
 
+function normalizeSubject(subject: string): string {
+  return String(subject || "")
+    .toLowerCase()
+    .replace(/^(re|fw|fwd)\s*:\s*/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildReplyPreview(body: string, max = 220): string {
+  return String(body || "").replace(/\s+/g, " ").trim().slice(0, max);
+}
+
 export async function POST(request: Request) {
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
@@ -75,6 +87,11 @@ export async function POST(request: Request) {
       rawPayload.from ||
       (rawPayload as { sender?: unknown }).sender ||
       (rawPayload as { reply_to?: unknown }).reply_to
+  );
+  const toEmail = extractEmailAddress(
+    rawPayload.to ||
+      rawPayload.recipient ||
+      (rawPayload as { delivered_to?: unknown }).delivered_to
   );
   const subject = String(rawPayload.subject || "").trim();
   const messageId = String(
@@ -180,61 +197,254 @@ export async function POST(request: Request) {
     }
     console.info("[Email Webhook] reply matched to lead");
 
-    // Best-effort local timeline sync for case-based outreach threads.
+    // Local reply detection + matching + pipeline status update.
     try {
       const adminSb = createAdminSupabase();
+      const counters = {
+        inbound_messages_received: 1,
+        replies_matched: 0,
+        replies_unmatched: 0,
+        duplicate_replies_skipped: 0,
+      };
       if (adminSb) {
-        const { data: threadRows } = await adminSb
-          .from("email_threads")
-          .select("id,owner_id,provider_thread_id")
-          .ilike("contact_email", fromEmail)
-          .order("last_message_at", { ascending: false })
-          .limit(20);
-        const thread = (threadRows || []).find((row) => {
-          const key = String((row as { provider_thread_id?: string | null }).provider_thread_id || "").trim();
-          return key.startsWith("case:");
-        }) || (threadRows || [])[0];
-        const threadId = String((thread as { id?: string | null })?.id || "").trim();
-        const ownerId = String((thread as { owner_id?: string | null })?.owner_id || "").trim();
-        const providerThreadId = String((thread as { provider_thread_id?: string | null })?.provider_thread_id || "").trim();
         const nowIso = new Date().toISOString();
-        if (threadId && ownerId) {
-          await adminSb.from("email_messages").insert({
-            thread_id: threadId,
-            lead_id: null,
-            direction: "inbound",
-            provider_message_id: messageId || null,
-            subject: subject || null,
-            body,
-            delivery_status: "received",
-            received_at: nowIso,
-            owner_id: ownerId,
-          });
-          await adminSb
-            .from("email_threads")
-            .update({ status: "active", last_message_at: nowIso })
-            .eq("id", threadId);
 
-          if (providerThreadId.startsWith("case:")) {
-            const caseId = providerThreadId.slice(5).trim();
-            if (caseId) {
-              const { data: caseRows } = await adminSb
-                .from("case_files")
-                .select("notes")
-                .eq("id", caseId)
-                .limit(1);
-              const prevNotes = String(caseRows?.[0]?.notes || "").trim();
-              const mergedNotes = [prevNotes, `Reply received ${nowIso}`].filter(Boolean).join("\n");
-              await adminSb
-                .from("case_files")
-                .update({ status: "replied", notes: mergedNotes })
-                .eq("id", caseId);
+        // De-dup by provider message id if we already processed this inbound.
+        if (messageId) {
+          const duplicateCheck = await adminSb
+            .from("email_messages")
+            .select("id")
+            .eq("provider_message_id", messageId)
+            .limit(1);
+          if ((duplicateCheck.data || [])[0]?.id) {
+            counters.duplicate_replies_skipped += 1;
+            return NextResponse.json({ ...(bodyJson as object), counters }, { status: 200 });
+          }
+        }
+
+        let matchedThreadId = "";
+        let matchedLeadId = "";
+        let matchedOwnerId = "";
+        let matchStrategy = "unmatched";
+
+        // 1) provider thread id linkage.
+        if (providerThreadId) {
+          const byThread = await adminSb
+            .from("email_threads")
+            .select("id,lead_id,owner_id")
+            .eq("provider_thread_id", providerThreadId)
+            .order("last_message_at", { ascending: false, nullsFirst: false })
+            .limit(1);
+          const row = (byThread.data || [])[0] as
+            | { id?: string | null; lead_id?: string | null; owner_id?: string | null }
+            | undefined;
+          matchedThreadId = String(row?.id || "").trim();
+          matchedLeadId = String(row?.lead_id || "").trim();
+          matchedOwnerId = String(row?.owner_id || "").trim();
+          if (matchedThreadId && matchedOwnerId) matchStrategy = "provider_thread_id";
+        }
+
+        // 2) in_reply_to / references headers.
+        if (!matchedThreadId || !matchedOwnerId) {
+          const headerIds = [inReplyTo, ...references].map((v) => String(v || "").trim()).filter(Boolean);
+          if (headerIds.length) {
+            const byHeaders = await adminSb
+              .from("email_messages")
+              .select("thread_id,lead_id,owner_id,provider_message_id,created_at,direction")
+              .in("provider_message_id", headerIds)
+              .order("created_at", { ascending: false })
+              .limit(50);
+            const row = ((byHeaders.data || []) as Array<Record<string, unknown>>).find(
+              (item) => String(item.direction || "") === "outbound"
+            );
+            if (row) {
+              matchedThreadId = String(row.thread_id || "").trim();
+              matchedLeadId = String(row.lead_id || "").trim();
+              matchedOwnerId = String(row.owner_id || "").trim();
+              if (matchedThreadId && matchedOwnerId) matchStrategy = "in_reply_to_or_references";
             }
           }
         }
+
+        // 3) recipient_email + normalized subject.
+        if (!matchedThreadId || !matchedOwnerId) {
+          const recipientMatchEmail = fromEmail || toEmail;
+          if (recipientMatchEmail) {
+            const outboundByRecipient = await adminSb
+              .from("email_messages")
+              .select("thread_id,lead_id,owner_id,subject,created_at,direction,recipient_email")
+              .eq("direction", "outbound")
+              .ilike("recipient_email", recipientMatchEmail)
+              .order("created_at", { ascending: false })
+              .limit(150);
+            const normalizedInboundSubject = normalizeSubject(subject);
+            const candidates = (outboundByRecipient.data || []) as Array<Record<string, unknown>>;
+            const exact = candidates.find(
+              (row) =>
+                normalizedInboundSubject &&
+                normalizeSubject(String(row.subject || "")) === normalizedInboundSubject
+            );
+            const row = exact || candidates[0];
+            if (row) {
+              matchedThreadId = String(row.thread_id || "").trim();
+              matchedLeadId = String(row.lead_id || "").trim();
+              matchedOwnerId = String(row.owner_id || "").trim();
+              if (matchedThreadId && matchedOwnerId) matchStrategy = "recipient_email_subject";
+            }
+          }
+        }
+
+        // 4) sender email + recent outbound thread fallback.
+        if (!matchedThreadId || !matchedOwnerId) {
+          const byContact = await adminSb
+            .from("email_threads")
+            .select("id,lead_id,owner_id")
+            .ilike("contact_email", fromEmail)
+            .order("last_message_at", { ascending: false, nullsFirst: false })
+            .limit(1);
+          const row = (byContact.data || [])[0] as
+            | { id?: string | null; lead_id?: string | null; owner_id?: string | null }
+            | undefined;
+          matchedThreadId = String(row?.id || "").trim();
+          matchedLeadId = String(row?.lead_id || "").trim();
+          matchedOwnerId = String(row?.owner_id || "").trim();
+          if (matchedThreadId && matchedOwnerId) matchStrategy = "sender_email_recent_thread";
+        }
+
+        // Last fallback: try lead by sender email so reply still lands in CRM.
+        if (!matchedOwnerId) {
+          const byLeadEmail = await adminSb
+            .from("leads")
+            .select("id,owner_id")
+            .ilike("email", fromEmail)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          const row = (byLeadEmail.data || [])[0] as { id?: string | null; owner_id?: string | null } | undefined;
+          matchedLeadId = matchedLeadId || String(row?.id || "").trim();
+          matchedOwnerId = String(row?.owner_id || "").trim();
+          if (matchedLeadId && matchedOwnerId) matchStrategy = "lead_email_fallback";
+        }
+
+        if (!matchedOwnerId) {
+          counters.replies_unmatched += 1;
+          return NextResponse.json(
+            { ...(bodyJson as object), counters, match_strategy: "unmatched" },
+            { status: 202 }
+          );
+        }
+
+        // Create a thread if none matched.
+        if (!matchedThreadId) {
+          const insertedThread = await adminSb
+            .from("email_threads")
+            .insert({
+              workspace_id: workspaceId || null,
+              lead_id: matchedLeadId || null,
+              contact_email: fromEmail,
+              subject: subject || null,
+              provider_thread_id: providerThreadId || null,
+              status: "active",
+              last_message_at: nowIso,
+              owner_id: matchedOwnerId,
+            })
+            .select("id")
+            .limit(1);
+          matchedThreadId = String((insertedThread.data || [])[0]?.id || "").trim();
+          if (matchedThreadId) matchStrategy = `${matchStrategy}+new_thread`;
+        }
+
+        // Additional dedupe for webhook retries without provider id.
+        if (!messageId && matchedThreadId) {
+          const dupFallback = await adminSb
+            .from("email_messages")
+            .select("id,subject,body")
+            .eq("thread_id", matchedThreadId)
+            .eq("direction", "inbound")
+            .order("created_at", { ascending: false })
+            .limit(25);
+          const duplicateFallback = ((dupFallback.data || []) as Array<Record<string, unknown>>).some(
+            (row) =>
+              String(row.subject || "").trim() === subject &&
+              String(row.body || "").trim() === body
+          );
+          if (duplicateFallback) {
+            counters.duplicate_replies_skipped += 1;
+            return NextResponse.json({ ...(bodyJson as object), counters, match_strategy: matchStrategy }, { status: 200 });
+          }
+        }
+
+        await adminSb.from("email_messages").insert({
+          thread_id: matchedThreadId || null,
+          lead_id: matchedLeadId || null,
+          direction: "inbound",
+          provider_message_id: messageId || null,
+          in_reply_to: inReplyTo || null,
+          references: references.length ? references : null,
+          subject: subject || null,
+          body,
+          delivery_status: "received",
+          received_at: receivedAt || nowIso,
+          owner_id: matchedOwnerId,
+          recipient_email: toEmail || null,
+          message_kind: "reply",
+        });
+
+        await adminSb
+          .from("email_threads")
+          .update({
+            lead_id: matchedLeadId || undefined,
+            provider_thread_id: providerThreadId || undefined,
+            status: "active",
+            subject: subject || undefined,
+            last_message_at: receivedAt || nowIso,
+          })
+          .eq("id", matchedThreadId)
+          .eq("owner_id", matchedOwnerId);
+
+        const replyPreview = buildReplyPreview(body);
+        if (matchedLeadId) {
+          const fullPatch = {
+            status: "replied",
+            is_hot_lead: true,
+            recommended_next_action: "Reply to Lead",
+            last_reply_at: receivedAt || nowIso,
+            last_reply_preview: replyPreview,
+            last_contacted_at: receivedAt || nowIso,
+            next_follow_up_at: null,
+            follow_up_1_sent: true,
+            follow_up_2_sent: true,
+            follow_up_3_sent: true,
+            follow_up_1: null,
+            follow_up_2: null,
+            follow_up_3: null,
+            sequence_active: false,
+          };
+          const updateFull = await adminSb
+            .from("leads")
+            .update(fullPatch)
+            .eq("id", matchedLeadId)
+            .eq("owner_id", matchedOwnerId);
+          if (updateFull.error) {
+            await adminSb
+              .from("leads")
+              .update({
+                status: "replied",
+                last_contacted_at: receivedAt || nowIso,
+                next_follow_up_at: null,
+              })
+              .eq("id", matchedLeadId)
+              .eq("owner_id", matchedOwnerId);
+          }
+        }
+
+        counters.replies_matched += 1;
+        return NextResponse.json(
+          { ...(bodyJson as object), counters, match_strategy: matchStrategy, lead_id: matchedLeadId || null },
+          { status: 200 }
+        );
       }
     } catch (localSyncError) {
-      console.warn("[Email Webhook] local case reply sync failed", localSyncError);
+      console.warn("[Email Webhook] local reply sync failed", localSyncError);
     }
     return NextResponse.json(bodyJson, { status: 200 });
   } catch (error) {

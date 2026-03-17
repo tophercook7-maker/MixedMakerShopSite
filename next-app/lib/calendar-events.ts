@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export type CalendarEventType =
   | "appointment"
   | "client_call"
+  | "personal"
   | "followup"
   | "task"
   | "scout"
@@ -19,6 +20,7 @@ type CreateCalendarEventInput = {
   startTime: string;
   endTime?: string | null;
   notes?: string | null;
+  isBlocking?: boolean | null;
 };
 
 export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<string | null> {
@@ -51,7 +53,10 @@ export async function createCalendarEvent(input: CreateCalendarEventInput) {
     lead_id: input.leadId || null,
     title: input.title,
     event_type: normalizedType,
-    is_blocking: isHardBlockEventType(normalizedType),
+    is_blocking:
+      typeof input.isBlocking === "boolean"
+        ? input.isBlocking
+        : isHardBlockEventType(normalizedType),
     source: "crm",
     start_time: input.startTime,
     end_time: input.endTime || null,
@@ -63,6 +68,7 @@ export async function createCalendarEvent(input: CreateCalendarEventInput) {
 
 export function normalizeCalendarEventType(raw: string | null | undefined): CalendarEventType {
   const value = String(raw || "").trim().toLowerCase();
+  if (value === "personal") return "personal";
   if (value === "meeting") return "appointment";
   if (value === "follow-up reminder" || value === "follow_up_reminder") return "followup";
   if (value === "scout run" || value === "scout_run") return "scout";
@@ -77,7 +83,7 @@ export function normalizeCalendarEventType(raw: string | null | undefined): Cale
 
 export function isHardBlockEventType(raw: string | null | undefined): boolean {
   const type = normalizeCalendarEventType(raw);
-  return type === "appointment" || type === "client_call";
+  return type === "appointment" || type === "client_call" || type === "personal";
 }
 
 export function isSoftEventType(raw: string | null | undefined): boolean {

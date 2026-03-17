@@ -130,46 +130,83 @@ export default async function PreviewPage({
   const phone = String(qs.phone || "(555) 555-5555");
   const website = String(qs.website || "");
   const tpl = categoryTemplate(category);
+  const quoteHref = website || "#request-quote";
+  const callHref = `tel:${phone.replace(/[^\d+]/g, "")}`;
+  const cardStyle = {
+    background: "#132026",
+    border: "1px solid #22363f",
+    borderRadius: 16,
+    padding: 20,
+  };
+  const primaryBtn = {
+    background: "#f0a51a",
+    color: "#161a1d",
+    border: "none",
+    borderRadius: 999,
+    padding: "11px 18px",
+    fontWeight: 700,
+    textDecoration: "none",
+    display: "inline-block",
+  };
+  const ghostBtn = {
+    background: "transparent",
+    color: "#f5f7f9",
+    border: "1px solid #3b5865",
+    borderRadius: 999,
+    padding: "11px 18px",
+    fontWeight: 700,
+    textDecoration: "none",
+    display: "inline-block",
+  };
 
   return (
     <main style={{ background: "#0b1114", color: "#f5f7f9", minHeight: "100vh" }}>
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 20px 24px" }}>
-        <p style={{ color: "#9cb0bd", fontSize: 12, letterSpacing: 1, textTransform: "uppercase" }}>
-          Redesign Concept · Preview {id}
-        </p>
-        <h1 style={{ fontSize: 48, lineHeight: 1.1, margin: "12px 0 10px" }}>{business}</h1>
-        <p style={{ color: "#9cb0bd", maxWidth: 680 }}>{tpl.heroTitle}</p>
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "20px 20px 8px" }}>
+        <div
+          style={{
+            background: "#1a2b32",
+            border: "1px solid #2c454f",
+            borderRadius: 12,
+            padding: "10px 14px",
+            color: "#dce8ef",
+            fontSize: 14,
+          }}
+        >
+          This is a sample redesign for your business to help you get more customers.
+        </div>
       </section>
 
       <section
         style={{
           maxWidth: 1100,
           margin: "0 auto",
-          padding: "24px 20px 36px",
+          padding: "20px 20px 28px",
           display: "grid",
-          gridTemplateColumns: "1.2fr 1fr",
+          gridTemplateColumns: "1fr",
           gap: 20,
         }}
       >
-        <div style={{ background: "#132026", border: "1px solid #22363f", borderRadius: 16, padding: 24 }}>
-          <h2 style={{ fontSize: 28, marginBottom: 10 }}>{tpl.heroSubtitle}</h2>
+        <div style={cardStyle}>
+          <p style={{ color: "#9cb0bd", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginTop: 0 }}>
+            Redesign Concept · Preview {id}
+          </p>
+          <h1 style={{ fontSize: "clamp(32px, 7vw, 52px)", lineHeight: 1.08, margin: "10px 0 10px" }}>{business}</h1>
+          <p style={{ color: "#d6e3ea", marginBottom: 8, fontSize: 20 }}>{tpl.heroTitle}</p>
+          <p style={{ color: "#9cb0bd", marginBottom: 18, maxWidth: 740 }}>{tpl.heroSubtitle}</p>
           <p style={{ color: "#9cb0bd", marginBottom: 18 }}>
             Built for {category} teams that need more leads, bookings, and trust from first-time visitors.
           </p>
-          <button
-            style={{
-              background: "#f0a51a",
-              color: "#161a1d",
-              border: "none",
-              borderRadius: 999,
-              padding: "10px 18px",
-              fontWeight: 700,
-            }}
-          >
-            {tpl.cta}
-          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <a href={callHref} style={primaryBtn}>
+              Call Now
+            </a>
+            <a href={quoteHref} style={ghostBtn}>
+              Get a Quote
+            </a>
+          </div>
         </div>
-        <div style={{ background: "#132026", border: "1px solid #22363f", borderRadius: 16, padding: 24 }}>
+
+        <div style={cardStyle}>
           <h3 style={{ marginBottom: 10 }}>Contact</h3>
           <p style={{ margin: "6px 0", color: "#c9d5dc" }}>{phone}</p>
           <p style={{ margin: "6px 0", color: "#c9d5dc" }}>{email}</p>
@@ -179,9 +216,9 @@ export default async function PreviewPage({
 
       <section style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 36px" }}>
         <h3 style={{ marginBottom: 12 }}>Services</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 14 }}>
           {tpl.services.map((service) => (
-            <article key={service} style={{ background: "#132026", border: "1px solid #22363f", borderRadius: 14, padding: 16 }}>
+            <article key={service} style={{ ...cardStyle, borderRadius: 14, padding: 16 }}>
               <strong>{service}</strong>
               <p style={{ marginTop: 6, color: "#9cb0bd", fontSize: 14 }}>
                 Conversion-focused section block with clear CTA and trust indicators.
@@ -192,34 +229,49 @@ export default async function PreviewPage({
       </section>
 
       <section style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 36px" }}>
-        <h3 style={{ marginBottom: 12 }}>Testimonials</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <h3 style={{ marginBottom: 12 }}>Trust Signals</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 14 }}>
           {tpl.testimonials.map((quote) => (
-            <blockquote key={quote} style={{ background: "#132026", border: "1px solid #22363f", borderRadius: 14, padding: 16 }}>
-              "{quote}"
+            <blockquote key={quote} style={{ ...cardStyle, borderRadius: 14, padding: 16, margin: 0 }}>
+              "{quote}" <br />
+              <span style={{ color: "#9cb0bd", fontSize: 13 }}>- Local customer review</span>
             </blockquote>
           ))}
+          <article style={{ ...cardStyle, borderRadius: 14, padding: 16 }}>
+            <strong>Local credibility</strong>
+            <p style={{ marginTop: 8, color: "#9cb0bd", fontSize: 14 }}>
+              This concept highlights service area, trust badges, and clear contact details to help local visitors choose
+              this business with confidence.
+            </p>
+          </article>
         </div>
       </section>
 
       <section style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 60px" }}>
-        <div style={{ background: "#132026", border: "1px solid #22363f", borderRadius: 16, padding: 24 }}>
-          <h3>Call To Action</h3>
+        <div style={cardStyle}>
+          <h3>Why this version performs better</h3>
+          <div style={{ display: "grid", gap: 10, color: "#c9d5dc", marginBottom: 12 }}>
+            <p style={{ margin: 0 }}>
+              <strong>Mobile-first:</strong> Buttons, sections, and contact paths are easier to use on phones.
+            </p>
+            <p style={{ margin: 0 }}>
+              <strong>Speed:</strong> Cleaner structure and lighter page blocks improve load feel for first-time visitors.
+            </p>
+            <p style={{ margin: 0 }}>
+              <strong>Clarity:</strong> Visitors immediately see what you offer, why to trust you, and how to contact you.
+            </p>
+          </div>
           <p style={{ color: "#9cb0bd", marginBottom: 12 }}>
             Ready to turn visitors into customers? This concept focuses on faster loading, clearer offer framing, and easier contact.
           </p>
-          <button
-            style={{
-              background: "#f0a51a",
-              color: "#161a1d",
-              border: "none",
-              borderRadius: 999,
-              padding: "10px 18px",
-              fontWeight: 700,
-            }}
-          >
-            {tpl.cta}
-          </button>
+          <div id="request-quote" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <a href={callHref} style={ghostBtn}>
+              Call Now
+            </a>
+            <a href="/free-website-check" style={primaryBtn}>
+              Want this for your business? Request your version.
+            </a>
+          </div>
         </div>
       </section>
     </main>
