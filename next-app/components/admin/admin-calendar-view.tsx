@@ -27,6 +27,11 @@ type CalendarEventRow = {
   is_blocking?: boolean | null;
   hard_block?: boolean | null;
   lead_business_name?: string | null;
+  debug?: {
+    payload?: Record<string, unknown>;
+    owner_id?: string | null;
+    workspace_id?: string | null;
+  };
 };
 
 type AdminCalendarViewProps = {
@@ -102,6 +107,21 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
     workspaceId: string;
     ownerId: string;
   } | null>(null);
+  const [saveDebug, setSaveDebug] = useState<{
+    save_attempted: boolean;
+    payload: Record<string, unknown> | null;
+    workspace_id: string | null;
+    owner_id: string | null;
+    save_succeeded: boolean;
+    error: string | null;
+  }>({
+    save_attempted: false,
+    payload: null,
+    workspace_id: null,
+    owner_id: null,
+    save_succeeded: false,
+    error: null,
+  });
 
   const leadOptions = useMemo(
     () =>
@@ -251,25 +271,44 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setError("Start time is required.");
       return;
     }
+    const requestPayload = {
+      title,
+      event_type: taskType,
+      start_time: new Date(taskStart).toISOString(),
+      end_time: taskEnd ? new Date(taskEnd).toISOString() : null,
+      notes: taskNotes.trim() || null,
+      is_blocking: taskIsBlocking,
+      lead_id: taskLeadId || null,
+      workspace_id: taskWorkspaceId.trim() || null,
+    };
+    setSaveDebug({
+      save_attempted: true,
+      payload: requestPayload,
+      workspace_id: taskWorkspaceId.trim() || null,
+      owner_id: null,
+      save_succeeded: false,
+      error: null,
+    });
     setSavingEvent(true);
     try {
       const res = await fetch("/api/calendar/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          event_type: taskType,
-          start_time: new Date(taskStart).toISOString(),
-          end_time: taskEnd ? new Date(taskEnd).toISOString() : null,
-          notes: taskNotes.trim() || null,
-          is_blocking: taskIsBlocking,
-          lead_id: taskLeadId || null,
-          workspace_id: taskWorkspaceId.trim() || null,
-        }),
+        body: JSON.stringify(requestPayload),
       });
       const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      const debug = body.debug || {};
       if (!res.ok) {
-        setError(body.error || "Could not create event.");
+        const errText = body.error || "Could not create event.";
+        setError(errText);
+        setSaveDebug({
+          save_attempted: true,
+          payload: requestPayload,
+          workspace_id: String(debug.workspace_id || taskWorkspaceId || "").trim() || null,
+          owner_id: String(debug.owner_id || "").trim() || null,
+          save_succeeded: false,
+          error: errText,
+        });
         return;
       }
       const created = body && body.id ? toEventInput(body) : null;
@@ -284,7 +323,15 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setTaskTitle("");
       setTaskNotes("");
       setTaskLeadId("");
-      setMessage("Calendar event created successfully.");
+      setMessage(taskType === "appointment" ? "Appointment created" : "Event created");
+      setSaveDebug({
+        save_attempted: true,
+        payload: requestPayload,
+        workspace_id: String(debug.workspace_id || taskWorkspaceId || "").trim() || null,
+        owner_id: String(debug.owner_id || "").trim() || null,
+        save_succeeded: true,
+        error: null,
+      });
     } finally {
       setSavingEvent(false);
     }
@@ -564,6 +611,19 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
 
       {message ? <p className="text-xs" style={{ color: "#86efac" }}>{message}</p> : null}
       {error ? <p className="text-xs" style={{ color: "#fca5a5" }}>{error}</p> : null}
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-2">Calendar Save Debug (temporary)</h2>
+        <div className="text-xs space-y-1" style={{ color: "var(--admin-muted)" }}>
+          <p>save_attempted: {String(saveDebug.save_attempted)}</p>
+          <p>workspace_id: {saveDebug.workspace_id || "null"}</p>
+          <p>owner_id: {saveDebug.owner_id || "null"}</p>
+          <p>save_succeeded: {String(saveDebug.save_succeeded)}</p>
+          <p>error: {saveDebug.error || "none"}</p>
+          <pre style={{ whiteSpace: "pre-wrap", margin: 0, padding: "8px", border: "1px solid var(--admin-border)", borderRadius: 8 }}>
+            payload: {JSON.stringify(saveDebug.payload, null, 2)}
+          </pre>
+        </div>
+      </section>
     </div>
   );
 }

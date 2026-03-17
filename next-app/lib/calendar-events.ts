@@ -11,6 +11,12 @@ export type CalendarEventType =
   | "follow_up_reminder"
   | "scout_run";
 
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(value || "").trim()
+  );
+}
+
 type CreateCalendarEventInput = {
   ownerId: string;
   workspaceId?: string | null;
@@ -25,7 +31,7 @@ type CreateCalendarEventInput = {
 
 export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<string | null> {
   const fromEnv = String(process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim();
-  if (fromEnv) return fromEnv;
+  if (fromEnv && isUuid(fromEnv)) return fromEnv;
   const supabase = await createClient();
   const { data } = await supabase
     .from("leads")
@@ -34,7 +40,9 @@ export async function resolveWorkspaceIdForOwner(ownerId: string): Promise<strin
     .not("workspace_id", "is", null)
     .order("created_at", { ascending: false })
     .limit(1);
-  return String((data || [])[0]?.workspace_id || "").trim() || null;
+  const fromLead = String((data || [])[0]?.workspace_id || "").trim();
+  if (fromLead && isUuid(fromLead)) return fromLead;
+  return isUuid(ownerId) ? ownerId : null;
 }
 
 export async function createCalendarEvent(input: CreateCalendarEventInput) {
@@ -44,6 +52,12 @@ export async function createCalendarEvent(input: CreateCalendarEventInput) {
     return {
       data: null,
       error: { message: "Workspace is required to create calendar events." },
+    };
+  }
+  if (!isUuid(workspaceId)) {
+    return {
+      data: null,
+      error: { message: `workspace_id must be a UUID. Got: ${workspaceId}` },
     };
   }
   const normalizedType = normalizeCalendarEventType(input.eventType);

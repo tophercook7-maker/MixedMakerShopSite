@@ -21,6 +21,12 @@ const VALID_EVENT_TYPES = new Set<CalendarEventType>([
   "scout",
 ]);
 
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(value || "").trim()
+  );
+}
+
 async function hasHardBlockConflict(
   supabase: Awaited<ReturnType<typeof createClient>>,
   ownerId: string,
@@ -139,17 +145,27 @@ export async function POST(request: Request) {
     typeof body.is_blocking === "boolean" ? Boolean(body.is_blocking) : null;
   const effectiveIsBlocking =
     requestedIsBlocking !== null ? requestedIsBlocking : isHardBlockEventType(eventTypeRaw);
+  const debugPayload = {
+    title,
+    event_type: eventTypeRaw,
+    start_time: startTime,
+    end_time: endTime || null,
+    notes: notes || null,
+    is_blocking: effectiveIsBlocking,
+    lead_id: leadId || null,
+    workspace_id: String(body.workspace_id || "").trim() || null,
+  };
 
-  if (!title) return NextResponse.json({ error: "Title is required." }, { status: 400 });
-  if (!startTime) return NextResponse.json({ error: "start_time is required." }, { status: 400 });
+  if (!title) return NextResponse.json({ error: "Title is required.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
+  if (!startTime) return NextResponse.json({ error: "start_time is required.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
   if (!VALID_EVENT_TYPES.has(eventTypeRaw)) {
-    return NextResponse.json({ error: "Invalid event_type." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid event_type.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
   }
   const start = new Date(startTime);
-  if (Number.isNaN(start.getTime())) return NextResponse.json({ error: "Invalid start_time." }, { status: 400 });
+  if (Number.isNaN(start.getTime())) return NextResponse.json({ error: "Invalid start_time.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
   const end = endTime ? new Date(endTime) : new Date(start.getTime() + 30 * 60 * 1000);
   if (Number.isNaN(end.getTime()) || end.getTime() <= start.getTime()) {
-    return NextResponse.json({ error: "end_time must be after start_time." }, { status: 400 });
+    return NextResponse.json({ error: "end_time must be after start_time.", debug: { payload: debugPayload, owner_id: ownerId } }, { status: 400 });
   }
   if (effectiveIsBlocking) {
     const conflict = await hasHardBlockConflict(
@@ -159,10 +175,10 @@ export async function POST(request: Request) {
       end.toISOString(),
       null
     );
-    if (conflict.error) return NextResponse.json({ error: conflict.error }, { status: 500 });
+    if (conflict.error) return NextResponse.json({ error: conflict.error, debug: { payload: debugPayload, owner_id: ownerId } }, { status: 500 });
     if (conflict.conflict) {
       return NextResponse.json(
-        { error: "This time conflicts with another blocking appointment." },
+        { error: "This time conflicts with another blocking appointment.", debug: { payload: debugPayload, owner_id: ownerId } },
         { status: 409 }
       );
     }
@@ -172,7 +188,16 @@ export async function POST(request: Request) {
   const workspaceId = requestedWorkspaceId || (await resolveWorkspaceIdForOwner(ownerId));
   if (!workspaceId) {
     return NextResponse.json(
-      { error: "workspace_id is required. Set a workspace or SCOUT_BRAIN_WORKSPACE_ID." },
+      { error: "workspace_id is required. Set a workspace or SCOUT_BRAIN_WORKSPACE_ID.", debug: { payload: debugPayload, owner_id: ownerId } },
+      { status: 400 }
+    );
+  }
+  if (!isUuid(workspaceId)) {
+    return NextResponse.json(
+      {
+        error: `workspace_id must be a UUID. Received: ${workspaceId}`,
+        debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
+      },
       { status: 400 }
     );
   }
@@ -187,6 +212,26 @@ export async function POST(request: Request) {
     notes: notes || null,
     isBlocking: effectiveIsBlocking,
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data, { status: 201 });
+  if (error) {
+    console.error("[Calendar API] create event failed", {
+      owner_id: ownerId,
+      workspace_id: workspaceId,
+      payload: debugPayload,
+      error,
+    });
+    return NextResponse.json(
+      {
+        error: error.message,
+        debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
+      },
+      { status: 500 }
+    );
+  }
+  return NextResponse.json(
+    {
+      ...data,
+      debug: { payload: debugPayload, owner_id: ownerId, workspace_id: workspaceId },
+    },
+    { status: 201 }
+  );
 }
