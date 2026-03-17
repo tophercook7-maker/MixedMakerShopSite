@@ -178,7 +178,7 @@ export default async function AdminLeadsPage({
     joinedResult = await supabase
       .from("leads")
       .select(
-        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,last_reply_at,last_reply_preview"
+        "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,linked_opportunity_id,opportunity_score,lead_source,is_hot_lead,last_reply_at,last_reply_preview"
       )
       .eq("owner_id", ownerId)
       .order("created_at", { ascending: false })
