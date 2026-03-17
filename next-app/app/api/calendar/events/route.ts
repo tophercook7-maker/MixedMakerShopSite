@@ -13,10 +13,9 @@ const VALID_EVENT_TYPES = new Set<CalendarEventType>([
   "appointment",
   "client_call",
   "personal",
-  "follow_up_reminder",
+  "busy_block",
+  "reminder",
   "task",
-  "scout_run",
-  "meeting",
   "followup",
   "scout",
 ]);

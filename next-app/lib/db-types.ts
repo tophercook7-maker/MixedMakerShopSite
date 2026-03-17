@@ -11,11 +11,13 @@ export type LeadStatus =
   | "contacted"
   | "follow_up_due"
   | "replied"
+  | "no_response"
   | "closed"
   | "closed_won"
   | "closed_lost"
   | "research_later"
   | "do_not_contact";
+export type DealStatus = "none" | "interested" | "proposal_sent" | "won" | "lost";
 export type Lead = {
   id: string;
   business_name: string;
@@ -30,12 +32,26 @@ export type Lead = {
   workspace_id?: string | null;
   linked_opportunity_id?: string | null;
   best_contact_method?: string | null;
+  contact_method?: string | null;
+  category?: string | null;
+  is_recurring_client?: boolean | null;
+  monthly_value?: number | null;
+  subscription_started_at?: string | null;
+  referred_by?: string | null;
+  referral_source?: string | null;
+  is_referred_client?: boolean | null;
   opportunity_score?: number | null;
   auto_intake?: boolean;
   status: LeadStatus;
+  deal_status?: DealStatus | null;
+  deal_value?: number | null;
+  closed_at?: string | null;
+  sequence_active?: boolean | null;
   notes: string | null;
   follow_up_date: string | null;
   last_contacted_at?: string | null;
+  outreach_sent_at?: string | null;
+  replied_at?: string | null;
   next_follow_up_at?: string | null;
   follow_up_count?: number;
   created_at: string;
@@ -148,7 +164,9 @@ export type CalendarEventType =
   | "personal"
   | "followup"
   | "task"
-  | "scout";
+  | "scout"
+  | "busy_block"
+  | "reminder";
 export type CalendarEvent = {
   id: string;
   workspace_id: string | null;

@@ -5,6 +5,8 @@ import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath, isUuidLike, leadRouteMatches } from "@/lib/lead-route";
+import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
+import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 
 type LeadRow = {
   id: string;
@@ -16,8 +18,18 @@ type LeadRow = {
   linked_opportunity_id?: string | null;
   opportunity_score?: number | null;
   status?: string | null;
+  deal_status?: string | null;
+  deal_value?: number | null;
+  closed_at?: string | null;
+  is_recurring_client?: boolean | null;
+  monthly_value?: number | null;
+  subscription_started_at?: string | null;
+  referred_by?: string | null;
+  referral_source?: string | null;
+  is_referred_client?: boolean | null;
   notes?: string | null;
   created_at?: string | null;
+  is_hot_lead?: boolean | null;
 };
 
 type CaseRow = {
@@ -78,6 +90,7 @@ type CaseRow = {
   notes?: string | null;
   outcome?: string | null;
   google_review_count?: number | null;
+  google_rating?: number | null;
   reviews_last_30_days?: number | null;
   owner_post_detected?: boolean | null;
   new_photos_detected?: boolean | null;
@@ -231,6 +244,50 @@ function quickFixSuggestions(category: string, issueTexts: string[]) {
   return suggestions.slice(0, 3);
 }
 
+function computeEstimatedValue(category: string | null | undefined): {
+  estimated_value: "low" | "medium" | "high";
+  estimated_price_range: "$" | "$$" | "$$$";
+} {
+  const cat = String(category || "").toLowerCase();
+  const high = ["medical", "clinic", "contractor", "home service", "church", "plumber", "roofer", "hvac", "electrician"];
+  const medium = ["retail", "gym", "salon", "small business", "restaurant", "cafe", "auto repair"];
+  if (high.some((v) => cat.includes(v))) return { estimated_value: "high", estimated_price_range: "$$$" };
+  if (medium.some((v) => cat.includes(v))) return { estimated_value: "medium", estimated_price_range: "$$" };
+  return { estimated_value: "low", estimated_price_range: "$" };
+}
+
+function expectedCloseProbabilityNumber(
+  closeProbability: "low" | "medium" | "high" | null | undefined,
+  score: number | null | undefined
+): number {
+  const s = Number(score || 0);
+  if (closeProbability === "high") return Math.max(70, Math.min(95, s));
+  if (closeProbability === "medium") return Math.max(45, Math.min(75, s));
+  return Math.max(20, Math.min(55, s));
+}
+
+function generateLeadPitches(input: {
+  businessName: string;
+  category: string;
+  issue: string;
+  contactType: "email" | "contact" | "door_to_door" | "skip";
+}): { email_pitch: string; text_pitch: string; door_pitch: string } {
+  const business = input.businessName || "your business";
+  const category = input.category || "business";
+  const issue = input.issue || "a website issue";
+  const contactHint =
+    input.contactType === "email"
+      ? "I can send a quick before/after concept by email."
+      : input.contactType === "contact"
+        ? "I can send a quick idea through your contact form."
+        : "I can show a quick local example in person.";
+  return {
+    email_pitch: `Hi ${business}, I noticed ${issue} on your ${category} web presence. ${contactHint} Would you like a quick example tailored for your business?`,
+    text_pitch: `Hi ${business}, Topher here. I noticed ${issue} on your website and can show a quick improvement idea that helps customers reach you faster. Want me to send it?`,
+    door_pitch: `Hi, I am Topher with Topher's Web Design. I help local ${category} businesses fix issues like ${issue}. I put together a quick idea for ${business} to help get more customer actions.`,
+  };
+}
+
 export default async function AdminLeadDetailPage({
   params,
   searchParams,
@@ -273,7 +330,7 @@ export default async function AdminLeadDetailPage({
       const { data: leadRows, error: leadError } = await supabase
         .from("leads")
         .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead"
         )
         .eq("owner_id", ownerId)
         .eq("id", targetId)
@@ -292,7 +349,7 @@ export default async function AdminLeadDetailPage({
       const { data: candidateRows, error: candidateError } = await supabase
         .from("leads")
         .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,notes,created_at"
+          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead"
         )
         .eq("owner_id", ownerId)
         .order("created_at", { ascending: false })
@@ -328,7 +385,7 @@ export default async function AdminLeadDetailPage({
       const { data: caseByOppRows, error: caseError } = await supabase
         .from("case_files")
         .select(
-          "id,opportunity_id,created_at,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,instagram,instagram_url,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated"
+          "id,opportunity_id,created_at,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,instagram,instagram_url,activity_summary,website_audit,website_issues,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,desktop_screenshot_url,mobile_screenshot_url,contact_page_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,google_rating,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated"
         )
         .eq("opportunity_id", linkedOppId)
         .order("created_at", { ascending: false })
@@ -610,6 +667,33 @@ export default async function AdminLeadDetailPage({
     loadWarnings.push("Timeline messages are temporarily unavailable.");
   }
 
+  let referralsGeneratedCount = 0;
+  if (lead?.id || lead?.business_name) {
+    try {
+      const leadIdToken = String(lead?.id || "").trim();
+      const businessNameToken = String(lead?.business_name || "").trim();
+      const byIdResult = leadIdToken
+        ? await supabase
+            .from("leads")
+            .select("id", { count: "exact", head: true })
+            .eq("owner_id", ownerId)
+            .eq("referred_by", leadIdToken)
+        : null;
+      const byNameResult = businessNameToken
+        ? await supabase
+            .from("leads")
+            .select("id", { count: "exact", head: true })
+            .eq("owner_id", ownerId)
+            .ilike("referred_by", businessNameToken)
+        : null;
+      const byIdCount = Number(byIdResult?.count || 0);
+      const byNameCount = Number(byNameResult?.count || 0);
+      referralsGeneratedCount = Math.max(byIdCount, byNameCount);
+    } catch {
+      referralsGeneratedCount = 0;
+    }
+  }
+
   const hasAnyData = Boolean(lead || caseRow || opp);
   if (!hasAnyData) {
     return (
@@ -656,6 +740,7 @@ export default async function AdminLeadDetailPage({
   const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
   const hasContactPath = Boolean(displayEmail || displayPhone || displayContactPage || displayFacebook);
   const hasEmailPath = Boolean(displayEmail);
+  const hasContactAvailable = Boolean(displayContactPage || displayFacebook);
   const displayStatus = String(lead?.status || caseRow?.status || "new");
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
   const displayCity = String(opp?.city || "").trim() || "—";
@@ -708,6 +793,73 @@ export default async function AdminLeadDetailPage({
           ? displayWebsite
           : caseHref || leadPath;
   const quickFixSummary = quickFixImprovements[0] || null;
+  const hasStrongWebsiteOpportunity =
+    ["no_website", "broken_website", "outdated_website", "facebook_only", "mobile_layout_issue", "http_only"].includes(
+      String(displayWebsiteStatus || "").toLowerCase()
+    ) || issueList.some((issue) => {
+      const text = String(issue || "").toLowerCase();
+      return (
+        text.includes("no website") ||
+        text.includes("broken") ||
+        text.includes("outdated") ||
+        text.includes("mobile") ||
+        text.includes("facebook only")
+      );
+    });
+  const hasStrongLocalSignal =
+    Number(caseRow?.google_review_count || 0) >= 8 ||
+    Number(caseRow?.google_rating || 0) >= 4.2 ||
+    Number(displayScore || 0) >= 70;
+  const doorToDoorCandidate = Boolean(
+    !hasEmailPath &&
+      !hasContactAvailable &&
+      String(displayBusinessName || "").trim() &&
+      String(displayAddress || "").trim() &&
+      String(displayCity || "").trim() &&
+      hasStrongWebsiteOpportunity &&
+      hasStrongLocalSignal
+  );
+  const contactReadiness = hasEmailPath
+    ? "Email Ready"
+    : hasContactAvailable
+      ? "Contact Available"
+      : doorToDoorCandidate
+        ? "Door-to-Door Candidate"
+        : "Low Priority";
+  const suggestedChannel = hasEmailPath
+    ? "Email"
+    : displayContactPage
+      ? "Contact Form"
+      : displayFacebook
+        ? "Facebook"
+        : doorToDoorCandidate
+          ? "Door-to-Door"
+          : "Skip";
+  const nextAction = hasEmailPath
+    ? assessment.recommended_next_action
+    : hasContactAvailable
+      ? "Open Contact Path"
+      : doorToDoorCandidate
+        ? "Save for Door-to-Door"
+        : "Skip For Now";
+  const outreachChannel: "email" | "contact" | "door_to_door" | "skip" = hasEmailPath
+    ? "email"
+    : hasContactAvailable
+      ? "contact"
+      : doorToDoorCandidate
+        ? "door_to_door"
+        : "skip";
+  const valueInfo = computeEstimatedValue(displayCategory);
+  const expectedCloseProbability = expectedCloseProbabilityNumber(
+    (String(assessment.close_probability || "").toLowerCase() as "low" | "medium" | "high") || null,
+    displayScore
+  );
+  const pitches = generateLeadPitches({
+    businessName: displayBusinessName,
+    category: displayCategory,
+    issue: String(opp?.opportunity_reason || topIssues[0]?.issue || "website issues").trim(),
+    contactType: outreachChannel,
+  });
 
   return (
     <div className="space-y-6">
@@ -739,6 +891,20 @@ export default async function AdminLeadDetailPage({
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
               {displayCategory} · {displayCity} · Score {displayScore || "—"} · {displayLeadBucket} · Status {displayStatus.replace(/_/g, " ")}
             </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
+              {getLeadPriorityBadges({
+                isHotLead: Boolean(lead?.is_hot_lead),
+                bucket: displayLeadBucket,
+                score: displayScore,
+                email: displayEmail,
+                phone: displayPhone,
+              }).map((badge) => (
+                <span key={badge.key} className={`admin-priority-badge ${badge.className}`}>
+                  {badge.label}
+                </span>
+              ))}
+            </div>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Contact info is hard to find").trim()}
             </p>
@@ -793,6 +959,37 @@ export default async function AdminLeadDetailPage({
               <span style={{ color: "var(--admin-fg)" }}>Best Pitch Angle:</span> {assessment.best_pitch_angle}
             </p>
           </section>
+
+          <section className="admin-card">
+            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+              Lead Usefulness Summary
+            </h2>
+            <div className="space-y-2 text-sm">
+              <p><span style={{ color: "var(--admin-muted)" }}>Contact readiness:</span> {contactReadiness}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Suggested channel:</span> {suggestedChannel}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Estimated value:</span> {valueInfo.estimated_value} ({valueInfo.estimated_price_range})</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Beginner pricing lane:</span> {Number(displayScore || 0) >= 75 ? "Standard site ($300-$500)" : "Basic website ($150-$300)"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Deal status:</span> {String(lead?.deal_status || "none").replace(/_/g, " ")}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Deal value:</span> {lead?.deal_value ? `$${Number(lead.deal_value).toFixed(0)}` : "Not set yet"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Closed at:</span> {fmtDate(lead?.closed_at)}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Recurring client:</span> {lead?.is_recurring_client ? "Yes" : "No"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Monthly value:</span> {lead?.monthly_value ? `$${Number(lead.monthly_value).toFixed(0)}/mo` : "Not on plan"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Subscription started:</span> {fmtDate(lead?.subscription_started_at)}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Referred by:</span> {String(lead?.referred_by || "—")}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Referral source:</span> {String(lead?.referral_source || "—")}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Referrals generated by this client:</span> {referralsGeneratedCount}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Expected close probability:</span> {expectedCloseProbability}%</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Worth now vs later:</span> {hasEmailPath || hasContactAvailable ? "Worth working now" : doorToDoorCandidate ? "Save for selective in-person outreach" : "Save for later / low priority"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Why this still matters:</span> {doorToDoorCandidate ? "Active local business with a real website gap and no online contact path." : assessment.why_this_lead_is_here}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Recommended next action:</span> {nextAction}</p>
+            </div>
+          </section>
+
+          <LeadPitchPanel
+            emailPitch={pitches.email_pitch}
+            textPitch={pitches.text_pitch}
+            doorPitch={pitches.door_pitch}
+          />
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
@@ -1099,6 +1296,14 @@ export default async function AdminLeadDetailPage({
                   "—"
                 )}
               </div>
+              <div>
+                <span style={{ color: "var(--admin-muted)" }}>Google reviews: </span>
+                {caseRow?.google_review_count ?? "—"}
+              </div>
+              <div>
+                <span style={{ color: "var(--admin-muted)" }}>Google rating: </span>
+                {caseRow?.google_rating ?? "—"}
+              </div>
             </div>
             {!hasContactPath ? (
               <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
@@ -1195,6 +1400,8 @@ export default async function AdminLeadDetailPage({
               initialBusinessName={displayBusinessName}
               initialCategory={displayCategory}
               initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
+              initialStatus={lead?.status || null}
+              initialDealStatus={lead?.deal_status || null}
               initialEmail={displayEmail || null}
               initialPhone={displayPhone || null}
               website={displayWebsite || null}

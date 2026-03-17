@@ -260,8 +260,11 @@ export async function POST(request: Request) {
         follow_up_1_sent: false,
         follow_up_2_sent: false,
         follow_up_3_sent: false,
+        sequence_active: true,
         last_contacted_at: nowIso,
         next_follow_up_at: followUp1,
+        category: category || null,
+        contact_method: "email",
         status: "contacted",
       })
       .eq("id", leadId)

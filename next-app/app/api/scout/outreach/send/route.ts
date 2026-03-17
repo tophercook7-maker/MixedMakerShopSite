@@ -20,6 +20,10 @@ function normalizeEmail(value: unknown): string {
   return String(value || "").trim().toLowerCase();
 }
 
+function addDaysIso(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
 export async function POST(request: Request) {
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
@@ -118,11 +122,18 @@ export async function POST(request: Request) {
       const nowIso = new Date().toISOString();
       const { data: leadRows } = await supabase
         .from("leads")
-        .select("id,status,email")
+        .select("id,status,email,industry,category,best_contact_method,contact_method")
         .eq("id", leadId)
         .eq("owner_id", ownerId)
         .limit(1);
-      const existing = (leadRows || [])[0] as { status?: string | null; email?: string | null } | undefined;
+      const existing = (leadRows || [])[0] as {
+        status?: string | null;
+        email?: string | null;
+        industry?: string | null;
+        category?: string | null;
+        best_contact_method?: string | null;
+        contact_method?: string | null;
+      } | undefined;
       const currentStatus = String(existing?.status || "").trim().toLowerCase();
       const hasEmail = Boolean(String(existing?.email || "").trim());
       const nextStatus = hasEmail
@@ -130,12 +141,38 @@ export async function POST(request: Request) {
             ? currentStatus
             : "contacted")
         : "research_later";
+      const followUp1 = addDaysIso(2);
+      const followUp2 = addDaysIso(5);
+      const followUp3 = addDaysIso(8);
       const updatePayload: Record<string, unknown> = {
         status: nextStatus,
         last_contacted_at: nowIso,
+        category:
+          String(payload?.category || existing?.category || existing?.industry || "").trim() || null,
+        contact_method:
+          String(payload?.contact_method || existing?.best_contact_method || existing?.contact_method || "email").trim() ||
+          "email",
       };
-      if (nextStatus !== "research_later") {
-        updatePayload.next_follow_up_at = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+      if (nextStatus === "contacted") {
+        Object.assign(updatePayload, {
+          outreach_sent: true,
+          outreach_sent_at: nowIso,
+          follow_up_1: followUp1,
+          follow_up_2: followUp2,
+          follow_up_3: followUp3,
+          follow_up_1_sent: false,
+          follow_up_2_sent: false,
+          follow_up_3_sent: false,
+          sequence_active: true,
+          next_follow_up_at: followUp1,
+        });
+      } else if (nextStatus !== "research_later") {
+        updatePayload.next_follow_up_at = addDaysIso(2);
+      } else {
+        Object.assign(updatePayload, {
+          sequence_active: false,
+          next_follow_up_at: null,
+        });
       }
       const { error: leadUpdateError } = await supabase
         .from("leads")
@@ -235,21 +272,27 @@ export async function POST(request: Request) {
         });
       }
     }
-    if (ownerId) {
-      const followUpStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-      const followUpEnd = new Date(followUpStart.getTime() + 30 * 60 * 1000);
+    if (ownerId && leadId && leadUpdates?.status === "contacted") {
       try {
         const workspaceForEvent = await resolveWorkspaceIdForOwner(ownerId);
-        await createCalendarEvent({
-          ownerId,
-          workspaceId: workspaceForEvent,
-          leadId: leadId || null,
-          title: `Follow-up reminder: ${subject}`,
-          eventType: "followup",
-          startTime: followUpStart.toISOString(),
-          endTime: followUpEnd.toISOString(),
-          notes: "Auto-created after outreach email send.",
-        });
+        const followUpStarts = [addDaysIso(2), addDaysIso(5), addDaysIso(8)];
+        await Promise.all(
+          followUpStarts.map(async (startAt, index) => {
+            const start = new Date(startAt);
+            const end = new Date(start.getTime() + 30 * 60 * 1000);
+            await createCalendarEvent({
+              ownerId,
+              workspaceId: workspaceForEvent,
+              leadId: leadId || null,
+              title: `Follow-up ${index + 1}: ${subject}`,
+              eventType: "followup",
+              startTime: start.toISOString(),
+              endTime: end.toISOString(),
+              notes: "Auto-created after outreach send.",
+              isBlocking: false,
+            });
+          })
+        );
       } catch (calendarError) {
         console.warn("[Scout Proxy] calendar follow-up event creation failed", calendarError);
       }

@@ -388,6 +388,50 @@
 .admin-badge-bucket-review { background: rgba(96, 165, 250, 0.2); color: #93c5fd; }
 .admin-badge-bucket-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
+/* Unified lead status colors */
+.admin-badge-lead-new { background: rgba(125, 211, 252, 0.22); color: #bae6fd; }
+.admin-badge-lead-contacted { background: rgba(192, 132, 252, 0.22); color: #d8b4fe; }
+.admin-badge-lead-replied { background: rgba(74, 222, 128, 0.24); color: #4ade80; }
+.admin-badge-lead-closed { background: rgba(148, 163, 184, 0.24); color: #cbd5e1; }
+.admin-badge-lead-research { background: rgba(226, 232, 240, 0.24); color: #e2e8f0; }
+
+/* Unified priority badges */
+.admin-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.admin-priority-hot {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.45), 0 0 16px rgba(34, 197, 94, 0.35);
+}
+.admin-priority-easy { background: rgba(250, 204, 21, 0.18); color: #fde047; }
+.admin-priority-no-email { background: rgba(248, 113, 113, 0.2); color: #fca5a5; }
+.admin-priority-phone { background: rgba(45, 212, 191, 0.2); color: #5eead4; }
+.admin-priority-door-green { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+.admin-priority-door-yellow { background: rgba(250, 204, 21, 0.2); color: #fde047; }
+.admin-priority-door-orange { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
+.admin-priority-door-gray { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+
+/* Dashboard priority section highlights */
+.admin-section-hot {
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: linear-gradient(160deg, rgba(22, 101, 52, 0.25), rgba(10, 28, 22, 0.95));
+}
+.admin-section-today {
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: linear-gradient(160deg, rgba(30, 58, 138, 0.2), rgba(10, 28, 22, 0.95));
+}
+.admin-section-easy {
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: linear-gradient(160deg, rgba(120, 53, 15, 0.2), rgba(10, 28, 22, 0.95));
+}
+
 /* Empty states */
 .admin-empty {
   text-align: center;

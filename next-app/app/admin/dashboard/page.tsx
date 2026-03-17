@@ -3,6 +3,7 @@ import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
+import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 
 type LeadRow = {
   id: string;
@@ -19,6 +20,18 @@ type LeadRow = {
   last_reply_at?: string | null;
   last_reply_preview?: string | null;
   recommended_next_action?: string | null;
+  deal_status?: string | null;
+  deal_value?: number | null;
+  closed_at?: string | null;
+  outreach_sent_at?: string | null;
+  industry?: string | null;
+  best_contact_method?: string | null;
+  is_recurring_client?: boolean | null;
+  monthly_value?: number | null;
+  subscription_started_at?: string | null;
+  referred_by?: string | null;
+  referral_source?: string | null;
+  is_referred_client?: boolean | null;
 };
 
 type OpportunityRow = {
@@ -64,6 +77,22 @@ type ReplyMessageRow = {
   created_at?: string | null;
 };
 
+type FollowUpSentRow = {
+  id: string;
+  lead_id?: string | null;
+  sent_at?: string | null;
+  message_kind?: string | null;
+};
+
+type CalendarTodayRow = {
+  id: string;
+  title?: string | null;
+  event_type?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  lead_id?: string | null;
+};
+
 type SearchParams = Record<string, string | string[] | undefined>;
 type BootstrapIssue = { label: string; message: string };
 
@@ -75,6 +104,33 @@ function missingOpportunityReasonColumn(message: string): boolean {
 function missingIsHotLeadColumn(message: string): boolean {
   const text = String(message || "").toLowerCase();
   return text.includes("leads.is_hot_lead") || text.includes("column is_hot_lead");
+}
+
+function missingDealColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("leads.deal_status") ||
+    text.includes("leads.deal_value") ||
+    text.includes("leads.closed_at") ||
+    text.includes("column deal_status") ||
+    text.includes("column deal_value") ||
+    text.includes("column closed_at")
+  );
+}
+
+function missingTrackingColumns(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("column outreach_sent_at") ||
+    text.includes("column best_contact_method") ||
+    text.includes("column industry") ||
+    text.includes("column is_recurring_client") ||
+    text.includes("column monthly_value") ||
+    text.includes("column subscription_started_at") ||
+    text.includes("column referred_by") ||
+    text.includes("column referral_source") ||
+    text.includes("column is_referred_client")
+  );
 }
 
 function firstParam(value: string | string[] | undefined): string {
@@ -121,6 +177,25 @@ function dueAt(lead: LeadRow): Date | null {
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return null;
   return d;
+}
+
+function calendarTypeColor(type: string | null | undefined): string {
+  const t = String(type || "").toLowerCase();
+  if (t === "appointment") return "#ef4444";
+  if (t === "client_call") return "#3b82f6";
+  if (t === "personal") return "#7c3aed";
+  if (t === "followup") return "#f97316";
+  if (t === "task") return "#eab308";
+  if (t === "scout") return "#22c55e";
+  if (t === "busy_block") return "#374151";
+  if (t === "reminder") return "#14b8a6";
+  return "#60a5fa";
+}
+
+function estimateBeginnerDealValue(lead: LeadRow): number {
+  const score = Number(lead.opportunity_score || 0);
+  // Beginner-friendly pricing: basic $150-$300, standard $300-$500.
+  return score >= 75 ? 400 : 225;
 }
 
 async function fetchDraftMessages(supabase: Awaited<ReturnType<typeof createClient>>, ownerId: string) {
@@ -188,22 +263,31 @@ export default async function DailyCommandCenterPage({
     | null = null;
   let draftRows: EmailDraftRow[] = [];
   let replyMessageRows: ReplyMessageRow[] = [];
+  let followUpSentRows: FollowUpSentRow[] = [];
+  let calendarTodayRows: CalendarTodayRow[] = [];
 
   if (!minimalMode) {
-    const [topLeadRaw, allLeadsRaw, draftRaw, repliesRaw] = await Promise.all([
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toISOString();
+    const [topLeadRaw, allLeadsRaw, draftRaw, repliesRaw, followUpsRaw, calendarTodayRaw] = await Promise.all([
       runBootstrapTask(
         "leads.top-24h",
         async () => {
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
             .order("opportunity_score", { ascending: false, nullsFirst: false })
             .limit(40)) as { data: LeadRow[] | null; error: { message?: string } | null };
-          if (res.error?.message && missingIsHotLeadColumn(res.error.message)) {
+          if (
+            res.error?.message &&
+            (missingIsHotLeadColumn(res.error.message) ||
+              missingDealColumns(res.error.message) ||
+              missingTrackingColumns(res.error.message))
+          ) {
             res = (await supabase
               .from("leads")
               .select(
@@ -224,12 +308,17 @@ export default async function DailyCommandCenterPage({
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
             .limit(3000)) as { data: LeadRow[] | null; error: { message?: string } | null };
-          if (res.error?.message && missingIsHotLeadColumn(res.error.message)) {
+          if (
+            res.error?.message &&
+            (missingIsHotLeadColumn(res.error.message) ||
+              missingDealColumns(res.error.message) ||
+              missingTrackingColumns(res.error.message))
+          ) {
             res = (await supabase
               .from("leads")
               .select(
@@ -257,11 +346,39 @@ export default async function DailyCommandCenterPage({
             .limit(500)) as { data: ReplyMessageRow[] | null; error: unknown },
         bootstrapIssues
       ),
+      runBootstrapTask(
+        "email_messages.followups",
+        async () =>
+          (await supabase
+            .from("email_messages")
+            .select("id,lead_id,sent_at,message_kind,direction")
+            .eq("owner_id", ownerId)
+            .eq("direction", "outbound")
+            .like("message_kind", "follow_up_%")
+            .order("sent_at", { ascending: false, nullsFirst: false })
+            .limit(2000)) as { data: FollowUpSentRow[] | null; error: unknown },
+        bootstrapIssues
+      ),
+      runBootstrapTask(
+        "calendar.today",
+        async () =>
+          (await supabase
+            .from("calendar_events")
+            .select("id,title,event_type,start_time,end_time,lead_id")
+            .eq("owner_id", ownerId)
+            .gte("start_time", startOfDay)
+            .lt("start_time", endOfDay)
+            .order("start_time", { ascending: true })
+            .limit(200)) as { data: CalendarTodayRow[] | null; error: unknown },
+        bootstrapIssues
+      ),
     ]);
     topLeadResult = topLeadRaw;
     allLeadsResult = allLeadsRaw;
     draftRows = draftRaw || [];
     replyMessageRows = (((repliesRaw as { data?: ReplyMessageRow[] | null })?.data || []) as ReplyMessageRow[]);
+    followUpSentRows = (((followUpsRaw as { data?: FollowUpSentRow[] | null })?.data || []) as FollowUpSentRow[]);
+    calendarTodayRows = (((calendarTodayRaw as { data?: CalendarTodayRow[] | null })?.data || []) as CalendarTodayRow[]);
   }
 
   const topLeads = ((topLeadResult?.data || []) as unknown[]) as LeadRow[];
@@ -488,6 +605,16 @@ export default async function DailyCommandCenterPage({
       return bTs - aTs;
     })
     .slice(0, 12);
+  const hotLeads = allLeads
+    .filter((lead) => Boolean(lead.is_hot_lead) || String(lead.status || "").toLowerCase() === "replied")
+    .sort((a, b) => Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0))
+    .slice(0, 8);
+  const easyWins = topLeadsEmailReady.filter((lead) => {
+    const linkedOppId = String(lead.linked_opportunity_id || "").trim();
+    const opp = linkedOppId ? topLeadOppById.get(linkedOppId) : null;
+    const bucket = canonicalLeadBucket(String(opp?.lead_bucket || "").trim(), Number(lead.opportunity_score ?? 0));
+    return bucket === "Easy Win";
+  });
   const todayStartIso = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const repliesToday = (replyMessageRows || []).filter((row) => {
     const ts = String(row.received_at || row.created_at || "").trim();
@@ -509,6 +636,94 @@ export default async function DailyCommandCenterPage({
     else if (status === "research_later") snapshot.research_later += 1;
     else if (status === "closed" || status === "closed_won" || status === "closed_lost") snapshot.closed += 1;
   }
+  const dealsWon = allLeads.filter((lead) => {
+    const dealStatus = String(lead.deal_status || "").trim().toLowerCase();
+    const status = String(lead.status || "").trim().toLowerCase();
+    return dealStatus === "won" || status === "closed_won";
+  });
+  const totalRevenue = dealsWon.reduce((sum, lead) => {
+    const explicit = Number(lead.deal_value || 0);
+    const value = Number.isFinite(explicit) && explicit > 0 ? explicit : estimateBeginnerDealValue(lead);
+    return sum + value;
+  }, 0);
+  const recurringClients = allLeads.filter((lead) => Boolean(lead.is_recurring_client));
+  const totalMrr = recurringClients.reduce((sum, lead) => sum + Number(lead.monthly_value || 0), 0);
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const newRecurringThisMonth = recurringClients.filter((lead) => {
+    const ts = String(lead.subscription_started_at || "").trim();
+    return ts && ts >= thisMonthStart;
+  }).length;
+  const referredClientCount = allLeads.filter(
+    (lead) => Boolean(lead.is_referred_client) || Boolean(String(lead.referred_by || "").trim())
+  ).length;
+  const leadsContacted = allLeads.filter((lead) => {
+    const status = String(lead.status || "").trim().toLowerCase();
+    return status !== "new" && status !== "research_later" && status !== "do_not_contact";
+  }).length;
+  const repliesCount = allLeads.filter((lead) => String(lead.status || "").trim().toLowerCase() === "replied").length;
+  const conversionRate = leadsContacted > 0 ? (dealsWon.length / leadsContacted) * 100 : 0;
+  const contactedCount = allLeads.filter((lead) => Boolean(String(lead.outreach_sent_at || "").trim())).length;
+  const repliedCount = allLeads.filter(
+    (lead) =>
+      Boolean(String(lead.last_reply_at || "").trim()) ||
+      String(lead.status || "").trim().toLowerCase() === "replied"
+  ).length;
+  const interestedCount = allLeads.filter((lead) => {
+    const dealStatus = String(lead.deal_status || "").trim().toLowerCase();
+    return dealStatus === "interested" || dealStatus === "proposal_sent" || dealStatus === "won";
+  }).length;
+  const wonCount = dealsWon.length;
+  const lostCount = allLeads.filter((lead) => {
+    const dealStatus = String(lead.deal_status || "").trim().toLowerCase();
+    const status = String(lead.status || "").trim().toLowerCase();
+    return dealStatus === "lost" || status === "closed_lost";
+  }).length;
+  const contactedToRepliedRate = contactedCount > 0 ? (repliedCount / contactedCount) * 100 : 0;
+  const repliedToInterestedRate = repliedCount > 0 ? (interestedCount / repliedCount) * 100 : 0;
+  const interestedToWonRate = interestedCount > 0 ? (wonCount / interestedCount) * 100 : 0;
+  const overallCloseRate = contactedCount > 0 ? (wonCount / contactedCount) * 100 : 0;
+
+  const replyHourCounts = new Map<number, number>();
+  for (const row of replyMessageRows) {
+    const ts = String(row.received_at || row.created_at || "").trim();
+    if (!ts) continue;
+    const date = new Date(ts);
+    if (Number.isNaN(date.getTime())) continue;
+    const hour = date.getHours();
+    replyHourCounts.set(hour, (replyHourCounts.get(hour) || 0) + 1);
+  }
+  const bestReplyHour =
+    Array.from(replyHourCounts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const bestReplyHourLabel =
+    bestReplyHour === null
+      ? "8am-11am (default)"
+      : `${String(bestReplyHour).padStart(2, "0")}:00-${String((bestReplyHour + 1) % 24).padStart(2, "0")}:00`;
+
+  const followUpDayStats = new Map<number, { sends: number; replied: number }>();
+  for (const row of followUpSentRows) {
+    const sent = String(row.sent_at || "").trim();
+    if (!sent) continue;
+    const date = new Date(sent);
+    if (Number.isNaN(date.getTime())) continue;
+    const day = date.getDay();
+    const lead = leadById.get(String(row.lead_id || "").trim());
+    const didReply = Boolean(
+      lead &&
+        (String(lead.last_reply_at || "").trim() ||
+          String(lead.status || "").trim().toLowerCase() === "replied")
+    );
+    const current = followUpDayStats.get(day) || { sends: 0, replied: 0 };
+    current.sends += 1;
+    if (didReply) current.replied += 1;
+    followUpDayStats.set(day, current);
+  }
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const bestFollowUpDay = Array.from(followUpDayStats.entries())
+    .filter(([, stat]) => stat.sends > 0)
+    .map(([day, stat]) => ({ day, rate: stat.replied / stat.sends, sends: stat.sends }))
+    .sort((a, b) => b.rate - a.rate || b.sends - a.sends)[0];
+  const bestFollowUpDayLabel = bestFollowUpDay ? weekday[bestFollowUpDay.day] : "Tue/Thu (default)";
+  const hasEnoughTimingData = replyMessageRows.length >= 10 && followUpSentRows.length >= 10;
 
   return (
     <div className="space-y-4">
@@ -556,6 +771,92 @@ export default async function DailyCommandCenterPage({
         </h1>
       </section>
 
+      <section className="grid gap-4 lg:grid-cols-3">
+        <article className="admin-card admin-section-hot">
+          <h2 className="text-lg font-semibold mb-3">HOT LEADS</h2>
+          {hotLeads.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>No hot leads yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {hotLeads.map((lead) => {
+                const businessName = String(lead.business_name || "Lead");
+                const leadPath = buildLeadPath(String(lead.id || ""), businessName);
+                return (
+                  <div key={lead.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "rgba(74, 222, 128, 0.4)" }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">{businessName}</p>
+                      <span className={`admin-badge ${leadStatusClass(lead.status)}`}>{prettyLeadStatus(lead.status)}</span>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {getLeadPriorityBadges({
+                        isHotLead: Boolean(lead.is_hot_lead),
+                        bucket: null,
+                        score: lead.opportunity_score ?? null,
+                        email: lead.email || null,
+                        phone: null,
+                      }).map((badge) => (
+                        <span key={`${lead.id}-${badge.key}`} className={`admin-priority-badge ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      ))}
+                    </div>
+                    <a href={leadPath} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center mt-2">Open Lead</a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </article>
+        <article className="admin-card admin-section-today">
+          <h2 className="text-lg font-semibold mb-3">TODAY</h2>
+          {calendarTodayRows.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>No calendar events today.</p>
+          ) : (
+            <ul className="space-y-2">
+              {calendarTodayRows.slice(0, 8).map((event) => {
+                const eventLead = String(event.lead_id || "").trim() ? leadById.get(String(event.lead_id || "")) : null;
+                return (
+                  <li key={event.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span style={{ width: 8, height: 8, borderRadius: 999, display: "inline-block", background: calendarTypeColor(event.event_type) }} />
+                      <span>{fmtDate(event.start_time)}</span>
+                    </div>
+                    <p className="text-sm font-medium mt-1">{String(event.title || "Event")}</p>
+                    <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      {String(event.event_type || "task")}
+                      {eventLead ? ` · ${String(eventLead.business_name || "Lead")}` : ""}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <a href="/admin/calendar" className="admin-btn-ghost text-xs h-8 px-3 inline-flex items-center mt-2">Open Calendar</a>
+        </article>
+        <article className="admin-card admin-section-easy">
+          <h2 className="text-lg font-semibold mb-3">EASY WINS</h2>
+          {easyWins.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>No easy wins right now.</p>
+          ) : (
+            <div className="space-y-2">
+              {easyWins.slice(0, 8).map((lead) => {
+                const businessName = String(lead.business_name || "Lead");
+                const leadPath = buildLeadPath(String(lead.id || ""), businessName);
+                return (
+                  <div key={lead.id} className="rounded-lg border px-3 py-2" style={{ borderColor: "rgba(250, 204, 21, 0.35)" }}>
+                    <p className="text-sm font-medium">{businessName}</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      <span className="admin-priority-badge admin-priority-easy">⚡ Easy Win</span>
+                    </div>
+                    <a href={leadPath} className="admin-btn-primary text-xs h-8 px-3 inline-flex items-center mt-2">Open Lead</a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </article>
+      </section>
+
       <section className="admin-card">
         <h2 className="text-lg font-semibold mb-3">Work Today</h2>
         {workToday.length === 0 ? (
@@ -569,6 +870,19 @@ export default async function DailyCommandCenterPage({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold">{item.businessName}</p>
                   <LeadBucketBadge bucket={item.leadBucket} score={item.opportunityScore} />
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {getLeadPriorityBadges({
+                    isHotLead: false,
+                    bucket: item.leadBucket,
+                    score: item.opportunityScore,
+                    email: item.email,
+                    phone: null,
+                  }).map((badge) => (
+                    <span key={`${item.id}-${badge.key}`} className={`admin-priority-badge ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  ))}
                 </div>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                   {item.city} · {item.category} · {item.leadType} · Score {item.opportunityScore}
@@ -665,14 +979,25 @@ export default async function DailyCommandCenterPage({
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-medium">{businessName}</p>
-                      <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                        Score {Number(lead.opportunity_score ?? 0)}
-                      </span>
+                      <span className={`admin-badge ${leadStatusClass(lead.status)}`}>{prettyLeadStatus(lead.status)}</span>
                     </div>
                     <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                       <LeadBucketBadge bucket={leadBucket} score={Number(lead.opportunity_score ?? 0)} />{" "}
                       {opportunityReason || "Contact info is hard to find"}
                     </p>
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {getLeadPriorityBadges({
+                        isHotLead: Boolean(lead.is_hot_lead),
+                        bucket: leadBucket,
+                        score: Number(lead.opportunity_score ?? 0),
+                        email: lead.email || null,
+                        phone: null,
+                      }).map((badge) => (
+                        <span key={`${lead.id}-easy-${badge.key}`} className={`admin-priority-badge ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      ))}
+                    </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a
                         href={buildLeadPath(String(lead.id || ""), businessName)}
@@ -810,9 +1135,20 @@ export default async function DailyCommandCenterPage({
                       <>
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium">{String(lead.business_name || "Lead")}</p>
-                    <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                      Replied / Hot Lead
-                    </span>
+                    <span className={`admin-badge ${leadStatusClass(lead.status)}`}>{prettyLeadStatus(lead.status)}</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {getLeadPriorityBadges({
+                      isHotLead: Boolean(lead.is_hot_lead),
+                      bucket: null,
+                      score: lead.opportunity_score ?? null,
+                      email: lead.email || null,
+                      phone: null,
+                    }).map((badge) => (
+                      <span key={`${lead.id}-reply-${badge.key}`} className={`admin-priority-badge ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    ))}
                   </div>
                   <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                     {fromEmail} · {fmtDate(replyAt)}
@@ -916,6 +1252,99 @@ export default async function DailyCommandCenterPage({
               <p className="text-2xl font-semibold mt-1">{snapshot.closed}</p>
             </div>
           </div>
+        </article>
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Deals & Revenue</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>deals won</p>
+              <p className="text-2xl font-semibold mt-1">{dealsWon.length}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>total revenue</p>
+              <p className="text-2xl font-semibold mt-1">
+                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
+                  totalRevenue
+                )}
+              </p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>leads contacted</p>
+              <p className="text-2xl font-semibold mt-1">{leadsContacted}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>replies</p>
+              <p className="text-2xl font-semibold mt-1">{repliesCount}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>mrr total</p>
+              <p className="text-2xl font-semibold mt-1">
+                {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(
+                  totalMrr
+                )}
+              </p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>active recurring clients</p>
+              <p className="text-2xl font-semibold mt-1">{recurringClients.length}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>new recurring this month</p>
+              <p className="text-2xl font-semibold mt-1">{newRecurringThisMonth}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>referred clients</p>
+              <p className="text-2xl font-semibold mt-1">{referredClientCount}</p>
+            </div>
+            <div className="rounded-lg border px-3 py-3 col-span-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>conversion rate</p>
+              <p className="text-2xl font-semibold mt-1">{conversionRate.toFixed(1)}%</p>
+              <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                Uses beginner pricing defaults when won deals have no value: basic $150-$300, standard $300-$500.
+              </p>
+            </div>
+            <div className="rounded-lg border px-3 py-3 col-span-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>stage conversion rates</p>
+              <p className="text-sm mt-1">Contacted → Replied: <strong>{contactedToRepliedRate.toFixed(1)}%</strong> ({repliedCount}/{contactedCount || 0})</p>
+              <p className="text-sm mt-1">Replied → Interested: <strong>{repliedToInterestedRate.toFixed(1)}%</strong> ({interestedCount}/{repliedCount || 0})</p>
+              <p className="text-sm mt-1">Interested → Won: <strong>{interestedToWonRate.toFixed(1)}%</strong> ({wonCount}/{interestedCount || 0})</p>
+              <p className="text-sm mt-1">Overall close rate: <strong>{overallCloseRate.toFixed(1)}%</strong> ({wonCount}/{contactedCount || 0})</p>
+            </div>
+          </div>
+        </article>
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Timing Insights</h2>
+          <div className="space-y-2 text-sm">
+            <p>
+              <span style={{ color: "var(--admin-muted)" }}>Best time of day for replies:</span> {bestReplyHourLabel}
+            </p>
+            <p>
+              <span style={{ color: "var(--admin-muted)" }}>Best day for follow-ups:</span> {bestFollowUpDayLabel}
+            </p>
+            {hasEnoughTimingData ? (
+              <p style={{ color: "var(--admin-muted)" }}>
+                Based on {replyMessageRows.length} replies and {followUpSentRows.length} follow-up sends.
+              </p>
+            ) : (
+              <p style={{ color: "var(--admin-muted)" }}>
+                Default schedule active while data grows: send between 8am-11am, follow-up at 2/5/8 days.
+              </p>
+            )}
+          </div>
+        </article>
+        <article className="admin-card">
+          <h2 className="text-lg font-semibold mb-3">Deal Pipeline</h2>
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>New: <strong>{snapshot.new}</strong></div>
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>Contacted: <strong>{snapshot.contacted}</strong></div>
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>Replied: <strong>{snapshot.replied}</strong></div>
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>Interested: <strong>{interestedCount}</strong></div>
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>Won: <strong>{wonCount}</strong></div>
+            <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>Lost: <strong>{lostCount}</strong></div>
+          </div>
+          <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+            Won deal value: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(totalRevenue)}
+          </p>
         </article>
       </section>
     </div>

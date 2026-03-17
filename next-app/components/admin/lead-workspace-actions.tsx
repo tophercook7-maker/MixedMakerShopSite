@@ -8,6 +8,8 @@ type LeadWorkspaceActionsProps = {
   initialBusinessName: string;
   initialCategory: string;
   initialIssue: string;
+  initialStatus: string | null;
+  initialDealStatus: string | null;
   initialEmail: string | null;
   initialPhone: string | null;
   website: string | null;
@@ -24,6 +26,9 @@ type TemplateResponse = {
   longer_email?: string;
   follow_up_note?: string;
 };
+
+const DEFAULT_SMS_TEMPLATE =
+  "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
 function fallbackDraft(name: string, issue: string) {
   return {
@@ -42,12 +47,26 @@ function fallbackDraft(name: string, issue: string) {
   };
 }
 
+function beginnerPricingSuggestion(category: string): { label: string; midpoint: number } {
+  const normalized = String(category || "").toLowerCase();
+  const isStandard =
+    normalized.includes("contractor") ||
+    normalized.includes("church") ||
+    normalized.includes("service") ||
+    normalized.includes("clinic");
+  return isStandard
+    ? { label: "Standard site ($300-$500)", midpoint: 400 }
+    : { label: "Basic website ($150-$300)", midpoint: 225 };
+}
+
 export function LeadWorkspaceActions({
   leadId,
   linkedOpportunityId,
   initialBusinessName,
   initialCategory,
   initialIssue,
+  initialStatus,
+  initialDealStatus,
   initialEmail,
   initialPhone,
   website,
@@ -69,9 +88,13 @@ export function LeadWorkspaceActions({
   const [noteDraft, setNoteDraft] = useState("");
   const [savedNotes, setSavedNotes] = useState<string[]>(initialNotes);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [proposalText, setProposalText] = useState("");
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
+  const proposalEligible =
+    String(initialStatus || "").trim().toLowerCase() === "replied" ||
+    String(initialDealStatus || "").trim().toLowerCase() === "interested";
 
   useEffect(() => {
     if (autoGenerate) {
@@ -209,7 +232,7 @@ export function LeadWorkspaceActions({
     }
   }
 
-  async function updateLead(payload: Record<string, unknown>, successMessage: string) {
+  async function updateLead(payload: Record<string, unknown>, successMessage: string): Promise<boolean> {
     console.info("[Action Debug] Lead status action clicked", { leadId, payload });
     setIsUpdating(true);
     setError(null);
@@ -225,6 +248,7 @@ export function LeadWorkspaceActions({
       if (!res.ok) throw new Error(data.error || "Could not update lead.");
       setMessage(successMessage);
       console.info("[Action Debug] Lead status request succeeded", { leadId, payload });
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update lead.");
       console.error("[Action Debug] Lead status request failed", {
@@ -232,9 +256,117 @@ export function LeadWorkspaceActions({
         payload,
         error: e instanceof Error ? e.message : "unknown",
       });
+      return false;
     } finally {
       setIsUpdating(false);
     }
+  }
+
+  async function createLeadLinkedEvent(eventType: "followup" | "client_call" | "reminder", title: string, daysOut = 1) {
+    const start = new Date();
+    start.setDate(start.getDate() + daysOut);
+    start.setMinutes(0, 0, 0);
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
+    const isBlocking = eventType === "client_call";
+    const res = await fetch("/api/calendar/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        event_type: eventType,
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        notes: `Auto-created from lead ${leadId}.`,
+        is_blocking: isBlocking,
+        lead_id: leadId,
+      }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) throw new Error(body.error || "Could not create calendar event.");
+  }
+
+  async function markContactedWithFollowUp() {
+    const ok = await updateLead({ status: "contacted" }, "Lead marked contacted.");
+    if (!ok) return;
+    try {
+      await createLeadLinkedEvent("followup", `Follow up: ${initialBusinessName || "Lead"}`, 1);
+      setMessage("Lead marked contacted and follow-up scheduled.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create follow-up event.");
+    }
+  }
+
+  async function markRepliedWithReminder() {
+    const ok = await updateLead({ status: "replied", is_hot_lead: true }, "Lead marked replied.");
+    if (!ok) return;
+    try {
+      await createLeadLinkedEvent("reminder", `Reply to lead: ${initialBusinessName || "Lead"}`, 0);
+      setMessage("Lead marked replied and calendar reminder added.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create reply reminder.");
+    }
+  }
+
+  async function scheduleClientCall() {
+    try {
+      await createLeadLinkedEvent("client_call", `Client call: ${initialBusinessName || "Lead"}`, 1);
+      setMessage("Client call event created and linked to lead.");
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not schedule client call.");
+    }
+  }
+
+  async function updateDealStatus(nextStatus: "interested" | "proposal_sent" | "won" | "lost") {
+    const nowIso = new Date().toISOString();
+    if (nextStatus === "won") {
+      const pricing = beginnerPricingSuggestion(initialCategory);
+      const input = window.prompt(
+        `Deal value for ${initialBusinessName || "this lead"}\nSuggested: ${pricing.label}`,
+        String(pricing.midpoint)
+      );
+      const parsed = Number(input || "");
+      const wantsRecurring = window.confirm(
+        "Offer hosting/maintenance plan now? Click OK for yes, Cancel for no."
+      );
+      const recurringDefault = "20";
+      const recurringInput = wantsRecurring
+        ? window.prompt("Monthly plan amount ($15-$30 recommended)", recurringDefault)
+        : null;
+      const recurringParsed = Number(recurringInput || "");
+      await updateLead(
+        {
+          deal_status: "won",
+          deal_value: Number.isFinite(parsed) && parsed > 0 ? parsed : pricing.midpoint,
+          closed_at: nowIso,
+          status: "closed_won",
+          sequence_active: false,
+          is_recurring_client: wantsRecurring,
+          monthly_value:
+            wantsRecurring && Number.isFinite(recurringParsed) && recurringParsed > 0
+              ? recurringParsed
+              : wantsRecurring
+                ? 20
+                : null,
+          subscription_started_at: wantsRecurring ? nowIso : null,
+        },
+        wantsRecurring
+          ? "Deal marked won and recurring plan started."
+          : "Deal marked won."
+      );
+      return;
+    }
+    if (nextStatus === "lost") {
+      await updateLead(
+        { deal_status: "lost", closed_at: nowIso, status: "closed_lost", sequence_active: false },
+        "Deal marked lost."
+      );
+      return;
+    }
+    await updateLead(
+      { deal_status: nextStatus, status: "contacted" },
+      nextStatus === "interested" ? "Deal marked interested." : "Proposal marked sent."
+    );
   }
 
   async function copyEmail() {
@@ -250,6 +382,101 @@ export function LeadWorkspaceActions({
       setError(null);
     } catch {
       setError("Clipboard copy failed.");
+    }
+  }
+
+  function generateProposal() {
+    const pricing = beginnerPricingSuggestion(initialCategory);
+    const proposal = [
+      `Proposal for ${initialBusinessName || "your business"}`,
+      "",
+      "What I will improve:",
+      `- Build a clean, mobile-friendly ${initialCategory || "business"} website`,
+      `- Fix this key issue: ${initialIssue || "make it easier for customers to contact you"}`,
+      quickFixSummary ? `- Priority fix: ${quickFixSummary}` : "- Improve key website issue found in review",
+      "- Add clear calls-to-action for calls/quotes",
+      "- Improve speed and layout so visitors stay and convert",
+      "",
+      "Timeline:",
+      "- First version in 3-5 days",
+      "- Revisions included",
+      "",
+      "Beginner-friendly investment:",
+      `- ${pricing.label}`,
+      "",
+      "Next step:",
+      "Reply with 'yes' and I will send a quick kickoff checklist.",
+      "",
+      "- Topher",
+      "Topher's Web Design",
+    ].join("\n");
+    setProposalText(proposal);
+    setMessage("Proposal generated.");
+    setError(null);
+  }
+
+  async function copyProposal() {
+    if (!proposalText.trim()) {
+      setError("Generate a proposal first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(proposalText.trim());
+      setMessage("Proposal copied to clipboard.");
+      setError(null);
+    } catch {
+      setError("Could not copy proposal.");
+    }
+  }
+
+  async function markReferredClient() {
+    const referredBy = window.prompt("Referred by (lead id or name)", "");
+    const referralSource = window.prompt("Referral source (client referral, church network, etc.)", "client referral");
+    await updateLead(
+      {
+        is_referred_client: true,
+        referred_by: String(referredBy || "").trim() || undefined,
+        referral_source: String(referralSource || "").trim() || "client referral",
+      },
+      "Lead marked as referred client."
+    );
+  }
+
+  function smsTemplate() {
+    return DEFAULT_SMS_TEMPLATE.replace(
+      "a website opportunity",
+      `a website opportunity for ${initialBusinessName || "your business"}`
+    );
+  }
+
+  function smsHref() {
+    const phone = String(initialPhone || "").replace(/[^\d+]/g, "");
+    const body = encodeURIComponent(smsTemplate());
+    return `sms:${encodeURIComponent(phone)}?&body=${body}`;
+  }
+
+  async function copyNumber() {
+    const next = String(initialPhone || "").trim();
+    if (!next) {
+      setError("No phone number on this lead.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(next);
+      setMessage("Phone number copied.");
+      setError(null);
+    } catch {
+      setError("Could not copy number.");
+    }
+  }
+
+  async function copyTextScript() {
+    try {
+      await navigator.clipboard.writeText(smsTemplate());
+      setMessage("Text script copied.");
+      setError(null);
+    } catch {
+      setError("Could not copy text script.");
     }
   }
 
@@ -335,6 +562,37 @@ export function LeadWorkspaceActions({
       </div>
 
       <div className="admin-card space-y-2">
+        <h3 className="text-sm font-semibold">Proposal Generator</h3>
+        {proposalEligible ? (
+          <>
+            <div className="flex flex-wrap gap-2">
+              <button className="admin-btn-primary text-xs" onClick={() => generateProposal()}>
+                Generate Proposal
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copyProposal()}>
+                Copy Proposal
+              </button>
+            </div>
+            {proposalText ? (
+              <textarea
+                className="admin-input min-h-[220px]"
+                value={proposalText}
+                onChange={(e) => setProposalText(e.target.value)}
+              />
+            ) : (
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Proposal is available for replied/interested leads.
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Proposal unlocks when lead is replied or marked interested.
+          </p>
+        )}
+      </div>
+
+      <div className="admin-card space-y-2">
         <h3 className="text-sm font-semibold">Redesign Concept</h3>
         <div className="flex flex-wrap gap-2">
           <button
@@ -366,7 +624,7 @@ export function LeadWorkspaceActions({
         <div className="flex flex-wrap gap-2">
           <button
             className="admin-btn-ghost text-xs"
-            onClick={() => void updateLead({ status: "contacted" }, "Lead marked contacted.")}
+            onClick={() => void markContactedWithFollowUp()}
             disabled={isUpdating}
           >
             Mark Contacted
@@ -379,11 +637,42 @@ export function LeadWorkspaceActions({
             Schedule Follow Up
           </button>
           <button
+            className="admin-btn-ghost text-xs"
+            onClick={() => void markRepliedWithReminder()}
+            disabled={isUpdating}
+          >
+            Mark Replied
+          </button>
+          <button
+            className="admin-btn-ghost text-xs"
+            onClick={() => void scheduleClientCall()}
+            disabled={isUpdating}
+          >
+            Schedule Call
+          </button>
+          <button
             className="admin-btn-danger text-xs"
             onClick={() => void updateLead({ status: "do_not_contact" }, "Lead marked do not contact.")}
             disabled={isUpdating}
           >
             Do Not Contact
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("interested")} disabled={isUpdating}>
+            Mark Interested
+          </button>
+          <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("proposal_sent")} disabled={isUpdating}>
+            Proposal Sent
+          </button>
+          <button className="admin-btn-primary text-xs" onClick={() => void updateDealStatus("won")} disabled={isUpdating}>
+            Mark Won
+          </button>
+          <button className="admin-btn-danger text-xs" onClick={() => void updateDealStatus("lost")} disabled={isUpdating}>
+            Mark Lost
+          </button>
+          <button className="admin-btn-ghost text-xs" onClick={() => void markReferredClient()} disabled={isUpdating}>
+            Mark Referred Client
           </button>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -416,6 +705,31 @@ export function LeadWorkspaceActions({
             <a href={`mailto:${initialEmail}`} className="admin-btn-ghost">
               Open Email App
             </a>
+          ) : null}
+          {initialPhone ? (
+            <>
+              <a href={smsHref()} className="admin-btn-ghost">
+                Text from Mac
+              </a>
+              <button className="admin-btn-ghost" onClick={() => void copyNumber()}>
+                Copy Number
+              </button>
+              <button className="admin-btn-ghost" onClick={() => void copyTextScript()}>
+                Copy Text Script
+              </button>
+              <button
+                className="admin-btn-ghost"
+                onClick={() =>
+                  void updateLead(
+                    { status: "contacted" },
+                    "Lead marked contacted (text sent)."
+                  )
+                }
+                disabled={isUpdating}
+              >
+                Mark Text Sent
+              </button>
+            </>
           ) : null}
         </div>
       </div>

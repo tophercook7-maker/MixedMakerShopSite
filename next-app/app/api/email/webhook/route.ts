@@ -407,6 +407,7 @@ export async function POST(request: Request) {
             status: "replied",
             is_hot_lead: true,
             recommended_next_action: "Reply to Lead",
+            replied_at: receivedAt || nowIso,
             last_reply_at: receivedAt || nowIso,
             last_reply_preview: replyPreview,
             last_contacted_at: receivedAt || nowIso,

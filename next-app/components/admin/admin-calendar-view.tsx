@@ -7,7 +7,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { DateSelectArg, DatesSetArg, EventClickArg, EventInput, EventContentArg } from "@fullcalendar/core";
-import { buildLeadPath } from "@/lib/lead-route";
 
 type LeadLite = {
   id: string;
@@ -20,7 +19,16 @@ type CalendarEventRow = {
   owner_id?: string | null;
   lead_id?: string | null;
   title: string;
-  event_type: "appointment" | "client_call" | "personal" | "followup" | "task" | "scout" | string;
+  event_type:
+    | "appointment"
+    | "client_call"
+    | "personal"
+    | "followup"
+    | "task"
+    | "scout"
+    | "busy_block"
+    | "reminder"
+    | string;
   start_time: string;
   end_time?: string | null;
   notes?: string | null;
@@ -38,6 +46,44 @@ type AdminCalendarViewProps = {
   leads: LeadLite[];
 };
 
+type CalendarType =
+  | "appointment"
+  | "client_call"
+  | "personal"
+  | "followup"
+  | "task"
+  | "scout"
+  | "busy_block"
+  | "reminder";
+
+const BLOCKING_BY_TYPE: Record<CalendarType, boolean> = {
+  appointment: true,
+  client_call: true,
+  personal: true,
+  busy_block: true,
+  followup: false,
+  task: false,
+  scout: false,
+  reminder: false,
+};
+
+function isBlockingType(type: string): boolean {
+  return BLOCKING_BY_TYPE[type as CalendarType] ?? false;
+}
+
+function eventTypeColor(type: string): string {
+  const t = String(type || "").toLowerCase();
+  if (t === "personal") return "#7c3aed";
+  if (t === "appointment") return "#ef4444";
+  if (t === "client_call") return "#3b82f6";
+  if (t === "busy_block") return "#374151";
+  if (t === "followup") return "#f97316";
+  if (t === "task") return "#eab308";
+  if (t === "scout") return "#22c55e";
+  if (t === "reminder") return "#14b8a6";
+  return "#60a5fa";
+}
+
 async function fetchEvents(startIso: string, endIso: string): Promise<CalendarEventRow[]> {
   const qs = new URLSearchParams({ start: startIso, end: endIso });
   const res = await fetch(`/api/calendar/events?${qs.toString()}`, { cache: "no-store" });
@@ -48,12 +94,14 @@ async function fetchEvents(startIso: string, endIso: string): Promise<CalendarEv
 
 function toEventInput(row: CalendarEventRow): EventInput {
   const colorByType: Record<string, string> = {
-    appointment: "#22c55e",
-    client_call: "#16a34a",
-    personal: "#0ea5e9",
-    followup: "#f59e0b",
-    task: "#60a5fa",
-    scout: "#a78bfa",
+    personal: "#7c3aed",
+    appointment: "#ef4444",
+    client_call: "#3b82f6",
+    busy_block: "#374151",
+    followup: "#f97316",
+    task: "#eab308",
+    scout: "#22c55e",
+    reminder: "#14b8a6",
   };
   const type = String(row.event_type || "task").toLowerCase();
   const isBlocking = Boolean(row.is_blocking ?? row.hard_block);
@@ -86,7 +134,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   const [savingSettings, setSavingSettings] = useState(false);
 
   const [taskTitle, setTaskTitle] = useState("");
-  const [taskType, setTaskType] = useState<"appointment" | "client_call" | "personal" | "followup" | "task" | "scout">("task");
+  const [taskType, setTaskType] = useState<CalendarType>("task");
   const [taskIsBlocking, setTaskIsBlocking] = useState(false);
   const [taskStart, setTaskStart] = useState("");
   const [taskEnd, setTaskEnd] = useState("");
@@ -122,6 +170,14 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
     save_succeeded: false,
     error: null,
   });
+  const [creatingFollowUp, setCreatingFollowUp] = useState(false);
+  const [lastCreatedContext, setLastCreatedContext] = useState<{
+    eventType: string;
+    leadId: string;
+    leadBusinessName: string;
+    baseStartIso: string;
+    baseTitle: string;
+  } | null>(null);
 
   const leadOptions = useMemo(
     () =>
@@ -131,6 +187,80 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       })),
     [leads]
   );
+
+  const todayAgenda = useMemo(() => {
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    const items = (events || [])
+      .map((event) => {
+        const startAt = event.start ? new Date(event.start as string | number | Date) : null;
+        if (!startAt || Number.isNaN(startAt.getTime())) return null;
+        if (startAt < dayStart || startAt >= dayEnd) return null;
+        return {
+          id: String(event.id || ""),
+          title: String(event.title || "Event"),
+          eventType: String((event.extendedProps as Record<string, unknown> | undefined)?.eventType || "task"),
+          leadBusinessName: String(
+            (event.extendedProps as Record<string, unknown> | undefined)?.leadBusinessName || ""
+          ).trim(),
+          isBlocking: Boolean((event.extendedProps as Record<string, unknown> | undefined)?.isBlocking),
+          startAt,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
+
+    return {
+      all: items,
+      blocking: items.filter((item) => item.isBlocking),
+      followups: items.filter((item) => item.eventType === "followup" || item.eventType === "reminder"),
+      tasks: items.filter((item) => item.eventType === "task" || item.eventType === "scout"),
+      clientCalls: items.filter((item) => item.eventType === "client_call"),
+    };
+  }, [events]);
+
+  const weeklyStats = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now);
+    const day = start.getDay();
+    const diffToMonday = (day + 6) % 7;
+    start.setDate(start.getDate() - diffToMonday);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+
+    const weekItems = (events || [])
+      .map((event) => {
+        const startAt = event.start ? new Date(event.start as string | number | Date) : null;
+        const endAt = event.end ? new Date(event.end as string | number | Date) : null;
+        const type = String((event.extendedProps as Record<string, unknown> | undefined)?.eventType || "task");
+        const isBlocking = Boolean((event.extendedProps as Record<string, unknown> | undefined)?.isBlocking);
+        if (!startAt || Number.isNaN(startAt.getTime())) return null;
+        if (startAt < start || startAt >= end) return null;
+        const durationMs =
+          endAt && !Number.isNaN(endAt.getTime()) && endAt > startAt
+            ? endAt.getTime() - startAt.getTime()
+            : 30 * 60 * 1000;
+        return { type, isBlocking, durationMs };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+    const appointments = weekItems.filter((item) => item.type === "appointment").length;
+    const followups = weekItems.filter((item) => item.type === "followup" || item.type === "reminder").length;
+    const tasks = weekItems.filter((item) => item.type === "task" || item.type === "scout").length;
+    const busyMs = weekItems.filter((item) => item.isBlocking).reduce((sum, item) => sum + item.durationMs, 0);
+    const totalWeekMs = 7 * 24 * 60 * 60 * 1000;
+    const busyPct = Math.max(0, Math.min(100, Math.round((busyMs / totalWeekMs) * 100)));
+    return {
+      appointments,
+      followups,
+      tasks,
+      busyPct,
+      openPct: 100 - busyPct,
+    };
+  }, [events]);
 
   useEffect(() => {
     void loadCalendarSettings();
@@ -263,11 +393,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
   }
 
   useEffect(() => {
-    if (taskType === "appointment" || taskType === "client_call" || taskType === "personal") {
-      setTaskIsBlocking(true);
-    } else {
-      setTaskIsBlocking(false);
-    }
+    setTaskIsBlocking(isBlockingType(taskType));
   }, [taskType]);
 
   function eventContent(arg: EventContentArg) {
@@ -355,6 +481,13 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setTaskTitle("");
       setTaskNotes("");
       setTaskLeadId("");
+      setLastCreatedContext({
+        eventType: taskType,
+        leadId: taskLeadId || "",
+        leadBusinessName: leadOptions.find((lead) => lead.id === taskLeadId)?.label || "",
+        baseStartIso: requestPayload.start_time,
+        baseTitle: requestPayload.title,
+      });
       setMessage(taskType === "appointment" ? "Appointment created" : "Event created");
       setSaveDebug({
         save_attempted: true,
@@ -370,6 +503,84 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
       setSaveDebug((prev) => ({ ...prev, save_succeeded: false, error: errText }));
     } finally {
       setSavingEvent(false);
+    }
+  }
+
+  async function createQuickFollowUp(daysOut: number, followType: "followup" | "task", titlePrefix: string) {
+    if (!selectedEvent?.start) return;
+    setCreatingFollowUp(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const baseStart = new Date(selectedEvent.start);
+      if (Number.isNaN(baseStart.getTime())) throw new Error("Invalid base event time.");
+      const start = new Date(baseStart.getTime() + daysOut * 24 * 60 * 60 * 1000);
+      const end = new Date(start.getTime() + 30 * 60 * 1000);
+      const title = `${titlePrefix}: ${selectedEvent.leadBusinessName || selectedEvent.title}`;
+      const res = await fetch("/api/calendar/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          event_type: followType,
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
+          notes: `Auto-created from ${selectedEvent.eventType}.`,
+          is_blocking: false,
+          lead_id: selectedEvent.leadId || null,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      if (!res.ok) throw new Error(body.error || "Could not create follow-up.");
+      const created = body && body.id ? toEventInput(body) : null;
+      if (created) {
+        setEvents((prev) => [...prev.filter((ev) => String(ev.id || "") !== String(created.id || "")), created]);
+      }
+      await refreshCurrentRange();
+      setMessage("Follow-up event created.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create follow-up.");
+    } finally {
+      setCreatingFollowUp(false);
+    }
+  }
+
+  async function createQuickFollowUpFromContext(daysOut: number, followType: "followup" | "task", titlePrefix: string) {
+    if (!lastCreatedContext?.baseStartIso) return;
+    setCreatingFollowUp(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const baseStart = new Date(lastCreatedContext.baseStartIso);
+      if (Number.isNaN(baseStart.getTime())) throw new Error("Invalid base event time.");
+      const start = new Date(baseStart.getTime() + daysOut * 24 * 60 * 60 * 1000);
+      const end = new Date(start.getTime() + 30 * 60 * 1000);
+      const title = `${titlePrefix}: ${lastCreatedContext.leadBusinessName || lastCreatedContext.baseTitle}`;
+      const res = await fetch("/api/calendar/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          event_type: followType,
+          start_time: start.toISOString(),
+          end_time: end.toISOString(),
+          notes: `Auto-created from ${lastCreatedContext.eventType}.`,
+          is_blocking: false,
+          lead_id: lastCreatedContext.leadId || null,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
+      if (!res.ok) throw new Error(body.error || "Could not create follow-up.");
+      const created = body && body.id ? toEventInput(body) : null;
+      if (created) {
+        setEvents((prev) => [...prev.filter((ev) => String(ev.id || "") !== String(created.id || "")), created]);
+      }
+      await refreshCurrentRange();
+      setMessage("Follow-up event created.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not create follow-up.");
+    } finally {
+      setCreatingFollowUp(false);
     }
   }
 
@@ -402,6 +613,7 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
           end_time: selectedEvent.end ? new Date(selectedEvent.end).toISOString() : null,
           notes: selectedEvent.notes || null,
           lead_id: selectedEvent.leadId || null,
+          is_blocking: selectedEvent.isBlocking,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as CalendarEventRow & { error?: string };
@@ -480,6 +692,64 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
         </div>
       </section>
 
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-2">Today</h2>
+        <div className="grid gap-3 md:grid-cols-4 mb-3">
+          <div className="rounded-md border p-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Blocking</p>
+            <p className="text-lg font-semibold">{todayAgenda.blocking.length}</p>
+          </div>
+          <div className="rounded-md border p-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Follow-ups</p>
+            <p className="text-lg font-semibold">{todayAgenda.followups.length}</p>
+          </div>
+          <div className="rounded-md border p-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Tasks</p>
+            <p className="text-lg font-semibold">{todayAgenda.tasks.length}</p>
+          </div>
+          <div className="rounded-md border p-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Client calls</p>
+            <p className="text-lg font-semibold">{todayAgenda.clientCalls.length}</p>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <p className="text-xs mb-1 font-semibold" style={{ color: "var(--admin-muted)" }}>
+              Daily Agenda
+            </p>
+            <ul className="text-xs space-y-1" style={{ color: "var(--admin-muted)" }}>
+              {todayAgenda.all.length === 0 ? (
+                <li>No events today.</li>
+              ) : (
+                todayAgenda.all.map((item) => (
+                  <li key={`a-${item.id}`}>
+                    {item.startAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - {item.title} [{item.eventType}]
+                    {item.leadBusinessName ? ` (${item.leadBusinessName})` : ""}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs mb-1 font-semibold" style={{ color: "var(--admin-muted)" }}>
+              Weekly Charts
+            </p>
+            <div className="space-y-2 text-xs" style={{ color: "var(--admin-muted)" }}>
+              <div>Appointments this week: {weeklyStats.appointments}</div>
+              <div>Follow-ups this week: {weeklyStats.followups}</div>
+              <div>Tasks this week: {weeklyStats.tasks}</div>
+              <div className="space-y-1">
+                <div>Busy vs Open Time</div>
+                <div style={{ height: 10, borderRadius: 999, background: "rgba(255,255,255,0.12)", overflow: "hidden" }}>
+                  <div style={{ width: `${weeklyStats.busyPct}%`, height: 10, background: "#ef4444" }} />
+                </div>
+                <div>Busy {weeklyStats.busyPct}% · Open {weeklyStats.openPct}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="admin-card">
           <FullCalendar
@@ -530,6 +800,8 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
                 <option value="followup">followup</option>
                 <option value="task">task</option>
                 <option value="scout">scout</option>
+                <option value="busy_block">busy_block</option>
+                <option value="reminder">reminder</option>
               </select>
               <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
                 <input type="checkbox" checked={taskIsBlocking} onChange={(e) => setTaskIsBlocking(Boolean(e.target.checked))} />
@@ -603,6 +875,8 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
             <option value="followup">followup</option>
             <option value="task">task</option>
             <option value="scout">scout</option>
+            <option value="busy_block">busy_block</option>
+            <option value="reminder">reminder</option>
           </select>
           <div className="grid gap-2 md:grid-cols-2">
             <input
@@ -624,18 +898,68 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
             onChange={(e) => setSelectedEvent((prev) => (prev ? { ...prev, notes: e.target.value } : prev))}
             placeholder="Notes"
           />
+          <label className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
+            <input
+              type="checkbox"
+              checked={selectedEvent.isBlocking}
+              onChange={(e) =>
+                setSelectedEvent((prev) => (prev ? { ...prev, isBlocking: Boolean(e.target.checked) } : prev))
+              }
+            />
+            blocking event
+          </label>
           <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
             Type: {selectedEvent.eventType} · {selectedEvent.isBlocking ? "blocking" : "non-blocking"} · owner:{" "}
             {selectedEvent.ownerId || "—"} · workspace: {selectedEvent.workspaceId || "—"}
           </div>
+          <div className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                display: "inline-block",
+                background: eventTypeColor(selectedEvent.eventType),
+              }}
+            />
+            Event color
+          </div>
           <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
             Lead ID: {selectedEvent.leadId || "—"}
           </div>
+          <div className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Linked Business: {selectedEvent.leadBusinessName || "—"}
+          </div>
           {selectedEvent.leadId ? (
             <div className="flex flex-wrap gap-2">
-              <a href={buildLeadPath(selectedEvent.leadId, selectedEvent.leadBusinessName || null)} className="admin-btn-ghost text-xs">
+              <a href={`/admin/leads/${encodeURIComponent(selectedEvent.leadId)}`} className="admin-btn-ghost text-xs">
                 Open Lead
               </a>
+            </div>
+          ) : null}
+          {(selectedEvent.eventType === "appointment" || selectedEvent.eventType === "client_call") ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="admin-btn-ghost text-xs"
+                onClick={() => void createQuickFollowUp(1, "followup", "Follow up")}
+                disabled={savingEvent || creatingFollowUp}
+              >
+                Follow up tomorrow
+              </button>
+              <button
+                className="admin-btn-ghost text-xs"
+                onClick={() => void createQuickFollowUp(1, "task", "Send proposal")}
+                disabled={savingEvent || creatingFollowUp}
+              >
+                Send proposal in 1 day
+              </button>
+              <button
+                className="admin-btn-ghost text-xs"
+                onClick={() => void createQuickFollowUp(3, "followup", "Check in")}
+                disabled={savingEvent || creatingFollowUp}
+              >
+                Check in in 3 days
+              </button>
             </div>
           ) : null}
           <div className="flex flex-wrap gap-2">
@@ -654,6 +978,37 @@ export function AdminCalendarView({ leads }: AdminCalendarViewProps) {
 
       {message ? <p className="text-xs" style={{ color: "#86efac" }}>{message}</p> : null}
       {error ? <p className="text-xs" style={{ color: "#fca5a5" }}>{error}</p> : null}
+      {lastCreatedContext && (lastCreatedContext.eventType === "appointment" || lastCreatedContext.eventType === "client_call") ? (
+        <section className="admin-card">
+          <h2 className="text-sm font-semibold mb-2">Quick Follow-Up Helpers</h2>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            Create a linked follow-up for {lastCreatedContext.leadBusinessName || "this client event"}.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              className="admin-btn-ghost text-xs"
+              onClick={() => void createQuickFollowUpFromContext(1, "followup", "Follow up")}
+              disabled={creatingFollowUp}
+            >
+              Follow up tomorrow
+            </button>
+            <button
+              className="admin-btn-ghost text-xs"
+              onClick={() => void createQuickFollowUpFromContext(1, "task", "Send proposal")}
+              disabled={creatingFollowUp}
+            >
+              Send proposal in 1 day
+            </button>
+            <button
+              className="admin-btn-ghost text-xs"
+              onClick={() => void createQuickFollowUpFromContext(3, "followup", "Check in")}
+              disabled={creatingFollowUp}
+            >
+              Check in in 3 days
+            </button>
+          </div>
+        </section>
+      ) : null}
       <section className="admin-card">
         <h2 className="text-sm font-semibold mb-2">Calendar Save Debug (temporary)</h2>
         <div className="text-xs space-y-1" style={{ color: "var(--admin-muted)" }}>

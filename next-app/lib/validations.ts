@@ -5,12 +5,14 @@ const leadStatuses = [
   "contacted",
   "follow_up_due",
   "replied",
+  "no_response",
   "closed",
   "closed_won",
   "closed_lost",
   "research_later",
   "do_not_contact",
 ] as const;
+const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;
@@ -52,6 +54,20 @@ export const leadSchema = z.object({
   industry: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
   lead_source: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   status: z.enum(leadStatuses),
+  deal_status: z.enum(dealStatuses).optional(),
+  deal_value: z.number().min(0).optional(),
+  closed_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  replied_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  outreach_sent_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  contact_method: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
+  category: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  is_recurring_client: z.boolean().optional(),
+  monthly_value: z.number().min(0).optional(),
+  subscription_started_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  referred_by: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  referral_source: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  is_referred_client: z.boolean().optional(),
+  sequence_active: z.boolean().optional(),
   notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),
   follow_up_date: z.string().optional().transform((v) => (v === "" ? undefined : v)),
 });

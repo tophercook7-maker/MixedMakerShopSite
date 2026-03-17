@@ -37,6 +37,7 @@ type OpportunityRow = {
   opportunity_reason?: string | null;
   opportunity_signals?: string[] | null;
   close_probability?: "low" | "medium" | "high" | null;
+  google_rating?: number | null;
 };
 
 function missingOpportunityReasonColumn(message: string): boolean {
@@ -97,12 +98,122 @@ type CaseByOpportunityRow = {
   notes?: string | null;
   outcome?: string | null;
   google_review_count?: number | null;
+  google_rating?: number | null;
   reviews_last_30_days?: number | null;
   owner_post_detected?: boolean | null;
   new_photos_detected?: boolean | null;
   listing_recently_updated?: boolean | null;
   created_at?: string | null;
 };
+
+function categoryFitScore(category: string | null | undefined): number {
+  const cat = String(category || "").toLowerCase();
+  const high = [
+    "plumber",
+    "roofer",
+    "hvac",
+    "electrician",
+    "landscaping",
+    "cleaning",
+    "pressure washing",
+    "auto repair",
+    "restaurant",
+    "cafe",
+    "church",
+  ];
+  const medium = ["dentist", "chiropractor", "salon", "gym", "bakery", "contractor"];
+  if (high.some((v) => cat.includes(v))) return 15;
+  if (medium.some((v) => cat.includes(v))) return 8;
+  if (cat) return 4;
+  return 0;
+}
+
+function computeDoorScore(input: {
+  rating: number | null | undefined;
+  reviews: number | null | undefined;
+  activeSignal: boolean;
+  websiteStatus: string | null | undefined;
+  hasAddress: boolean;
+  localProximityAvailable: boolean;
+  category: string | null | undefined;
+  hasEmail: boolean;
+  hasContactPage: boolean;
+  hasFacebookUrl: boolean;
+}): number {
+  let businessStrength = 0;
+  if (Number(input.rating || 0) >= 4.5) businessStrength += 15;
+  if (Number(input.reviews || 0) >= 10) businessStrength += 10;
+  if (input.activeSignal) businessStrength += 5;
+  businessStrength = Math.min(25, businessStrength);
+
+  let websiteOpportunity = 0;
+  const ws = String(input.websiteStatus || "").toLowerCase();
+  if (ws === "no_website") websiteOpportunity = 25;
+  else if (ws === "broken_website") websiteOpportunity = 20;
+  else if (ws === "facebook_only") websiteOpportunity = 15;
+  else if (ws === "outdated_website") websiteOpportunity = 10;
+  websiteOpportunity = Math.min(25, websiteOpportunity);
+
+  let localAccess = 0;
+  if (input.hasAddress) localAccess += 10;
+  if (input.localProximityAvailable) localAccess += 10;
+  localAccess = Math.min(20, localAccess);
+
+  const categoryFit = Math.min(15, categoryFitScore(input.category));
+
+  let noContactBonus = 0;
+  if (!input.hasEmail) noContactBonus += 5;
+  if (!input.hasContactPage) noContactBonus += 5;
+  if (!input.hasFacebookUrl) noContactBonus += 5;
+  noContactBonus = Math.min(15, noContactBonus);
+
+  const total = businessStrength + websiteOpportunity + localAccess + categoryFit + noContactBonus;
+  return Math.max(0, Math.min(100, total));
+}
+
+function computeEstimatedValue(category: string | null | undefined): {
+  estimated_value: "low" | "medium" | "high";
+  estimated_price_range: "$" | "$$" | "$$$";
+} {
+  const cat = String(category || "").toLowerCase();
+  const high = ["medical", "clinic", "contractor", "home service", "church", "plumber", "roofer", "hvac", "electrician"];
+  const medium = ["retail", "gym", "salon", "small business", "restaurant", "cafe", "auto repair"];
+  if (high.some((v) => cat.includes(v))) return { estimated_value: "high", estimated_price_range: "$$$" };
+  if (medium.some((v) => cat.includes(v))) return { estimated_value: "medium", estimated_price_range: "$$" };
+  return { estimated_value: "low", estimated_price_range: "$" };
+}
+
+function expectedCloseProbabilityNumber(
+  closeProbability: "low" | "medium" | "high" | null | undefined,
+  score: number | null | undefined
+): number {
+  const s = Number(score || 0);
+  if (closeProbability === "high") return Math.max(70, Math.min(95, s));
+  if (closeProbability === "medium") return Math.max(45, Math.min(75, s));
+  return Math.max(20, Math.min(55, s));
+}
+
+function generateLeadPitches(input: {
+  businessName: string;
+  category: string;
+  issue: string;
+  contactType: "email" | "contact" | "door_to_door" | "skip";
+}): { email_pitch: string; text_pitch: string; door_pitch: string } {
+  const business = input.businessName || "your business";
+  const category = input.category || "business";
+  const issue = input.issue || "a website issue";
+  const contactHint =
+    input.contactType === "email"
+      ? "I can send a quick before/after concept by email."
+      : input.contactType === "contact"
+        ? "I can send a quick idea through your contact form."
+        : "I can show a quick local example in person.";
+  return {
+    email_pitch: `Hi ${business}, I noticed ${issue} on your ${category} web presence. ${contactHint} Would you like a quick example tailored for your business?`,
+    text_pitch: `Hi ${business}, Topher here. I noticed ${issue} on your website and can show a quick improvement idea that helps customers reach you faster. Want me to send it?`,
+    door_pitch: `Hi, I am Topher with Topher's Web Design. I help local ${category} businesses fix issues like ${issue}. I put together a quick idea for ${business} to help get more customer actions.`,
+  };
+}
 
 type IntakeDiagnostics = {
   workspaceId: string | null;
@@ -122,6 +233,7 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
     normalized === "contacted" ||
     normalized === "follow_up_due" ||
     normalized === "replied" ||
+    normalized === "no_response" ||
     normalized === "closed" ||
     normalized === "closed_won" ||
     normalized === "closed_lost" ||
@@ -242,7 +354,7 @@ export default async function AdminLeadsPage({
     const withEmailSource = await supabase
       .from("case_files")
       .select(
-        "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,email_source,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
+        "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,email_source,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,google_rating,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
       )
       .in("opportunity_id", opportunityIds)
       .order("created_at", { ascending: false })
@@ -251,7 +363,7 @@ export default async function AdminLeadsPage({
       const fallback = await supabase
         .from("case_files")
         .select(
-          "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
+          "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,google_rating,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
         )
         .in("opportunity_id", opportunityIds)
         .order("created_at", { ascending: false })
@@ -284,6 +396,12 @@ export default async function AdminLeadsPage({
       : [];
     const signalEmailSource =
       opportunitySignals.find((signal) => signal.toLowerCase().startsWith("email_source:"))?.split(":")[1]?.trim() || "";
+    const signalDistanceKm = opportunitySignals
+      .map((signal) => {
+        const match = String(signal || "").toLowerCase().match(/distance[_\s]?km[:=]\s*([0-9]+(?:\.[0-9]+)?)/);
+        return match ? Number(match[1]) : null;
+      })
+      .find((v): v is number => Number.isFinite(Number(v)));
     const issueList =
       opportunityReason && !detectedIssues.some((issue) => issue.toLowerCase() === opportunityReason.toLowerCase())
         ? [opportunityReason, ...detectedIssues, ...opportunitySignals].slice(0, 6)
@@ -321,6 +439,92 @@ export default async function AdminLeadsPage({
       listing_recently_updated: caseRow?.listing_recently_updated ?? null,
       lead_status: row.status || null,
     });
+    const hasOnlineContactPath = Boolean(email || contactPage || facebookUrl);
+    const hasBaseBusinessInfo = Boolean(
+      String(opp?.business_name || row.business_name || "").trim() &&
+        String(opp?.address || "").trim() &&
+        String(opp?.city || "").trim()
+    );
+    const websiteStatus = String(opp?.website_status || "").trim().toLowerCase();
+    const hasStrongWebsiteOpportunity =
+      [
+        "no_website",
+        "broken_website",
+        "outdated_website",
+        "facebook_only",
+        "mobile_layout_issue",
+        "http_only",
+      ].includes(websiteStatus) ||
+      issueList.some((issue) => {
+        const text = String(issue || "").toLowerCase();
+        return (
+          text.includes("no website") ||
+          text.includes("broken") ||
+          text.includes("outdated") ||
+          text.includes("mobile") ||
+          text.includes("facebook only")
+        );
+      });
+    const hasStrongLocalSignal =
+      Number(caseRow?.google_review_count || 0) >= 8 ||
+      Number(caseRow?.google_rating || 0) >= 4.2 ||
+      Number(opp?.opportunity_score ?? row.opportunity_score ?? 0) >= 70;
+    const activeBusinessSignal = Boolean(
+      Number(caseRow?.reviews_last_30_days || 0) > 0 ||
+      caseRow?.owner_post_detected ||
+      caseRow?.new_photos_detected ||
+      caseRow?.listing_recently_updated
+    );
+    const hasAddress = Boolean(String(opp?.address || "").trim());
+    const localProximityAvailable = opportunitySignals.some((signal) => {
+      const text = String(signal || "").toLowerCase();
+      return text.includes("local_proximity") || text.includes("distance_km") || text.includes("nearby");
+    });
+    const doorScore = computeDoorScore({
+      rating: caseRow?.google_rating ?? null,
+      reviews: caseRow?.google_review_count ?? null,
+      activeSignal: activeBusinessSignal,
+      websiteStatus: opp?.website_status || null,
+      hasAddress,
+      localProximityAvailable,
+      category: opp?.category || row.industry || null,
+      hasEmail: Boolean(email),
+      hasContactPage: Boolean(contactPage),
+      hasFacebookUrl: Boolean(facebookUrl),
+    });
+    const isDoorToDoorCandidate = Boolean(
+      !hasOnlineContactPath &&
+        hasBaseBusinessInfo &&
+        hasStrongWebsiteOpportunity &&
+        hasStrongLocalSignal &&
+        doorScore >= 60
+    );
+    const outreachChannel: "email" | "contact" | "door_to_door" | "skip" = email
+      ? "email"
+      : contactPage || facebookUrl
+        ? "contact"
+        : isDoorToDoorCandidate
+          ? "door_to_door"
+          : "skip";
+    const nextAction =
+      outreachChannel === "email"
+        ? assessment.recommended_next_action
+        : outreachChannel === "contact"
+          ? ("Open Contact Path" as const)
+          : outreachChannel === "door_to_door"
+            ? ("Save for Door-to-Door" as const)
+            : ("Skip For Now" as const);
+    const valueInfo = computeEstimatedValue(opp?.category || row.industry || null);
+    const expectedCloseProbability = expectedCloseProbabilityNumber(
+      (String(assessment.close_probability || "").toLowerCase() as "low" | "medium" | "high") || null,
+      opp?.opportunity_score ?? row.opportunity_score ?? null
+    );
+    const pitches = generateLeadPitches({
+      businessName: String(opp?.business_name || row.business_name || "Business"),
+      category: String(opp?.category || row.industry || "business"),
+      issue: opportunityReason || issueList[0] || "website issues",
+      contactType: outreachChannel,
+    });
     return {
       id: String(row.id || ""),
       workspace_id: String(row.workspace_id || "").trim() || null,
@@ -347,10 +551,14 @@ export default async function AdminLeadsPage({
         deriveCloseProbability(opp?.opportunity_score ?? row.opportunity_score, opp?.category || row.industry, issueList),
       website: website || null,
       email: email || null,
-      email_source: email ? emailSource || "unknown" : null,
+      email_source: email ? emailSource || "unknown" : "No Email Found",
       phone_from_site: phone || null,
       contact_page: contactPage || null,
       facebook_url: facebookUrl || null,
+      google_review_count: caseRow?.google_review_count ?? null,
+      google_rating: caseRow?.google_rating ?? null,
+      door_score: doorScore,
+      distance_km: signalDistanceKm ?? null,
       contact_method: email
         ? "email"
         : contactPage
@@ -359,16 +567,32 @@ export default async function AdminLeadsPage({
             ? "phone"
             : facebookUrl
               ? "facebook"
-              : "none",
-      detected_issue_summary: opportunityReason || issueList[0] || "Contact info is hard to find",
+              : "No Contact Path",
+      detected_issue_summary: opportunityReason || issueList[0] || "No clear website issue captured yet",
       detected_issues: issueList,
       lead_type: hasEmail ? assessment.lead_type : "Needs Review",
-      best_contact_method: hasEmail ? assessment.best_contact_method || null : "none",
+      best_contact_method: hasEmail
+        ? assessment.best_contact_method || "email"
+        : contactPage
+          ? "contact_page"
+          : phone
+            ? "phone"
+            : facebookUrl
+              ? "facebook"
+              : "none",
       primary_problem: assessment.primary_problem,
       why_it_matters: assessment.why_it_matters,
       why_this_lead_is_here: assessment.why_this_lead_is_here,
       best_pitch_angle: assessment.best_pitch_angle,
-      recommended_next_action: hasEmail ? assessment.recommended_next_action : "Research Later",
+      estimated_value: valueInfo.estimated_value,
+      estimated_price_range: valueInfo.estimated_price_range,
+      expected_close_probability: expectedCloseProbability,
+      email_pitch: pitches.email_pitch,
+      text_pitch: pitches.text_pitch,
+      door_pitch: pitches.door_pitch,
+      recommended_next_action: nextAction,
+      outreach_channel: outreachChannel,
+      is_door_to_door_candidate: isDoorToDoorCandidate,
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
       screenshot_urls: screenshotCandidates,

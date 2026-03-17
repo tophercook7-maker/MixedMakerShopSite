@@ -18,6 +18,7 @@ type LeadRow = {
   follow_up_2_sent?: boolean | null;
   follow_up_3_sent?: boolean | null;
   follow_up_count?: number | null;
+  sequence_active?: boolean | null;
 };
 
 type FollowUpStage = 1 | 2 | 3;
@@ -33,7 +34,14 @@ function getSupabaseAdmin() {
 
 function isStoppedStatus(status: string) {
   const s = status.toLowerCase().trim();
-  return s === "replied" || s === "closed" || s === "closed_won" || s === "closed_lost" || s === "do_not_contact";
+  return (
+    s === "replied" ||
+    s === "closed" ||
+    s === "closed_won" ||
+    s === "closed_lost" ||
+    s === "no_response" ||
+    s === "do_not_contact"
+  );
 }
 
 function isDue(ts: string | null | undefined, now: Date) {
@@ -57,12 +65,12 @@ function pickDueStage(lead: LeadRow, now: Date): FollowUpStage | null {
 
 function followUpCopy(stage: FollowUpStage) {
   if (stage === 1) {
-    return "Just wanted to follow up in case you missed my last message";
+    return "Just following up in case my last message got buried.";
   }
   if (stage === 2) {
-    return "Quick question - is improving your site something you've thought about?";
+    return "I can make a quick example site for your business if you want to see what's possible.";
   }
-  return "I'll make this my last message - feel free to reach out anytime";
+  return "Just checking one last time - happy to help if improving your site is something you're considering.";
 }
 
 function buildFollowUpEmail(lead: LeadRow, stage: FollowUpStage) {
@@ -134,9 +142,10 @@ async function runFollowUps() {
   const { data, error } = await supabase
     .from("leads")
     .select(
-      "id,owner_id,workspace_id,linked_opportunity_id,business_name,email,industry,status,preview_url,follow_up_1,follow_up_2,follow_up_3,follow_up_1_sent,follow_up_2_sent,follow_up_3_sent,follow_up_count"
+      "id,owner_id,workspace_id,linked_opportunity_id,business_name,email,industry,status,preview_url,follow_up_1,follow_up_2,follow_up_3,follow_up_1_sent,follow_up_2_sent,follow_up_3_sent,follow_up_count,sequence_active"
     )
     .eq("outreach_sent", true)
+    .eq("sequence_active", true)
     .not("email", "is", null)
     .order("created_at", { ascending: true })
     .limit(5000);
@@ -194,6 +203,8 @@ async function runFollowUps() {
     } else {
       patch.follow_up_3_sent = true;
       patch.next_follow_up_at = null;
+      patch.sequence_active = false;
+      patch.status = "no_response";
       sentByStage.follow_up_3 += 1;
     }
 
@@ -207,6 +218,36 @@ async function runFollowUps() {
       failed += 1;
       continue;
     }
+    await supabase.from("email_messages").insert({
+      thread_id: null,
+      lead_id: lead.id,
+      direction: "outbound",
+      provider_message_id: sendResult.provider_message_id || null,
+      subject: email.subject,
+      body: email.body,
+      delivery_status: "sent",
+      sent_at: now.toISOString(),
+      owner_id: lead.owner_id,
+      recipient_email: to,
+      message_kind: `follow_up_${stage}`,
+    });
+    const workspaceId =
+      String(lead.workspace_id || "").trim() ||
+      String(process.env.SCOUT_WORKSPACE_ID || process.env.SCOUT_BRAIN_WORKSPACE_ID || "").trim() ||
+      String(lead.owner_id || "").trim();
+    const end = new Date(now.getTime() + 20 * 60 * 1000).toISOString();
+    await supabase.from("calendar_events").insert({
+      owner_id: lead.owner_id,
+      workspace_id: workspaceId || null,
+      lead_id: lead.id,
+      title: `Sent follow-up ${stage}: ${String(lead.business_name || "Lead").trim() || "Lead"}`,
+      event_type: "followup",
+      start_time: now.toISOString(),
+      end_time: end,
+      is_blocking: false,
+      notes: `Automated follow-up ${stage} sent.`,
+      source: "automation",
+    });
     sent += 1;
   }
 

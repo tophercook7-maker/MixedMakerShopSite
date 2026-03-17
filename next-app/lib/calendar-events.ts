@@ -7,9 +7,8 @@ export type CalendarEventType =
   | "followup"
   | "task"
   | "scout"
-  | "meeting"
-  | "follow_up_reminder"
-  | "scout_run";
+  | "busy_block"
+  | "reminder";
 
 function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -89,6 +88,8 @@ export async function createCalendarEvent(input: CreateCalendarEventInput) {
 export function normalizeCalendarEventType(raw: string | null | undefined): CalendarEventType {
   const value = String(raw || "").trim().toLowerCase();
   if (value === "personal") return "personal";
+  if (value === "busy block" || value === "busy_block") return "busy_block";
+  if (value === "reminder") return "reminder";
   if (value === "meeting") return "appointment";
   if (value === "follow-up reminder" || value === "follow_up_reminder") return "followup";
   if (value === "scout run" || value === "scout_run") return "scout";
@@ -103,7 +104,7 @@ export function normalizeCalendarEventType(raw: string | null | undefined): Cale
 
 export function isHardBlockEventType(raw: string | null | undefined): boolean {
   const type = normalizeCalendarEventType(raw);
-  return type === "appointment" || type === "client_call" || type === "personal";
+  return type === "appointment" || type === "client_call" || type === "personal" || type === "busy_block";
 }
 
 export function isSoftEventType(raw: string | null | undefined): boolean {
