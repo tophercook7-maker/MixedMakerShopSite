@@ -455,6 +455,23 @@ export function ScoutConsole({
         </section>
       )}
 
+      {scout.persistenceDebug?.reduced_mode_notice ? (
+        <section
+          className="admin-card"
+          style={{
+            borderColor: "rgba(251, 191, 36, 0.45)",
+            background: "rgba(120, 53, 15, 0.18)",
+          }}
+        >
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "#fde68a" }}>
+            Reduced Scout Mode
+          </h2>
+          <p className="text-sm" style={{ color: "#fde68a" }}>
+            {String(scout.persistenceDebug?.reduced_mode_notice || "")}
+          </p>
+        </section>
+      ) : null}
+
       {integrationReady && !scout.isBusy && (
         <section className="admin-card space-y-4">
           <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
@@ -705,6 +722,11 @@ export function ScoutConsole({
             This Scan Summary
           </h2>
           <div className="text-xs mb-2 space-y-1" style={{ color: "var(--admin-muted)" }}>
+            {Boolean(scout.persistenceDebug?.intake?.reduced_mode) ? (
+              <p style={{ color: "#fde68a" }}>
+                Google discovery unavailable. Running in reduced enrichment mode.
+              </p>
+            ) : null}
             <p>
               businesses scanned: {Number(scout.persistenceDebug?.intake?.scanned_count || 0)} |
               opportunities found: {Number(scout.persistenceDebug?.intake?.opportunities_found || scout.persistenceDebug?.intake?.opportunities_loaded || 0)} |
@@ -715,6 +737,19 @@ export function ScoutConsole({
               door-to-door created: {Number(scout.persistenceDebug?.intake?.door_to_door_candidates_created || 0)} |
               skipped leads: {Number(scout.persistenceDebug?.intake?.filtered_out || 0)}
             </p>
+            {Boolean(scout.persistenceDebug?.intake?.reduced_mode) ? (
+              <p>
+                google_discovery_used: {String(Boolean(scout.persistenceDebug?.intake?.google_discovery_used))} |
+                reduced_mode: {String(Boolean(scout.persistenceDebug?.intake?.reduced_mode))} |
+                stored_records_scanned: {Number(scout.persistenceDebug?.intake?.stored_records_scanned || 0)} |
+                records_enriched: {Number(scout.persistenceDebug?.intake?.records_enriched || 0)} |
+                emails_found: {Number(scout.persistenceDebug?.intake?.emails_found || 0)} |
+                actionable_email_leads: {Number(scout.persistenceDebug?.intake?.actionable_email_leads || 0)} |
+                contact_available: {Number(scout.persistenceDebug?.intake?.contact_available || 0)} |
+                door_to_door_candidates: {Number(scout.persistenceDebug?.intake?.door_to_door_candidates || 0)} |
+                skipped: {Number(scout.persistenceDebug?.intake?.skipped || 0)}
+              </p>
+            ) : null}
             <p>
               easy wins found: {
                 initialTopLeads.filter((lead) => String(lead.lead_bucket || "").toLowerCase() === "easy win").length

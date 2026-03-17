@@ -123,6 +123,15 @@ export type ScoutJobStatusResponse = {
       research_later_leads_created?: number;
       door_to_door_candidates_created?: number;
       archived_low_priority_created?: number;
+      google_discovery_used?: boolean;
+      reduced_mode?: boolean;
+      stored_records_scanned?: number;
+      records_enriched?: number;
+      emails_found?: number;
+      actionable_email_leads?: number;
+      contact_available?: number;
+      door_to_door_candidates?: number;
+      skipped?: number;
       leads_skipped_due_no_email?: number;
       leads_created_with_low_score?: number;
       leads_created_high_score?: number;
@@ -142,6 +151,8 @@ export type ScoutJobStatusResponse = {
       query_error?: string | null;
       intake_threshold_used?: number;
     } | null;
+    reduced_mode_notice?: string | null;
+    places_reduced_mode?: boolean;
     errors?: Array<Record<string, unknown>>;
   } | null;
 };
