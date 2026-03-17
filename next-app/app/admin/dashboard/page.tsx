@@ -7,6 +7,7 @@ import { canonicalLeadBucket } from "@/lib/lead-bucket";
 type LeadRow = {
   id: string;
   business_name?: string | null;
+  email?: string | null;
   website?: string | null;
   linked_opportunity_id?: string | null;
   opportunity_score?: number | null;
@@ -37,6 +38,7 @@ type CaseContactRow = {
   contact_form_url?: string | null;
   facebook_url?: string | null;
   facebook?: string | null;
+  email_source?: string | null;
   audit_issues?: string[] | null;
   strongest_problems?: string[] | null;
 };
@@ -176,7 +178,7 @@ export default async function DailyCommandCenterPage({
           (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
             )
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
@@ -190,7 +192,7 @@ export default async function DailyCommandCenterPage({
           (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
+              "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
@@ -205,6 +207,7 @@ export default async function DailyCommandCenterPage({
   }
 
   const topLeads = ((topLeadResult?.data || []) as unknown[]) as LeadRow[];
+  const topLeadsEmailReady = topLeads.filter((lead) => Boolean(String(lead.email || "").trim()));
   const allLeads = ((allLeadsResult?.data || []) as unknown[]) as LeadRow[];
   const leadById = new Map(allLeads.map((lead) => [String(lead.id), lead]));
 
@@ -257,7 +260,7 @@ export default async function DailyCommandCenterPage({
             await supabase
               .from("case_files")
               .select(
-                "id,opportunity_id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+                "id,opportunity_id,email,email_source,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
               )
               .in("opportunity_id", topLeadOppIds)
               .order("created_at", { ascending: false })
@@ -265,7 +268,28 @@ export default async function DailyCommandCenterPage({
           bootstrapIssues
         )
       : { data: [] as Record<string, unknown>[] };
-  const topLeadCases = ((topLeadCaseResult?.data || []) as unknown[]) as CaseContactRow[];
+  let topLeadCases = ((topLeadCaseResult?.data || []) as unknown[]) as CaseContactRow[];
+  const caseEmailSourceError = bootstrapIssues.find(
+    (issue) =>
+      issue.label === "case_files.top-lead-contact" &&
+      issue.message.toLowerCase().includes("email_source")
+  );
+  if (caseEmailSourceError && topLeadOppIds.length && !minimalMode) {
+    const fallbackCaseResult = await runBootstrapTask(
+      "case_files.top-lead-contact.no-email-source",
+      async () =>
+        await supabase
+          .from("case_files")
+          .select(
+            "id,opportunity_id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+          )
+          .in("opportunity_id", topLeadOppIds)
+          .order("created_at", { ascending: false })
+          .limit(500),
+      bootstrapIssues
+    );
+    topLeadCases = ((fallbackCaseResult?.data || []) as unknown[]) as CaseContactRow[];
+  }
   const topLeadCaseByOppId = new Map<string, CaseContactRow>();
   for (const row of topLeadCases) {
     const oppId = String(row.opportunity_id || "").trim();
@@ -316,7 +340,14 @@ export default async function DailyCommandCenterPage({
       });
       const bestContact = String(assessment.best_contact_method || "").trim();
       const nextAction = String(assessment.recommended_next_action || "").trim();
-      const qualified = Boolean(businessName && reason && bestContact && nextAction);
+      const email = String(lead.email || caseRow?.email || "").trim();
+      const signalEmailSource =
+        issueList
+          .find((signal) => signal.toLowerCase().startsWith("email_source:"))
+          ?.split(":")[1]
+          ?.trim() || "";
+      const emailSource = email ? String(caseRow?.email_source || signalEmailSource || "unknown").trim() : null;
+      const qualified = Boolean(businessName && reason && email && bestContact && nextAction);
       if (!qualified) return null;
       return {
         id: leadId,
@@ -330,6 +361,8 @@ export default async function DailyCommandCenterPage({
         leadType: assessment.lead_type,
         opportunityScore: Number(opp?.opportunity_score ?? lead.opportunity_score ?? 0),
         opportunityReason: reason,
+        email,
+        emailSource,
         bestContactMethod: assessment.best_contact_method || "email",
         bestPitchAngle: assessment.best_pitch_angle,
         recommendedNextAction: assessment.recommended_next_action,
@@ -417,7 +450,7 @@ export default async function DailyCommandCenterPage({
         <h2 className="text-lg font-semibold mb-3">Work Today</h2>
         {workToday.length === 0 ? (
           <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-            No actionable leads yet. Run Scout or backfill leads, then review Easy Wins.
+            No actionable email leads yet. Run Scout or backfill, then review Actionable Email Leads.
           </p>
         ) : (
           <div className="space-y-3">
@@ -438,6 +471,9 @@ export default async function DailyCommandCenterPage({
                 </p>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                   <span className="font-semibold">Best contact:</span> {item.bestContactMethod}
+                </p>
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  <span className="font-semibold">Email:</span> {item.email} ({item.emailSource || "unknown"})
                 </p>
                 <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
                   <span className="font-semibold">What to say:</span> {item.bestPitchAngle}
@@ -489,12 +525,12 @@ export default async function DailyCommandCenterPage({
         <article className="admin-card">
           <h2 className="text-lg font-semibold mb-3">Easy Win</h2>
           <div className="space-y-3">
-            {topLeads.length === 0 ? (
+            {topLeadsEmailReady.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                No Easy Win leads in last 24h.
+                No email-ready Easy Win leads in last 24h.
               </p>
             ) : (
-              topLeads.slice(0, 12).map((lead) => {
+              topLeadsEmailReady.slice(0, 12).map((lead) => {
                 const website =
                   String(lead.website || "").trim() ||
                   String(topLeadOppById.get(String(lead.linked_opportunity_id || ""))?.website || "").trim();

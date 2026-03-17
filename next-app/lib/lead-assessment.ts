@@ -12,6 +12,7 @@ export type RecommendedNextAction =
   | "Generate Email"
   | "Send First Touch"
   | "Review Website"
+  | "Research Later"
   | "Skip For Now";
 
 export type LeadAssessment = {
@@ -89,18 +90,7 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
   const churchCategory = String(input.category || "").toLowerCase().includes("church");
 
   const hasContactEmail = Boolean(String(input.email || "").trim());
-  const hasContactPhone = Boolean(String(input.phone || "").trim());
-  const hasContactPage = Boolean(String(input.contact_page || "").trim());
-  const hasFacebook = Boolean(String(input.facebook_url || "").trim());
-  const bestContactMethod: LeadAssessment["best_contact_method"] = hasContactEmail
-    ? "email"
-    : hasContactPage
-        ? "contact_page"
-      : hasContactPhone
-        ? "phone"
-        : hasFacebook
-          ? "facebook"
-          : "none";
+  const bestContactMethod: LeadAssessment["best_contact_method"] = hasContactEmail ? "email" : "none";
 
   let leadType: LeadType = "Needs Review";
   if (noWebsite || brokenWebsite || insecureHttp || missingContactPage) {
@@ -172,7 +162,7 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
 
   let recommendedNextAction: RecommendedNextAction = "Review Website";
   if (leadType === "Low Priority") recommendedNextAction = "Skip For Now";
-  else if (bestContactMethod === "none") recommendedNextAction = "Review Website";
+  else if (bestContactMethod === "none") recommendedNextAction = "Research Later";
   else if (leadStatus === "new") recommendedNextAction = "Send First Touch";
   else recommendedNextAction = "Generate Email";
 

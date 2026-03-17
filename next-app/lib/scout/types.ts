@@ -103,6 +103,8 @@ export type ScoutJobStatusResponse = {
       filtered_out?: number;
       filtered_low_score?: number;
       filtered_missing_contact_path?: number;
+      filtered_missing_email?: number;
+      filtered_missing_opportunity_reason?: number;
       filtered_closed_or_dnc?: number;
       filtered_missing_business_name?: number;
       filtered_missing_workspace?: number;
@@ -115,10 +117,14 @@ export type ScoutJobStatusResponse = {
       leads_with_contact_page?: number;
       leads_with_facebook?: number;
       leads_with_no_contact_path?: number;
+      actionable_email_leads_created?: number;
+      leads_skipped_due_no_email?: number;
       reason_counts?: {
         missing_business_name?: number;
         missing_workspace_id?: number;
         missing_contact_path?: number;
+        missing_email?: number;
+        missing_opportunity_reason?: number;
         score_below_threshold?: number;
         duplicate_by_linked_opportunity_id?: number;
         duplicate_by_website?: number;

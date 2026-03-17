@@ -16,6 +16,7 @@ type TimelineEntry = {
 
 export type WorkflowLead = {
   id: string;
+  workspace_id?: string | null;
   related_case_id?: string | null;
   lead_source?: string | null;
   opportunity_id: string | null;
@@ -33,16 +34,31 @@ export type WorkflowLead = {
   why_it_matters?: string | null;
   why_this_lead_is_here?: string | null;
   best_pitch_angle?: string | null;
-  recommended_next_action?: "Generate Email" | "Send First Touch" | "Review Website" | "Skip For Now" | null;
+  recommended_next_action?:
+    | "Generate Email"
+    | "Send First Touch"
+    | "Review Website"
+    | "Research Later"
+    | "Skip For Now"
+    | null;
   website: string | null;
   email: string | null;
+  email_source?: string | null;
   phone_from_site: string | null;
   contact_page: string | null;
   facebook_url?: string | null;
   contact_method: string;
   detected_issue_summary: string;
   detected_issues: string[];
-  status: "new" | "contacted" | "follow_up_due" | "replied" | "closed_won" | "closed_lost" | "do_not_contact";
+  status:
+    | "new"
+    | "contacted"
+    | "follow_up_due"
+    | "replied"
+    | "closed_won"
+    | "closed_lost"
+    | "do_not_contact"
+    | "research_later";
   created_at: string | null;
   screenshot_urls: string[];
   annotated_screenshot_url?: string | null;
@@ -64,6 +80,7 @@ function prettyStatus(status: string) {
 function badgeClass(status: WorkflowLead["status"]) {
   if (status === "replied" || status === "closed_won") return "admin-badge admin-badge-won";
   if (status === "closed_lost" || status === "do_not_contact") return "admin-badge admin-badge-lost";
+  if (status === "research_later") return "admin-badge admin-badge-progress";
   if (status === "contacted" || status === "follow_up_due") return "admin-badge admin-badge-progress";
   return "admin-badge admin-badge-new";
 }
@@ -83,8 +100,14 @@ export function LeadsWorkflowView({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
-    "easy_wins" | "no_website" | "broken_website" | "facebook_only" | "churches" | "needs_review" | "no_contact_info" | "all"
-  >("all");
+    | "actionable_email"
+    | "no_website_email"
+    | "broken_website_email"
+    | "facebook_only_email"
+    | "churches_email"
+    | "no_email_research"
+    | "all"
+  >("actionable_email");
   const error: string | null = null;
 
   const filtered = useMemo(() => {
@@ -92,19 +115,19 @@ export function LeadsWorkflowView({
     const bySegment = leads.filter((lead) => {
       const ws = String(lead.website_status || "").toLowerCase();
       const cat = String(lead.category || "").toLowerCase();
-      const hasContactPath = Boolean(
-        String(lead.email || "").trim() ||
-          String(lead.contact_page || "").trim() ||
-          String(lead.phone_from_site || "").trim() ||
-          String(lead.facebook_url || "").trim()
+      const hasEmail = Boolean(String(lead.email || "").trim());
+      const hasRequired = Boolean(
+        String(lead.business_name || "").trim() &&
+          String(lead.workspace_id || "").trim() &&
+          String(lead.detected_issue_summary || "").trim() &&
+          hasEmail
       );
-      if (segment === "easy_wins") return canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score) === "Easy Win";
-      if (segment === "no_website") return ws === "no_website";
-      if (segment === "broken_website") return ws === "broken_website";
-      if (segment === "facebook_only") return ws === "facebook_only";
-      if (segment === "churches") return cat.includes("church");
-      if (segment === "needs_review") return lead.lead_type === "Needs Review";
-      if (segment === "no_contact_info") return !hasContactPath;
+      if (segment === "actionable_email") return hasRequired;
+      if (segment === "no_website_email") return hasRequired && ws === "no_website";
+      if (segment === "broken_website_email") return hasRequired && ws === "broken_website";
+      if (segment === "facebook_only_email") return hasRequired && ws === "facebook_only";
+      if (segment === "churches_email") return hasRequired && cat.includes("church");
+      if (segment === "no_email_research") return !hasEmail || lead.status === "research_later";
       return true;
     });
     if (!q) return bySegment;
@@ -179,13 +202,12 @@ export function LeadsWorkflowView({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
-              ["easy_wins", "Easy Win"],
-              ["no_website", "No Website"],
-              ["broken_website", "Broken Website"],
-              ["facebook_only", "Facebook Only"],
-              ["churches", "Churches"],
-              ["needs_review", "Needs Review"],
-              ["no_contact_info", "No Contact Info"],
+              ["actionable_email", "Actionable Email Leads"],
+              ["no_website_email", "No Website + Email"],
+              ["broken_website_email", "Broken Website + Email"],
+              ["facebook_only_email", "Facebook Only + Email"],
+              ["churches_email", "Churches + Email"],
+              ["no_email_research", "No Email / Research Later"],
               ["all", "All"],
             ].map(([id, label]) => (
               <button
@@ -290,13 +312,16 @@ export function LeadsWorkflowView({
                   <p>
                     <span className="font-semibold">Email:</span> {lead.email || "—"}
                   </p>
-                  {!lead.email && !lead.phone_from_site && !lead.contact_page && !lead.facebook_url ? (
+                  <p>
+                    <span className="font-semibold">Email source:</span> {lead.email_source || "unknown"}
+                  </p>
+                  {!lead.email ? (
                     <p style={{ color: "#fca5a5" }}>No direct contact info found yet</p>
                   ) : null}
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {(() => {
-                    const hasContactPath = Boolean(lead.email || lead.phone_from_site || lead.contact_page || lead.facebook_url);
+                    const hasContactPath = Boolean(lead.email);
                     return (
                       <>
                   <a
@@ -387,6 +412,7 @@ export function LeadsWorkflowView({
                   <th>Contact Page</th>
                   <th>Facebook</th>
                   <th>Email</th>
+                  <th>Email Source</th>
                   <th>Best Contact</th>
                   <th>Next Action</th>
                   <th>Status</th>
@@ -397,7 +423,7 @@ export function LeadsWorkflowView({
                 {filtered.map((lead) => (
                   <tr key={lead.id}>
                     {(() => {
-                      const hasContactPath = Boolean(lead.email || lead.phone_from_site || lead.contact_page || lead.facebook_url);
+                      const hasContactPath = Boolean(lead.email);
                       return (
                         <>
                     <td>{lead.business_name}</td>
@@ -423,6 +449,7 @@ export function LeadsWorkflowView({
                     <td>{lead.contact_page || "—"}</td>
                     <td>{lead.facebook_url || "—"}</td>
                     <td>{lead.email || "—"}</td>
+                    <td>{lead.email_source || "unknown"}</td>
                     <td>{lead.best_contact_method || lead.contact_method || "none"}</td>
                     <td>{lead.recommended_next_action || "Review Website"}</td>
                     <td>{prettyStatus(lead.status)}</td>

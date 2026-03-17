@@ -679,7 +679,9 @@ export function ScoutConsole({
             <p>
               businesses scanned: {Number(initialSummary?.today_businesses_discovered || initialSummary?.dashboard_businesses_discovered || 0)} |
               opportunities created: {Number(scout.persistenceDebug?.opportunities_created || 0)} |
-              leads created: {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0)}
+              emails found: {Number(scout.persistenceDebug?.intake?.leads_with_email || 0)} |
+              actionable email leads created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} |
+              leads skipped due no email: {Number(scout.persistenceDebug?.intake?.leads_skipped_due_no_email || 0)}
             </p>
             <p>
               easy wins found: {
@@ -704,6 +706,10 @@ export function ScoutConsole({
             {Number(scout.persistenceDebug?.intake?.reason_counts?.score_below_threshold || scout.persistenceDebug?.intake?.filtered_low_score || 0)}
           </p>
           <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            missing_email: {Number(scout.persistenceDebug?.intake?.reason_counts?.missing_email || scout.persistenceDebug?.intake?.filtered_missing_email || 0)} | missing_opportunity_reason:{" "}
+            {Number(scout.persistenceDebug?.intake?.reason_counts?.missing_opportunity_reason || scout.persistenceDebug?.intake?.filtered_missing_opportunity_reason || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
             duplicate_by_linked_opportunity_id:{" "}
             {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_linked_opportunity_id || scout.persistenceDebug?.intake?.filtered_existing_linked_opportunity || 0)} | duplicate_by_website:{" "}
             {Number(scout.persistenceDebug?.intake?.reason_counts?.duplicate_by_website || scout.persistenceDebug?.intake?.duplicate_by_website || 0)} | duplicate_by_phone:{" "}
@@ -717,6 +723,10 @@ export function ScoutConsole({
             {Number(scout.persistenceDebug?.intake?.leads_with_contact_page || 0)} | leads_with_facebook:{" "}
             {Number(scout.persistenceDebug?.intake?.leads_with_facebook || 0)} | leads_with_no_contact_path:{" "}
             {Number(scout.persistenceDebug?.intake?.leads_with_no_contact_path || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            actionable_email_leads_created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} | leads_skipped_due_no_email:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_skipped_due_no_email || 0)}
           </p>
           {Number(scout.persistenceDebug?.intake?.created || scout.persistenceDebug?.leads_created || 0) === 0 && (
             <p className="text-xs mb-2" style={{ color: "#fca5a5" }}>

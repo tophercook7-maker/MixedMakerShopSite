@@ -153,10 +153,10 @@ export async function POST(
     industry: String(opp.category || "").trim() || null,
     lead_source: "scout-brain",
     address: String(opp.address || "").trim() || null,
-    best_contact_method: assessment.best_contact_method || null,
+    best_contact_method: assessment.best_contact_method || "none",
     opportunity_score: Number(opp.opportunity_score ?? 0),
     auto_intake: true,
-    status: "new",
+    status: String(caseRow?.email || "").trim() ? "new" : "research_later",
     notes: `Created from Top Opportunities. Why this lead is here: ${assessment.why_this_lead_is_here}. Problem: ${
       assessment.primary_problem
     }. Opportunity reason: ${reason || assessment.primary_problem}.`,

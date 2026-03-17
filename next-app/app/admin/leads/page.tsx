@@ -74,6 +74,7 @@ type CaseByOpportunityRow = {
   phone_from_site?: string | null;
   facebook?: string | null;
   facebook_url?: string | null;
+  email_source?: string | null;
   audit_issues?: string[] | null;
   strongest_problems?: string[] | null;
   screenshot_url?: string | null;
@@ -110,7 +111,8 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
     normalized === "replied" ||
     normalized === "closed_won" ||
     normalized === "closed_lost" ||
-    normalized === "do_not_contact"
+    normalized === "do_not_contact" ||
+    normalized === "research_later"
   ) {
     return normalized;
   }
@@ -205,17 +207,30 @@ export default async function AdminLeadsPage({
       resolved_opportunity_rows: (fallbackOppRows || []).length,
     });
   }
-  const { data: caseRowsRaw } = opportunityIds.length
-    ? await supabase
+  let caseRows: CaseByOpportunityRow[] = [];
+  if (opportunityIds.length) {
+    const withEmailSource = await supabase
+      .from("case_files")
+      .select(
+        "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,email_source,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
+      )
+      .in("opportunity_id", opportunityIds)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (withEmailSource.error?.message?.toLowerCase().includes("email_source")) {
+      const fallback = await supabase
         .from("case_files")
         .select(
           "id,opportunity_id,status,email,contact_page,contact_form_url,phone_from_site,facebook,facebook_url,audit_issues,strongest_problems,screenshot_url,screenshot_urls,homepage_screenshot_url,annotated_screenshot_url,notes,outcome,google_review_count,reviews_last_30_days,owner_post_detected,new_photos_detected,listing_recently_updated,created_at"
         )
         .in("opportunity_id", opportunityIds)
         .order("created_at", { ascending: false })
-        .limit(1000)
-    : { data: [] as CaseByOpportunityRow[] };
-  const caseRows = (caseRowsRaw || []) as CaseByOpportunityRow[];
+        .limit(1000);
+      caseRows = (fallback.data || []) as CaseByOpportunityRow[];
+    } else {
+      caseRows = (withEmailSource.data || []) as CaseByOpportunityRow[];
+    }
+  }
   const latestCaseByOppId = new Map<string, CaseByOpportunityRow>();
   for (const row of caseRows) {
     const oppId = String(row.opportunity_id || "").trim();
@@ -237,6 +252,8 @@ export default async function AdminLeadsPage({
     const opportunitySignals = Array.isArray(opp?.opportunity_signals)
       ? opp!.opportunity_signals!.map((v) => String(v || "").trim()).filter(Boolean)
       : [];
+    const signalEmailSource =
+      opportunitySignals.find((signal) => signal.toLowerCase().startsWith("email_source:"))?.split(":")[1]?.trim() || "";
     const issueList =
       opportunityReason && !detectedIssues.some((issue) => issue.toLowerCase() === opportunityReason.toLowerCase())
         ? [opportunityReason, ...detectedIssues, ...opportunitySignals].slice(0, 6)
@@ -250,10 +267,11 @@ export default async function AdminLeadsPage({
       .map((v) => String(v || "").trim())
       .filter(Boolean);
     const email = String(row.email || caseRow?.email || "").trim();
+    const hasEmail = Boolean(email);
+    const emailSource = String(caseRow?.email_source || signalEmailSource || "unknown").trim().toLowerCase();
     const phone = String(caseRow?.phone_from_site || row.phone || "").trim();
     const contactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
     const facebookUrl = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
-    const hasContactPath = Boolean(email || phone || contactPage || facebookUrl);
     const website = String(opp?.website || row.website || "").trim();
     const assessment = buildLeadAssessment({
       website,
@@ -275,6 +293,7 @@ export default async function AdminLeadsPage({
     });
     return {
       id: String(row.id || ""),
+      workspace_id: String(row.workspace_id || "").trim() || null,
       related_case_id: String(caseRow?.id || "") || null,
       opportunity_id: linkedOppId || null,
       business_name: String(opp?.business_name || row.business_name || "Unknown business"),
@@ -284,18 +303,21 @@ export default async function AdminLeadsPage({
       website_status: String(opp?.website_status || "").trim() || null,
       opportunity_score: opp?.opportunity_score ?? row.opportunity_score ?? null,
       lead_bucket:
-        canonicalLeadBucket(
-          String(opp?.lead_bucket || "").trim(),
-          opp?.opportunity_score ?? row.opportunity_score ?? null
-        ) ||
-        assessment.lead_bucket ||
-        scoreToLeadBucket(opp?.opportunity_score ?? row.opportunity_score ?? null),
+        hasEmail
+          ? canonicalLeadBucket(
+              String(opp?.lead_bucket || "").trim(),
+              opp?.opportunity_score ?? row.opportunity_score ?? null
+            ) ||
+            assessment.lead_bucket ||
+            scoreToLeadBucket(opp?.opportunity_score ?? row.opportunity_score ?? null)
+          : "Needs Review",
       close_probability:
         (String(opp?.close_probability || "").trim().toLowerCase() as "low" | "medium" | "high") ||
         assessment.close_probability ||
         deriveCloseProbability(opp?.opportunity_score ?? row.opportunity_score, opp?.category || row.industry, issueList),
       website: website || null,
       email: email || null,
+      email_source: email ? emailSource || "unknown" : null,
       phone_from_site: phone || null,
       contact_page: contactPage || null,
       facebook_url: facebookUrl || null,
@@ -310,13 +332,13 @@ export default async function AdminLeadsPage({
               : "none",
       detected_issue_summary: opportunityReason || issueList[0] || "Contact info is hard to find",
       detected_issues: issueList,
-      lead_type: hasContactPath ? assessment.lead_type : "Needs Review",
-      best_contact_method: hasContactPath ? assessment.best_contact_method || null : "none",
+      lead_type: hasEmail ? assessment.lead_type : "Needs Review",
+      best_contact_method: hasEmail ? assessment.best_contact_method || null : "none",
       primary_problem: assessment.primary_problem,
       why_it_matters: assessment.why_it_matters,
       why_this_lead_is_here: assessment.why_this_lead_is_here,
       best_pitch_angle: assessment.best_pitch_angle,
-      recommended_next_action: hasContactPath ? assessment.recommended_next_action : "Review Website",
+      recommended_next_action: hasEmail ? assessment.recommended_next_action : "Research Later",
       status: normalizeStatus(row.status),
       created_at: row.created_at || null,
       screenshot_urls: screenshotCandidates,

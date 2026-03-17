@@ -495,6 +495,12 @@ export default async function AdminLeadDetailPage({
   const issueList = Array.from(
     new Set(issueListRaw.map((v) => String(v || "").trim()).filter(Boolean))
   ).slice(0, 8);
+  const signalEmailSource =
+    (Array.isArray(opp?.opportunity_signals) ? opp!.opportunity_signals : [])
+      .map((v) => String(v || "").trim())
+      .find((signal) => signal.toLowerCase().startsWith("email_source:"))
+      ?.split(":")[1]
+      ?.trim() || "";
   const structuredIssues =
     websiteIssuesFromDb.length > 0
       ? websiteIssuesFromDb
@@ -628,11 +634,13 @@ export default async function AdminLeadDetailPage({
     String(opp?.website || "").trim() ||
     String(lead?.website || "").trim();
   const displayEmail = String(lead?.email || caseRow?.email || "").trim();
+  const displayEmailSource = displayEmail ? (signalEmailSource || "unknown") : "unknown";
   const displayPhone = String(caseRow?.phone_from_site || lead?.phone || "").trim();
   const displayContactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
   const displayFacebook = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
   const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
   const hasContactPath = Boolean(displayEmail || displayPhone || displayContactPage || displayFacebook);
+  const hasEmailPath = Boolean(displayEmail);
   const displayStatus = String(lead?.status || caseRow?.status || "new");
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
   const displayCity = String(opp?.city || "").trim() || "—";
@@ -1043,6 +1051,10 @@ export default async function AdminLeadDetailPage({
                 )}
               </div>
               <div>
+                <span style={{ color: "var(--admin-muted)" }}>Email Source: </span>
+                {displayEmailSource}
+              </div>
+              <div>
                 <span style={{ color: "var(--admin-muted)" }}>Phone: </span>
                 {displayPhone ? (
                   <a href={`tel:${displayPhone}`} className="text-[var(--admin-gold)] hover:underline">
@@ -1076,6 +1088,11 @@ export default async function AdminLeadDetailPage({
             {!hasContactPath ? (
               <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
                 No direct contact info found yet
+              </p>
+            ) : null}
+            {hasContactPath && !hasEmailPath ? (
+              <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
+                No email found yet. This lead is marked Research Later.
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">

@@ -23,6 +23,8 @@ type BackfillResponse = {
     filtered_low_score?: number;
     filtered_missing_business_name?: number;
     filtered_missing_contact_path?: number;
+    filtered_missing_email?: number;
+    filtered_missing_opportunity_reason?: number;
     filtered_missing_workspace?: number;
     filtered_existing_linked_opportunity?: number;
     duplicate_by_website?: number;
@@ -33,6 +35,8 @@ type BackfillResponse = {
     leads_with_contact_page?: number;
     leads_with_facebook?: number;
     leads_with_no_contact_path?: number;
+    actionable_email_leads_created?: number;
+    leads_skipped_due_no_email?: number;
     insert_attempted?: number;
     insert_succeeded?: number;
     insert_failed?: number;
@@ -58,6 +62,8 @@ type BackfillResponse = {
       missing_business_name?: number;
       missing_workspace_id?: number;
       missing_contact_path?: number;
+      missing_email?: number;
+      missing_opportunity_reason?: number;
       score_below_threshold?: number;
       duplicate_by_linked_opportunity_id?: number;
       duplicate_by_website?: number;
@@ -85,6 +91,9 @@ function emptyCreationReason(result: BackfillResponse | null): string | null {
   }
   if (Number(result.stats?.filtered_missing_contact_path || 0) > 0) {
     return "Most opportunities were missing contact paths (email/phone/contact page).";
+  }
+  if (Number(result.stats?.filtered_missing_email || 0) > 0) {
+    return "Most opportunities were skipped from actionable queues because no email was found.";
   }
   if (Number(result.stats?.filtered_low_score || 0) > 0) {
     return "Most opportunities were filtered below the intake threshold.";
@@ -147,6 +156,10 @@ export function BackfillLeadsButton() {
             {Number(result.stats?.reason_counts?.score_below_threshold || result.stats?.filtered_low_score || 0)}
           </div>
           <div>
+            missing_email: {Number(result.stats?.reason_counts?.missing_email || result.stats?.filtered_missing_email || 0)} | missing_opportunity_reason:{" "}
+            {Number(result.stats?.reason_counts?.missing_opportunity_reason || result.stats?.filtered_missing_opportunity_reason || 0)}
+          </div>
+          <div>
             duplicate_by_linked_opportunity_id:{" "}
             {Number(result.stats?.reason_counts?.duplicate_by_linked_opportunity_id || result.stats?.filtered_existing_linked_opportunity || 0)} | duplicate_by_website:{" "}
             {Number(result.stats?.reason_counts?.duplicate_by_website || result.stats?.duplicate_by_website || 0)} | duplicate_by_phone:{" "}
@@ -164,6 +177,10 @@ export function BackfillLeadsButton() {
             {Number(result.stats?.leads_with_contact_page || 0)} | leads_with_facebook:{" "}
             {Number(result.stats?.leads_with_facebook || 0)} | leads_with_no_contact_path:{" "}
             {Number(result.stats?.leads_with_no_contact_path || 0)}
+          </div>
+          <div>
+            actionable_email_leads_created: {Number(result.stats?.actionable_email_leads_created || 0)} | leads_skipped_due_no_email:{" "}
+            {Number(result.stats?.leads_skipped_due_no_email || 0)}
           </div>
           <div>
             debug_mode: {String(Boolean(result.stats?.debug_mode))} | threshold: {Number(result.stats?.intake_threshold_used || 0)} | contact_rule:{" "}
