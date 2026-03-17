@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { FileSearch } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
@@ -52,6 +51,11 @@ type MappedCaseRow = {
   linked_lead_id: string | null;
 };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 export default async function AdminCasesPage({
   searchParams,
 }: {
@@ -104,8 +108,42 @@ export default async function AdminCasesPage({
   if (date === "today") {
     casesQuery = casesQuery.gte("created_at", dayStart);
   }
-  const { data: caseRows } = await casesQuery;
-  const rows = ((caseRows || []) as unknown[]) as CaseRow[];
+  const caseRowsResult = await casesQuery;
+  let rows = ((caseRowsResult.data || []) as unknown[]) as CaseRow[];
+  if (caseRowsResult.error?.message && missingOpportunityReasonColumn(caseRowsResult.error.message)) {
+    let fallbackQuery = supabase
+      .from("case_files")
+      .select(`
+      id,
+      opportunity_id,
+      website_score,
+      audit_issues,
+      status,
+      created_at,
+      email,
+      contact_page,
+      phone_from_site,
+      opportunity:opportunities(id, business_name, category, website, opportunity_score, lead_bucket)
+    `)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (workspaceId) {
+      fallbackQuery = fallbackQuery.eq("workspace_id", workspaceId);
+    }
+    if (date === "today") {
+      fallbackQuery = fallbackQuery.gte("created_at", dayStart);
+    }
+    const fallbackCases = await fallbackQuery;
+    rows = (((fallbackCases.data || []) as unknown[]) as CaseRow[]).map((row) => ({
+      ...row,
+      opportunity: row.opportunity
+        ? {
+            ...row.opportunity,
+            opportunity_reason: null,
+          }
+        : row.opportunity,
+    }));
+  }
   const oppIds = rows
     .map((row) => String(row.opportunity_id || "").trim())
     .filter((id): id is string => Boolean(id));
@@ -262,26 +300,26 @@ export default async function AdminCasesPage({
                     <td>{row.status.replace("_", " ")}</td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <Link
+                        <a
                           href={`/admin/cases/${encodeURIComponent(row.id)}`}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                         >
                           Open Case
-                        </Link>
+                        </a>
                         {row.linked_lead_id ? (
-                          <Link
+                          <a
                             href={buildLeadPath(row.linked_lead_id, row.business_name)}
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                           >
                             Open Lead
-                          </Link>
+                          </a>
                         ) : row.opportunity_id ? (
-                          <Link
+                          <a
                             href={`/admin/opportunities/${encodeURIComponent(row.opportunity_id)}/open-lead`}
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                           >
                             Create Lead + Open
-                          </Link>
+                          </a>
                         ) : (
                           <span className="text-xs opacity-60">No opportunity id</span>
                         )}

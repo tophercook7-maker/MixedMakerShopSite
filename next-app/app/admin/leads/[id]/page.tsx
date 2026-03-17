@@ -98,6 +98,11 @@ type OpportunityRow = {
   close_probability?: "low" | "medium" | "high" | null;
 };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
   const cat = String(category || "").toLowerCase();
@@ -348,11 +353,27 @@ export default async function AdminLeadDetailPage({
   let opp: OpportunityRow | null = null;
   if (oppId) {
     try {
-      const { data: oppRows, error: oppError } = await supabase
+      let oppRows: OpportunityRow[] | null = null;
+      let oppError: { message?: string } | null = null;
+      const withReason = await supabase
         .from("opportunities")
         .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
         .eq("id", oppId)
         .limit(1);
+      oppRows = (withReason.data || []) as OpportunityRow[];
+      oppError = withReason.error as { message?: string } | null;
+      if (oppError?.message && missingOpportunityReasonColumn(oppError.message)) {
+        const fallback = await supabase
+          .from("opportunities")
+          .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_signals,close_probability")
+          .eq("id", oppId)
+          .limit(1);
+        oppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
+          ...row,
+          opportunity_reason: null,
+        }));
+        oppError = fallback.error as { message?: string } | null;
+      }
       if (oppError) {
         console.error("[Lead Detail] opportunity fetch failed", {
           stage: "opportunity_fetch",
@@ -377,12 +398,29 @@ export default async function AdminLeadDetailPage({
     const leadWebsite = String(lead.website || "").trim();
     if (leadWebsite) {
       try {
-        const { data: fallbackOppRows, error: fallbackOppError } = await supabase
+        let fallbackOppRows: OpportunityRow[] | null = null;
+        let fallbackOppError: { message?: string } | null = null;
+        const withReason = await supabase
           .from("opportunities")
           .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_reason,opportunity_signals,close_probability")
           .eq("website", leadWebsite)
           .order("opportunity_score", { ascending: false, nullsFirst: false })
           .limit(1);
+        fallbackOppRows = (withReason.data || []) as OpportunityRow[];
+        fallbackOppError = withReason.error as { message?: string } | null;
+        if (fallbackOppError?.message && missingOpportunityReasonColumn(fallbackOppError.message)) {
+          const fallback = await supabase
+            .from("opportunities")
+            .select("id,business_name,category,city,address,website,website_status,opportunity_score,opportunity_signals,close_probability")
+            .eq("website", leadWebsite)
+            .order("opportunity_score", { ascending: false, nullsFirst: false })
+            .limit(1);
+          fallbackOppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
+            ...row,
+            opportunity_reason: null,
+          }));
+          fallbackOppError = fallback.error as { message?: string } | null;
+        }
         if (fallbackOppError) {
           console.error("[Lead Detail] fallback opportunity fetch failed", {
             stage: "opportunity_fallback_fetch",

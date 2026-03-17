@@ -7,6 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const opportunityId = String(params.id || "").trim();
+  console.info("[Action Debug] Create Lead + Open clicked", { opportunityId });
   if (!opportunityId) {
     return NextResponse.redirect(new URL("/admin/leads", request.url));
   }
@@ -32,8 +33,13 @@ export async function GET(
     .limit(1);
   const existing = (existingRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
   if (existing?.id) {
+    console.info("[Action Debug] lead lookup result", {
+      opportunityId,
+      existingLeadId: String(existing.id || ""),
+    });
     const leadPath = buildLeadPath(String(existing.id), String(existing.business_name || ""));
     const withQuery = generate ? `${leadPath}?generate=1` : compose ? `${leadPath}?compose=1` : leadPath;
+    console.info("[Action Debug] route navigation attempted", { destination: withQuery });
     return NextResponse.redirect(new URL(withQuery, request.url));
   }
 
@@ -48,10 +54,13 @@ export async function GET(
     business_name?: string;
   };
   if (!createRes.ok || !created.lead_id) {
-    return NextResponse.redirect(new URL("/admin/leads?error=create_lead_failed", request.url));
+    const encodedError = encodeURIComponent(String((created as { error?: string })?.error || "create_lead_failed"));
+    console.error("[Action Debug] lead insert failed", { opportunityId, status: createRes.status, error: encodedError });
+    return NextResponse.redirect(new URL(`/admin/leads?error=create_lead_failed&detail=${encodedError}`, request.url));
   }
 
   const leadPath = buildLeadPath(String(created.lead_id || ""), String(created.business_name || ""));
   const withQuery = generate ? `${leadPath}?generate=1` : compose ? `${leadPath}?compose=1` : leadPath;
+  console.info("[Action Debug] route navigation attempted", { destination: withQuery });
   return NextResponse.redirect(new URL(withQuery, request.url));
 }

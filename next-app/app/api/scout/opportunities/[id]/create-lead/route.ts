@@ -27,11 +27,17 @@ type CaseRow = {
   strongest_problems?: string[] | null;
 };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 export async function POST(
   _request: Request,
   { params }: { params: { id: string } }
 ) {
   const opportunityId = String(params.id || "").trim();
+  console.info("[Action Debug] create-lead API clicked", { opportunityId });
   if (!opportunityId) {
     return NextResponse.json({ error: "Opportunity id is required." }, { status: 400 });
   }
@@ -60,6 +66,10 @@ export async function POST(
     .limit(1);
   const existingCaseId = String((existingCaseRows || [])[0]?.id || "").trim() || null;
   if (existingLead?.id) {
+    console.info("[Action Debug] create-lead lookup result", {
+      opportunityId,
+      existingLeadId: String(existingLead.id || ""),
+    });
     return NextResponse.json({
       ok: true,
       created: false,
@@ -70,14 +80,29 @@ export async function POST(
     });
   }
 
-  const { data: oppRows, error: oppError } = await supabase
+  let oppRows: OpportunityRow[] | null = null;
+  let oppError: { message?: string } | null = null;
+  const withReason = await supabase
     .from("opportunities")
     .select(
       "id,workspace_id,business_name,category,city,address,website,opportunity_score,opportunity_reason,opportunity_signals"
     )
     .eq("id", opportunityId)
     .limit(1);
-  if (oppError) {
+  oppRows = (withReason.data || []) as OpportunityRow[];
+  oppError = withReason.error as { message?: string } | null;
+  if (oppError?.message && missingOpportunityReasonColumn(oppError.message)) {
+    console.warn("[Action Debug] create-lead fallback without opportunity_reason", { opportunityId });
+    const fallback = await supabase
+      .from("opportunities")
+      .select("id,workspace_id,business_name,category,city,address,website,opportunity_score,opportunity_signals")
+      .eq("id", opportunityId)
+      .limit(1);
+    oppRows = (fallback.data || []) as OpportunityRow[];
+    oppError = fallback.error as { message?: string } | null;
+  }
+  if (oppError?.message) {
+    console.error("[Action Debug] create-lead lookup failed", { opportunityId, error: oppError.message });
     return NextResponse.json({ error: oppError.message }, { status: 500 });
   }
   const opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
@@ -137,18 +162,31 @@ export async function POST(
     }. Opportunity reason: ${reason || assessment.primary_problem}.`,
   };
 
+  console.info("[Action Debug] lead insert attempted", {
+    opportunityId,
+    businessName: insertPayload.business_name,
+    workspaceId: insertPayload.workspace_id,
+  });
   const { data: insertedRows, error: insertError } = await supabase
     .from("leads")
     .insert(insertPayload)
     .select("id,business_name")
     .limit(1);
   if (insertError) {
+    console.error("[Action Debug] lead insert failed", {
+      opportunityId,
+      error: insertError.message,
+    });
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
   const inserted = (insertedRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
   if (!inserted?.id) {
     return NextResponse.json({ error: "Lead insert succeeded but no id returned." }, { status: 500 });
   }
+  console.info("[Action Debug] lead insert succeeded", {
+    opportunityId,
+    leadId: String(inserted.id || ""),
+  });
 
   return NextResponse.json({
     ok: true,

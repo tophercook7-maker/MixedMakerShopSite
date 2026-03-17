@@ -52,6 +52,11 @@ type EmailDraftRow = {
 type SearchParams = Record<string, string | string[] | undefined>;
 type BootstrapIssue = { label: string; message: string };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
 }
@@ -218,7 +223,29 @@ export default async function DailyCommandCenterPage({
           bootstrapIssues
         )
       : { data: [] as Record<string, unknown>[] };
-  const topLeadOppRows = topLeadOppResult?.data || [];
+  let topLeadOppRows = topLeadOppResult?.data || [];
+  if (topLeadOppIds.length && (!topLeadOppRows || topLeadOppRows.length === 0)) {
+    const columnError = bootstrapIssues.find(
+      (issue) =>
+        issue.label === "opportunities.top-lead-joins" &&
+        missingOpportunityReasonColumn(issue.message)
+    );
+    if (columnError) {
+      const fallbackOppResult = await runBootstrapTask(
+        "opportunities.top-lead-joins.no-opportunity-reason",
+        async () =>
+          await supabase
+            .from("opportunities")
+            .select("id,business_name,website,category,city,address,opportunity_score,lead_bucket")
+            .in("id", topLeadOppIds),
+        bootstrapIssues
+      );
+      topLeadOppRows = (((fallbackOppResult?.data || []) as OpportunityRow[]) || []).map((row) => ({
+        ...row,
+        opportunity_reason: null,
+      }));
+    }
+  }
   const topLeadOppById = new Map(
     ((topLeadOppRows || []) as OpportunityRow[]).map((opp) => [String(opp.id), opp])
   );

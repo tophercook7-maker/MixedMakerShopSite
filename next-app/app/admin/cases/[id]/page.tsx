@@ -30,6 +30,11 @@ type OpportunityRow = {
   opportunity_reason?: string | null;
 };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 function fmtDate(v: string | null | undefined) {
   if (!v) return "—";
   const d = new Date(v);
@@ -76,12 +81,26 @@ export default async function AdminCaseDetailPage({
   let opportunity: OpportunityRow | null = null;
   const oppId = String(caseRow.opportunity_id || "").trim();
   if (oppId) {
-    const { data: oppRows } = await supabase
+    const withReason = await supabase
       .from("opportunities")
       .select("id,business_name,category,website,opportunity_score,lead_bucket,opportunity_reason")
       .eq("id", oppId)
       .limit(1);
-    opportunity = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
+    if (withReason.error?.message && missingOpportunityReasonColumn(withReason.error.message)) {
+      const fallback = await supabase
+        .from("opportunities")
+        .select("id,business_name,category,website,opportunity_score,lead_bucket")
+        .eq("id", oppId)
+        .limit(1);
+      opportunity =
+        (((fallback.data || [])[0] as OpportunityRow | undefined) && {
+          ...((fallback.data || [])[0] as OpportunityRow),
+          opportunity_reason: null,
+        }) ||
+        null;
+    } else {
+      opportunity = ((withReason.data || [])[0] as OpportunityRow | undefined) || null;
+    }
   }
 
   const desktopScreenshot = String(

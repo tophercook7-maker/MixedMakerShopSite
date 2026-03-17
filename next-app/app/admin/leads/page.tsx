@@ -36,6 +36,11 @@ type OpportunityRow = {
   close_probability?: "low" | "medium" | "high" | null;
 };
 
+function missingOpportunityReasonColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.opportunity_reason") || text.includes("column opportunity_reason");
+}
+
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
   const s = Number(score ?? 0);
   const cat = String(category || "").toLowerCase();
@@ -120,9 +125,11 @@ export default async function AdminLeadsPage({
     date?: string;
     status?: string;
     sort?: string;
+    error?: string;
+    detail?: string;
   }>;
 }) {
-  const { source, date, status, sort } = await searchParams;
+  const { source, date, status, sort, error, detail } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -170,12 +177,25 @@ export default async function AdminLeadsPage({
         .filter(Boolean)
     )
   );
-  const { data: fallbackOppRows } = opportunityIds.length
-    ? await supabase
+  let fallbackOppRows: OpportunityRow[] = [];
+  if (opportunityIds.length) {
+    const withReason = await supabase
+      .from("opportunities")
+      .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_reason,opportunity_signals")
+      .in("id", opportunityIds);
+    if (withReason.error?.message && missingOpportunityReasonColumn(withReason.error.message)) {
+      const fallback = await supabase
         .from("opportunities")
-        .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_reason,opportunity_signals")
-        .in("id", opportunityIds)
-    : { data: [] as OpportunityRow[] };
+        .select("id,business_name,category,city,address,website,website_status,opportunity_score,lead_bucket,opportunity_signals")
+        .in("id", opportunityIds);
+      fallbackOppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
+        ...row,
+        opportunity_reason: null,
+      }));
+    } else {
+      fallbackOppRows = (withReason.data || []) as OpportunityRow[];
+    }
+  }
   const fallbackOppById = new Map(
     (fallbackOppRows || []).map((row) => [String(row.id || ""), row as OpportunityRow])
   );
@@ -486,6 +506,13 @@ export default async function AdminLeadsPage({
           <BackfillLeadsButton />
         </div>
       </div>
+      {error ? (
+        <section className="admin-card">
+          <p className="text-sm" style={{ color: "#fca5a5" }}>
+            Lead action failed: {String(detail || error || "unknown error")}
+          </p>
+        </section>
+      ) : null}
       <section className="admin-card">
         <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
           Lead Intake Diagnostics

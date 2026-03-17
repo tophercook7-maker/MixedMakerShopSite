@@ -84,7 +84,7 @@ export function LeadsWorkflowView({
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
     "easy_wins" | "no_website" | "broken_website" | "facebook_only" | "churches" | "needs_review" | "all"
-  >("easy_wins");
+  >("all");
   const error: string | null = null;
 
   const filtered = useMemo(() => {
@@ -126,7 +126,7 @@ export function LeadsWorkflowView({
       followUpsDue: 0,
       contacted: 0,
     };
-    for (const lead of leads) {
+    for (const lead of filtered) {
       const s = String(lead.status || "").toLowerCase();
       if (s === "new") counts.newLeads += 1;
       if (s === "replied") counts.repliesWaiting += 1;
@@ -134,7 +134,7 @@ export function LeadsWorkflowView({
       if (s === "contacted") counts.contacted += 1;
     }
     return counts;
-  }, [leads]);
+  }, [filtered]);
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -212,7 +212,9 @@ export function LeadsWorkflowView({
           <div className="admin-empty !py-8">
             <div className="admin-empty-title">No leads found</div>
             <div className="admin-empty-desc">
-              {emptyStateReason || "Try a different search query."}
+              {leads.length > 0
+                ? "Current filters hide all leads. Switch to All or clear search."
+                : emptyStateReason || "Try a different search query."}
             </div>
           </div>
         ) : viewMode === "cards" ? (
