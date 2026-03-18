@@ -12,6 +12,8 @@ import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
 
 type LeadRow = {
   id: string;
+  owner_id?: string | null;
+  workspace_id?: string | null;
   business_name?: string | null;
   email?: string | null;
   phone?: string | null;
@@ -38,6 +40,36 @@ type LeadRow = {
   real_world_walk_in_pitch?: string | null;
   best_time_to_visit?: string | null;
 };
+
+const LEAD_DETAIL_SELECT = [
+  "id",
+  "owner_id",
+  "workspace_id",
+  "business_name",
+  "email",
+  "phone",
+  "website",
+  "industry",
+  "linked_opportunity_id",
+  "opportunity_score",
+  "status",
+  "deal_status",
+  "deal_value",
+  "closed_at",
+  "is_recurring_client",
+  "monthly_value",
+  "subscription_started_at",
+  "referred_by",
+  "referral_source",
+  "is_referred_client",
+  "notes",
+  "created_at",
+  "door_status",
+  "known_context",
+  "real_world_why_target",
+  "real_world_walk_in_pitch",
+  "best_time_to_visit",
+].join(",");
 
 type CaseRow = {
   id: string;
@@ -342,6 +374,10 @@ export default async function AdminLeadDetailPage({
   const normalizedTargetToken = targetId.toLowerCase();
   console.info("[Lead Detail] requested lead token", { lead_token: targetId, owner_id: ownerId });
   let lead: LeadRow | null = null;
+  let leadExistsById = false;
+  let leadOwnerOnRow: string | null = null;
+  let leadWorkspaceOnRow: string | null = null;
+  let ownerWorkspaceFilterBlockedRow = false;
   let leadFoundInLeads = false;
   let opportunityFoundForFallback = false;
   let autoCreateAttempted = false;
@@ -349,26 +385,49 @@ export default async function AdminLeadDetailPage({
   let insertErrorMessage: string | null = null;
   try {
     if (isUuidLike(targetId)) {
-      const { data: leadRows, error: leadError } = await supabase
+      const { data: unscopedRows, error: unscopedError } = await supabase
         .from("leads")
-        .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
-        )
-        .eq("owner_id", ownerId)
+        .select(LEAD_DETAIL_SELECT)
         .eq("id", targetId)
         .limit(1);
-      if (leadError) {
+      if (unscopedError) {
         console.error("[Lead Detail] lead fetch failed", {
-          stage: "lead_fetch",
+          stage: "lead_fetch_unscoped",
           lead_token: targetId,
-          error: leadError,
+          error: unscopedError,
         });
         loadWarnings.push("Lead base record could not be loaded.");
       }
-      lead = ((leadRows || [])[0] as LeadRow | undefined) || null;
+      const unscopedLeadRows = (unscopedRows || []) as unknown as LeadRow[];
+      const unscopedLead = (unscopedLeadRows[0] as LeadRow | undefined) || null;
+      leadExistsById = Boolean(unscopedLead);
+      leadOwnerOnRow = String(unscopedLead?.owner_id || "").trim() || null;
+      leadWorkspaceOnRow = String(unscopedLead?.workspace_id || "").trim() || null;
+
+      const { data: scopedRows, error: scopedError } = await supabase
+        .from("leads")
+        .select(LEAD_DETAIL_SELECT)
+        .eq("owner_id", ownerId)
+        .eq("id", targetId)
+        .limit(1);
+      if (scopedError) {
+        console.error("[Lead Detail] lead fetch failed", {
+          stage: "lead_fetch_scoped",
+          lead_token: targetId,
+          error: scopedError,
+        });
+      }
+      const scopedLeadRows = (scopedRows || []) as unknown as LeadRow[];
+      const scopedLead = (scopedLeadRows[0] as LeadRow | undefined) || null;
+      ownerWorkspaceFilterBlockedRow = Boolean(unscopedLead && !scopedLead);
+      lead = scopedLead || unscopedLead || null;
       console.info("[Lead Detail] by-id lookup result", {
         lead_token: targetId,
-        rows_returned: Number((leadRows || []).length),
+        lead_exists_by_id: leadExistsById,
+        current_user_id: ownerId,
+        lead_owner_id: leadOwnerOnRow,
+        lead_workspace_id: leadWorkspaceOnRow,
+        owner_workspace_filter_blocked_row: ownerWorkspaceFilterBlockedRow,
         matched_lead_id: lead?.id || null,
       });
     }
@@ -378,9 +437,7 @@ export default async function AdminLeadDetailPage({
       if (businessNameToken) {
         const { data: byBusinessRows, error: byBusinessError } = await supabase
           .from("leads")
-          .select(
-            "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
-          )
+          .select(LEAD_DETAIL_SELECT)
           .eq("owner_id", ownerId)
           .ilike("business_name", `%${businessNameToken}%`)
           .order("created_at", { ascending: false })
@@ -394,11 +451,12 @@ export default async function AdminLeadDetailPage({
           });
           loadWarnings.push("Lead route fallback by business name failed.");
         } else {
+          const businessLeadRows = (byBusinessRows || []) as unknown as LeadRow[];
           lead =
-            ((byBusinessRows || []) as LeadRow[]).find((row) =>
+            businessLeadRows.find((row) =>
               leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
             ) ||
-            ((byBusinessRows || [])[0] as LeadRow | undefined) ||
+            (businessLeadRows[0] as LeadRow | undefined) ||
             null;
           console.info("[Lead Detail] business-name fallback result", {
             lead_token: targetId,
@@ -412,9 +470,7 @@ export default async function AdminLeadDetailPage({
     if (!lead) {
       const { data: candidateRows, error: candidateError } = await supabase
         .from("leads")
-        .select(
-          "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
-        )
+        .select(LEAD_DETAIL_SELECT)
         .eq("owner_id", ownerId)
         .order("created_at", { ascending: false })
         .limit(5000);
@@ -426,8 +482,9 @@ export default async function AdminLeadDetailPage({
         });
         loadWarnings.push("Lead route lookup failed.");
       } else {
+        const candidateLeadRows = (candidateRows || []) as unknown as LeadRow[];
         lead =
-          ((candidateRows || []) as LeadRow[]).find((row) =>
+          candidateLeadRows.find((row) =>
             leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
           ) || null;
         console.info("[Lead Detail] full-scan token fallback result", {
@@ -1006,6 +1063,18 @@ export default async function AdminLeadDetailPage({
           </p>
         </section>
       ) : null}
+      <section className="admin-card">
+        <p className="text-xs font-semibold tracking-wide" style={{ color: "var(--admin-muted)" }}>
+          Detail Loader Diagnostics
+        </p>
+        <div className="mt-2 grid gap-2 text-xs" style={{ color: "var(--admin-muted)" }}>
+          <p>lead_exists_by_id: {leadExistsById ? "true" : "false"}</p>
+          <p>owner_id_on_row: {leadOwnerOnRow || "null"}</p>
+          <p>current_user_id: {ownerId || "null"}</p>
+          <p>workspace_id_on_row: {leadWorkspaceOnRow || "null"}</p>
+          <p>owner_workspace_filter_blocked_row: {ownerWorkspaceFilterBlockedRow ? "true" : "false"}</p>
+        </div>
+      </section>
       <section className="admin-card">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

@@ -4,6 +4,8 @@ import { buildLeadAssessment } from "@/lib/lead-assessment";
 
 type OpportunityRow = {
   id: string;
+  owner_id?: string | null;
+  user_id?: string | null;
   workspace_id?: string | null;
   business_name?: string | null;
   category?: string | null;
@@ -87,12 +89,36 @@ export async function POST(
 
   let oppRows: OpportunityRow[] | null = null;
   let oppError: { message?: string } | null = null;
+  let requestedOpportunityId = opportunityId;
+  let opportunityExistsById = false;
+  let opportunityOwnerOnRow: string | null = null;
+  let opportunityWorkspaceOnRow: string | null = null;
+  let opportunityScopeBlocked = false;
+
+  const { data: oppExistsRows, error: oppExistsError } = await supabase
+    .from("opportunities")
+    .select("id,owner_id,user_id,workspace_id")
+    .eq("id", requestedOpportunityId)
+    .limit(1);
+  if (oppExistsError?.message) {
+    console.error("[Action Debug] create-lead opportunity existence lookup failed", {
+      requested_opportunity_id: requestedOpportunityId,
+      error: oppExistsError.message,
+    });
+  }
+  const oppExistsRow = ((oppExistsRows || [])[0] as OpportunityRow | undefined) || null;
+  opportunityExistsById = Boolean(oppExistsRow);
+  opportunityOwnerOnRow =
+    String(oppExistsRow?.owner_id || oppExistsRow?.user_id || "").trim() || null;
+  opportunityWorkspaceOnRow = String(oppExistsRow?.workspace_id || "").trim() || null;
+
   const withReason = await supabase
     .from("opportunities")
     .select(
-      "id,workspace_id,business_name,category,city,address,website,opportunity_score,opportunity_reason,opportunity_signals"
+      "id,owner_id,user_id,workspace_id,business_name,category,city,address,website,opportunity_score,opportunity_reason,opportunity_signals"
     )
-    .eq("id", opportunityId)
+    .eq("id", requestedOpportunityId)
+    .or(`owner_id.eq.${ownerId},user_id.eq.${ownerId}`)
     .limit(1);
   oppRows = (withReason.data || []) as OpportunityRow[];
   oppError = withReason.error as { message?: string } | null;
@@ -104,8 +130,9 @@ export async function POST(
     console.warn("[Action Debug] create-lead fallback without opportunity_reason", { opportunityId });
     const fallback = await supabase
       .from("opportunities")
-      .select("id,workspace_id,business_name,category,city,address,website,opportunity_score")
-      .eq("id", opportunityId)
+      .select("id,owner_id,user_id,workspace_id,business_name,category,city,address,website,opportunity_score")
+      .eq("id", requestedOpportunityId)
+      .or(`owner_id.eq.${ownerId},user_id.eq.${ownerId}`)
       .limit(1);
     oppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
       ...row,
@@ -115,12 +142,28 @@ export async function POST(
     oppError = fallback.error as { message?: string } | null;
   }
   if (oppError?.message) {
-    console.error("[Action Debug] create-lead lookup failed", { opportunityId, error: oppError.message });
+    console.error("[Action Debug] create-lead lookup failed", { opportunityId: requestedOpportunityId, error: oppError.message });
     return NextResponse.json({ error: oppError.message }, { status: 500 });
   }
   const opp = ((oppRows || [])[0] as OpportunityRow | undefined) || null;
+  opportunityScopeBlocked = Boolean(opportunityExistsById && !opp);
+  console.info("[Action Debug] create-lead opportunity diagnostics", {
+    requested_opportunity_id: requestedOpportunityId,
+    opportunity_exists_by_id: opportunityExistsById,
+    opportunity_owner_id: opportunityOwnerOnRow,
+    current_user_id: ownerId,
+    opportunity_workspace_id: opportunityWorkspaceOnRow,
+    owner_workspace_filter_blocked_row: opportunityScopeBlocked,
+  });
   if (!opp) {
-    return NextResponse.json({ error: "Opportunity not found." }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: opportunityScopeBlocked
+          ? "Opportunity exists but is outside the current owner/workspace scope."
+          : "Opportunity not found.",
+      },
+      { status: opportunityScopeBlocked ? 403 : 404 }
+    );
   }
 
   const { data: caseRows } = await supabase
