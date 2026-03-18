@@ -4,7 +4,7 @@ import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions"
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
-import { buildLeadPath, isUuidLike, leadRouteMatches } from "@/lib/lead-route";
+import { buildLeadPath, isUuidLike, leadRouteMatches, parseLeadRouteToken } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 
@@ -160,6 +160,15 @@ function fmtBool(v: boolean | null | undefined) {
   if (v === true) return "Yes";
   if (v === false) return "No";
   return "—";
+}
+
+function slugTokenToBusinessNameQuery(token: string): string {
+  return String(token || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function categorizeWebsiteIssue(rawIssue: string): { category: string; issue: string } {
@@ -329,6 +338,7 @@ export default async function AdminLeadDetailPage({
 
   const loadWarnings: string[] = [];
   const normalizedTargetToken = targetId.toLowerCase();
+  console.info("[Lead Detail] requested lead token", { lead_token: targetId, owner_id: ownerId });
   let lead: LeadRow | null = null;
   try {
     if (isUuidLike(targetId)) {
@@ -349,6 +359,48 @@ export default async function AdminLeadDetailPage({
         loadWarnings.push("Lead base record could not be loaded.");
       }
       lead = ((leadRows || [])[0] as LeadRow | undefined) || null;
+      console.info("[Lead Detail] by-id lookup result", {
+        lead_token: targetId,
+        rows_returned: Number((leadRows || []).length),
+        matched_lead_id: lead?.id || null,
+      });
+    }
+    if (!lead) {
+      const parsed = parseLeadRouteToken(targetId);
+      const businessNameToken = slugTokenToBusinessNameQuery(parsed.slug || normalizedTargetToken);
+      if (businessNameToken) {
+        const { data: byBusinessRows, error: byBusinessError } = await supabase
+          .from("leads")
+          .select(
+            "id,business_name,email,phone,website,industry,linked_opportunity_id,opportunity_score,status,deal_status,deal_value,closed_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client,notes,created_at,is_hot_lead,door_status,known_context,real_world_why_target,real_world_walk_in_pitch,best_time_to_visit"
+          )
+          .eq("owner_id", ownerId)
+          .ilike("business_name", `%${businessNameToken}%`)
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (byBusinessError) {
+          console.error("[Lead Detail] business-name fallback failed", {
+            stage: "lead_business_name_lookup",
+            lead_token: targetId,
+            business_name_token: businessNameToken,
+            error: byBusinessError,
+          });
+          loadWarnings.push("Lead route fallback by business name failed.");
+        } else {
+          lead =
+            ((byBusinessRows || []) as LeadRow[]).find((row) =>
+              leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
+            ) ||
+            ((byBusinessRows || [])[0] as LeadRow | undefined) ||
+            null;
+          console.info("[Lead Detail] business-name fallback result", {
+            lead_token: targetId,
+            business_name_token: businessNameToken,
+            candidates: Number((byBusinessRows || []).length),
+            matched_lead_id: lead?.id || null,
+          });
+        }
+      }
     }
     if (!lead) {
       const { data: candidateRows, error: candidateError } = await supabase
@@ -371,6 +423,11 @@ export default async function AdminLeadDetailPage({
           ((candidateRows || []) as LeadRow[]).find((row) =>
             leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
           ) || null;
+        console.info("[Lead Detail] full-scan token fallback result", {
+          lead_token: targetId,
+          candidates: Number((candidateRows || []).length),
+          matched_lead_id: lead?.id || null,
+        });
       }
     }
   } catch (error) {
@@ -715,6 +772,14 @@ export default async function AdminLeadDetailPage({
             <Link href="/admin/dashboard" className="admin-btn-ghost">
               Open Dashboard
             </Link>
+            {isUuidLike(targetId) ? (
+              <Link
+                href={`/admin/opportunities/${encodeURIComponent(targetId)}/open-lead`}
+                className="admin-btn-ghost"
+              >
+                Recreate Lead From Opportunity
+              </Link>
+            ) : null}
           </div>
         </section>
       </div>

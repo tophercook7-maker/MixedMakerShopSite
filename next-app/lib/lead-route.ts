@@ -32,9 +32,10 @@ export function buildLeadPath(
   leadId: string | null | undefined,
   businessName: string | null | undefined
 ): string {
+  void businessName;
   const id = String(leadId || "").trim();
   if (!id) return "/admin/leads";
-  return `/admin/leads/${encodeURIComponent(buildLeadRouteToken(id, businessName))}`;
+  return `/admin/leads/${encodeURIComponent(id)}`;
 }
 
 export function isUuidLike(value: string | null | undefined): boolean {
