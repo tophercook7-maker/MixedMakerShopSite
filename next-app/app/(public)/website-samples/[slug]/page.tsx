@@ -19,10 +19,13 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
       businessName,
       tagline: "Neighborhood Coffee Bar",
       localPositioning: "Hot Springs, Arkansas",
+      heroImageUrl:
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=80",
+      heroImageAlt: "Coffee latte art on a wooden table in a cozy cafe",
       heroHeadline: "Craft Coffee, Fresh Pastries, and a Spot You Will Want to Return To",
       heroSub: "Your neighborhood coffee shop in Hot Springs for hand-crafted drinks, quick breakfast, and easy online ordering.",
-      heroPrimaryCta: "Order Online",
-      heroSecondaryCta: "See Menu",
+      heroPrimaryCta: "Order Ahead",
+      heroSecondaryCta: "Skip the Line",
       offeringsTitle: "Menu Favorites",
       offerings: [
         { name: "Signature Lattes", text: "House-made syrups, espresso flights, and seasonal drinks served all day." },
@@ -52,6 +55,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
       businessName,
       tagline: "Local Southern Kitchen",
       localPositioning: "Downtown Hot Springs",
+      heroImageUrl:
+        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=80",
+      heroImageAlt: "Restaurant dining table with plated dishes and warm lighting",
       heroHeadline: "Southern Comfort Food Worth Coming Back For",
       heroSub: "Fresh daily specials, quick reservations, and a family-friendly dining room in Hot Springs.",
       heroPrimaryCta: "Reserve a Table",
@@ -85,6 +91,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
       businessName,
       tagline: "Everyone Is Welcome Here",
       localPositioning: "Serving Hot Springs Families",
+      heroImageUrl:
+        "https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=1400&q=80",
+      heroImageAlt: "Sunlit church interior with seating and warm welcome atmosphere",
       heroHeadline: "A Place to Belong, Grow, and Serve Together",
       heroSub: "Join us this Sunday in Hot Springs for worship, biblical teaching, and a welcoming church family.",
       heroPrimaryCta: "Plan Your Visit",
@@ -118,6 +127,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
       businessName,
       tagline: "Licensed and Insured Plumbing Team",
       localPositioning: "Emergency Service Across Hot Springs",
+      heroImageUrl:
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80",
+      heroImageAlt: "Plumber working on a sink repair with tools",
       heroHeadline: "Fast, Reliable Plumbing Service in Hot Springs",
       heroSub: "From emergency repairs to full fixture installs, we show up on time and fix it right the first time.",
       heroPrimaryCta: "Call Now",
@@ -150,6 +162,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
     businessName,
     tagline: "Reliable Local Lawn Professionals",
     localPositioning: "Hot Springs Service Area",
+    heroImageUrl:
+      "https://images.unsplash.com/photo-1560749003-f4b1e17e2f7f?auto=format&fit=crop&w=1400&q=80",
+    heroImageAlt: "Freshly cut green lawn with landscaping lines",
     heroHeadline: "Dependable Lawn Care for Yards That Stand Out",
     heroSub: "Routine mowing, edging, cleanup, and seasonal treatments for homeowners across Hot Springs.",
     heroPrimaryCta: "Request Service",

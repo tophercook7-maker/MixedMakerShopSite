@@ -12,6 +12,8 @@ export type SampleDraft = {
   businessName: string;
   tagline: string;
   localPositioning: string;
+  heroImageUrl?: string;
+  heroImageAlt?: string;
   heroHeadline: string;
   heroSub: string;
   heroPrimaryCta: string;
@@ -335,6 +337,26 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
+  const ctaSuggestions = useMemo(() => {
+    const hay = `${draft.offeringsTitle} ${draft.tagline}`.toLowerCase();
+    if (hay.includes("coffee")) {
+      return ["Order Ahead", "Skip the Line", "Visit Us Today", "See Today's Specials"];
+    }
+    if (hay.includes("restaurant") || hay.includes("menu")) {
+      return ["Reserve a Table", "Order Online", "Call Now", "View Menu"];
+    }
+    if (hay.includes("church")) {
+      return ["Plan Your Visit", "Service Times", "Join Us Sunday", "Contact Us"];
+    }
+    if (hay.includes("plumbing")) {
+      return ["Call Now", "Request Service", "Emergency Help", "Book a Repair"];
+    }
+    if (hay.includes("lawn")) {
+      return ["Get a Quick Quote", "Request Service", "Call Now", "Schedule This Week"];
+    }
+    return ["Get Started", "Call Now", "Contact Us", "Learn More"];
+  }, [draft.offeringsTitle, draft.tagline]);
+
   const site = (
     <>
       {mode === "presentation" && (
@@ -369,7 +391,15 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
               </Link>
             </div>
           </div>
-            <div className="sample-hero-spotlight" aria-hidden="true" />
+            <figure className="sample-hero-spotlight" aria-label={draft.heroImageAlt ?? `${draft.businessName} featured image`}>
+              {draft.heroImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={draft.heroImageUrl} alt={draft.heroImageAlt ?? `${draft.businessName} interior`} />
+              ) : (
+                <div className="sample-hero-fallback" aria-hidden="true" />
+              )}
+              <div className="sample-hero-image-overlay" aria-hidden="true" />
+            </figure>
           </div>
         </div>
       </header>
@@ -522,6 +552,20 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
                   <span>Secondary CTA</span>
                   <input value={draft.heroSecondaryCta} onChange={(e) => updateField("heroSecondaryCta", e.target.value)} />
                 </label>
+              </div>
+
+              <div className="sample-cta-suggestions" style={{ marginTop: 12 }}>
+                {ctaSuggestions.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className="mini"
+                    onClick={() => updateField("heroPrimaryCta", label)}
+                    title="Use as primary CTA"
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
 
               <details style={{ marginTop: 14 }}>

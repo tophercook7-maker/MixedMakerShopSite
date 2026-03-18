@@ -1159,6 +1159,19 @@ html {
   padding-bottom: 22px;
   transition: background 420ms ease, color 260ms ease;
   overflow-x: clip;
+  position: relative;
+}
+.sample-standalone::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.08) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.08) 75%, transparent 75%, transparent);
+  background-size: 4px 4px;
+  mix-blend-mode: soft-light;
+  z-index: 0;
 }
 .sample-site-nav {
   position: sticky;
@@ -1237,9 +1250,37 @@ html {
   box-shadow: var(--sd-shadow);
   transform: perspective(900px) rotateY(-8deg);
   transition: transform 280ms ease, border-color 220ms ease, background 320ms ease;
+  overflow: hidden;
+  position: relative;
 }
 .sample-hero-spotlight:hover {
   transform: perspective(900px) rotateY(-4deg) translateY(-4px);
+}
+.sample-hero-spotlight img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.01);
+  transition: transform 700ms ease;
+}
+.sample-hero-spotlight:hover img {
+  transform: scale(1.06);
+}
+.sample-hero-image-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.32)),
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.2), transparent 52%);
+  pointer-events: none;
+}
+.sample-hero-fallback {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.22), transparent 48%),
+    linear-gradient(165deg, var(--sd-surface), var(--sd-surface-alt));
 }
 .sample-business-name {
   margin: 0;
@@ -1323,6 +1364,16 @@ html {
 .sample-section .card:hover,
 .sample-section .how-it-works-card:hover {
   transform: translateY(-4px) scale(1.01);
+}
+.sample-section:nth-of-type(odd) .panel,
+.sample-section:nth-of-type(odd) .card,
+.sample-section:nth-of-type(odd) .how-it-works-card {
+  background: color-mix(in srgb, var(--sd-surface-alt) 90%, white 10%);
+}
+.sample-section:nth-of-type(even) .panel,
+.sample-section:nth-of-type(even) .card,
+.sample-section:nth-of-type(even) .how-it-works-card {
+  background: color-mix(in srgb, var(--sd-surface-alt) 92%, black 8%);
 }
 .sample-standalone .btn {
   border-radius: var(--sd-btn-radius);
@@ -1409,6 +1460,11 @@ html {
 .sample-control.full {
   grid-column: 1 / -1;
 }
+.sample-cta-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .sample-export {
   margin: 10px 0 0;
   border-radius: 10px;
@@ -1419,6 +1475,15 @@ html {
   max-height: 280px;
   overflow: auto;
   font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sample-standalone,
+  .sample-standalone *,
+  .sample-standalone::before {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 body.sample-draft-mode .nav,
