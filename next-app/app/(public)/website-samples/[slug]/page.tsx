@@ -2,117 +2,186 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSampleBySlug } from "@/lib/website-samples";
 
-type ShowcaseType = "coffee" | "restaurant" | "church" | "service";
+type ShowcaseType = "coffee" | "restaurant" | "church" | "plumbing" | "lawn";
 
-function getShowcaseType(category: string): ShowcaseType {
+type ShowcaseContent = {
+  heroHeadline: string;
+  heroSub: string;
+  heroPrimaryCta: string;
+  heroSecondaryCta: string;
+  offeringsTitle: string;
+  offerings: Array<{ name: string; text: string }>;
+  aboutTitle: string;
+  aboutText: string;
+  trustTitle: string;
+  trustQuotes: Array<{ quote: string; by: string }>;
+  locationTitle: string;
+  locationName: string;
+  address: string;
+  phone: string;
+  hours: string[];
+  finalTitle: string;
+  finalSub: string;
+  finalCta: string;
+};
+
+function getShowcaseType(category: string, slug: string, name: string): ShowcaseType {
   if (category === "coffee") return "coffee";
   if (category === "restaurant") return "restaurant";
   if (category === "church") return "church";
-  return "service";
+  const needle = `${slug} ${name}`.toLowerCase();
+  if (needle.includes("plumb")) return "plumbing";
+  return "lawn";
 }
 
-function getShowcaseCopy(type: ShowcaseType, businessName: string) {
+function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseContent {
   if (type === "coffee") {
     return {
-      heroTitle: `A modern coffee shop website for ${businessName}`,
-      heroSub:
-        "Designed to turn first-time visitors into regulars with clear menu highlights, local vibe, and fast mobile browsing.",
-      ctaPrimary: "Get My Free Website Draft",
-      ctaSecondary: "View Website Samples",
-      servicesTitle: "What This Site Highlights",
-      services: [
-        { name: "Signature Drinks Menu", text: "Showcase top drinks, seasonal specials, and best sellers in one clean flow." },
-        { name: "Visit + Hours", text: "Make it effortless for customers to find your location and current opening hours." },
-        { name: "Order / Pickup CTA", text: "Place clear order and pickup actions where mobile users can act fast." },
+      heroHeadline: "Craft Coffee, Fresh Pastries, and a Spot You Will Want to Return To",
+      heroSub: "Your neighborhood coffee shop in Hot Springs for hand-crafted drinks, quick breakfast, and easy online ordering.",
+      heroPrimaryCta: "Order Online",
+      heroSecondaryCta: "See Menu",
+      offeringsTitle: "Menu Favorites",
+      offerings: [
+        { name: "Signature Lattes", text: "House-made syrups, espresso flights, and seasonal drinks served all day." },
+        { name: "Breakfast + Bakery", text: "Fresh muffins, croissants, and local pastry partnerships every morning." },
+        { name: "Quick Pickup", text: "Order ahead from your phone and grab your drink without the wait." },
       ],
-      trustTitle: "Why This Works for Coffee Shops",
-      trustBullets: [
-        "Warm visual style that reflects your in-store experience",
-        "Mobile-first layout for busy on-the-go customers",
-        "Clear calls to action for order, visit, and contact",
+      aboutTitle: "Our Story",
+      aboutText:
+        `${businessName} started as a simple idea: serve excellent coffee, welcome everyone by name, and make mornings better in Hot Springs. We roast in small batches and keep the menu focused on quality and consistency.`,
+      trustTitle: "What Regulars Say",
+      trustQuotes: [
+        { quote: "Best latte in town and the online order pickup is always smooth.", by: "Jordan M., Hot Springs" },
+        { quote: "Great vibe, friendly team, and my go-to place before work.", by: "Casey T., Local Customer" },
       ],
-      testimonial:
-        "“This layout finally feels like our brand. Customers can see our drinks, hours, and order options in seconds.”",
-      testimonialBy: "Local Coffee Shop Owner",
-      contactTitle: "Contact & Location",
-      contactText: "Built to make directions, hours, and contact details obvious for local customers.",
+      locationTitle: "Visit Us",
+      locationName: businessName,
+      address: "421 Central Ave, Hot Springs, AR 71901",
+      phone: "(501) 555-0194",
+      hours: ["Mon-Fri: 6:30 AM - 6:00 PM", "Sat: 7:00 AM - 7:00 PM", "Sun: 7:00 AM - 3:00 PM"],
+      finalTitle: "Ready for Coffee?",
+      finalSub: "Order ahead for pickup or stop in and stay awhile.",
+      finalCta: "Order Online",
     };
   }
   if (type === "restaurant") {
     return {
-      heroTitle: `A conversion-focused restaurant homepage for ${businessName}`,
-      heroSub:
-        "Built to promote reservations, menu browsing, and in-person visits with a clean, premium first impression.",
-      ctaPrimary: "Get My Free Website Draft",
-      ctaSecondary: "View Website Samples",
-      servicesTitle: "What This Site Highlights",
-      services: [
-        { name: "Menu-First Experience", text: "Guide visitors quickly from homepage to menu without friction." },
-        { name: "Reservations + Call CTA", text: "Put booking and call actions where hungry visitors actually tap." },
-        { name: "Hours + Location Clarity", text: "Reduce confusion with straightforward location and open-hours sections." },
+      heroHeadline: "Southern Comfort Food Worth Coming Back For",
+      heroSub: "Fresh daily specials, quick reservations, and a family-friendly dining room in Hot Springs.",
+      heroPrimaryCta: "Reserve a Table",
+      heroSecondaryCta: "View Menu",
+      offeringsTitle: "Popular Menu Sections",
+      offerings: [
+        { name: "Breakfast Favorites", text: "Scratch biscuits, omelets, and hot coffee served from open to 11 AM." },
+        { name: "Lunch + Dinner Plates", text: "Classic Southern entrees, house sides, and weekly chef specials." },
+        { name: "Family Packs To-Go", text: "Easy takeout bundles for weeknights and gatherings." },
       ],
-      trustTitle: "Why This Works for Restaurants",
-      trustBullets: [
-        "Clear actions for reserve, order, and call now",
-        "Strong food-forward visuals without clutter",
-        "Fast mobile structure for local search traffic",
+      aboutTitle: "Our Story",
+      aboutText:
+        `${businessName} has served Hot Springs families for over a decade with straightforward food, friendly staff, and generous portions. We keep things simple: quality ingredients, warm service, and meals worth sharing.`,
+      trustTitle: "Guest Reviews",
+      trustQuotes: [
+        { quote: "Reservation was easy and the food came out fast on a busy Friday night.", by: "Megan R." },
+        { quote: "Great portions, great service, and the website made ordering takeout painless.", by: "Brandon L." },
       ],
-      testimonial:
-        "“Customers now find our menu and booking button immediately. The website finally supports our business goals.”",
-      testimonialBy: "Restaurant Owner",
-      contactTitle: "Contact & Location",
-      contactText: "Designed so new customers can find you, contact you, and book fast.",
+      locationTitle: "Location + Hours",
+      locationName: businessName,
+      address: "214 Malvern Ave, Hot Springs, AR 71901",
+      phone: "(501) 555-0121",
+      hours: ["Mon-Thu: 11:00 AM - 9:00 PM", "Fri-Sat: 11:00 AM - 10:00 PM", "Sun: 11:00 AM - 8:00 PM"],
+      finalTitle: "Hungry? Let's Get You a Table",
+      finalSub: "Book now or call us for same-day seating and takeout.",
+      finalCta: "Call Now",
     };
   }
   if (type === "church") {
     return {
-      heroTitle: `A welcoming church website for ${businessName}`,
-      heroSub:
-        "Designed to help new visitors feel comfortable and informed with clear service times, ministries, and next steps.",
-      ctaPrimary: "Get My Free Website Draft",
-      ctaSecondary: "View Website Samples",
-      servicesTitle: "What This Site Highlights",
-      services: [
-        { name: "Service Times + Location", text: "Help first-time guests immediately find where and when to attend." },
-        { name: "Next Steps", text: "Promote ministries, events, and ways to get connected in a simple structure." },
-        { name: "Giving + Contact", text: "Present giving and contact options clearly for members and visitors." },
+      heroHeadline: "A Place to Belong, Grow, and Serve Together",
+      heroSub: "Join us this Sunday in Hot Springs for worship, biblical teaching, and a welcoming church family.",
+      heroPrimaryCta: "Plan Your Visit",
+      heroSecondaryCta: "Service Times",
+      offeringsTitle: "Ministries + Weekly Life",
+      offerings: [
+        { name: "Sunday Worship", text: "Biblical teaching and worship services for all ages." },
+        { name: "Kids + Student Ministry", text: "Safe, engaging classes that help young people grow in faith." },
+        { name: "Midweek Groups", text: "Small groups, prayer nights, and community outreach opportunities." },
       ],
-      trustTitle: "Why This Works for Churches",
-      trustBullets: [
-        "Warm, welcoming language and layout",
-        "Clear information for first-time visitors",
-        "Straightforward paths for ministries and connection",
+      aboutTitle: "Our Story",
+      aboutText:
+        `${businessName} is a community-focused church in Hot Springs committed to helping people know Jesus and grow together. Whether you are new to church or returning after years away, you are welcome here.`,
+      trustTitle: "From Our Church Family",
+      trustQuotes: [
+        { quote: "We felt welcomed on day one and knew exactly where to go.", by: "The Carter Family" },
+        { quote: "The service times and ministries were easy to find before our first visit.", by: "Amanda P." },
       ],
-      testimonial:
-        "“New families now tell us the website made visiting easy. Service times and next steps are finally clear.”",
-      testimonialBy: "Church Leadership Team",
-      contactTitle: "Contact & Location",
-      contactText: "Built so visitors can quickly find service details, location, and church contact info.",
+      locationTitle: "Service Times + Location",
+      locationName: businessName,
+      address: "915 Airport Rd, Hot Springs, AR 71913",
+      phone: "(501) 555-0148",
+      hours: ["Sunday Worship: 9:00 AM & 10:45 AM", "Wednesday Groups: 6:30 PM", "Office: Mon-Thu 9:00 AM - 4:00 PM"],
+      finalTitle: "We Would Love to Meet You",
+      finalSub: "Join us this Sunday and let us help you plan your first visit.",
+      finalCta: "Plan Your Visit",
+    };
+  }
+  if (type === "plumbing") {
+    return {
+      heroHeadline: "Fast, Reliable Plumbing Service in Hot Springs",
+      heroSub: "From emergency repairs to full fixture installs, we show up on time and fix it right the first time.",
+      heroPrimaryCta: "Call Now",
+      heroSecondaryCta: "Request Service",
+      offeringsTitle: "Plumbing Services",
+      offerings: [
+        { name: "24/7 Emergency Repairs", text: "Burst pipes, leaks, and urgent plumbing issues handled quickly." },
+        { name: "Drain + Sewer Service", text: "Drain clearing, camera inspections, and long-term flow solutions." },
+        { name: "Water Heater Installs", text: "Repair and replacement for standard and tankless systems." },
+      ],
+      aboutTitle: "About Us",
+      aboutText:
+        `${businessName} is a local family-owned plumbing company serving Hot Springs homeowners and businesses. We focus on honest communication, fair pricing, and clean workmanship.`,
+      trustTitle: "Customer Feedback",
+      trustQuotes: [
+        { quote: "They answered at night and had our leak fixed before morning.", by: "Renee D." },
+        { quote: "Professional, transparent, and no surprise charges.", by: "Travis H." },
+      ],
+      locationTitle: "Service Area + Hours",
+      locationName: businessName,
+      address: "Serving Hot Springs, Fountain Lake, and surrounding areas",
+      phone: "(501) 555-0167",
+      hours: ["Emergency Service: 24/7", "Mon-Fri: 7:00 AM - 6:00 PM", "Sat: 8:00 AM - 2:00 PM"],
+      finalTitle: "Need a Plumber Today?",
+      finalSub: "Call now for immediate help or request a same-day service window.",
+      finalCta: "Call Now",
     };
   }
   return {
-    heroTitle: `A practical service-business homepage for ${businessName}`,
-    heroSub:
-      "Structured to build trust fast and turn visitors into calls and quote requests with clear messaging.",
-    ctaPrimary: "Get My Free Website Draft",
-    ctaSecondary: "View Website Samples",
-    servicesTitle: "What This Site Highlights",
-    services: [
-      { name: "Service Clarity", text: "Present your services in plain language customers understand right away." },
-      { name: "Trust Signals", text: "Use reviews, credibility points, and clean visuals to increase confidence." },
-      { name: "Lead Capture CTAs", text: "Guide users toward calls, forms, and quote requests at the right moments." },
+    heroHeadline: "Dependable Lawn Care for Yards That Stand Out",
+    heroSub: "Routine mowing, edging, cleanup, and seasonal treatments for homeowners across Hot Springs.",
+    heroPrimaryCta: "Request Service",
+    heroSecondaryCta: "Get a Quick Quote",
+    offeringsTitle: "Lawn Care Services",
+    offerings: [
+      { name: "Weekly Lawn Maintenance", text: "Consistent mowing, edging, and cleanup scheduled around your needs." },
+      { name: "Seasonal Cleanup", text: "Leaf removal, trimming, and property refresh for spring and fall." },
+      { name: "Fertilization + Weed Control", text: "Simple treatment plans for healthier, greener growth." },
     ],
-    trustTitle: "Why This Works for Service Businesses",
-    trustBullets: [
-      "Messaging built around customer intent",
-      "Credibility and trust sections above the fold",
-      "Conversion-focused page flow from top to contact",
+    aboutTitle: "About Us",
+    aboutText:
+      `${businessName} helps Hot Springs homeowners keep their yards clean and healthy without the weekend hassle. Our crews are prompt, respectful, and focused on dependable service.`,
+    trustTitle: "Homeowner Reviews",
+    trustQuotes: [
+      { quote: "Our yard has looked better every week since we started.", by: "Nicole S." },
+      { quote: "Fast quote, fair price, and the team always shows up as promised.", by: "Marcus B." },
     ],
-    testimonial:
-      "“This design makes our services clear and professional. We started getting better inquiries almost immediately.”",
-    testimonialBy: "Service Business Owner",
-    contactTitle: "Contact & Location",
-    contactText: "Made to help customers contact you quickly when they are ready to buy.",
+    locationTitle: "Service Area + Hours",
+    locationName: businessName,
+    address: "Serving Hot Springs and nearby neighborhoods",
+    phone: "(501) 555-0118",
+    hours: ["Mon-Fri: 7:30 AM - 6:00 PM", "Sat: 8:00 AM - 1:00 PM", "Sun: Closed"],
+    finalTitle: "Ready for Better Lawn Care?",
+    finalSub: "Tell us about your property and get a quick quote today.",
+    finalCta: "Request Service",
   };
 }
 
@@ -120,7 +189,7 @@ export default async function WebsiteSamplePage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const sample = getSampleBySlug(slug);
   if (!sample || sample.externalHref) notFound();
-  const type = getShowcaseType(sample.category);
+  const type = getShowcaseType(sample.category, sample.slug, sample.name);
   const copy = getShowcaseCopy(type, sample.name);
 
   return (
@@ -132,37 +201,27 @@ export default async function WebsiteSamplePage({ params }: { params: Promise<{ 
             <p className="small" style={{ margin: "0 0 6px", opacity: 0.8 }}>
               {sample.name}
             </p>
-            <h1 style={{ margin: "0 0 10px" }}>{copy.heroTitle}</h1>
+            <h1 style={{ margin: "0 0 10px" }}>{copy.heroHeadline}</h1>
             <p className="subhead" style={{ marginBottom: 16 }}>{copy.heroSub}</p>
             <div className="btn-row" style={{ marginBottom: 18 }}>
-              <Link href="/contact" className="btn gold">
-                {copy.ctaPrimary}
+              <Link href={type === "restaurant" || type === "coffee" ? "/contact" : `tel:${copy.phone.replace(/[^\d]/g, "")}`} className="btn gold">
+                {copy.heroPrimaryCta}
               </Link>
-              <Link href="/website-samples" className="btn ghost">
-                {copy.ctaSecondary}
+              <Link href={type === "restaurant" || type === "coffee" ? "/website-samples" : "/contact"} className="btn ghost">
+                {copy.heroSecondaryCta}
               </Link>
             </div>
-            {sample.imageUrl && (
-              <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid var(--border)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={sample.imageUrl}
-                  alt={`${sample.name} homepage preview`}
-                  style={{ width: "100%", maxHeight: 360, objectFit: "cover", display: "block" }}
-                />
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      {/* Services */}
+      {/* Services or menu */}
       <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 12px" }}>{copy.servicesTitle}</h2>
+            <h2 style={{ margin: "0 0 12px" }}>{copy.offeringsTitle}</h2>
             <div className="how-it-works-grid">
-              {copy.services.map((item) => (
+              {copy.offerings.map((item) => (
                 <article key={item.name} className="how-it-works-card">
                   <h3 className="how-it-works-title">{item.name}</h3>
                   <p className="how-it-works-copy">{item.text}</p>
@@ -173,61 +232,71 @@ export default async function WebsiteSamplePage({ params }: { params: Promise<{ 
         </div>
       </section>
 
-      {/* Trust */}
+      {/* About / story */}
       <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 12px" }}>{copy.trustTitle}</h2>
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              {copy.trustBullets.map((line) => (
-                <li key={line} className="small" style={{ marginBottom: 8 }}>{line}</li>
+            <h2 style={{ margin: "0 0 12px" }}>{copy.aboutTitle}</h2>
+            <p className="subhead" style={{ margin: 0 }}>{copy.aboutText}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust section */}
+      <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <div className="container">
+          <div className="panel">
+            <h2 style={{ margin: "0 0 10px" }}>{copy.trustTitle}</h2>
+            <div className="grid-2">
+              {copy.trustQuotes.map((entry) => (
+                <blockquote key={entry.by} className="card" style={{ margin: 0 }}>
+                  <p style={{ margin: "0 0 10px" }}>"{entry.quote}"</p>
+                  <p className="small" style={{ margin: 0, opacity: 0.8 }}>- {entry.by}</p>
+                </blockquote>
               ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial */}
-      <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>Client Feedback</h2>
-            <blockquote className="card" style={{ margin: 0 }}>
-              <p style={{ margin: "0 0 10px" }}>{copy.testimonial}</p>
-              <p className="small" style={{ margin: 0, opacity: 0.8 }}>— {copy.testimonialBy}</p>
-            </blockquote>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact / location */}
-      <section className="section" style={{ paddingTop: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>{copy.contactTitle}</h2>
-            <p className="subhead" style={{ margin: "0 0 14px" }}>{copy.contactText}</p>
-            <div className="btn-row">
-              <Link href="/contact" className="btn gold">
-                {copy.ctaPrimary}
-              </Link>
-              <Link href="/website-samples" className="btn ghost">
-                {copy.ctaSecondary}
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="section" style={{ paddingTop: 8 }}>
+      {/* Location / hours */}
+      <section className="section" style={{ paddingTop: 8 }}>
         <div className="container">
           <div className="panel">
-            <p className="small" style={{ margin: 0, textAlign: "center", opacity: 0.8 }}>
-              MixedMakerShop Web Design • Built for small businesses that want better websites and better conversion.
-            </p>
+            <h2 style={{ margin: "0 0 10px" }}>{copy.locationTitle}</h2>
+            <div className="grid-2">
+              <div className="card">
+                <h3 style={{ margin: "0 0 8px" }}>{copy.locationName}</h3>
+                <p className="small" style={{ margin: "0 0 6px" }}>{copy.address}</p>
+                <p className="small" style={{ margin: 0 }}>{copy.phone}</p>
+              </div>
+              <div className="card">
+                <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
+                <ul style={{ margin: 0, paddingLeft: 18 }}>
+                  {copy.hours.map((line) => (
+                    <li key={line} className="small" style={{ marginBottom: 6 }}>{line}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Final CTA */}
+      <section className="section" style={{ paddingTop: 8 }}>
+        <div className="container">
+          <div className="panel">
+            <h2 style={{ margin: "0 0 10px" }}>{copy.finalTitle}</h2>
+            <p className="subhead" style={{ margin: "0 0 14px" }}>{copy.finalSub}</p>
+            <div className="btn-row">
+              <Link href={copy.finalCta === "Call Now" ? `tel:${copy.phone.replace(/[^\d]/g, "")}` : "/contact"} className="btn gold">
+                {copy.finalCta}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

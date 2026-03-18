@@ -3,7 +3,7 @@
  * Categories: Coffee Shops, Restaurants, Churches, Redesign, Tools
  */
 
-export type SampleCategory = "coffee" | "restaurant" | "church" | "redesign" | "tool";
+export type SampleCategory = "coffee" | "restaurant" | "church" | "service" | "redesign" | "tool";
 
 export type WebsiteSample = {
   slug: string;
@@ -19,6 +19,7 @@ export const SAMPLE_CATEGORIES: { id: SampleCategory; label: string }[] = [
   { id: "coffee", label: "Coffee Shops" },
   { id: "restaurant", label: "Restaurants" },
   { id: "church", label: "Churches" },
+  { id: "service", label: "Service Businesses" },
   { id: "redesign", label: "Redesign Concepts" },
   { id: "tool", label: "Tools" },
 ];
@@ -73,6 +74,19 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
     desc: "Vintage diner concept with bold type, checkerboard energy, and shake bar sections.",
     category: "coffee",
     imageUrl: "https://picsum.photos/id/1040/1200/700",
+  },
+  // Service business samples
+  {
+    slug: "diamond-plumbing",
+    name: "Diamond Plumbing Co.",
+    desc: "Emergency-ready plumbing site with service pages, trust proof, and call-first actions.",
+    category: "service",
+  },
+  {
+    slug: "greenridge-lawn-care",
+    name: "Greenridge Lawn Care",
+    desc: "Local lawn care homepage with quick quote flow, service list, and seasonal messaging.",
+    category: "service",
   },
   // Restaurant samples
   {

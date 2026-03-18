@@ -106,16 +106,6 @@ function SampleCard({ sample }: { sample: WebsiteSample }) {
       className="card sample-card"
       style={{ textDecoration: "none" }}
     >
-      {sample.imageUrl && (
-        <div style={{ margin: "-16px -16px 12px -16px", borderRadius: "var(--radius) var(--radius) 0 0", overflow: "hidden" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={sample.imageUrl}
-            alt=""
-            style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }}
-          />
-        </div>
-      )}
       <p className="small" style={{ margin: "0 0 4px", opacity: 0.85 }}>
         {SAMPLE_CATEGORIES.find((c) => c.id === sample.category)?.label ?? "Sample"}
       </p>
