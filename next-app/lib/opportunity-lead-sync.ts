@@ -19,9 +19,9 @@ type OpportunitySeed = {
 };
 
 type SyncStats = {
-  scanned: number;
-  created: number;
-  skipped_existing: number;
+  opportunities_scanned: number;
+  leads_created: number;
+  already_existing: number;
   skipped_invalid: number;
   failed: number;
 };
@@ -113,15 +113,15 @@ export async function syncLeadsFromOpportunities(
   limit = 5000
 ): Promise<SyncStats> {
   const stats: SyncStats = {
-    scanned: 0,
-    created: 0,
-    skipped_existing: 0,
+    opportunities_scanned: 0,
+    leads_created: 0,
+    already_existing: 0,
     skipped_invalid: 0,
     failed: 0,
   };
   const opportunities = await loadOpportunitiesForOwner(supabase, ownerId, limit);
   for (const opp of opportunities) {
-    stats.scanned += 1;
+    stats.opportunities_scanned += 1;
     const oppId = String(opp.id || "").trim();
     const businessName = String(opp.business_name || "").trim();
     if (!oppId || !businessName) {
@@ -130,8 +130,8 @@ export async function syncLeadsFromOpportunities(
     }
     try {
       const result = await upsertLeadFromOpportunity(supabase, ownerId, opp);
-      if (result.created) stats.created += 1;
-      else if (result.leadId) stats.skipped_existing += 1;
+      if (result.created) stats.leads_created += 1;
+      else if (result.leadId) stats.already_existing += 1;
       else stats.failed += 1;
     } catch {
       stats.failed += 1;
@@ -144,31 +144,68 @@ export async function ensureLeadFromOpportunityToken(
   supabase: SupabaseLike,
   ownerId: string,
   token: string
-): Promise<{ leadId: string | null; created: boolean; opportunityId: string | null }> {
+): Promise<{ leadId: string | null; created: boolean; opportunityId: string | null; insertError: string | null }> {
   const target = String(token || "").trim();
-  if (!target) return { leadId: null, created: false, opportunityId: null };
+  if (!target) return { leadId: null, created: false, opportunityId: null, insertError: null };
 
   let opp: OpportunitySeed | null = null;
   if (isUuidLike(target)) {
-    const byId = await supabase
+    const byIdUser = await supabase
       .from("opportunities")
       .select("id,owner_id,user_id,workspace_id,business_name,website,phone,email,created_at,category,industry,address,city")
       .eq("id", target)
+      .eq("user_id", ownerId)
       .limit(1);
-    opp = ((byId.data || [])[0] as OpportunitySeed | undefined) || null;
+    if (!byIdUser.error && (byIdUser.data || []).length > 0) {
+      opp = ((byIdUser.data || [])[0] as OpportunitySeed | undefined) || null;
+    } else {
+      const byIdOwner = await supabase
+        .from("opportunities")
+        .select("id,owner_id,user_id,workspace_id,business_name,website,phone,email,created_at,category,industry,address,city")
+        .eq("id", target)
+        .eq("owner_id", ownerId)
+        .limit(1);
+      opp = ((byIdOwner.data || [])[0] as OpportunitySeed | undefined) || null;
+    }
   } else {
     const businessToken = slugTokenToBusinessNameQuery(target);
     if (businessToken) {
-      const byName = await supabase
+      const byNameUser = await supabase
         .from("opportunities")
         .select("id,owner_id,user_id,workspace_id,business_name,website,phone,email,created_at,category,industry,address,city")
+        .eq("user_id", ownerId)
         .ilike("business_name", `%${businessToken}%`)
         .order("created_at", { ascending: false })
         .limit(25);
-      opp = ((byName.data || [])[0] as OpportunitySeed | undefined) || null;
+      if (!byNameUser.error && (byNameUser.data || []).length > 0) {
+        opp = ((byNameUser.data || [])[0] as OpportunitySeed | undefined) || null;
+      } else {
+        const byNameOwner = await supabase
+          .from("opportunities")
+          .select("id,owner_id,user_id,workspace_id,business_name,website,phone,email,created_at,category,industry,address,city")
+          .eq("owner_id", ownerId)
+          .ilike("business_name", `%${businessToken}%`)
+          .order("created_at", { ascending: false })
+          .limit(25);
+        opp = ((byNameOwner.data || [])[0] as OpportunitySeed | undefined) || null;
+      }
     }
   }
-  if (!opp?.id) return { leadId: null, created: false, opportunityId: null };
-  const result = await upsertLeadFromOpportunity(supabase, ownerId, opp);
-  return { leadId: result.leadId, created: result.created, opportunityId: String(opp.id || "").trim() || null };
+  if (!opp?.id) return { leadId: null, created: false, opportunityId: null, insertError: null };
+  try {
+    const result = await upsertLeadFromOpportunity(supabase, ownerId, opp);
+    return {
+      leadId: result.leadId,
+      created: result.created,
+      opportunityId: String(opp.id || "").trim() || null,
+      insertError: result.leadId ? null : "insert_failed_or_not_visible",
+    };
+  } catch (error) {
+    return {
+      leadId: null,
+      created: false,
+      opportunityId: String(opp.id || "").trim() || null,
+      insertError: error instanceof Error ? error.message : "unknown",
+    };
+  }
 }

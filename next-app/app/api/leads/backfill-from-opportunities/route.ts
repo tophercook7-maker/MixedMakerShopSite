@@ -14,7 +14,15 @@ export async function POST() {
 
   try {
     const stats = await syncLeadsFromOpportunities(supabase, ownerId);
-    return NextResponse.json({ ok: true, stats });
+    return NextResponse.json({
+      ok: true,
+      stats: {
+        opportunities_scanned: stats.opportunities_scanned,
+        leads_created: stats.leads_created,
+        already_existing: stats.already_existing,
+        failed: stats.failed,
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       {

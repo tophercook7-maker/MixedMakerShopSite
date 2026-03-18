@@ -132,13 +132,25 @@ export default async function AdminLeadsPage({
     );
   }
 
+  let syncDiagnostics: {
+    opportunities_scanned: number;
+    leads_created: number;
+    already_existing: number;
+    failed: number;
+  } | null = null;
   try {
     const syncStats = await syncLeadsFromOpportunities(supabase, ownerId);
+    syncDiagnostics = {
+      opportunities_scanned: syncStats.opportunities_scanned,
+      leads_created: syncStats.leads_created,
+      already_existing: syncStats.already_existing,
+      failed: syncStats.failed,
+    };
     console.info("[Leads Sync] opportunities -> leads", {
       owner_id: ownerId,
-      scanned: syncStats.scanned,
-      created: syncStats.created,
-      skipped_existing: syncStats.skipped_existing,
+      opportunities_scanned: syncStats.opportunities_scanned,
+      leads_created: syncStats.leads_created,
+      already_existing: syncStats.already_existing,
       failed: syncStats.failed,
     });
   } catch (syncError) {
@@ -211,6 +223,17 @@ export default async function AdminLeadsPage({
           </p>
         </section>
       ) : null}
+      <section className="admin-card">
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Leads list source of truth: <strong>public.leads</strong>
+        </p>
+        {syncDiagnostics ? (
+          <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+            Sync diagnostics - opportunities_scanned: {syncDiagnostics.opportunities_scanned}, leads_created: {syncDiagnostics.leads_created}, already_existing:{" "}
+            {syncDiagnostics.already_existing}, failed: {syncDiagnostics.failed}
+          </p>
+        ) : null}
+      </section>
 
       <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
     </div>

@@ -342,6 +342,11 @@ export default async function AdminLeadDetailPage({
   const normalizedTargetToken = targetId.toLowerCase();
   console.info("[Lead Detail] requested lead token", { lead_token: targetId, owner_id: ownerId });
   let lead: LeadRow | null = null;
+  let leadFoundInLeads = false;
+  let opportunityFoundForFallback = false;
+  let autoCreateAttempted = false;
+  let insertSucceeded = false;
+  let insertErrorMessage: string | null = null;
   try {
     if (isUuidLike(targetId)) {
       const { data: leadRows, error: leadError } = await supabase
@@ -440,16 +445,29 @@ export default async function AdminLeadDetailPage({
     });
     loadWarnings.push("Lead base record could not be loaded.");
   }
+  leadFoundInLeads = Boolean(lead);
 
   if (!lead) {
     try {
+      autoCreateAttempted = true;
       const recovery = await ensureLeadFromOpportunityToken(supabase, ownerId, targetId);
+      opportunityFoundForFallback = Boolean(recovery.opportunityId);
+      insertSucceeded = Boolean(recovery.leadId);
+      insertErrorMessage = recovery.insertError;
       if (recovery.leadId) {
         console.info("[Lead Detail] auto-created lead from opportunity fallback", {
           lead_token: targetId,
           opportunity_id: recovery.opportunityId,
           lead_id: recovery.leadId,
           created: recovery.created,
+        });
+        console.info("[Lead Detail] self-heal diagnostics", {
+          lead_token: targetId,
+          lead_found_in_leads: leadFoundInLeads,
+          opportunity_found_in_opportunities: opportunityFoundForFallback,
+          auto_create_attempted: autoCreateAttempted,
+          insert_succeeded: insertSucceeded,
+          insert_error: insertErrorMessage,
         });
         redirect(`/admin/leads/${encodeURIComponent(recovery.leadId)}`);
       } else {
@@ -462,8 +480,17 @@ export default async function AdminLeadDetailPage({
         lead_token: targetId,
         error: recoveryError,
       });
+      insertErrorMessage = recoveryError instanceof Error ? recoveryError.message : "unknown";
     }
   }
+  console.info("[Lead Detail] self-heal diagnostics", {
+    lead_token: targetId,
+    lead_found_in_leads: leadFoundInLeads,
+    opportunity_found_in_opportunities: opportunityFoundForFallback,
+    auto_create_attempted: autoCreateAttempted,
+    insert_succeeded: insertSucceeded,
+    insert_error: insertErrorMessage,
+  });
 
   let caseRow: CaseRow | null = null;
 
