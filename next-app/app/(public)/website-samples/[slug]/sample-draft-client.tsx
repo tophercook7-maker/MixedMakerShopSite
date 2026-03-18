@@ -127,6 +127,8 @@ const COLOR_PRESETS: Record<
   {
     bg: string;
     heroBg: string;
+    sectionTint: string;
+    navBg: string;
     surface: string;
     surfaceAlt: string;
     text: string;
@@ -140,10 +142,12 @@ const COLOR_PRESETS: Record<
   }
 > = {
   blue: {
-    bg: "linear-gradient(180deg, #0a1530 0%, #12244a 60%, #0b1937 100%)",
-    heroBg: "radial-gradient(circle at 20% 10%, rgba(77,132,255,.34), transparent 50%)",
-    surface: "rgba(15, 33, 74, 0.76)",
-    surfaceAlt: "rgba(12, 27, 60, 0.72)",
+    bg: "radial-gradient(1200px 700px at 8% 0%, rgba(102,145,255,.4), transparent 60%), linear-gradient(180deg, #08162f 0%, #10264f 50%, #0a1e3f 100%)",
+    heroBg: "radial-gradient(circle at 18% 10%, rgba(98,153,255,.42), transparent 58%)",
+    sectionTint: "rgba(99,150,255,.08)",
+    navBg: "rgba(10, 28, 64, 0.72)",
+    surface: "rgba(15, 33, 74, 0.65)",
+    surfaceAlt: "rgba(10, 25, 57, 0.72)",
     text: "#f5f8ff",
     muted: "rgba(232, 238, 255, .78)",
     border: "rgba(183, 204, 255, .25)",
@@ -154,10 +158,12 @@ const COLOR_PRESETS: Record<
     accent: "#9dc0ff",
   },
   green: {
-    bg: "linear-gradient(180deg, #0b2319 0%, #133326 60%, #0c241b 100%)",
-    heroBg: "radial-gradient(circle at 20% 10%, rgba(77,200,146,.28), transparent 52%)",
-    surface: "rgba(17, 46, 34, 0.78)",
-    surfaceAlt: "rgba(14, 38, 29, 0.72)",
+    bg: "radial-gradient(1000px 620px at 12% 2%, rgba(78,211,150,.38), transparent 58%), linear-gradient(180deg, #0a1f17 0%, #123427 55%, #0a241b 100%)",
+    heroBg: "radial-gradient(circle at 22% 10%, rgba(88,235,171,.34), transparent 58%)",
+    sectionTint: "rgba(86,219,157,.08)",
+    navBg: "rgba(12, 39, 29, 0.72)",
+    surface: "rgba(16, 46, 34, 0.68)",
+    surfaceAlt: "rgba(12, 36, 27, 0.74)",
     text: "#f0fff8",
     muted: "rgba(225, 255, 241, .78)",
     border: "rgba(150, 233, 194, .24)",
@@ -168,22 +174,26 @@ const COLOR_PRESETS: Record<
     accent: "#9bf2cf",
   },
   dark: {
-    bg: "linear-gradient(180deg, #101114 0%, #17181d 60%, #0f1013 100%)",
-    heroBg: "radial-gradient(circle at 20% 10%, rgba(255,255,255,.08), transparent 52%)",
-    surface: "rgba(30, 31, 37, 0.82)",
-    surfaceAlt: "rgba(26, 27, 33, 0.76)",
+    bg: "radial-gradient(1200px 760px at 90% 4%, rgba(252,212,138,.14), transparent 56%), linear-gradient(180deg, #09090b 0%, #141418 52%, #08080a 100%)",
+    heroBg: "radial-gradient(circle at 18% 10%, rgba(246,208,132,.2), transparent 58%)",
+    sectionTint: "rgba(242,213,159,.06)",
+    navBg: "rgba(12, 12, 14, 0.76)",
+    surface: "rgba(27, 27, 32, 0.72)",
+    surfaceAlt: "rgba(21, 21, 26, 0.78)",
     text: "#f4f4f5",
     muted: "rgba(235, 235, 239, .72)",
     border: "rgba(255, 255, 255, .2)",
-    primary: "#f1f1f2",
-    primaryText: "#151515",
+    primary: "#f2d59f",
+    primaryText: "#211101",
     secondary: "rgba(255, 255, 255, .08)",
     secondaryText: "#f4f4f5",
     accent: "#b5b8c3",
   },
   "warm-neutral": {
-    bg: "linear-gradient(180deg, #f6f1e8 0%, #ece4d8 60%, #f5efe6 100%)",
-    heroBg: "radial-gradient(circle at 20% 10%, rgba(198,165,116,.27), transparent 52%)",
+    bg: "radial-gradient(980px 560px at 14% 0%, rgba(196,148,88,.35), transparent 58%), linear-gradient(180deg, #f6efe3 0%, #ebe0ce 54%, #f4eadb 100%)",
+    heroBg: "radial-gradient(circle at 20% 10%, rgba(192,144,84,.28), transparent 56%)",
+    sectionTint: "rgba(176,126,74,.08)",
+    navBg: "rgba(253, 246, 237, 0.76)",
     surface: "rgba(255, 253, 249, 0.9)",
     surfaceAlt: "rgba(247, 239, 228, 0.9)",
     text: "#2b241b",
@@ -196,8 +206,10 @@ const COLOR_PRESETS: Record<
     accent: "#b98f64",
   },
   "bold-accent": {
-    bg: "linear-gradient(180deg, #231132 0%, #34174a 60%, #210f2f 100%)",
-    heroBg: "radial-gradient(circle at 20% 10%, rgba(255,90,126,.24), transparent 52%)",
+    bg: "radial-gradient(1200px 700px at 6% 2%, rgba(255,99,143,.36), transparent 60%), linear-gradient(180deg, #220d30 0%, #321349 55%, #1f0b2b 100%)",
+    heroBg: "radial-gradient(circle at 20% 10%, rgba(255,106,146,.34), transparent 56%)",
+    sectionTint: "rgba(255,122,164,.09)",
+    navBg: "rgba(46, 20, 66, 0.74)",
     surface: "rgba(53, 29, 78, 0.78)",
     surfaceAlt: "rgba(43, 23, 66, 0.74)",
     text: "#fff4f8",
@@ -219,20 +231,66 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
 
   useEffect(() => {
     const body = document.body;
+    body.classList.add("sample-draft-mode");
     if (mode === "presentation") {
       body.classList.add("sample-presentation-mode");
     } else {
       body.classList.remove("sample-presentation-mode");
     }
-    return () => body.classList.remove("sample-presentation-mode");
+    return () => {
+      body.classList.remove("sample-presentation-mode");
+      body.classList.remove("sample-draft-mode");
+    };
   }, [mode]);
 
   const visualVars = useMemo(() => {
     const style = STYLE_PRESETS[stylePreset];
     const color = COLOR_PRESETS[colorPreset];
+    const buttonVarsByStyle: Record<
+      StylePreset,
+      {
+        goldBg: string;
+        goldBorder: string;
+        goldText: string;
+        ghostBg: string;
+        ghostBorder: string;
+      }
+    > = {
+      "clean-modern": {
+        goldBg: color.primary,
+        goldBorder: "transparent",
+        goldText: color.primaryText,
+        ghostBg: color.secondary,
+        ghostBorder: color.border,
+      },
+      "bold-premium": {
+        goldBg: `linear-gradient(135deg, ${color.primary}, ${color.accent})`,
+        goldBorder: "transparent",
+        goldText: color.primaryText,
+        ghostBg: "transparent",
+        ghostBorder: color.accent,
+      },
+      "friendly-local": {
+        goldBg: color.primary,
+        goldBorder: "transparent",
+        goldText: color.primaryText,
+        ghostBg: "rgba(255,255,255,.10)",
+        ghostBorder: color.border,
+      },
+      "minimal-elegant": {
+        goldBg: "transparent",
+        goldBorder: color.primary,
+        goldText: color.text,
+        ghostBg: "transparent",
+        ghostBorder: color.border,
+      },
+    };
+    const buttonVars = buttonVarsByStyle[stylePreset];
     return {
       "--sd-bg": color.bg,
       "--sd-hero-bg": color.heroBg,
+      "--sd-section-tint": color.sectionTint,
+      "--sd-nav-bg": color.navBg,
       "--sd-surface": color.surface,
       "--sd-surface-alt": color.surfaceAlt,
       "--sd-text": color.text,
@@ -254,6 +312,11 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
       "--sd-hero-weight": String(style.heroWeight),
       "--sd-card-border": style.cardBorderWidth,
       "--sd-card-contrast": String(style.cardContrast),
+      "--sd-btn-gold-bg": buttonVars.goldBg,
+      "--sd-btn-gold-border": buttonVars.goldBorder,
+      "--sd-btn-gold-text": buttonVars.goldText,
+      "--sd-btn-ghost-bg": buttonVars.ghostBg,
+      "--sd-btn-ghost-border": buttonVars.ghostBorder,
     } as CSSProperties;
   }, [colorPreset, stylePreset]);
 
@@ -272,18 +335,140 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
+  const site = (
+    <>
+      {mode === "presentation" && (
+        <nav className="sample-site-nav">
+          <div className="container sample-site-nav-inner">
+            <a href="#top" className="sample-site-brand">
+              {draft.businessName}
+            </a>
+            <div className="sample-site-links">
+              <a href="#menu">Menu</a>
+              <a href="#about">About</a>
+              <a href="#contact">Contact</a>
+            </div>
+          </div>
+        </nav>
+      )}
+      <header className="sample-hero">
+        <div className="container" id="top">
+          <div className="sample-hero-grid">
+            <div className="sample-hero-content">
+            <p className="sample-business-name">{draft.businessName}</p>
+            <p className="sample-tagline">{draft.tagline}</p>
+            <h1 className="sample-h1">{draft.heroHeadline}</h1>
+            <p className="sample-sub">{draft.heroSub}</p>
+            <p className="sample-local">{draft.localPositioning}</p>
+            <div className="btn-row">
+              <a href={telHref} className="btn gold">
+                {draft.heroPrimaryCta}
+              </a>
+              <Link href="/website-samples" className="btn ghost">
+                {draft.heroSecondaryCta}
+              </Link>
+            </div>
+          </div>
+            <div className="sample-hero-spotlight" aria-hidden="true" />
+          </div>
+        </div>
+      </header>
+
+      <section className="section sample-section" id="menu">
+        <div className="container">
+          <h2 className="sample-h2">{draft.offeringsTitle}</h2>
+          <div className="how-it-works-grid">
+            {draft.offerings.map((item) => (
+              <article key={item.name} className="how-it-works-card">
+                <h3 className="how-it-works-title">{item.name}</h3>
+                <p className="how-it-works-copy">{item.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section sample-section" id="about">
+        <div className="container">
+          <div className="panel sample-panel">
+            <h2 className="sample-h2">{draft.aboutTitle}</h2>
+            <p className="sample-sub" style={{ margin: 0 }}>{draft.aboutText}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section sample-section" id="contact">
+        <div className="container">
+          <h2 className="sample-h2">{draft.trustTitle}</h2>
+          <div className="grid-2">
+            {draft.trustQuotes.map((entry) => (
+              <blockquote key={entry.by} className="card sample-quote">
+                <p style={{ margin: "0 0 10px" }}>"{entry.quote}"</p>
+                <p className="small" style={{ margin: 0, opacity: 0.85 }}>
+                  - {entry.by}
+                </p>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section sample-section">
+        <div className="container">
+          <h2 className="sample-h2">{draft.locationTitle}</h2>
+          <div className="grid-2">
+            <div className="card sample-info">
+              <h3 style={{ margin: "0 0 8px" }}>{draft.locationName}</h3>
+              <p className="small" style={{ margin: "0 0 6px" }}>{draft.address}</p>
+              <a href={telHref} className="small" style={{ margin: 0, display: "inline-block" }}>
+                {draft.phone}
+              </a>
+            </div>
+            <div className="card sample-info">
+              <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {draft.hours.map((line) => (
+                  <li key={line} className="small" style={{ marginBottom: 6 }}>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section sample-section">
+        <div className="container">
+          <div className="panel sample-panel">
+            <h2 className="sample-h2">{draft.finalTitle}</h2>
+            <p className="sample-sub">{draft.finalSub}</p>
+            <div className="btn-row">
+              <a href={telHref} className="btn gold">
+                {draft.finalCta}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+
   return (
     <div className={`sample-standalone ${mode === "presentation" ? "is-presentation" : "is-edit"}`} style={visualVars}>
-      {mode === "edit" && (
-        <section className="sample-editor-controls">
-          <div className="container">
+      {mode === "edit" ? (
+        <div className="sample-live-builder">
+          <aside className="sample-editor-dock">
             <div className="sample-editor-card">
               <div className="sample-editor-header">
                 <h2 style={{ margin: 0 }}>Edit Mode</h2>
                 <button type="button" className="btn ghost" onClick={() => setMode("presentation")}>
-                  Switch to Presentation Mode
+                  Presentation Mode
                 </button>
               </div>
+              <p className="small" style={{ margin: "8px 0 0" }}>
+                Edits apply to the live page instantly.
+              </p>
 
               <div className="grid-2" style={{ marginTop: 14 }}>
                 <label className="sample-control">
@@ -344,118 +529,10 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
                 <pre className="sample-export">{JSON.stringify(exportPayload, null, 2)}</pre>
               </details>
             </div>
-          </div>
-        </section>
-      )}
-
-      {mode === "presentation" && (
-        <section className="section" style={{ paddingBottom: 0 }}>
-          <div className="container" style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button type="button" className="btn ghost" onClick={() => setMode("edit")}>
-              Back to Edit Mode
-            </button>
-          </div>
-        </section>
-      )}
-
-      <header className="sample-hero">
-        <div className="container">
-          <div className="sample-hero-inner">
-            <div className="sample-brand-badge">Website Draft</div>
-            <p className="sample-business-name">{draft.businessName}</p>
-            <p className="sample-tagline">{draft.tagline}</p>
-            <h1 className="sample-h1">{draft.heroHeadline}</h1>
-            <p className="sample-sub">{draft.heroSub}</p>
-            <p className="sample-local">{draft.localPositioning}</p>
-            <div className="btn-row">
-              <a href={telHref} className="btn gold">
-                {draft.heroPrimaryCta}
-              </a>
-              <Link href="/website-samples" className="btn ghost">
-                {draft.heroSecondaryCta}
-              </Link>
-            </div>
-          </div>
+          </aside>
+          <div className="sample-live-canvas">{site}</div>
         </div>
-      </header>
-
-      <section className="section sample-section">
-        <div className="container">
-          <h2 className="sample-h2">{draft.offeringsTitle}</h2>
-          <div className="how-it-works-grid">
-            {draft.offerings.map((item) => (
-              <article key={item.name} className="how-it-works-card">
-                <h3 className="how-it-works-title">{item.name}</h3>
-                <p className="how-it-works-copy">{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section">
-        <div className="container">
-          <div className="panel sample-panel">
-            <h2 className="sample-h2">{draft.aboutTitle}</h2>
-            <p className="sample-sub" style={{ margin: 0 }}>{draft.aboutText}</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section">
-        <div className="container">
-          <h2 className="sample-h2">{draft.trustTitle}</h2>
-          <div className="grid-2">
-            {draft.trustQuotes.map((entry) => (
-              <blockquote key={entry.by} className="card sample-quote">
-                <p style={{ margin: "0 0 10px" }}>"{entry.quote}"</p>
-                <p className="small" style={{ margin: 0, opacity: 0.85 }}>
-                  - {entry.by}
-                </p>
-              </blockquote>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section">
-        <div className="container">
-          <h2 className="sample-h2">{draft.locationTitle}</h2>
-          <div className="grid-2">
-            <div className="card sample-info">
-              <h3 style={{ margin: "0 0 8px" }}>{draft.locationName}</h3>
-              <p className="small" style={{ margin: "0 0 6px" }}>{draft.address}</p>
-              <a href={telHref} className="small" style={{ margin: 0, display: "inline-block" }}>
-                {draft.phone}
-              </a>
-            </div>
-            <div className="card sample-info">
-              <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {draft.hours.map((line) => (
-                  <li key={line} className="small" style={{ marginBottom: 6 }}>
-                    {line}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section">
-        <div className="container">
-          <div className="panel sample-panel">
-            <h2 className="sample-h2">{draft.finalTitle}</h2>
-            <p className="sample-sub">{draft.finalSub}</p>
-            <div className="btn-row">
-              <a href={telHref} className="btn gold">
-                {draft.finalCta}
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      ) : site}
     </div>
   );
 }
