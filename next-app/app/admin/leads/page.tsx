@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView, type WorkflowLead } from "@/components/admin/leads-workflow-view";
-import { syncLeadsFromOpportunities } from "@/lib/opportunity-lead-sync";
 
 type LeadRow = {
   id: string;
@@ -132,32 +131,40 @@ export default async function AdminLeadsPage({
     );
   }
 
-  let syncDiagnostics: {
-    opportunities_scanned: number;
-    leads_created: number;
-    already_existing: number;
-    failed: number;
-  } | null = null;
+  console.info("[Leads Page] source", {
+    source: "public.leads",
+    owner_id: ownerId,
+    non_db_sources_enabled: false,
+  });
+
+  let totalLeadsCount = 0;
+  let totalOpportunitiesCount = 0;
   try {
-    const syncStats = await syncLeadsFromOpportunities(supabase, ownerId);
-    syncDiagnostics = {
-      opportunities_scanned: syncStats.opportunities_scanned,
-      leads_created: syncStats.leads_created,
-      already_existing: syncStats.already_existing,
-      failed: syncStats.failed,
-    };
-    console.info("[Leads Sync] opportunities -> leads", {
-      owner_id: ownerId,
-      opportunities_scanned: syncStats.opportunities_scanned,
-      leads_created: syncStats.leads_created,
-      already_existing: syncStats.already_existing,
-      failed: syncStats.failed,
-    });
-  } catch (syncError) {
-    console.error("[Leads Sync] opportunities -> leads failed", {
-      owner_id: ownerId,
-      error: syncError,
-    });
+    const leadCountRes = await supabase
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", ownerId);
+    totalLeadsCount = Number(leadCountRes.count || 0);
+  } catch (countError) {
+    console.error("[Leads Page] lead count failed", { owner_id: ownerId, error: countError });
+  }
+
+  try {
+    const oppByUser = await supabase
+      .from("opportunities")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", ownerId);
+    if (!oppByUser.error) {
+      totalOpportunitiesCount = Number(oppByUser.count || 0);
+    } else {
+      const oppByOwner = await supabase
+        .from("opportunities")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", ownerId);
+      totalOpportunitiesCount = Number(oppByOwner.count || 0);
+    }
+  } catch (countError) {
+    console.error("[Leads Page] opportunities count failed", { owner_id: ownerId, error: countError });
   }
 
   let rows: LeadRow[] = [];
@@ -203,7 +210,10 @@ export default async function AdminLeadsPage({
   }
 
   const workflowLeads = rows.map(toWorkflowLead);
-  const emptyStateReason = workflowLeads.length === 0 ? "No leads found" : "";
+  const emptyStateReason =
+    workflowLeads.length === 0
+      ? "No real leads yet. Run Scout or seed leads."
+      : "";
 
   return (
     <div className="space-y-6">
@@ -227,12 +237,9 @@ export default async function AdminLeadsPage({
         <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
           Leads list source of truth: <strong>public.leads</strong>
         </p>
-        {syncDiagnostics ? (
-          <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-            Sync diagnostics - opportunities_scanned: {syncDiagnostics.opportunities_scanned}, leads_created: {syncDiagnostics.leads_created}, already_existing:{" "}
-            {syncDiagnostics.already_existing}, failed: {syncDiagnostics.failed}
-          </p>
-        ) : null}
+        <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+          DB reality - public.leads: {totalLeadsCount} | public.opportunities: {totalOpportunitiesCount}
+        </p>
       </section>
 
       <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
