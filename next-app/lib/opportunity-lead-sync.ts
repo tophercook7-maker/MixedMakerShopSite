@@ -26,6 +26,7 @@ type SyncStats = {
   already_existing: number;
   skipped_missing_business_name: number;
   skipped_missing_workspace_id: number;
+  skipped_owner_mismatch: number;
   skipped_missing_contact_path: number;
   skipped_missing_opportunity: number;
   skipped_duplicate: number;
@@ -95,8 +96,12 @@ export async function upsertLeadFromOpportunity(
   const website = String(opp.website || "").trim();
   const phone = String(opp.phone || "").trim();
   const email = String(opp.email || "").trim().toLowerCase();
+  const oppOwner = String(opp.owner_id || opp.user_id || "").trim();
   if (!businessName) return { leadId: null, created: false, skipped: true, reason: "missing_business_name", error: null };
   if (!workspaceId) return { leadId: null, created: false, skipped: true, reason: "missing_workspace_id", error: null };
+  if (oppOwner && oppOwner !== ownerId) {
+    return { leadId: null, created: false, skipped: true, reason: "owner_mismatch", error: null };
+  }
   if (!email && !phone && !website) return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
 
   const existing = await supabase
@@ -119,7 +124,7 @@ export async function upsertLeadFromOpportunity(
 
   const payload: Record<string, unknown> = {
     id: oppId,
-    owner_id: String(opp.owner_id || opp.user_id || ownerId || "").trim() || ownerId,
+    owner_id: ownerId,
     workspace_id: workspaceId,
     linked_opportunity_id: oppId,
     business_name: businessName || "Unknown business",
@@ -145,6 +150,22 @@ export async function upsertLeadFromOpportunity(
       error: String(inserted.error?.message || "insert returned no id"),
     };
   }
+  const verify = await supabase
+    .from("leads")
+    .select("id,owner_id,workspace_id")
+    .eq("id", insertedId)
+    .eq("owner_id", ownerId)
+    .eq("workspace_id", workspaceId)
+    .limit(1);
+  if (verify.error || !((verify.data || [])[0]?.id)) {
+    return {
+      leadId: null,
+      created: false,
+      skipped: false,
+      reason: "post_insert_verification_failed",
+      error: String(verify.error?.message || "lead not visible after insert"),
+    };
+  }
   return { leadId: insertedId, created: true, skipped: false, reason: null, error: null };
 }
 
@@ -161,6 +182,7 @@ export async function syncLeadsFromOpportunities(
     already_existing: 0,
     skipped_missing_business_name: 0,
     skipped_missing_workspace_id: 0,
+    skipped_owner_mismatch: 0,
     skipped_missing_contact_path: 0,
     skipped_missing_opportunity: 0,
     skipped_duplicate: 0,
@@ -213,6 +235,9 @@ export async function syncLeadsFromOpportunities(
         pushFailureSample(opp, reason);
       } else if (reason === "missing_contact_path") {
         stats.skipped_missing_contact_path += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "owner_mismatch") {
+        stats.skipped_owner_mismatch += 1;
         pushFailureSample(opp, reason);
       } else if (reason === "missing_opportunity") {
         stats.skipped_missing_opportunity += 1;

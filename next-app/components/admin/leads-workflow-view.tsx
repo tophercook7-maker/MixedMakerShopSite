@@ -5,6 +5,7 @@ import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
+import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
@@ -213,6 +214,23 @@ export function LeadsWorkflowView({
     } catch {
       setError(errorMessage);
     }
+  }
+
+  async function navigateToLeadWithGuard(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string) {
+    const destination = leadHref(lead, query);
+    const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
+    if (!check.ok) {
+      setError(check.message);
+      actionDebug("Lead navigation blocked", {
+        leadId: lead.id,
+        status: check.status,
+        reason: check.reason,
+        diagnostics: check.diagnostics || null,
+      });
+      if (typeof window !== "undefined") window.alert(check.message);
+      return;
+    }
+    if (typeof window !== "undefined") window.location.assign(destination);
   }
 
   async function markTextSent(lead: WorkflowLead) {
@@ -766,13 +784,24 @@ export function LeadsWorkflowView({
                     );
                     return (
                       <>
-                  <a href={leadHref(lead)} className="admin-btn-primary text-xs">
+                  <a
+                    href={leadHref(lead)}
+                    className="admin-btn-primary text-xs"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      void navigateToLeadWithGuard(lead);
+                    }}
+                  >
                     {lead.recommended_next_action || "Review Lead"}
                   </a>
                   <a
                     href={leadHref(lead)}
                     className="admin-btn-primary text-xs"
-                    onClick={() => actionDebug("Open Lead clicked", { leadId: lead.id })}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      actionDebug("Open Lead clicked", { leadId: lead.id });
+                      void navigateToLeadWithGuard(lead);
+                    }}
                   >
                     Open Lead
                   </a>
@@ -814,12 +843,13 @@ export function LeadsWorkflowView({
                     className="admin-btn-ghost text-xs"
                     aria-disabled={!hasContactPath}
                     onClick={(event) => {
+                      event.preventDefault();
                       if (!hasContactPath) {
-                        event.preventDefault();
                         actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                         return;
                       }
                       actionDebug("Generate Email clicked", { leadId: lead.id });
+                      void navigateToLeadWithGuard(lead, "generate=1");
                     }}
                   >
                     Generate Email
@@ -829,12 +859,13 @@ export function LeadsWorkflowView({
                     className="admin-btn-ghost text-xs"
                     aria-disabled={!hasContactPath}
                     onClick={(event) => {
+                      event.preventDefault();
                       if (!hasContactPath) {
-                        event.preventDefault();
                         actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                         return;
                       }
                       actionDebug("Send Email clicked", { leadId: lead.id });
+                      void navigateToLeadWithGuard(lead, "compose=1");
                     }}
                   >
                     Send Email
@@ -1065,7 +1096,11 @@ export function LeadsWorkflowView({
                         <a
                           href={leadHref(lead)}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
-                          onClick={() => actionDebug("Open Lead clicked", { leadId: lead.id })}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            actionDebug("Open Lead clicked", { leadId: lead.id });
+                            void navigateToLeadWithGuard(lead);
+                          }}
                         >
                           Open Lead
                         </a>
@@ -1106,12 +1141,13 @@ export function LeadsWorkflowView({
                           href={leadHref(lead, "generate=1")}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
+                            event.preventDefault();
                             if (!hasContactPath) {
-                              event.preventDefault();
                               actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                               return;
                             }
                             actionDebug("Generate Email clicked", { leadId: lead.id });
+                            void navigateToLeadWithGuard(lead, "generate=1");
                           }}
                         >
                           Generate Email
@@ -1120,12 +1156,13 @@ export function LeadsWorkflowView({
                           href={leadHref(lead, "compose=1")}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
+                            event.preventDefault();
                             if (!hasContactPath) {
-                              event.preventDefault();
                               actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                               return;
                             }
                             actionDebug("Send Email clicked", { leadId: lead.id });
+                            void navigateToLeadWithGuard(lead, "compose=1");
                           }}
                         >
                           Send Email

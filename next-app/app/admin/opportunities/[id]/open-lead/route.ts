@@ -84,7 +84,25 @@ export async function GET(
     return NextResponse.redirect(new URL(`/admin/leads?error=create_lead_failed&detail=${encodedError}`, request.url));
   }
 
-  const leadPath = buildLeadPath(String(created.lead_id || ""), String(created.business_name || ""));
+  const createdLeadId = String(created.lead_id || "").trim();
+  const { data: verifyRows } = await supabase
+    .from("leads")
+    .select("id,business_name")
+    .eq("owner_id", ownerId)
+    .eq("id", createdLeadId)
+    .limit(1);
+  const verifiedLead = (verifyRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
+  if (!verifiedLead?.id) {
+    const encodedError = encodeURIComponent("lead_not_found_post_insert");
+    console.error("[Action Debug] lead post-insert verification failed", {
+      opportunityId: targetId,
+      leadId: createdLeadId,
+      ownerId,
+    });
+    return NextResponse.redirect(new URL(`/admin/leads?error=create_lead_failed&detail=${encodedError}`, request.url));
+  }
+
+  const leadPath = buildLeadPath(String(verifiedLead.id || ""), String(verifiedLead.business_name || created.business_name || ""));
   const withQuery = generate ? `${leadPath}?generate=1` : compose ? `${leadPath}?compose=1` : leadPath;
   console.info("[Action Debug] route navigation attempted", { destination: withQuery });
   return NextResponse.redirect(new URL(withQuery, request.url));

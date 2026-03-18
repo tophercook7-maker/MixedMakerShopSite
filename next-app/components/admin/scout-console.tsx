@@ -8,6 +8,7 @@ import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { isManualOnlyModeClient } from "@/lib/manual-mode";
+import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 
 type Props = {
   integrationReady: boolean;
@@ -394,12 +395,13 @@ export function ScoutConsole({
       });
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
+        reason?: string;
         lead_id?: string;
         business_name?: string;
         case_id?: string | null;
       };
       if (!res.ok || !body.lead_id) {
-        setPageError(body.error || "Could not create lead from top opportunity.");
+        setPageError(body.error || body.reason || "Could not create lead from top opportunity.");
         return null;
       }
       return {
@@ -418,6 +420,17 @@ export function ScoutConsole({
   const hardNavigate = (href: string) => {
     if (!href) return;
     if (typeof window !== "undefined") window.location.assign(href);
+  };
+
+  const navigateLeadWithGuard = async (leadId: string, businessName: string, query?: string) => {
+    const check = await verifyLeadBeforeNavigation(leadId);
+    if (!check.ok) {
+      setPageError(check.message);
+      if (typeof window !== "undefined") window.alert(check.message);
+      return;
+    }
+    const path = buildLeadPath(leadId, businessName);
+    hardNavigate(query ? `${path}?${query}` : path);
   };
 
   const openExternal = (href: string) => {
@@ -1197,7 +1210,7 @@ export function ScoutConsole({
                                 return;
                               }
                               console.info("[Action Debug] Create Lead succeeded", { opportunityId, leadId: created.leadId });
-                              hardNavigate(buildLeadPath(created.leadId, created.businessName));
+                              await navigateLeadWithGuard(created.leadId, created.businessName);
                             }}
                           >
                             Create Lead + Open
@@ -1234,7 +1247,7 @@ export function ScoutConsole({
                                 return;
                               }
                               console.info("[Action Debug] Generate Email request succeeded", { opportunityId, leadId: created.leadId });
-                              hardNavigate(`${buildLeadPath(created.leadId, created.businessName)}?generate=1`);
+                              await navigateLeadWithGuard(created.leadId, created.businessName, "generate=1");
                             }}
                           >
                             Generate Email
@@ -1257,7 +1270,7 @@ export function ScoutConsole({
                                 return;
                               }
                               console.info("[Action Debug] Send Email request succeeded", { opportunityId, leadId: created.leadId });
-                              hardNavigate(`${buildLeadPath(created.leadId, created.businessName)}?compose=1`);
+                              await navigateLeadWithGuard(created.leadId, created.businessName, "compose=1");
                             }}
                           >
                             Send Email

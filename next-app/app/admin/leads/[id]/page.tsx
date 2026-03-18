@@ -378,6 +378,7 @@ export default async function AdminLeadDetailPage({
   let leadOwnerOnRow: string | null = null;
   let leadWorkspaceOnRow: string | null = null;
   let ownerWorkspaceFilterBlockedRow = false;
+  let detailFailureReason: "not_found" | "owner_workspace_mismatch" | null = null;
   let leadFoundInLeads = false;
   let opportunityFoundForFallback = false;
   let autoCreateAttempted = false;
@@ -420,7 +421,12 @@ export default async function AdminLeadDetailPage({
       const scopedLeadRows = (scopedRows || []) as unknown as LeadRow[];
       const scopedLead = (scopedLeadRows[0] as LeadRow | undefined) || null;
       ownerWorkspaceFilterBlockedRow = Boolean(unscopedLead && !scopedLead);
-      lead = scopedLead || unscopedLead || null;
+      lead = scopedLead || null;
+      if (ownerWorkspaceFilterBlockedRow) {
+        detailFailureReason = "owner_workspace_mismatch";
+      } else if (!unscopedLead) {
+        detailFailureReason = "not_found";
+      }
       console.info("[Lead Detail] by-id lookup result", {
         lead_token: targetId,
         lead_exists_by_id: leadExistsById,
@@ -429,6 +435,7 @@ export default async function AdminLeadDetailPage({
         lead_workspace_id: leadWorkspaceOnRow,
         owner_workspace_filter_blocked_row: ownerWorkspaceFilterBlockedRow,
         matched_lead_id: lead?.id || null,
+        detail_failure_reason: detailFailureReason,
       });
     }
     if (!lead) {
@@ -504,7 +511,7 @@ export default async function AdminLeadDetailPage({
   }
   leadFoundInLeads = Boolean(lead);
 
-  if (!lead) {
+  if (!lead && !ownerWorkspaceFilterBlockedRow) {
     try {
       autoCreateAttempted = true;
       const recovery = await ensureLeadFromOpportunityToken(supabase, ownerId, targetId);
@@ -874,7 +881,9 @@ export default async function AdminLeadDetailPage({
         <section className="admin-card">
           <h1 className="text-2xl font-bold">Lead workspace</h1>
           <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
-            We could not find that lead id yet, but your workflow is still available.
+            {detailFailureReason === "owner_workspace_mismatch"
+              ? "Lead exists but is not in your workspace."
+              : "Lead does not exist."}
           </p>
           <div className="mt-4 flex gap-2">
             <Link href="/admin/leads" className="admin-btn-primary">
@@ -1073,6 +1082,7 @@ export default async function AdminLeadDetailPage({
           <p>current_user_id: {ownerId || "null"}</p>
           <p>workspace_id_on_row: {leadWorkspaceOnRow || "null"}</p>
           <p>owner_workspace_filter_blocked_row: {ownerWorkspaceFilterBlockedRow ? "true" : "false"}</p>
+          <p>detail_failure_reason: {detailFailureReason || "none"}</p>
         </div>
       </section>
       <section className="admin-card">

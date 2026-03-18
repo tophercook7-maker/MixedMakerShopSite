@@ -78,6 +78,7 @@ export async function POST() {
         already_existing: stats.already_existing,
         skipped_missing_business_name: stats.skipped_missing_business_name,
         skipped_missing_workspace_id: stats.skipped_missing_workspace_id,
+        skipped_owner_mismatch: stats.skipped_owner_mismatch,
         skipped_missing_contact_path: stats.skipped_missing_contact_path,
         skipped_missing_opportunity: stats.skipped_missing_opportunity,
         skipped_duplicate: stats.skipped_duplicate,

@@ -16,6 +16,7 @@ type BackfillResponse = {
     already_existing?: number;
     skipped_missing_business_name?: number;
     skipped_missing_workspace_id?: number;
+    skipped_owner_mismatch?: number;
     skipped_missing_contact_path?: number;
     skipped_missing_opportunity?: number;
     skipped_duplicate?: number;
@@ -92,7 +93,7 @@ export function BackfillLeadsButton() {
           </div>
           <div>
             skipped_missing_business_name: {Number(result.stats?.skipped_missing_business_name || 0)} | skipped_missing_workspace_id:{" "}
-            {Number(result.stats?.skipped_missing_workspace_id || 0)} | skipped_missing_contact_path: {Number(result.stats?.skipped_missing_contact_path || 0)} | skipped_missing_opportunity:{" "}
+            {Number(result.stats?.skipped_missing_workspace_id || 0)} | skipped_owner_mismatch: {Number(result.stats?.skipped_owner_mismatch || 0)} | skipped_missing_contact_path: {Number(result.stats?.skipped_missing_contact_path || 0)} | skipped_missing_opportunity:{" "}
             {Number(result.stats?.skipped_missing_opportunity || 0)}
           </div>
           {Array.isArray(result.stats?.exact_insert_errors) && result.stats?.exact_insert_errors.length > 0 ? (

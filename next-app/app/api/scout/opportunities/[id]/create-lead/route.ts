@@ -58,6 +58,18 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const fail = (status: number, reason: string, error: string, extra?: Record<string, unknown>) => {
+    console.error("[Action Debug] create-lead failed", {
+      opportunityId,
+      ownerId,
+      status,
+      reason,
+      error,
+      ...extra,
+    });
+    return NextResponse.json({ error, reason, ...extra }, { status });
+  };
+
   const { data: existingRows } = await supabase
     .from("leads")
     .select("id,business_name")
@@ -80,6 +92,7 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       created: false,
+      reason: "duplicate_existing_lead",
       lead_id: String(existingLead.id),
       case_id: existingCaseId,
       business_name: String(existingLead.business_name || ""),
@@ -161,9 +174,21 @@ export async function POST(
         error: opportunityScopeBlocked
           ? "Opportunity exists but is outside the current owner/workspace scope."
           : "Opportunity not found.",
+        reason: opportunityScopeBlocked ? "owner_workspace_mismatch" : "opportunity_not_found",
       },
       { status: opportunityScopeBlocked ? 403 : 404 }
     );
+  }
+  const workspaceId = String(opp.workspace_id || "").trim();
+  if (!workspaceId) {
+    return fail(422, "missing_workspace_id", "Opportunity has no workspace_id, so lead creation was blocked.");
+  }
+  const oppOwner = String(opp.owner_id || opp.user_id || "").trim();
+  if (oppOwner && oppOwner !== ownerId) {
+    return fail(403, "owner_mismatch", "Opportunity owner does not match current user.", {
+      opportunity_owner_id: oppOwner,
+      current_user_id: ownerId,
+    });
   }
 
   const { data: caseRows } = await supabase
@@ -200,7 +225,7 @@ export async function POST(
   const insertPayload = {
     id: opp.id,
     owner_id: ownerId,
-    workspace_id: String(opp.workspace_id || "").trim() || null,
+    workspace_id: workspaceId,
     linked_opportunity_id: opp.id,
     business_name: String(opp.business_name || "").trim() || "Unknown business",
     contact_name: null,
@@ -230,15 +255,52 @@ export async function POST(
     .select("id,business_name")
     .limit(1);
   if (insertError) {
-    console.error("[Action Debug] lead insert failed", {
-      opportunityId,
-      error: insertError.message,
-    });
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    const lowered = String(insertError.message || "").toLowerCase();
+    if (lowered.includes("duplicate") || lowered.includes("unique")) {
+      const { data: conflictRows } = await supabase
+        .from("leads")
+        .select("id,business_name")
+        .eq("id", String(opp.id || ""))
+        .limit(1);
+      const conflict = (conflictRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
+      if (conflict?.id) {
+        return NextResponse.json(
+          {
+            ok: true,
+            created: false,
+            reason: "duplicate_conflict",
+            lead_id: String(conflict.id || ""),
+            case_id: String(caseRow?.id || "").trim() || null,
+            business_name: String(conflict.business_name || insertPayload.business_name || ""),
+            message: "Lead already exists.",
+          },
+          { status: 200 }
+        );
+      }
+    }
+    return fail(500, "insert_failed", insertError.message);
   }
   const inserted = (insertedRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
   if (!inserted?.id) {
-    return NextResponse.json({ error: "Lead insert succeeded but no id returned." }, { status: 500 });
+    return fail(500, "insert_missing_id", "Lead insert succeeded but no id returned.");
+  }
+  const { data: verifyRow, error: verifyError } = await supabase
+    .from("leads")
+    .select("id,owner_id,workspace_id")
+    .eq("id", String(inserted.id || ""))
+    .eq("owner_id", ownerId)
+    .eq("workspace_id", workspaceId)
+    .maybeSingle();
+  if (verifyError || !verifyRow) {
+    return fail(
+      500,
+      "post_insert_verification_failed",
+      "Lead insert was not visible after insert verification.",
+      {
+        inserted_lead_id: String(inserted.id || ""),
+        verify_error: verifyError?.message || null,
+      }
+    );
   }
   console.info("[Action Debug] lead insert succeeded", {
     opportunityId,
@@ -248,6 +310,7 @@ export async function POST(
   return NextResponse.json({
     ok: true,
     created: true,
+    reason: "created",
     lead_id: String(inserted.id),
     case_id: String(caseRow?.id || "").trim() || null,
     business_name: String(inserted.business_name || insertPayload.business_name || ""),
