@@ -97,6 +97,7 @@ export type ScoutJobStatusResponse = {
       workspace_id?: string | null;
       opportunities_found?: number;
       opportunities_loaded?: number;
+      total_records?: number;
       scanned_count?: number;
       enriched_count?: number;
       opportunities_evaluated?: number;
@@ -125,6 +126,20 @@ export type ScoutJobStatusResponse = {
       leads_with_contact_page?: number;
       leads_with_facebook?: number;
       leads_with_no_contact_path?: number;
+      websites_found?: number;
+      contact_pages_found?: number;
+      facebook_found?: number;
+      phone_found?: number;
+      no_contact_path?: number;
+      phones_found?: number;
+      facebook_links_found?: number;
+      records_with_no_contact?: number;
+      businesses_found?: number;
+      no_website_found?: number;
+      facebook_only?: number;
+      phone_only?: number;
+      leads_created_with_website?: number;
+      leads_created_without_website?: number;
       actionable_email_leads_created?: number;
       research_later_leads_created?: number;
       door_to_door_candidates_created?: number;
@@ -136,6 +151,7 @@ export type ScoutJobStatusResponse = {
       emails_found?: number;
       actionable_email_leads?: number;
       contact_available?: number;
+      research_later?: number;
       door_to_door_candidates?: number;
       skipped?: number;
       leads_skipped_due_no_email?: number;

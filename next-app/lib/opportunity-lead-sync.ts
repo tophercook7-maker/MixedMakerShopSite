@@ -20,10 +20,27 @@ type OpportunitySeed = {
 
 type SyncStats = {
   opportunities_scanned: number;
+  opportunities_found: number;
+  opportunities_eligible: number;
   leads_created: number;
   already_existing: number;
-  skipped_invalid: number;
+  skipped_missing_business_name: number;
+  skipped_missing_workspace_id: number;
+  skipped_missing_contact_path: number;
+  skipped_missing_opportunity: number;
+  skipped_duplicate: number;
+  insert_failed: number;
   failed: number;
+  exact_insert_errors: string[];
+  failing_records: Array<{
+    id: string | null;
+    business_name: string | null;
+    workspace_id: string | null;
+    website: string | null;
+    email: string | null;
+    phone: string | null;
+    reason_skipped_or_failed: string;
+  }>;
 };
 
 function slugTokenToBusinessNameQuery(token: string): string {
@@ -70,9 +87,17 @@ export async function upsertLeadFromOpportunity(
   supabase: SupabaseLike,
   ownerId: string,
   opp: OpportunitySeed
-): Promise<{ leadId: string | null; created: boolean }> {
+): Promise<{ leadId: string | null; created: boolean; skipped: boolean; reason: string | null; error: string | null }> {
   const oppId = String(opp.id || "").trim();
-  if (!oppId) return { leadId: null, created: false };
+  if (!oppId) return { leadId: null, created: false, skipped: true, reason: "missing_opportunity", error: null };
+  const businessName = String(opp.business_name || "").trim();
+  const workspaceId = String(opp.workspace_id || "").trim();
+  const website = String(opp.website || "").trim();
+  const phone = String(opp.phone || "").trim();
+  const email = String(opp.email || "").trim().toLowerCase();
+  if (!businessName) return { leadId: null, created: false, skipped: true, reason: "missing_business_name", error: null };
+  if (!workspaceId) return { leadId: null, created: false, skipped: true, reason: "missing_workspace_id", error: null };
+  if (!email && !phone && !website) return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
 
   const existing = await supabase
     .from("leads")
@@ -80,22 +105,30 @@ export async function upsertLeadFromOpportunity(
     .eq("owner_id", ownerId)
     .or(`id.eq.${oppId},linked_opportunity_id.eq.${oppId}`)
     .limit(1);
+  if (existing.error) {
+    return {
+      leadId: null,
+      created: false,
+      skipped: false,
+      reason: "insert_failed",
+      error: String(existing.error?.message || "lead existence check failed"),
+    };
+  }
   const existingId = String((existing.data || [])[0]?.id || "").trim();
-  if (existingId) return { leadId: existingId, created: false };
+  if (existingId) return { leadId: existingId, created: false, skipped: true, reason: "duplicate", error: null };
 
-  const businessName = String(opp.business_name || "").trim() || "Unknown business";
   const payload: Record<string, unknown> = {
     id: oppId,
     owner_id: String(opp.owner_id || opp.user_id || ownerId || "").trim() || ownerId,
-    workspace_id: String(opp.workspace_id || "").trim() || null,
+    workspace_id: workspaceId,
     linked_opportunity_id: oppId,
-    business_name: businessName,
-    website: String(opp.website || "").trim() || null,
-    phone: String(opp.phone || "").trim() || null,
-    email: String(opp.email || "").trim().toLowerCase() || null,
+    business_name: businessName || "Unknown business",
+    website: website || null,
+    phone: phone || null,
+    email: email || null,
     industry: String(opp.industry || opp.category || "").trim() || null,
     address: String(opp.address || "").trim() || null,
-    status: String(opp.email || "").trim() ? "new" : "research_later",
+    status: email ? "new" : "research_later",
     notes: "Auto-created from opportunity sync.",
   };
   const createdAt = String(opp.created_at || "").trim();
@@ -103,8 +136,16 @@ export async function upsertLeadFromOpportunity(
 
   const inserted = await supabase.from("leads").insert(payload).select("id").limit(1);
   const insertedId = String((inserted.data || [])[0]?.id || "").trim();
-  if (inserted.error || !insertedId) return { leadId: null, created: false };
-  return { leadId: insertedId, created: true };
+  if (inserted.error || !insertedId) {
+    return {
+      leadId: null,
+      created: false,
+      skipped: false,
+      reason: "insert_failed",
+      error: String(inserted.error?.message || "insert returned no id"),
+    };
+  }
+  return { leadId: insertedId, created: true, skipped: false, reason: null, error: null };
 }
 
 export async function syncLeadsFromOpportunities(
@@ -114,29 +155,86 @@ export async function syncLeadsFromOpportunities(
 ): Promise<SyncStats> {
   const stats: SyncStats = {
     opportunities_scanned: 0,
+    opportunities_found: 0,
+    opportunities_eligible: 0,
     leads_created: 0,
     already_existing: 0,
-    skipped_invalid: 0,
+    skipped_missing_business_name: 0,
+    skipped_missing_workspace_id: 0,
+    skipped_missing_contact_path: 0,
+    skipped_missing_opportunity: 0,
+    skipped_duplicate: 0,
+    insert_failed: 0,
     failed: 0,
+    exact_insert_errors: [],
+    failing_records: [],
   };
   const opportunities = await loadOpportunitiesForOwner(supabase, ownerId, limit);
+  stats.opportunities_found = opportunities.length;
+
+  const pushFailureSample = (opp: OpportunitySeed, reason: string) => {
+    if (stats.failing_records.length >= 10) return;
+    stats.failing_records.push({
+      id: String(opp.id || "").trim() || null,
+      business_name: String(opp.business_name || "").trim() || null,
+      workspace_id: String(opp.workspace_id || "").trim() || null,
+      website: String(opp.website || "").trim() || null,
+      email: String(opp.email || "").trim().toLowerCase() || null,
+      phone: String(opp.phone || "").trim() || null,
+      reason_skipped_or_failed: reason,
+    });
+  };
+
+  const addInsertError = (message: string) => {
+    const clean = String(message || "").trim();
+    if (!clean) return;
+    if (stats.exact_insert_errors.includes(clean)) return;
+    if (stats.exact_insert_errors.length >= 20) return;
+    stats.exact_insert_errors.push(clean);
+  };
+
   for (const opp of opportunities) {
     stats.opportunities_scanned += 1;
-    const oppId = String(opp.id || "").trim();
-    const businessName = String(opp.business_name || "").trim();
-    if (!oppId || !businessName) {
-      stats.skipped_invalid += 1;
-      continue;
-    }
     try {
       const result = await upsertLeadFromOpportunity(supabase, ownerId, opp);
-      if (result.created) stats.leads_created += 1;
-      else if (result.leadId) stats.already_existing += 1;
-      else stats.failed += 1;
-    } catch {
+      const reason = String(result.reason || "");
+      if (result.created) {
+        stats.opportunities_eligible += 1;
+        stats.leads_created += 1;
+      } else if (reason === "duplicate" && result.leadId) {
+        stats.opportunities_eligible += 1;
+        stats.already_existing += 1;
+        stats.skipped_duplicate += 1;
+      } else if (reason === "missing_business_name") {
+        stats.skipped_missing_business_name += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "missing_workspace_id") {
+        stats.skipped_missing_workspace_id += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "missing_contact_path") {
+        stats.skipped_missing_contact_path += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "missing_opportunity") {
+        stats.skipped_missing_opportunity += 1;
+        pushFailureSample(opp, reason);
+      } else {
+        stats.opportunities_eligible += 1;
+        stats.insert_failed += 1;
+        stats.failed += 1;
+        const errorMessage = String(result.error || "insert_failed");
+        addInsertError(errorMessage);
+        pushFailureSample(opp, `insert_failed: ${errorMessage}`);
+      }
+    } catch (error) {
+      stats.opportunities_eligible += 1;
+      stats.insert_failed += 1;
       stats.failed += 1;
+      const errorMessage = error instanceof Error ? error.message : "insert_failed";
+      addInsertError(errorMessage);
+      pushFailureSample(opp, `insert_failed: ${errorMessage}`);
     }
   }
+  stats.failed = stats.insert_failed;
   return stats;
 }
 
@@ -198,7 +296,7 @@ export async function ensureLeadFromOpportunityToken(
       leadId: result.leadId,
       created: result.created,
       opportunityId: String(opp.id || "").trim() || null,
-      insertError: result.leadId ? null : "insert_failed_or_not_visible",
+      insertError: result.error || (result.leadId ? null : "insert_failed_or_not_visible"),
     };
   } catch (error) {
     return {

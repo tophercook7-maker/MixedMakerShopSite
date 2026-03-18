@@ -343,14 +343,11 @@ export function LeadsWorkflowView({
       const ws = String(lead.website_status || "").toLowerCase();
       const cat = String(lead.category || "").toLowerCase();
       const hasEmail = Boolean(String(lead.email || "").trim());
-      const hasContactAvailable = Boolean(String(lead.contact_page || "").trim() || String(lead.facebook_url || "").trim());
-      const archived = Boolean(lead.is_archived);
-      const hasRequired = Boolean(
-        String(lead.business_name || "").trim() &&
-          String(lead.workspace_id || "").trim() &&
-          String(lead.detected_issue_summary || "").trim() &&
-          hasEmail
+      const hasContactAvailable = Boolean(
+        String(lead.contact_page || "").trim() || String(lead.facebook_url || "").trim() || String(lead.phone_from_site || "").trim()
       );
+      const archived = Boolean(lead.is_archived);
+      const hasRequired = Boolean(String(lead.business_name || "").trim() && hasEmail);
       if (segment === "actionable_email") return hasRequired && !archived;
       if (segment === "contact_available") return !hasEmail && hasContactAvailable;
       if (segment === "door_to_door_candidates") {
@@ -373,7 +370,7 @@ export function LeadsWorkflowView({
       if (segment === "broken_website_email") return hasRequired && ws === "broken_website";
       if (segment === "facebook_only_email") return hasRequired && ws === "facebook_only";
       if (segment === "churches_email") return hasRequired && cat.includes("church");
-      if (segment === "no_email_research") return !hasEmail || lead.status === "research_later";
+      if (segment === "no_email_research") return (!hasEmail && !hasContactAvailable) || lead.status === "research_later";
       return true;
     });
     const searched = !q
@@ -547,10 +544,11 @@ export function LeadsWorkflowView({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
-              ["actionable_email", "Actionable Now"],
+              ["actionable_email", "Email Leads"],
+              ["contact_available", "Contact Available"],
+              ["no_email_research", "Research Later"],
               ["from_this_scan", "From This Scan"],
               ["archived", "Archived"],
-              ["contact_available", "Contact Available"],
               ["door_to_door_candidates", "Door-to-Door"],
               ["low_priority", "Low Priority / Skip"],
               ["phone_leads", "Phone Leads"],
@@ -560,7 +558,6 @@ export function LeadsWorkflowView({
               ["broken_website_email", "Broken Website + Email"],
               ["facebook_only_email", "Facebook Only + Email"],
               ["churches_email", "Churches + Email"],
-              ["no_email_research", "No Email / Research Later"],
               ["all", "All"],
             ].map(([id, label]) => (
               <button
@@ -714,6 +711,18 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">Best contact:</span> {lead.best_contact_method || lead.contact_method || "none"}
                   </p>
                   <p>
+                    <span className="font-semibold">Email:</span> {lead.email ? "Email Found" : "No Email Found"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Contact Page:</span> {lead.contact_page ? "Contact Page Found" : "Not Found"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Facebook:</span> {lead.facebook_url ? "Facebook Found" : "Not Found"}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Phone:</span> {lead.phone_from_site ? "Phone Found" : "Not Found"}
+                  </p>
+                  <p>
                     <span className="font-semibold">What to say:</span> {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
                   </p>
                   <p>
@@ -737,9 +746,6 @@ export function LeadsWorkflowView({
                   <p>
                     <span className="font-semibold">Email source:</span> {lead.email_source || "unknown"}
                   </p>
-                  {!lead.email ? (
-                    <p style={{ color: "#fca5a5" }}>No Email Found</p>
-                  ) : null}
                   {!lead.email && !lead.contact_page && !lead.facebook_url && !lead.phone_from_site ? (
                     <p style={{ color: "#fca5a5" }}>No Contact Path</p>
                   ) : null}

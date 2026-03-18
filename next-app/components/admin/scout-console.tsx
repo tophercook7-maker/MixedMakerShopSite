@@ -258,6 +258,22 @@ export function ScoutConsole({
   const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
   const activeScanSettings = scout.scanSettings;
+  const intake = scout.persistenceDebug?.intake;
+  const isReducedRun = Boolean(
+    intake?.reduced_mode ||
+      (scout.scanSettings?.mode !== "discovery" && scout.scanSettings?.discovery_mode !== "paid_discovery")
+  );
+  const freshDiscoveryCount = isReducedRun
+    ? 0
+    : Number(intake?.businesses_found || intake?.opportunities_found || intake?.opportunities_loaded || 0);
+  const existingRecordsEnriched = Number(
+    intake?.records_enriched || intake?.enriched_count || intake?.stored_records_scanned || 0
+  );
+  const reducedNoDataMessage =
+    isReducedRun &&
+    freshDiscoveryCount === 0 &&
+    existingRecordsEnriched === 0 &&
+    (scout.jobStatus === "finished" || scout.jobStatus === "failed");
 
   const toggleSelection = (value: string, selected: string[], setSelected: (items: string[]) => void) => {
     if (selected.includes(value)) {
@@ -495,7 +511,8 @@ export function ScoutConsole({
               disabled={scout.isBusy}
             >
               <div className="font-semibold">Reduced (Free)</div>
-              <div style={{ color: "var(--admin-muted)" }}>Uses existing data and enrichment only</div>
+              <div style={{ color: "var(--admin-muted)" }}>No fresh business discovery</div>
+              <div style={{ color: "var(--admin-muted)" }}>Existing data enrichment only</div>
             </button>
             <button
               type="button"
@@ -513,7 +530,7 @@ export function ScoutConsole({
             </span>
             {" "}·{" "}
             <span className="font-semibold">
-              {discoveryMode === "paid_discovery" ? "May use Google Places" : "No paid Google discovery"}
+              {discoveryMode === "paid_discovery" ? "Discovery Mode = fresh business finding (paid Google Places)" : "Reduced Mode = enrichment only (no fresh business discovery)"}
             </span>
             {" "}·{" "}
             <span className="font-semibold">{manualOnlyMode ? "Manual trigger only" : "Enabled by configuration"}</span>
@@ -625,9 +642,21 @@ export function ScoutConsole({
           <h2 className="text-lg font-semibold mb-2" style={{ color: "#fde68a" }}>
             Reduced Scout Mode
           </h2>
+          <p className="text-sm mb-1" style={{ color: "#fde68a" }}>
+            No fresh business discovery.
+          </p>
+          <p className="text-sm mb-2" style={{ color: "#fde68a" }}>
+            Existing data enrichment only.
+          </p>
           <p className="text-sm" style={{ color: "#fde68a" }}>
             {String(scout.persistenceDebug?.reduced_mode_notice || "")}
           </p>
+          <div className="mt-3">
+            <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
+              <ExternalLink className="h-4 w-4" />
+              Work Existing Leads
+            </Link>
+          </div>
         </section>
       ) : null}
 
@@ -891,6 +920,12 @@ export function ScoutConsole({
                 : "Reduced (Free)"}
             </p>
             <p>
+              mode meaning:{" "}
+              {isReducedRun
+                ? "Reduced Mode = enrichment only (no fresh business discovery)"
+                : "Discovery Mode = new business finding (paid Google Places)"}
+            </p>
+            <p>
               leads found: {Number(scout.persistenceDebug?.intake?.leads_created || scout.persistenceDebug?.intake?.created || 0)} |
               {" "}records enriched: {Number(scout.persistenceDebug?.intake?.records_enriched || scout.persistenceDebug?.intake?.enriched_count || 0)} |
               {" "}emails found: {Number(scout.persistenceDebug?.intake?.emails_found || scout.persistenceDebug?.intake?.leads_with_email || 0)} |
@@ -909,6 +944,14 @@ export function ScoutConsole({
                 Google discovery unavailable. Running in reduced enrichment mode.
               </p>
             ) : null}
+            {reducedNoDataMessage ? (
+              <p style={{ color: "#fde68a" }}>
+                No new businesses were discovered in reduced mode. This mode only enriches existing records.
+              </p>
+            ) : null}
+            <p>
+              fresh_discovery_count: {freshDiscoveryCount} | existing_records_enriched: {existingRecordsEnriched}
+            </p>
             <p>
               businesses scanned: {Number(scout.persistenceDebug?.intake?.scanned_count || 0)} |
               opportunities found: {Number(scout.persistenceDebug?.intake?.opportunities_found || scout.persistenceDebug?.intake?.opportunities_loaded || 0)} |
@@ -938,6 +981,12 @@ export function ScoutConsole({
               } | contact-ready leads: {
                 initialTopLeads.filter((lead) => String(lead.best_contact_method || "").trim().length > 0).length
               }
+            </p>
+            <p>
+              <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
+                <ExternalLink className="h-4 w-4" />
+                Work Existing Leads
+              </Link>
             </p>
           </div>
           <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
@@ -972,6 +1021,29 @@ export function ScoutConsole({
             {Number(scout.persistenceDebug?.intake?.leads_with_contact_page || 0)} | leads_with_facebook:{" "}
             {Number(scout.persistenceDebug?.intake?.leads_with_facebook || 0)} | leads_with_no_contact_path:{" "}
             {Number(scout.persistenceDebug?.intake?.leads_with_no_contact_path || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            total_records: {Number(scout.persistenceDebug?.intake?.total_records || scout.persistenceDebug?.intake?.scanned_count || 0)} | emails_found: {Number(scout.persistenceDebug?.intake?.emails_found || scout.persistenceDebug?.intake?.leads_with_email || 0)} | contact_pages_found:{" "}
+            {Number(scout.persistenceDebug?.intake?.contact_pages_found || scout.persistenceDebug?.intake?.leads_with_contact_page || 0)} | facebook_found:{" "}
+            {Number(scout.persistenceDebug?.intake?.facebook_found || scout.persistenceDebug?.intake?.facebook_links_found || scout.persistenceDebug?.intake?.leads_with_facebook || 0)} | phone_found:{" "}
+            {Number(scout.persistenceDebug?.intake?.phone_found || scout.persistenceDebug?.intake?.phones_found || scout.persistenceDebug?.intake?.leads_with_phone || 0)} | no_contact_path:{" "}
+            {Number(scout.persistenceDebug?.intake?.no_contact_path || scout.persistenceDebug?.intake?.records_with_no_contact || scout.persistenceDebug?.intake?.leads_with_no_contact_path || 0)}
+          </p>
+          {!isReducedRun ? (
+            <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+              businesses_found: {Number(scout.persistenceDebug?.intake?.businesses_found || scout.persistenceDebug?.intake?.opportunities_found || 0)} | websites_found:{" "}
+              {Number(scout.persistenceDebug?.intake?.websites_found || 0)} | no_website_found:{" "}
+              {Number(scout.persistenceDebug?.intake?.no_website_found || 0)} | facebook_links_found:{" "}
+              {Number(scout.persistenceDebug?.intake?.facebook_links_found || scout.persistenceDebug?.intake?.facebook_found || 0)}
+            </p>
+          ) : null}
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            leads_created_with_website: {Number(scout.persistenceDebug?.intake?.leads_created_with_website || 0)} | leads_created_without_website:{" "}
+            {Number(scout.persistenceDebug?.intake?.leads_created_without_website || 0)}
+          </p>
+          <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            facebook_only: {Number(scout.persistenceDebug?.intake?.facebook_only || 0)} | phone_only:{" "}
+            {Number(scout.persistenceDebug?.intake?.phone_only || 0)}
           </p>
           <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
             actionable_email_leads_created: {Number(scout.persistenceDebug?.intake?.actionable_email_leads_created || 0)} | leads_skipped_due_no_email:{" "}

@@ -18,6 +18,13 @@ type LeadRow = {
   industry?: string | null;
   notes?: string | null;
   address?: string | null;
+  city?: string | null;
+  category?: string | null;
+  contact_page?: string | null;
+  facebook_url?: string | null;
+  best_contact_method?: string | null;
+  email_source?: string | null;
+  opportunity_reason?: string | null;
 };
 
 function normalizeStatus(value: string | null | undefined): WorkflowLead["status"] {
@@ -49,6 +56,15 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
   const email = String(row.email || "").trim();
   const phone = String(row.phone || "").trim();
   const website = String(row.website || "").trim();
+  const contactPage = String(row.contact_page || "").trim();
+  const facebook = String(row.facebook_url || "").trim();
+  const bestContactMethod = String(row.best_contact_method || "").trim().toLowerCase();
+  const hasEmail = Boolean(email);
+  const hasContactAvailable = Boolean(contactPage || facebook || phone);
+  const resolvedBestContact = (
+    bestContactMethod ||
+    (hasEmail ? "email" : contactPage ? "contact_page" : facebook ? "facebook" : phone ? "phone" : "none")
+  ) as WorkflowLead["best_contact_method"];
   return {
     id: String(row.id || ""),
     workspace_id: String(row.workspace_id || "").trim() || null,
@@ -56,15 +72,15 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     lead_source: null,
     opportunity_id: null,
     business_name: businessName,
-    category: String(row.industry || "").trim() || null,
-    city: null,
+    category: String(row.category || row.industry || "").trim() || null,
+    city: String(row.city || "").trim() || null,
     address: String(row.address || "").trim() || null,
     website_status: null,
     opportunity_score: null,
-    lead_bucket: email ? "Good Prospect" : "Needs Review",
+    lead_bucket: hasEmail ? "Good Prospect" : hasContactAvailable ? "Needs Review" : "Low Priority",
     close_probability: null,
     lead_type: email ? "Easy Win" : "Needs Review",
-    best_contact_method: email ? "email" : phone ? "phone" : "none",
+    best_contact_method: resolvedBestContact,
     primary_problem: null,
     why_it_matters: null,
     why_this_lead_is_here: null,
@@ -75,21 +91,21 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     email_pitch: null,
     text_pitch: null,
     door_pitch: null,
-    recommended_next_action: email ? "Generate Email" : "Research Later",
-    outreach_channel: email ? "email" : phone ? "contact" : "skip",
+    recommended_next_action: hasEmail ? "Generate Email" : hasContactAvailable ? "Open Contact Path" : "Research Later",
+    outreach_channel: hasEmail ? "email" : hasContactAvailable ? "contact" : "skip",
     is_door_to_door_candidate: false,
     website: website || null,
     email: email || null,
-    email_source: email ? "manual" : "No Email Found",
+    email_source: String(row.email_source || "").trim() || (email ? "unknown" : "No Email Found"),
     phone_from_site: phone || null,
-    contact_page: null,
-    facebook_url: null,
+    contact_page: contactPage || null,
+    facebook_url: facebook || null,
     google_review_count: null,
     google_rating: null,
     door_score: null,
     distance_km: null,
-    contact_method: email ? "email" : phone ? "phone" : "No Contact Path",
-    detected_issue_summary: "No website audit data yet",
+    contact_method: hasEmail ? "email" : hasContactAvailable ? "contact_available" : "No Contact Path",
+    detected_issue_summary: String(row.opportunity_reason || "").trim() || "No website audit data yet",
     detected_issues: [],
     status: normalizeStatus(row.status),
     created_at: String(row.created_at || "").trim() || null,
@@ -104,7 +120,7 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     score_breakdown: null,
     from_latest_scan: false,
     is_archived: false,
-    is_manual: true,
+    is_manual: false,
     known_owner_name: null,
     known_context: null,
     door_status: "not_visited",
@@ -172,41 +188,23 @@ export default async function AdminLeadsPage({
 
   let rows: LeadRow[] = [];
   try {
-    const { data, error: leadsError } = await supabase
-      .from("leads")
-      .select(
-        `
-          id,
-          owner_id,
-          workspace_id,
-          created_at,
-          status,
-          business_name,
-          email,
-          phone,
-          website,
-          industry,
-          notes,
-          address
-        `
-      )
-      .eq("owner_id", ownerId)
-      .order("created_at", { ascending: false });
-
-    if (leadsError) {
-      console.error("Leads query error:", leadsError);
-      const { data: fallbackData, error: fallbackError } = await supabase
+    const selectVariants = [
+      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address",
+    ];
+    for (const selectClause of selectVariants) {
+      const { data, error: leadsError } = await supabase
         .from("leads")
-        .select("id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address")
+        .select(selectClause)
         .eq("owner_id", ownerId)
         .order("created_at", { ascending: false });
-      if (fallbackError) {
-        console.error("Leads fallback query error:", fallbackError);
-      } else {
-        rows = (fallbackData || []) as LeadRow[];
+      if (!leadsError) {
+        rows = (data || []) as unknown as LeadRow[];
+        break;
       }
-    } else {
-      rows = (data || []) as LeadRow[];
+      console.error("Leads query variant failed:", { selectClause, error: leadsError });
     }
   } catch (err) {
     console.error("Leads load failed:", err);
