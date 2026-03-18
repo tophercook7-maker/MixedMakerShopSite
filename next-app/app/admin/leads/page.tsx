@@ -27,6 +27,11 @@ type LeadRow = {
   opportunity_reason?: string | null;
 };
 
+function isMissingColumnError(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("column ") && text.includes(" does not exist");
+}
+
 function normalizeStatus(value: string | null | undefined): WorkflowLead["status"] {
   const normalized = String(value || "")
     .trim()
@@ -189,9 +194,10 @@ export default async function AdminLeadsPage({
   let rows: LeadRow[] = [];
   try {
     const selectVariants = [
-      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address",
     ];
     for (const selectClause of selectVariants) {
@@ -204,7 +210,10 @@ export default async function AdminLeadsPage({
         rows = (data || []) as unknown as LeadRow[];
         break;
       }
-      console.error("Leads query variant failed:", { selectClause, error: leadsError });
+      const errorMessage = String(leadsError.message || "unknown");
+      if (!isMissingColumnError(errorMessage)) {
+        console.error("Leads query variant failed:", { selectClause, error: leadsError });
+      }
     }
   } catch (err) {
     console.error("Leads load failed:", err);

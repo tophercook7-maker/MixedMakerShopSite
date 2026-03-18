@@ -37,20 +37,34 @@ function isRootHealthLikePayload(value: unknown): value is { ok?: boolean; servi
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
+  console.info("[Scout Proxy] request received", { request_id: requestId, method: "POST" });
   if (isManualOnlyMode() && !isManualTriggerRequest(request)) {
+    const responseBody = {
+      error: "Manual trigger required",
+      message: "Manual trigger only. Start Scout from the admin Run Scout button.",
+      manual_only_mode: true,
+    };
+    console.info("[Scout Proxy] response sent", {
+      request_id: requestId,
+      status: 403,
+      body: responseBody,
+    });
     return NextResponse.json(
-      {
-        error: "Manual trigger required",
-        message: "Manual trigger only. Start Scout from the admin Run Scout button.",
-        manual_only_mode: true,
-      },
+      responseBody,
       { status: 403 }
     );
   }
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
+    const responseBody = { error: "SCOUT_BRAIN_API_BASE_URL is not configured." };
+    console.info("[Scout Proxy] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "SCOUT_BRAIN_API_BASE_URL is not configured." },
+      responseBody,
       { status: 500 }
     );
   }
@@ -74,8 +88,14 @@ export async function POST(request: Request) {
   console.info("[Scout Proxy] token found for run:", hasAccessToken);
   console.info("[Scout Proxy] token source for run:", tokenSource);
   if (!accessToken) {
+    const responseBody = { error: "No authenticated session found in admin proxy" };
+    console.info("[Scout Proxy] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "No authenticated session found in admin proxy" },
+      responseBody,
       { status: 401 }
     );
   }
@@ -83,6 +103,7 @@ export async function POST(request: Request) {
   const payload = await request
     .json()
     .catch((): Record<string, unknown> => ({}));
+  console.info("[Scout Proxy] payload", { request_id: requestId, payload });
 
   const workspaceId =
     request.headers.get("x-workspace-id")?.trim() ||
@@ -126,8 +147,14 @@ export async function POST(request: Request) {
         lastStatus = response.status;
         lastBody = body;
         if (response.status === 401) {
+          const responseBody = { error: "Scout authentication failed", detail: body };
+          console.info("[Scout Proxy] response sent", {
+            request_id: requestId,
+            status: 401,
+            body: responseBody,
+          });
           return NextResponse.json(
-            { error: "Scout authentication failed", detail: body },
+            responseBody,
             { status: 401 }
           );
         }
@@ -136,6 +163,11 @@ export async function POST(request: Request) {
 
       if (body.job_id) {
         console.info("[Scout Proxy] job id received", body.job_id);
+        console.info("[Scout Proxy] response sent", {
+          request_id: requestId,
+          status: 200,
+          body: { job_id: body.job_id, status: body.status, message: body.message },
+        });
         return NextResponse.json(body, { status: 200 });
       }
 
@@ -159,16 +191,27 @@ export async function POST(request: Request) {
     }
 
     console.error("[Scout Proxy] run failed", lastStatus, lastBody);
+    console.info("[Scout Proxy] response sent", {
+      request_id: requestId,
+      status: lastStatus,
+      body: lastBody,
+    });
     return NextResponse.json(lastBody, { status: lastStatus });
   } catch (error) {
     console.error("[Scout Proxy] run request exception", error);
+    const responseBody = {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Scout backend request failed.",
+    };
+    console.info("[Scout Proxy] response sent", {
+      request_id: requestId,
+      status: 502,
+      body: responseBody,
+    });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Scout backend request failed.",
-      },
+      responseBody,
       { status: 502 }
     );
   }

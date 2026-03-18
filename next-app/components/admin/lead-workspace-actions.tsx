@@ -131,6 +131,7 @@ export function LeadWorkspaceActions({
         }),
       });
       const data = (await res.json().catch(() => ({}))) as TemplateResponse & { error?: string };
+      console.info("[Action Debug] Generate Email response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not generate outreach preview.");
 
       const fallback = fallbackDraft(initialBusinessName, initialIssue);
@@ -192,6 +193,7 @@ export function LeadWorkspaceActions({
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
+      console.info("[Action Debug] Send Email response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not send outreach email.");
       setMessage("Outreach email sent.");
       console.info("[Action Debug] Send Email request succeeded", { leadId });
@@ -229,6 +231,7 @@ export function LeadWorkspaceActions({
         preview_url?: string;
         message?: string;
       };
+      console.info("[Action Debug] Send Preview Email response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not send preview email.");
       if (data.preview_url) setPreviewUrl(data.preview_url);
       setMessage(data.message || "Preview sent and follow-ups scheduled");
@@ -257,6 +260,7 @@ export function LeadWorkspaceActions({
         body: JSON.stringify(payload),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
+      console.info("[Action Debug] Lead status response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not update lead.");
       setMessage(successMessage);
       console.info("[Action Debug] Lead status request succeeded", { leadId, payload });
@@ -294,6 +298,7 @@ export function LeadWorkspaceActions({
       }),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };
+    console.info("[Action Debug] Calendar event response", { leadId, status: res.status, body, eventType });
     if (!res.ok) throw new Error(body.error || "Could not create calendar event.");
   }
 
@@ -632,7 +637,7 @@ export function LeadWorkspaceActions({
       </div>
 
       <div className="admin-card space-y-2">
-        <h3 className="text-sm font-semibold">Redesign Concept</h3>
+        <h3 className="text-sm font-semibold">Client Site Draft</h3>
         <div className="flex flex-wrap gap-2">
           <button
             className="admin-btn-primary text-xs"
@@ -641,7 +646,7 @@ export function LeadWorkspaceActions({
               if (url) window.open(url, "_blank", "noopener,noreferrer");
             }}
           >
-            Generate Preview
+            Generate Client Site Draft
           </button>
           <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
             Copy Preview URL
@@ -653,7 +658,7 @@ export function LeadWorkspaceActions({
           </p>
         ) : (
           <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-            Generates a shareable redesign concept at <code>/preview/&lt;lead_id&gt;</code>.
+            Generates a shareable client site draft at <code>/preview/&lt;lead_id&gt;</code>.
           </p>
         )}
       </div>

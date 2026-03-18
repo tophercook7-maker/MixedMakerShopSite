@@ -369,10 +369,16 @@ export function ScoutConsole({
       setPageError("City is required.");
       return;
     }
-    const result = await scout.startScout(integrationReady, buildScanSettings());
+    const payload = buildScanSettings();
+    console.info("[Admin Click] Scout request", {
+      route: "/api/scout/run",
+      method: "POST",
+      payload,
+    });
+    const result = await scout.startScout(integrationReady, payload);
     if (!result.ok && result.error) {
       console.error("[Admin Click] Scout start failed", { error: result.error });
-      setPageError(result.error);
+      setPageError(result.error.includes("Unauthorized") ? "Permission denied" : result.error);
     } else {
       console.info("[Admin Click] Scout start succeeded");
     }
@@ -389,6 +395,11 @@ export function ScoutConsole({
     setPageError(null);
     setCreatingLeadForOppId(oppId);
     try {
+      console.info("[Admin Click] Create Lead request", {
+        route: `/api/scout/opportunities/${encodeURIComponent(oppId)}/create-lead`,
+        method: "POST",
+        payload: {},
+      });
       const res = await fetch(`/api/scout/opportunities/${encodeURIComponent(oppId)}/create-lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -400,8 +411,11 @@ export function ScoutConsole({
         business_name?: string;
         case_id?: string | null;
       };
+      console.info("[Admin Click] Create Lead response", { status: res.status, body });
       if (!res.ok || !body.lead_id) {
-        setPageError(body.error || body.reason || "Could not create lead from top opportunity.");
+        if (res.status === 403) setPageError("Permission denied");
+        else if (res.status >= 500) setPageError(body.error || "API error");
+        else setPageError(body.error || body.reason || "No data returned");
         return null;
       }
       return {
@@ -410,7 +424,7 @@ export function ScoutConsole({
         caseId: String(body.case_id || "").trim() || null,
       };
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Could not create lead from top opportunity.");
+      setPageError(error instanceof Error ? `API error: ${error.message}` : "API error");
       return null;
     } finally {
       setCreatingLeadForOppId(null);
@@ -466,6 +480,15 @@ export function ScoutConsole({
     if (scout.jobStatus === "idle") return "admin-badge admin-badge-pending";
     return "admin-badge admin-badge-progress";
   }, [scout.jobStatus]);
+
+  const visibleError = useMemo(() => {
+    const raw = String(pageError || scout.jobError || "").trim();
+    if (!raw) return null;
+    const isStaleAuthBanner =
+      raw.includes("No authenticated session found in admin proxy") &&
+      (Boolean(initialSummary) || initialTopLeads.length > 0);
+    return isStaleAuthBanner ? null : raw;
+  }, [initialSummary, initialTopLeads.length, pageError, scout.jobError]);
 
   const prioritizedTopLeads = useMemo(() => {
     return [...initialTopLeads].sort((a, b) => {
@@ -596,7 +619,7 @@ export function ScoutConsole({
         </p>
       </section>
 
-      {(pageError || scout.jobError) && (
+      {visibleError && (
         <section
           className="admin-card"
           style={{
@@ -608,7 +631,7 @@ export function ScoutConsole({
             Scout request failed
           </h2>
           <p className="text-sm" style={{ color: "#fecaca" }}>
-            {pageError || scout.jobError}
+            {visibleError}
           </p>
           <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
             The admin page is still active. Retry Scout actions or reset local Scout UI state.

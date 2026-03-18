@@ -217,6 +217,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
             error?: string;
             refreshTriggered?: boolean;
           };
+          console.info("[Admin Request] scout.jobs.[id] response", { jobId: id, status: res.status, body });
 
           if (!res.ok) {
             writeAndSetState({
@@ -470,6 +471,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         });
         clearTimeout(timeout);
         const body = (await res.json()) as RunScoutResponse;
+        console.info("[Admin Request] scout.run response", { status: res.status, body });
 
         if (!res.ok || !body.job_id) {
           const err = body.user_message || body.message || body.error || "Could not start Scout job.";

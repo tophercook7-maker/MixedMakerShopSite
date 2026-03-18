@@ -1,24 +1,10 @@
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Only protect /admin routes
-  if (pathname.startsWith("/admin")) {
-    const hasSbCookie =
-      request.cookies.has("sb-access-token") ||
-      request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-"));
-
-    if (!hasSbCookie) {
-      const loginUrl = new URL("/auth/login", request.url);
-      loginUrl.searchParams.set("redirectedFrom", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return updateSession(request);
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/auth/login"],
 };

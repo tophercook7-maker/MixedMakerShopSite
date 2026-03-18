@@ -19,6 +19,7 @@ export async function verifyLeadBeforeNavigation(leadId: string): Promise<LeadNa
     };
   }
   try {
+    console.info("[Lead Navigation] request started", { lead_id: id, route: `/api/leads/${encodeURIComponent(id)}` });
     const res = await fetch(`/api/leads/${encodeURIComponent(id)}`, {
       method: "GET",
       cache: "no-store",
@@ -30,17 +31,36 @@ export async function verifyLeadBeforeNavigation(leadId: string): Promise<LeadNa
       reason?: string;
       diagnostics?: Record<string, unknown>;
     };
+    const status = Number(res.status || 500);
+    const reason = String(body.reason || "").trim() || null;
+    const message =
+      status === 403
+        ? "Permission denied: lead exists but is outside your workspace."
+        : status === 404
+          ? "No data returned: lead does not exist."
+          : "API error: could not verify lead before navigation.";
+    console.error("[Lead Navigation] request failed", {
+      lead_id: id,
+      status,
+      reason,
+      body,
+    });
     return {
       ok: false,
-      message: "Lead not found — creation may have failed",
-      status: Number(res.status || 500),
-      reason: String(body.reason || "").trim() || null,
+      message,
+      status,
+      reason,
       diagnostics: body.diagnostics || null,
     };
   } catch {
+    console.error("[Lead Navigation] request failed", {
+      lead_id: id,
+      status: 500,
+      reason: "lookup_failed",
+    });
     return {
       ok: false,
-      message: "Lead not found — creation may have failed",
+      message: "API error: lead lookup failed before navigation.",
       status: 500,
       reason: "lookup_failed",
     };

@@ -40,11 +40,20 @@ function missingOpportunitySignalsColumn(message: string): boolean {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   const opportunityId = String(params.id || "").trim();
-  console.info("[Action Debug] create-lead API clicked", { opportunityId });
+  const requestId = crypto.randomUUID();
+  const requestPayload = await request
+    .json()
+    .catch((): Record<string, unknown> => ({}));
+  console.info("[Action Debug] create-lead API request received", {
+    request_id: requestId,
+    method: "POST",
+    opportunityId,
+    payload: requestPayload,
+  });
   if (!opportunityId) {
     return NextResponse.json({ error: "Opportunity id is required." }, { status: 400 });
   }
@@ -60,12 +69,18 @@ export async function POST(
 
   const fail = (status: number, reason: string, error: string, extra?: Record<string, unknown>) => {
     console.error("[Action Debug] create-lead failed", {
+      request_id: requestId,
       opportunityId,
       ownerId,
       status,
       reason,
       error,
       ...extra,
+    });
+    console.info("[Action Debug] create-lead response sent", {
+      request_id: requestId,
+      status,
+      body: { error, reason, ...extra },
     });
     return NextResponse.json({ error, reason, ...extra }, { status });
   };
@@ -88,6 +103,16 @@ export async function POST(
     console.info("[Action Debug] create-lead lookup result", {
       opportunityId,
       existingLeadId: String(existingLead.id || ""),
+    });
+    console.info("[Action Debug] create-lead response sent", {
+      request_id: requestId,
+      status: 200,
+      body: {
+        ok: true,
+        created: false,
+        reason: "duplicate_existing_lead",
+        lead_id: String(existingLead.id),
+      },
     });
     return NextResponse.json({
       ok: true,
@@ -120,6 +145,11 @@ export async function POST(
     });
   }
   const oppExistsRow = ((oppExistsRows || [])[0] as OpportunityRow | undefined) || null;
+  console.info("[Action Debug] create-lead DB query result", {
+    request_id: requestId,
+    query: "opportunities by id existence",
+    row_count: Number((oppExistsRows || []).length),
+  });
   opportunityExistsById = Boolean(oppExistsRow);
   opportunityOwnerOnRow =
     String(oppExistsRow?.owner_id || oppExistsRow?.user_id || "").trim() || null;
@@ -134,6 +164,11 @@ export async function POST(
     .or(`owner_id.eq.${ownerId},user_id.eq.${ownerId}`)
     .limit(1);
   oppRows = (withReason.data || []) as OpportunityRow[];
+  console.info("[Action Debug] create-lead DB query result", {
+    request_id: requestId,
+    query: "opportunities scoped select",
+    row_count: Number((withReason.data || []).length),
+  });
   oppError = withReason.error as { message?: string } | null;
   if (
     oppError?.message &&
@@ -200,6 +235,11 @@ export async function POST(
     .order("created_at", { ascending: false })
     .limit(1);
   const caseRow = ((caseRows || [])[0] as CaseRow | undefined) || null;
+  console.info("[Action Debug] create-lead DB query result", {
+    request_id: requestId,
+    query: "case_files latest by opportunity",
+    row_count: Number((caseRows || []).length),
+  });
 
   const issueList = [
     ...(Array.isArray(opp.opportunity_signals) ? opp.opportunity_signals : []),
@@ -264,6 +304,16 @@ export async function POST(
         .limit(1);
       const conflict = (conflictRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
       if (conflict?.id) {
+        console.info("[Action Debug] create-lead response sent", {
+          request_id: requestId,
+          status: 200,
+          body: {
+            ok: true,
+            created: false,
+            reason: "duplicate_conflict",
+            lead_id: String(conflict.id || ""),
+          },
+        });
         return NextResponse.json(
           {
             ok: true,
@@ -303,11 +353,12 @@ export async function POST(
     );
   }
   console.info("[Action Debug] lead insert succeeded", {
+    request_id: requestId,
     opportunityId,
     leadId: String(inserted.id || ""),
   });
 
-  return NextResponse.json({
+  const responseBody = {
     ok: true,
     created: true,
     reason: "created",
@@ -315,5 +366,13 @@ export async function POST(
     case_id: String(caseRow?.id || "").trim() || null,
     business_name: String(inserted.business_name || insertPayload.business_name || ""),
     message: "Lead created from top opportunity.",
+  };
+  console.info("[Action Debug] create-lead response sent", {
+    request_id: requestId,
+    status: 200,
+    body: responseBody,
+  });
+  return NextResponse.json({
+    ...responseBody,
   });
 }

@@ -36,11 +36,23 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const requestId = crypto.randomUUID();
   const { id } = params;
+  console.info("[Scout Poll API] request received", {
+    request_id: requestId,
+    method: "GET",
+    job_id: id,
+  });
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
+    const responseBody = { error: "SCOUT_BRAIN_API_BASE_URL is not configured." };
+    console.info("[Scout Poll API] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "SCOUT_BRAIN_API_BASE_URL is not configured." },
+      responseBody,
       { status: 500 }
     );
   }
@@ -64,8 +76,14 @@ export async function GET(
   console.info("[Scout Proxy] token found for polling:", hasAccessToken);
   console.info("[Scout Proxy] token source for polling:", tokenSource);
   if (!accessToken) {
+    const responseBody = { error: "No authenticated session found in admin proxy" };
+    console.info("[Scout Poll API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "No authenticated session found in admin proxy" },
+      responseBody,
       { status: 401 }
     );
   }
@@ -107,8 +125,14 @@ export async function GET(
 
       if (!response.ok) {
         if (response.status === 401) {
+          const responseBody = { error: "Scout authentication failed", detail: body };
+          console.info("[Scout Poll API] response sent", {
+            request_id: requestId,
+            status: 401,
+            body: responseBody,
+          });
           return NextResponse.json(
-            { error: "Scout authentication failed", detail: body },
+            responseBody,
             { status: 401 }
           );
         }
@@ -124,10 +148,21 @@ export async function GET(
     if (!success) {
       console.error("[Scout Proxy] poll failed", id, responseStatus, body);
       if (isScoutJobStatusResponse(body)) {
+        console.info("[Scout Poll API] response sent", {
+          request_id: requestId,
+          status: 200,
+          body: { status: body.status, progress: body.progress, stage: body.stage || null },
+        });
         return NextResponse.json(body, { status: 200 });
       }
+      const responseBody = { error: body.error || "Invalid polling response from Scout backend." };
+      console.info("[Scout Poll API] response sent", {
+        request_id: requestId,
+        status: responseStatus >= 400 ? responseStatus : 502,
+        body: responseBody,
+      });
       return NextResponse.json(
-        { error: body.error || "Invalid polling response from Scout backend." },
+        responseBody,
         { status: responseStatus >= 400 ? responseStatus : 502 }
       );
     }
@@ -175,16 +210,32 @@ export async function GET(
       console.info("[Scout Proxy] polling finished with failure", id);
     }
 
+    console.info("[Scout Poll API] response sent", {
+      request_id: requestId,
+      status: 200,
+      body: {
+        status: statusBody.status,
+        progress: statusBody.progress,
+        stage: statusBody.stage || null,
+        refreshTriggered,
+      },
+    });
     return NextResponse.json({ ...statusBody, refreshTriggered }, { status: 200 });
   } catch (error) {
     console.error("[Scout Proxy] poll request exception", id, error);
+    const responseBody = {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Scout polling request failed.",
+    };
+    console.info("[Scout Poll API] response sent", {
+      request_id: requestId,
+      status: 502,
+      body: responseBody,
+    });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Scout polling request failed.",
-      },
+      responseBody,
       { status: 502 }
     );
   }

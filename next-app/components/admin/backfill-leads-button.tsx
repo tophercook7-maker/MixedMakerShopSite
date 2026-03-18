@@ -47,19 +47,31 @@ export function BackfillLeadsButton() {
     setResult(null);
     setError(null);
     try {
+      console.info("[Admin Click] Backfill Leads clicked", {
+        route: "/api/leads/backfill-from-opportunities",
+        method: "POST",
+        payload: {},
+      });
       const res = await fetch("/api/leads/backfill-from-opportunities", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
       const body = (await res.json().catch(() => ({}))) as BackfillResponse;
+      console.info("[Admin Click] Backfill response", { status: res.status, body });
       if (!res.ok) {
-        setError(body.error || "Backfill failed.");
+        if (res.status === 403) setError(body.error || "Permission denied");
+        else if (res.status >= 500) setError(body.error || "API error");
+        else setError(body.error || "No data returned");
+        return;
+      }
+      if (!body || (!body.stats && !body.ok)) {
+        setError("No data returned");
         return;
       }
       setResult(body);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Backfill failed.");
+      setError(e instanceof Error ? `API error: ${e.message}` : "API error");
     } finally {
       setRunning(false);
     }

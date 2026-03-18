@@ -233,6 +233,21 @@ export function LeadsWorkflowView({
     if (typeof window !== "undefined") window.location.assign(destination);
   }
 
+  async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id">) {
+    const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
+    if (!check.ok) {
+      setError(check.message);
+      actionDebug("Preview blocked", {
+        leadId: lead.id,
+        status: check.status,
+        reason: check.reason,
+        diagnostics: check.diagnostics || null,
+      });
+      return;
+    }
+    if (typeof window !== "undefined") window.open(previewHref(lead), "_blank", "noopener,noreferrer");
+  }
+
   async function markTextSent(lead: WorkflowLead) {
     const ts = new Date().toISOString();
     const existingNotes = Array.isArray(lead.notes) ? lead.notes : [];
@@ -243,8 +258,9 @@ export function LeadsWorkflowView({
       body: JSON.stringify({ status: "contacted", notes: nextNotes }),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };
+    actionDebug("Mark Text Sent response", { leadId: lead.id, status: res.status, body });
     if (!res.ok) {
-      setError(body.error || "Could not mark text as sent.");
+      setError(res.status === 403 ? "Permission denied" : body.error || "API error");
       return;
     }
     setLeads((prev) =>
@@ -287,8 +303,9 @@ export function LeadsWorkflowView({
       body: JSON.stringify(payload),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };
+    actionDebug("Lead PATCH response", { leadId: lead.id, status: res.status, body });
     if (!res.ok) {
-      setError(body.error || "Could not update lead.");
+      setError(res.status === 403 ? "Permission denied" : body.error || "API error");
       return;
     }
     setLeads((prev) =>
@@ -807,12 +824,14 @@ export function LeadsWorkflowView({
                   </a>
                   <a
                     href={previewHref(lead)}
-                    target="_blank"
-                    rel="noreferrer"
                     className="admin-btn-ghost text-xs"
-                    onClick={() => actionDebug("Generate Preview clicked", { leadId: lead.id })}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      actionDebug("Generate Client Site Draft clicked", { leadId: lead.id });
+                      void openPreviewWithGuard(lead);
+                    }}
                   >
-                    Generate Preview
+                    Generate Client Site Draft
                   </a>
                   {lead.website ? (
                     <a
@@ -845,6 +864,7 @@ export function LeadsWorkflowView({
                     onClick={(event) => {
                       event.preventDefault();
                       if (!hasContactPath) {
+                        setError("No data returned: no contact path available.");
                         actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                         return;
                       }
@@ -861,6 +881,7 @@ export function LeadsWorkflowView({
                     onClick={(event) => {
                       event.preventDefault();
                       if (!hasContactPath) {
+                        setError("No data returned: no contact path available.");
                         actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                         return;
                       }
@@ -1106,12 +1127,14 @@ export function LeadsWorkflowView({
                         </a>
                         <a
                           href={previewHref(lead)}
-                          target="_blank"
-                          rel="noreferrer"
                           className="text-[var(--admin-gold)] hover:underline text-xs"
-                          onClick={() => actionDebug("Generate Preview clicked", { leadId: lead.id })}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            actionDebug("Generate Client Site Draft clicked", { leadId: lead.id });
+                            void openPreviewWithGuard(lead);
+                          }}
                         >
-                          Generate Preview
+                          Generate Client Site Draft
                         </a>
                         {lead.website ? (
                           <a
@@ -1143,6 +1166,7 @@ export function LeadsWorkflowView({
                           onClick={(event) => {
                             event.preventDefault();
                             if (!hasContactPath) {
+                              setError("No data returned: no contact path available.");
                               actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                               return;
                             }
@@ -1158,6 +1182,7 @@ export function LeadsWorkflowView({
                           onClick={(event) => {
                             event.preventDefault();
                             if (!hasContactPath) {
+                              setError("No data returned: no contact path available.");
                               actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
                               return;
                             }

@@ -7,13 +7,30 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = crypto.randomUUID();
+  console.info("[Lead API] request received", { request_id: requestId, method: "GET" });
   const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) {
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: { error: "Unauthorized" },
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const leadId = String(id || "").trim();
-  if (!leadId) return NextResponse.json({ error: "Lead id is required." }, { status: 400 });
+  if (!leadId) {
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 400,
+      body: { error: "Lead id is required." },
+    });
+    return NextResponse.json({ error: "Lead id is required." }, { status: 400 });
+  }
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
+  console.info("[Lead API] query inputs", { request_id: requestId, lead_id: leadId, owner_id: ownerId });
 
   const { data, error } = await supabase
     .from("leads")
@@ -21,13 +38,31 @@ export async function GET(
     .eq("owner_id", ownerId)
     .eq("id", leadId)
     .maybeSingle();
-  if (!error && data) return NextResponse.json(data);
+  console.info("[Lead API] query result", {
+    request_id: requestId,
+    query: "scoped lead by owner_id + id",
+    row_count: data ? 1 : 0,
+    error: error?.message || null,
+  });
+  if (!error && data) {
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 200,
+      body: { id: (data as { id?: string }).id || leadId, ok: true },
+    });
+    return NextResponse.json(data);
+  }
 
   const { data: unscopedRow } = await supabase
     .from("leads")
     .select("id,owner_id,workspace_id,linked_opportunity_id,business_name")
     .eq("id", leadId)
     .maybeSingle();
+  console.info("[Lead API] query result", {
+    request_id: requestId,
+    query: "unscoped lead by id",
+    row_count: unscopedRow ? 1 : 0,
+  });
   const leadExistsById = Boolean(unscopedRow);
   const diagnostics = {
     lead_exists_by_id: leadExistsById,
@@ -36,13 +71,33 @@ export async function GET(
     current_user_id: ownerId,
   };
   if (leadExistsById) {
+    const responseBody = {
+      error: "Lead exists but is not in your workspace.",
+      reason: "owner_workspace_mismatch",
+      diagnostics,
+    };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 403,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "Lead exists but is not in your workspace.", reason: "owner_workspace_mismatch", diagnostics },
+      responseBody,
       { status: 403 }
     );
   }
+  const responseBody = {
+    error: "Lead does not exist.",
+    reason: "not_found",
+    diagnostics,
+  };
+  console.info("[Lead API] response sent", {
+    request_id: requestId,
+    status: 404,
+    body: responseBody,
+  });
   return NextResponse.json(
-    { error: "Lead does not exist.", reason: "not_found", diagnostics },
+    responseBody,
     { status: 404 }
   );
 }
@@ -51,13 +106,29 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = crypto.randomUUID();
+  console.info("[Lead API] request received", { request_id: requestId, method: "PATCH" });
   const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) {
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: { error: "Unauthorized" },
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const body = await request.json();
+  console.info("[Lead API] payload", { request_id: requestId, lead_id: id, payload: body });
   const parsed = leadSchema.partial().safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    const responseBody = { error: parsed.error.flatten() };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 400,
+      body: responseBody,
+    });
+    return NextResponse.json(responseBody, { status: 400 });
   }
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
@@ -69,8 +140,35 @@ export async function PATCH(
     .eq("id", id)
     .select()
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  if (!data) return NextResponse.json({ error: "Lead not found in your workspace." }, { status: 404 });
+  console.info("[Lead API] query result", {
+    request_id: requestId,
+    query: "update lead by owner_id + id",
+    row_count: data ? 1 : 0,
+    error: error?.message || null,
+  });
+  if (error) {
+    const responseBody = { error: error.message };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: responseBody,
+    });
+    return NextResponse.json(responseBody, { status: 500 });
+  }
+  if (!data) {
+    const responseBody = { error: "Lead not found in your workspace." };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 404,
+      body: responseBody,
+    });
+    return NextResponse.json(responseBody, { status: 404 });
+  }
+  console.info("[Lead API] response sent", {
+    request_id: requestId,
+    status: 200,
+    body: { id: (data as { id?: string }).id || id, ok: true },
+  });
   return NextResponse.json(data);
 }
 
@@ -78,8 +176,17 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = crypto.randomUUID();
+  console.info("[Lead API] request received", { request_id: requestId, method: "DELETE" });
   const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) {
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: { error: "Unauthorized" },
+    });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { id } = await params;
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
@@ -90,9 +197,34 @@ export async function DELETE(
     .eq("id", id)
     .select("id")
     .limit(1);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  if (!data || data.length === 0) {
-    return NextResponse.json({ error: "Lead not found in your workspace." }, { status: 404 });
+  console.info("[Lead API] query result", {
+    request_id: requestId,
+    query: "delete lead by owner_id + id",
+    row_count: Array.isArray(data) ? data.length : 0,
+    error: error?.message || null,
+  });
+  if (error) {
+    const responseBody = { error: error.message };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: responseBody,
+    });
+    return NextResponse.json(responseBody, { status: 500 });
   }
+  if (!data || data.length === 0) {
+    const responseBody = { error: "Lead not found in your workspace." };
+    console.info("[Lead API] response sent", {
+      request_id: requestId,
+      status: 404,
+      body: responseBody,
+    });
+    return NextResponse.json(responseBody, { status: 404 });
+  }
+  console.info("[Lead API] response sent", {
+    request_id: requestId,
+    status: 200,
+    body: { ok: true, id: data[0]?.id || id },
+  });
   return NextResponse.json({ ok: true });
 }

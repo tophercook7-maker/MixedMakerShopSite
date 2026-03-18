@@ -28,10 +28,21 @@ function pickString(...values: unknown[]): string {
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
   const baseUrl = scoutBaseUrl();
+  console.info("[Preview Outreach API] request received", {
+    request_id: requestId,
+    method: "POST",
+  });
   if (!baseUrl) {
+    const responseBody = { error: "SCOUT_BRAIN_API_BASE_URL is not configured." };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "SCOUT_BRAIN_API_BASE_URL is not configured." },
+      responseBody,
       { status: 500 }
     );
   }
@@ -42,6 +53,12 @@ export async function POST(request: Request) {
   } = await supabase.auth.getSession();
 
   if (!session?.user?.id) {
+    const responseBody = { error: "Unauthorized" };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: responseBody,
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const ownerId = String(session.user.id || "").trim();
@@ -49,9 +66,16 @@ export async function POST(request: Request) {
   const payload = await request
     .json()
     .catch((): Record<string, unknown> => ({}));
+  console.info("[Preview Outreach API] payload", { request_id: requestId, payload });
 
   const leadId = String(payload.lead_id || "").trim();
   if (!leadId) {
+    const responseBody = { error: "lead_id is required" };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 400,
+      body: responseBody,
+    });
     return NextResponse.json({ error: "lead_id is required" }, { status: 400 });
   }
 
@@ -64,8 +88,25 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (leadError || !leadRow) {
+    console.info("[Preview Outreach API] DB query result", {
+      request_id: requestId,
+      query: "leads by id + owner",
+      row_count: leadRow ? 1 : 0,
+      error: leadError?.message || null,
+    });
+    const responseBody = { error: "Lead not found." };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 404,
+      body: responseBody,
+    });
     return NextResponse.json({ error: "Lead not found." }, { status: 404 });
   }
+  console.info("[Preview Outreach API] DB query result", {
+    request_id: requestId,
+    query: "leads by id + owner",
+    row_count: 1,
+  });
 
   const businessName = String(payload.business_name || leadRow.business_name || "").trim() || "Business";
   const category = String(payload.category || leadRow.industry || "").trim() || "service";
@@ -73,8 +114,14 @@ export async function POST(request: Request) {
   const linkedOpportunityId = String(payload.linked_opportunity_id || "").trim() || null;
 
   if (!recipientEmail) {
+    const responseBody = { error: "Lead has no email address for preview outreach." };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 400,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: "Lead has no email address for preview outreach." },
+      responseBody,
       { status: 400 }
     );
   }
@@ -103,6 +150,12 @@ export async function POST(request: Request) {
 
   const accessToken = String(session.access_token || "").trim();
   if (!accessToken) {
+    const responseBody = { error: "No authenticated session token found." };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: responseBody,
+    });
     return NextResponse.json({ error: "No authenticated session token found." }, { status: 401 });
   }
 
@@ -141,8 +194,14 @@ export async function POST(request: Request) {
       : { error: await sendRes.text() };
 
     if (!sendRes.ok) {
+      const responseBody = { error: "Could not send preview email.", detail: sendBody };
+      console.info("[Preview Outreach API] response sent", {
+        request_id: requestId,
+        status: sendRes.status,
+        body: responseBody,
+      });
       return NextResponse.json(
-        { error: "Could not send preview email.", detail: sendBody },
+        responseBody,
         { status: sendRes.status }
       );
     }
@@ -271,8 +330,14 @@ export async function POST(request: Request) {
       .eq("owner_id", ownerId);
 
     if (updateError) {
+      const responseBody = { error: `Preview email sent, but lead update failed: ${updateError.message}` };
+      console.info("[Preview Outreach API] response sent", {
+        request_id: requestId,
+        status: 500,
+        body: responseBody,
+      });
       return NextResponse.json(
-        { error: `Preview email sent, but lead update failed: ${updateError.message}` },
+        responseBody,
         { status: 500 }
       );
     }
@@ -304,7 +369,7 @@ export async function POST(request: Request) {
       })
     );
 
-    return NextResponse.json({
+    const responseBody = {
       ok: true,
       preview_url: previewUrl,
       outreach_sent: true,
@@ -322,24 +387,46 @@ export async function POST(request: Request) {
         sent_at: nowIso,
         preview_url: previewUrl,
       },
+    };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 200,
+      body: {
+        ok: true,
+        preview_url: previewUrl,
+        outreach_sent: true,
+      },
     });
+    return NextResponse.json(responseBody);
   } catch (error) {
     const aborted =
       (error instanceof Error && error.name === "AbortError") ||
       (error instanceof Error && /aborted/i.test(error.message));
     if (aborted) {
+      const responseBody = {
+        error: "Preview send request timed out before confirmation.",
+        layer: "next-proxy",
+        aborted: true,
+        timeout_ms: DEFAULT_TIMEOUT_MS,
+      };
+      console.info("[Preview Outreach API] response sent", {
+        request_id: requestId,
+        status: 504,
+        body: responseBody,
+      });
       return NextResponse.json(
-        {
-          error: "Preview send request timed out before confirmation.",
-          layer: "next-proxy",
-          aborted: true,
-          timeout_ms: DEFAULT_TIMEOUT_MS,
-        },
+        responseBody,
         { status: 504 }
       );
     }
+    const responseBody = { error: error instanceof Error ? error.message : "Preview outreach failed." };
+    console.info("[Preview Outreach API] response sent", {
+      request_id: requestId,
+      status: 502,
+      body: responseBody,
+    });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Preview outreach failed." },
+      responseBody,
       { status: 502 }
     );
   }

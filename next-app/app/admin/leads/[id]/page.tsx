@@ -41,35 +41,159 @@ type LeadRow = {
   best_time_to_visit?: string | null;
 };
 
-const LEAD_DETAIL_SELECT = [
-  "id",
-  "owner_id",
-  "workspace_id",
-  "business_name",
-  "email",
-  "phone",
-  "website",
-  "industry",
-  "linked_opportunity_id",
-  "opportunity_score",
-  "status",
-  "deal_status",
-  "deal_value",
-  "closed_at",
-  "is_recurring_client",
-  "monthly_value",
-  "subscription_started_at",
-  "referred_by",
-  "referral_source",
-  "is_referred_client",
-  "notes",
-  "created_at",
-  "door_status",
-  "known_context",
-  "real_world_why_target",
-  "real_world_walk_in_pitch",
-  "best_time_to_visit",
-].join(",");
+const LEAD_DETAIL_SELECT_VARIANTS = [
+  [
+    "id",
+    "owner_id",
+    "workspace_id",
+    "business_name",
+    "email",
+    "phone",
+    "website",
+    "industry",
+    "linked_opportunity_id",
+    "opportunity_score",
+    "status",
+    "deal_status",
+    "deal_value",
+    "closed_at",
+    "is_recurring_client",
+    "monthly_value",
+    "subscription_started_at",
+    "referred_by",
+    "referral_source",
+    "is_referred_client",
+    "notes",
+    "created_at",
+    "door_status",
+    "known_context",
+    "real_world_why_target",
+    "real_world_walk_in_pitch",
+    "best_time_to_visit",
+  ].join(","),
+  [
+    "id",
+    "owner_id",
+    "workspace_id",
+    "business_name",
+    "email",
+    "phone",
+    "website",
+    "industry",
+    "linked_opportunity_id",
+    "opportunity_score",
+    "status",
+    "deal_status",
+    "deal_value",
+    "closed_at",
+    "is_recurring_client",
+    "monthly_value",
+    "subscription_started_at",
+    "referred_by",
+    "referral_source",
+    "is_referred_client",
+    "notes",
+    "created_at",
+    "known_context",
+    "real_world_why_target",
+    "real_world_walk_in_pitch",
+    "best_time_to_visit",
+  ].join(","),
+  [
+    "id",
+    "owner_id",
+    "workspace_id",
+    "business_name",
+    "email",
+    "phone",
+    "website",
+    "industry",
+    "linked_opportunity_id",
+    "opportunity_score",
+    "status",
+    "deal_status",
+    "deal_value",
+    "closed_at",
+    "is_recurring_client",
+    "monthly_value",
+    "subscription_started_at",
+    "referred_by",
+    "referral_source",
+    "is_referred_client",
+    "notes",
+    "created_at",
+  ].join(","),
+  [
+    "id",
+    "owner_id",
+    "workspace_id",
+    "business_name",
+    "email",
+    "phone",
+    "website",
+    "industry",
+    "linked_opportunity_id",
+    "opportunity_score",
+    "status",
+    "deal_status",
+    "notes",
+    "created_at",
+  ].join(","),
+] as const;
+
+async function selectLeadsWithVariants(args: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  ownerId?: string | null;
+  id?: string;
+  businessNameToken?: string;
+  limit?: number;
+  orderByCreatedAt?: boolean;
+  context: string;
+  leadTokenForLog: string;
+}): Promise<{ rows: LeadRow[]; selectClause: string | null; errors: Array<{ selectClause: string; message: string }> }> {
+  const {
+    supabase,
+    ownerId,
+    id,
+    businessNameToken,
+    limit = 1,
+    orderByCreatedAt = true,
+    context,
+    leadTokenForLog,
+  } = args;
+  const errors: Array<{ selectClause: string; message: string }> = [];
+  const isMissingColumnError = (message: string): boolean => {
+    const text = String(message || "").toLowerCase();
+    return text.includes("column ") && text.includes(" does not exist");
+  };
+  for (const selectClause of LEAD_DETAIL_SELECT_VARIANTS) {
+    let query = supabase.from("leads").select(selectClause);
+    if (ownerId) query = query.eq("owner_id", ownerId);
+    if (id) query = query.eq("id", id);
+    if (businessNameToken) query = query.ilike("business_name", `%${businessNameToken}%`);
+    if (orderByCreatedAt) query = query.order("created_at", { ascending: false });
+    query = query.limit(limit);
+    const { data, error } = await query;
+    if (!error) {
+      return {
+        rows: (data || []) as unknown as LeadRow[],
+        selectClause,
+        errors,
+      };
+    }
+    const message = String(error.message || "unknown");
+    errors.push({ selectClause, message });
+    if (!isMissingColumnError(message)) {
+      console.warn("[Lead Detail] lead select variant failed", {
+        stage: context,
+        lead_token: leadTokenForLog,
+        select_clause: selectClause,
+        error: message,
+      });
+    }
+  }
+  return { rows: [], selectClause: null, errors };
+}
 
 type CaseRow = {
   id: string;
@@ -158,6 +282,11 @@ function missingOpportunityReasonColumn(message: string): boolean {
 function missingOpportunitySignalsColumn(message: string): boolean {
   const text = String(message || "").toLowerCase();
   return text.includes("opportunities.opportunity_signals") || text.includes("column opportunity_signals");
+}
+
+function missingOpportunityWebsiteStatusColumn(message: string): boolean {
+  const text = String(message || "").toLowerCase();
+  return text.includes("opportunities.website_status") || text.includes("column website_status");
 }
 
 function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
@@ -386,39 +515,37 @@ export default async function AdminLeadDetailPage({
   let insertErrorMessage: string | null = null;
   try {
     if (isUuidLike(targetId)) {
-      const { data: unscopedRows, error: unscopedError } = await supabase
+      const { data: unscopedExistRows, error: unscopedExistError } = await supabase
         .from("leads")
-        .select(LEAD_DETAIL_SELECT)
+        .select("id,owner_id,workspace_id")
         .eq("id", targetId)
         .limit(1);
-      if (unscopedError) {
+      if (unscopedExistError) {
         console.error("[Lead Detail] lead fetch failed", {
           stage: "lead_fetch_unscoped",
           lead_token: targetId,
-          error: unscopedError,
+          error: unscopedExistError,
         });
         loadWarnings.push("Lead base record could not be loaded.");
       }
-      const unscopedLeadRows = (unscopedRows || []) as unknown as LeadRow[];
-      const unscopedLead = (unscopedLeadRows[0] as LeadRow | undefined) || null;
+      const unscopedLead = ((unscopedExistRows || [])[0] as LeadRow | undefined) || null;
       leadExistsById = Boolean(unscopedLead);
       leadOwnerOnRow = String(unscopedLead?.owner_id || "").trim() || null;
       leadWorkspaceOnRow = String(unscopedLead?.workspace_id || "").trim() || null;
 
-      const { data: scopedRows, error: scopedError } = await supabase
-        .from("leads")
-        .select(LEAD_DETAIL_SELECT)
-        .eq("owner_id", ownerId)
-        .eq("id", targetId)
-        .limit(1);
-      if (scopedError) {
-        console.error("[Lead Detail] lead fetch failed", {
-          stage: "lead_fetch_scoped",
-          lead_token: targetId,
-          error: scopedError,
-        });
+      const scopedResult = await selectLeadsWithVariants({
+        supabase,
+        ownerId,
+        id: targetId,
+        limit: 1,
+        orderByCreatedAt: false,
+        context: "lead_fetch_scoped",
+        leadTokenForLog: targetId,
+      });
+      const scopedLeadRows = scopedResult.rows;
+      if (scopedResult.errors.length > 0 && scopedLeadRows.length === 0) {
+        loadWarnings.push("Lead detail query had schema mismatches; using compatible fallback.");
       }
-      const scopedLeadRows = (scopedRows || []) as unknown as LeadRow[];
       const scopedLead = (scopedLeadRows[0] as LeadRow | undefined) || null;
       ownerWorkspaceFilterBlockedRow = Boolean(unscopedLead && !scopedLead);
       lead = scopedLead || null;
@@ -442,64 +569,53 @@ export default async function AdminLeadDetailPage({
       const parsed = parseLeadRouteToken(targetId);
       const businessNameToken = slugTokenToBusinessNameQuery(parsed.slug || normalizedTargetToken);
       if (businessNameToken) {
-        const { data: byBusinessRows, error: byBusinessError } = await supabase
-          .from("leads")
-          .select(LEAD_DETAIL_SELECT)
-          .eq("owner_id", ownerId)
-          .ilike("business_name", `%${businessNameToken}%`)
-          .order("created_at", { ascending: false })
-          .limit(50);
-        if (byBusinessError) {
-          console.error("[Lead Detail] business-name fallback failed", {
-            stage: "lead_business_name_lookup",
-            lead_token: targetId,
-            business_name_token: businessNameToken,
-            error: byBusinessError,
-          });
-          loadWarnings.push("Lead route fallback by business name failed.");
-        } else {
-          const businessLeadRows = (byBusinessRows || []) as unknown as LeadRow[];
-          lead =
-            businessLeadRows.find((row) =>
-              leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
-            ) ||
-            (businessLeadRows[0] as LeadRow | undefined) ||
-            null;
-          console.info("[Lead Detail] business-name fallback result", {
-            lead_token: targetId,
-            business_name_token: businessNameToken,
-            candidates: Number((byBusinessRows || []).length),
-            matched_lead_id: lead?.id || null,
-          });
-        }
-      }
-    }
-    if (!lead) {
-      const { data: candidateRows, error: candidateError } = await supabase
-        .from("leads")
-        .select(LEAD_DETAIL_SELECT)
-        .eq("owner_id", ownerId)
-        .order("created_at", { ascending: false })
-        .limit(5000);
-      if (candidateError) {
-        console.error("[Lead Detail] lead slug lookup failed", {
-          stage: "lead_slug_lookup",
-          lead_token: targetId,
-          error: candidateError,
+        const byBusinessResult = await selectLeadsWithVariants({
+          supabase,
+          ownerId,
+          businessNameToken,
+          limit: 50,
+          context: "lead_business_name_lookup",
+          leadTokenForLog: targetId,
         });
-        loadWarnings.push("Lead route lookup failed.");
-      } else {
-        const candidateLeadRows = (candidateRows || []) as unknown as LeadRow[];
+        const businessLeadRows = byBusinessResult.rows;
+        if (byBusinessResult.errors.length > 0 && businessLeadRows.length === 0) {
+          loadWarnings.push("Lead route fallback by business name failed.");
+        }
         lead =
-          candidateLeadRows.find((row) =>
+          businessLeadRows.find((row) =>
             leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
-          ) || null;
-        console.info("[Lead Detail] full-scan token fallback result", {
+          ) ||
+          (businessLeadRows[0] as LeadRow | undefined) ||
+          null;
+        console.info("[Lead Detail] business-name fallback result", {
           lead_token: targetId,
-          candidates: Number((candidateRows || []).length),
+          business_name_token: businessNameToken,
+          candidates: Number(businessLeadRows.length),
           matched_lead_id: lead?.id || null,
         });
       }
+    }
+    if (!lead) {
+      const candidateResult = await selectLeadsWithVariants({
+        supabase,
+        ownerId,
+        limit: 5000,
+        context: "lead_slug_lookup",
+        leadTokenForLog: targetId,
+      });
+      const candidateLeadRows = candidateResult.rows;
+      if (candidateResult.errors.length > 0 && candidateLeadRows.length === 0) {
+        loadWarnings.push("Lead route lookup failed.");
+      }
+      lead =
+        candidateLeadRows.find((row) =>
+          leadRouteMatches(normalizedTargetToken, row.id, row.business_name || null)
+        ) || null;
+      console.info("[Lead Detail] full-scan token fallback result", {
+        lead_token: targetId,
+        candidates: Number(candidateLeadRows.length),
+        matched_lead_id: lead?.id || null,
+      });
     }
   } catch (error) {
     console.error("[Lead Detail] lead fetch threw", {
@@ -606,15 +722,17 @@ export default async function AdminLeadDetailPage({
       if (
         oppError?.message &&
         (missingOpportunityReasonColumn(oppError.message) ||
-          missingOpportunitySignalsColumn(oppError.message))
+          missingOpportunitySignalsColumn(oppError.message) ||
+          missingOpportunityWebsiteStatusColumn(oppError.message))
       ) {
         const fallback = await supabase
           .from("opportunities")
-          .select("id,business_name,category,city,address,website,website_status,opportunity_score,close_probability")
+          .select("id,business_name,category,city,address,website,opportunity_score,close_probability")
           .eq("id", oppId)
           .limit(1);
         oppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
           ...row,
+          website_status: null,
           opportunity_reason: null,
           opportunity_signals: null,
         }));
@@ -657,16 +775,18 @@ export default async function AdminLeadDetailPage({
         if (
           fallbackOppError?.message &&
           (missingOpportunityReasonColumn(fallbackOppError.message) ||
-            missingOpportunitySignalsColumn(fallbackOppError.message))
+            missingOpportunitySignalsColumn(fallbackOppError.message) ||
+            missingOpportunityWebsiteStatusColumn(fallbackOppError.message))
         ) {
           const fallback = await supabase
             .from("opportunities")
-            .select("id,business_name,category,city,address,website,website_status,opportunity_score,close_probability")
+            .select("id,business_name,category,city,address,website,opportunity_score,close_probability")
             .eq("website", leadWebsite)
             .order("opportunity_score", { ascending: false, nullsFirst: false })
             .limit(1);
           fallbackOppRows = ((fallback.data || []) as OpportunityRow[]).map((row) => ({
             ...row,
+            website_status: null,
             opportunity_reason: null,
             opportunity_signals: null,
           }));
@@ -1521,7 +1641,7 @@ export default async function AdminLeadDetailPage({
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {resolvedLeadId ? (
                 <Link href={`/preview/${encodeURIComponent(resolvedLeadId)}`} target="_blank" className="admin-btn-primary">
-                  Generate Preview
+                  Generate Client Site Draft
                 </Link>
               ) : null}
               {displayEmail ? (

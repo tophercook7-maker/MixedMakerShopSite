@@ -3,12 +3,22 @@ import { createClient } from "@/lib/supabase/server";
 import { syncLeadsFromOpportunities } from "@/lib/opportunity-lead-sync";
 
 export async function POST() {
+  const requestId = crypto.randomUUID();
+  console.info("[Backfill API] request received", {
+    request_id: requestId,
+    method: "POST",
+  });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const ownerId = String(user?.id || "").trim();
   if (!ownerId) {
+    console.info("[Backfill API] response sent", {
+      request_id: requestId,
+      status: 401,
+      body: { error: "Unauthorized" },
+    });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -29,6 +39,11 @@ export async function POST() {
           .eq("owner_id", ownerId);
         db_opportunities_count = Number(oppByOwner.count || 0);
       }
+      console.info("[Backfill API] DB query result", {
+        request_id: requestId,
+        query: "opportunities count by owner scope",
+        row_count: db_opportunities_count,
+      });
     } catch {
       db_opportunities_count = 0;
     }
@@ -38,6 +53,11 @@ export async function POST() {
         .select("id", { count: "exact", head: true })
         .eq("owner_id", ownerId);
       db_leads_count = Number(leadsCount.count || 0);
+      console.info("[Backfill API] DB query result", {
+        request_id: requestId,
+        query: "leads count by owner scope",
+        row_count: db_leads_count,
+      });
     } catch {
       db_leads_count = 0;
     }
@@ -65,7 +85,7 @@ export async function POST() {
       summary_reason = "No leads were created. Inspect failing records and exact_insert_errors.";
     }
 
-    return NextResponse.json({
+    const responseBody = {
       ok: true,
       summary_reason,
       db_opportunities_count,
@@ -87,12 +107,35 @@ export async function POST() {
         failing_records: stats.failing_records,
         failed: stats.failed,
       },
-    });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Backfill from opportunities failed.",
+    };
+    console.info("[Backfill API] response sent", {
+      request_id: requestId,
+      status: 200,
+      body: {
+        ok: true,
+        summary_reason,
+        db_opportunities_count,
+        db_leads_count,
+        leads_created: Number(stats.leads_created || 0),
+        insert_failed: Number(stats.insert_failed || 0),
       },
+    });
+    return NextResponse.json(responseBody);
+  } catch (error) {
+    console.error("[Backfill API] request failed", {
+      request_id: requestId,
+      error: error instanceof Error ? error.message : "Backfill from opportunities failed.",
+    });
+    const errorBody = {
+      error: error instanceof Error ? error.message : "Backfill from opportunities failed.",
+    };
+    console.info("[Backfill API] response sent", {
+      request_id: requestId,
+      status: 500,
+      body: errorBody,
+    });
+    return NextResponse.json(
+      errorBody,
       { status: 500 }
     );
   }
