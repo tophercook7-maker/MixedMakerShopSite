@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
@@ -199,6 +199,12 @@ export function LeadsWorkflowView({
   const [error, setError] = useState<string | null>(null);
   const [selectedDoorLeadIds, setSelectedDoorLeadIds] = useState<string[]>([]);
   const [routePlan, setRoutePlan] = useState<WorkflowLead[]>([]);
+
+  useEffect(() => {
+    setLeads(initialLeads);
+    setSelectedDoorLeadIds([]);
+    setRoutePlan([]);
+  }, [initialLeads]);
 
   async function copyText(value: string, errorMessage: string) {
     try {
