@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 type PreviewParams = {
   business?: string;
@@ -67,12 +67,12 @@ function isInCategory(category: string, keywords: string[]): boolean {
 
 function safeBusinessName(name: string): string {
   const cleaned = String(name || "").trim();
-  return cleaned || "Main Street Service Co.";
+  return cleaned || "Business Name";
 }
 
 function safeCity(city: string): string {
   const cleaned = String(city || "").trim();
-  return cleaned || "your local community";
+  return cleaned || "the local community";
 }
 
 function parseNumber(value: string | undefined): number | null {
@@ -362,103 +362,6 @@ function parseServicesFromQuery(qs: PreviewParams, fallback: string[]): string[]
   return merged.slice(0, 6);
 }
 
-function renderHeroVisual(layout: PreviewCopy["hero_layout"], heroVisualLabel: string, points: string[], city: string): ReactNode {
-  if (layout === "church") {
-    return (
-      <div className="preview-soft" style={{ padding: 18 }}>
-        <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-        <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Sunday at a Glance</h3>
-        <div className="trust-chip" style={{ padding: 10, marginBottom: 10 }}>
-          <strong>Service Times</strong>
-          <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Sunday mornings and midweek community gatherings.</p>
-        </div>
-        <div className="trust-chip" style={{ padding: 10, marginBottom: 10 }}>
-          <strong>What to Expect</strong>
-          <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Welcoming environment for singles, couples, and families.</p>
-        </div>
-        <p style={{ margin: 0, color: "var(--muted)" }}>Serving the {city} community with care and consistency.</p>
-      </div>
-    );
-  }
-  if (layout === "restaurant") {
-    return (
-      <div className="preview-soft" style={{ padding: 18 }}>
-        <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-        <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Designed for Hungry Mobile Visitors</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
-          <div className="trust-chip" style={{ padding: 10 }}>
-            <strong>Menu</strong>
-            <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Clear and quick to browse</p>
-          </div>
-          <div className="trust-chip" style={{ padding: 10 }}>
-            <strong>Ordering</strong>
-            <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Pickup and delivery ready</p>
-          </div>
-        </div>
-        <p style={{ margin: 0, color: "var(--muted)" }}>Built to turn browsing into reservations and orders.</p>
-      </div>
-    );
-  }
-  if (layout === "clinic") {
-    return (
-      <div className="preview-soft" style={{ padding: 18 }}>
-        <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-        <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Professional, Reassuring, Easy to Book</h3>
-        <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8, color: "var(--muted)" }}>
-          <li>Clear provider and service information</li>
-          <li>Direct appointment pathways</li>
-          <li>Patient-first contact flow</li>
-        </ul>
-      </div>
-    );
-  }
-  if (layout === "auto") {
-    return (
-      <div className="preview-soft" style={{ padding: 18 }}>
-        <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-        <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Fast Service Booking Experience</h3>
-        <div className="trust-chip" style={{ padding: 10, marginBottom: 10 }}>
-          <strong>Request Service</strong>
-          <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Simple form + direct phone connection.</p>
-        </div>
-        <div className="trust-chip" style={{ padding: 10 }}>
-          <strong>Status Updates</strong>
-          <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Communicate clearly from drop-off to pickup.</p>
-        </div>
-      </div>
-    );
-  }
-  if (layout === "outdoor") {
-    return (
-      <div className="preview-soft" style={{ padding: 18 }}>
-        <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-        <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Before & After Focused Layout</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <div className="trust-chip" style={{ padding: 10 }}>
-            <strong>Before</strong>
-            <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Needs cleanup</p>
-          </div>
-          <div className="trust-chip" style={{ padding: 10 }}>
-            <strong>After</strong>
-            <p style={{ margin: "4px 0 0", color: "var(--muted)" }}>Clean, curb-appeal ready</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="preview-soft" style={{ padding: 18 }}>
-      <p style={{ margin: 0, fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--muted)" }}>{heroVisualLabel}</p>
-      <h3 style={{ margin: "8px 0 10px", fontSize: 24 }}>Designed to Win Trust Quickly</h3>
-      <ul style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 8, color: "var(--muted)" }}>
-        {points.map((point) => (
-          <li key={point}>{point}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default async function PreviewPage({
   params,
   searchParams,
@@ -482,14 +385,13 @@ export default async function PreviewPage({
     lead = null;
   }
 
-  const businessName = String(lead?.business_name || qs.business || "Main Street Service Co.").trim() || "Main Street Service Co.";
+  const businessName = String(lead?.business_name || qs.business || "Business Name").trim() || "Business Name";
   const category = String(lead?.category || qs.category || "professional service").trim() || "professional service";
   const city = safeCity(String(lead?.city || qs.city || ""));
   const phone = String(lead?.phone || qs.phone || "(555) 555-5555").trim() || "(555) 555-5555";
   const address = String(lead?.address || qs.address || "").trim();
   const copy = categoryPreviewCopy(category, city, businessName);
   const rating = parseNumber(qs.rating);
-  const reviews = parseNumber(qs.reviews);
   const headline = String(qs.headline || copy.headline).trim() || copy.headline;
   const subheadline = String(qs.subheadline || copy.subheadline).trim() || copy.subheadline;
   const ctaLabel = String(qs.cta || copy.primary_cta).trim() || copy.primary_cta;
@@ -498,23 +400,7 @@ export default async function PreviewPage({
   const hasRealPhone = Boolean(String(lead?.phone || qs.phone || "").trim());
   const ctaHref = hasRealPhone ? `tel:${normalizePhone(phone)}` : "#contact";
   const presentationMode = String(qs.presentation || "").trim() === "1";
-  const showBanner = !presentationMode && String(qs.hide_banner || "").trim() !== "1";
   const showEditBar = !presentationMode;
-  const trustRight = rating
-    ? `${rating.toFixed(1)} stars${reviews ? ` from ${Math.floor(reviews)} local reviews` : ""}`
-    : "Trusted by local customers for dependable response";
-  const heroVisualLabel =
-    copy.hero_layout === "church"
-      ? "Sunday Welcome"
-      : copy.hero_layout === "restaurant"
-      ? "Dining Experience"
-      : copy.hero_layout === "clinic"
-      ? "Patient Experience"
-      : copy.hero_layout === "auto"
-      ? "Shop Performance"
-      : copy.hero_layout === "outdoor"
-      ? "Project Results"
-      : "Service Excellence";
   const servicesInputValue = services.join("\n");
 
   const contactPhone = hasRealPhone ? phone : "Phone available on request";
@@ -542,9 +428,9 @@ export default async function PreviewPage({
           font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
         }
         .preview-wrap {
-          max-width: 1120px;
+          max-width: 1180px;
           margin: 0 auto;
-          padding: ${presentationMode ? "14px 14px 54px" : "20px 16px 56px"};
+          padding: ${presentationMode ? "24px 20px 64px" : "26px 20px 68px"};
         }
         .preview-card {
           background: var(--surface);
@@ -578,21 +464,46 @@ export default async function PreviewPage({
           border: 1px solid var(--border);
         }
         .preview-btn-primary:hover, .preview-btn-secondary:hover { transform: translateY(-1px); }
-        .hero-grid {
+        .hero-grid { display: grid; gap: 18px; align-items: start; }
+        .hero-copy h1 {
+          letter-spacing: -0.03em;
+        }
+        .hero-copy h2 {
+          letter-spacing: -0.02em;
+        }
+        .section-title {
+          font-size: clamp(28px, 4vw, 36px);
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          margin: 0 0 14px;
+        }
+        .section-block {
+          margin-bottom: 22px;
+        }
+        .hero-visual {
+          min-height: 236px;
+          border-radius: 24px;
+          border: 1px solid var(--border);
+          background:
+            linear-gradient(130deg, color-mix(in srgb, var(--primary) 16%, transparent), transparent 52%),
+            linear-gradient(25deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%),
+            var(--surface-soft);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
           display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 24px;
-          align-items: stretch;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+          padding: 16px;
         }
         .service-grid, .value-grid, .testimonial-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 14px;
+          gap: 16px;
         }
         .service-item, .value-item, .testimonial-item, .trust-chip {
           background: var(--surface);
-          border: 1px solid var(--border);
+          border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
           border-radius: 16px;
+          box-shadow: 0 10px 26px color-mix(in srgb, var(--primary) 8%, transparent);
         }
         .footer-grid {
           display: grid;
@@ -600,10 +511,14 @@ export default async function PreviewPage({
           gap: 20px;
           align-items: center;
         }
+        @media (max-width: 1180px) {
+          .preview-wrap { max-width: 100%; padding: ${presentationMode ? "20px 16px 60px" : "22px 16px 62px"}; }
+          .hero-visual { min-height: 220px; }
+        }
         @media (max-width: 980px) {
-          .hero-grid { grid-template-columns: 1fr; }
           .service-grid, .value-grid, .testimonial-grid { grid-template-columns: 1fr 1fr; }
           .footer-grid { grid-template-columns: 1fr; }
+          .hero-visual { grid-template-columns: 1fr; min-height: auto; }
         }
         @media (max-width: 640px) {
           .service-grid, .value-grid, .testimonial-grid { grid-template-columns: 1fr; }
@@ -628,49 +543,23 @@ export default async function PreviewPage({
                 className="admin-input min-h-[120px]"
               />
               <input type="hidden" name="presentation" value="0" />
-              <input type="hidden" name="hide_banner" value={showBanner ? "0" : "1"} />
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button type="submit" className="admin-btn-primary text-xs">Update Preview Copy</button>
                 <a href="?presentation=1" className="admin-btn-ghost text-xs">Presentation Mode</a>
               </div>
             </form>
           </section>
-        ) : (
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
-            <a href="?" style={{ color: "#334155", fontSize: 13 }}>
-              Exit Presentation Mode
-            </a>
-          </div>
-        )}
-
-        {showBanner ? (
-          <div className="preview-soft" style={{ marginBottom: 14, padding: "10px 14px", background: "color-mix(in srgb, var(--accent) 14%, var(--surface))" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <strong style={{ fontSize: 14 }}>Premium redesign concept ready for owner presentation</strong>
-              <a href="?hide_banner=1" style={{ color: "var(--text)", fontSize: 13 }}>
-                Hide banner for presentation
-              </a>
-            </div>
-          </div>
-        ) : !presentationMode ? (
-          <div style={{ textAlign: "right", marginBottom: 10 }}>
-            <a href="?" style={{ color: "#334155", fontSize: 13 }}>
-              Show preview banner
-            </a>
-          </div>
         ) : null}
 
-        <section className="preview-card" style={{ marginBottom: 14, padding: 24 }}>
-          {!presentationMode ? (
-            <p style={{ margin: 0, color: "var(--muted)", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 }}>
-              Website Preview - {city}
-            </p>
-          ) : null}
-          <div className="hero-grid" style={{ marginTop: 8 }}>
-            <div>
+        <section className="preview-card section-block" style={{ padding: 28 }}>
+          <div className="hero-grid">
+            <div className="hero-copy">
               <h1 style={{ margin: "8px 0 10px", fontSize: "clamp(34px, 8vw, 60px)", lineHeight: 1.02 }}>{safeBusinessName(businessName)}</h1>
               <h2 style={{ margin: "0 0 10px", color: "var(--text)", fontSize: "clamp(24px, 4vw, 40px)", lineHeight: 1.12 }}>{headline}</h2>
               <p style={{ margin: 0, color: "var(--muted)", fontSize: "clamp(16px, 2.3vw, 20px)", maxWidth: 780, lineHeight: 1.52 }}>{subheadline}</p>
+              <p style={{ margin: "12px 0 0", color: "var(--text)", fontWeight: 600 }}>
+                Trusted in {city} for responsive service and clear communication.
+              </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
                 <a href={ctaHref} className="preview-btn-primary">
                   {ctaLabel}
@@ -680,35 +569,47 @@ export default async function PreviewPage({
                 </a>
               </div>
             </div>
-            {renderHeroVisual(copy.hero_layout, heroVisualLabel, copy.hero_points, city)}
+            <div className="hero-visual">
+              {copy.hero_points.slice(0, 3).map((point) => (
+                <div key={point} className="trust-chip" style={{ padding: 12, background: "color-mix(in srgb, var(--surface) 90%, white)" }}>
+                  <strong style={{ display: "block", marginBottom: 4 }}>{point}</strong>
+                  <span style={{ color: "var(--muted)", fontSize: 13 }}>
+                    {safeBusinessName(businessName)} serves {city}.
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="preview-soft" style={{ marginBottom: 14, padding: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 12, alignItems: "center" }}>
-            <p style={{ margin: 0, color: "var(--text)", fontWeight: 600 }}>{copy.trust_statement}</p>
-            <p style={{ margin: 0, color: "var(--muted)", textAlign: "right" }}>{trustRight}</p>
+        <section className="preview-soft section-block" style={{ padding: "18px 20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, alignItems: "center" }}>
+            <p style={{ margin: 0, color: "var(--text)", fontWeight: 600 }}>Serving {city}</p>
+            <p style={{ margin: 0, color: "var(--muted)", textAlign: "center" }}>Call today: {contactPhone}</p>
+            <p style={{ margin: 0, color: "var(--muted)", textAlign: "right" }}>
+              Fast response{rating ? ` • ${rating.toFixed(1)} stars` : ""}
+            </p>
           </div>
         </section>
 
-        <section style={{ marginBottom: 14 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 10px" }}>Services</h2>
+        <section className="section-block">
+          <h2 className="section-title">Services</h2>
           <div className="service-grid">
             {services.map((service) => (
-              <article key={service} className="service-item" style={{ padding: 16 }}>
+              <article key={service} className="service-item" style={{ padding: 18 }}>
                 <h3 style={{ margin: "0 0 6px", fontSize: 18 }}>{service}</h3>
                 <p style={{ margin: 0, color: "var(--muted)" }}>
-                  A polished service highlight designed for quick clarity and stronger conversion intent.
+                  Professional {service.toLowerCase()} from {safeBusinessName(businessName)} in {city}.
                 </p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="preview-card" style={{ marginBottom: 14, padding: 20 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 10px" }}>Why Customers Choose {safeBusinessName(businessName)}</h2>
+        <section className="preview-card section-block" style={{ padding: 24 }}>
+          <h2 className="section-title">About {safeBusinessName(businessName)}</h2>
           <p style={{ margin: "0 0 12px", color: "var(--muted)" }}>
-            Built around the standards local customers in {city} expect from a reputable business.
+            {copy.trust_statement}
           </p>
           <div className="value-grid">
             {copy.value_props.map((prop) => (
@@ -720,11 +621,11 @@ export default async function PreviewPage({
           </div>
         </section>
 
-        <section style={{ marginBottom: 14 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 10px" }}>{copy.testimonial_title}</h2>
+        <section className="section-block">
+          <h2 className="section-title">{copy.testimonial_title}</h2>
           <div className="testimonial-grid">
             {copy.testimonials.map((item) => (
-              <article key={item.quote} className="testimonial-item" style={{ padding: 16 }}>
+              <article key={item.quote} className="testimonial-item" style={{ padding: 18 }}>
                 <p style={{ margin: 0, color: "var(--text)", lineHeight: 1.6 }}>&quot;{item.quote}&quot;</p>
                 <p style={{ margin: "10px 0 0", color: "var(--muted)", fontWeight: 600 }}>{item.name}</p>
               </article>
@@ -732,8 +633,8 @@ export default async function PreviewPage({
           </div>
         </section>
 
-        <section id="contact" className="preview-card" style={{ padding: 20, marginBottom: 14 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 10px" }}>Contact</h2>
+        <section id="contact" className="preview-card section-block" style={{ padding: 24 }}>
+          <h2 className="section-title">Contact</h2>
           <p style={{ margin: "0 0 6px", color: "var(--text)" }}><strong>Phone:</strong> {contactPhone}</p>
           <p style={{ margin: "0 0 6px", color: "var(--text)" }}><strong>Address:</strong> {contactAddress}</p>
           <p style={{ margin: "0 0 14px", color: "var(--text)" }}><strong>City:</strong> {city}</p>
@@ -742,7 +643,7 @@ export default async function PreviewPage({
           </a>
         </section>
 
-        <footer className="preview-soft" style={{ padding: 16 }}>
+        <footer className="preview-soft" style={{ padding: 18 }}>
           <div className="footer-grid">
             <div>
               <strong>{safeBusinessName(businessName)}</strong>
@@ -750,7 +651,7 @@ export default async function PreviewPage({
             </div>
             <div style={{ textAlign: "right" }}>
               <a href={ctaHref} className="preview-btn-primary">
-                {secondaryCta}
+                {ctaLabel}
               </a>
             </div>
           </div>
