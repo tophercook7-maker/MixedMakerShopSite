@@ -4,6 +4,7 @@ import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { EmailTestPanel } from "@/components/admin/email-test-panel";
 import { getCurrentUser, getProfile } from "@/lib/auth";
 import { buildLeadPath } from "@/lib/lead-route";
+import { isManualOnlyMode } from "@/lib/manual-mode";
 
 type EmailEvent = {
   lead_id: string | null;
@@ -18,7 +19,9 @@ export default async function AdminOutreachPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status } = await searchParams;
-  await refreshDueFollowUps();
+  if (!isManualOnlyMode()) {
+    await refreshDueFollowUps();
+  }
   const supabase = await createClient();
   const user = await getCurrentUser();
   const profile = user ? await getProfile(user.id) : null;

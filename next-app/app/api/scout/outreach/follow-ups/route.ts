@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { isManualOnlyMode, isManualTriggerRequest } from "@/lib/manual-mode";
 
 type LeadRow = {
   id: string;
@@ -266,6 +267,16 @@ async function runFollowUps() {
 }
 
 export async function GET(request: Request) {
+  if (isManualOnlyMode() && !isManualTriggerRequest(request)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        manual_only_mode: true,
+        message: "Manual trigger only. Automatic follow-up runs are disabled.",
+      },
+      { status: 403 }
+    );
+  }
   if (!authorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -273,6 +284,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (isManualOnlyMode() && !isManualTriggerRequest(request)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        manual_only_mode: true,
+        message: "Manual trigger only. Automatic follow-up runs are disabled.",
+      },
+      { status: 403 }
+    );
+  }
   if (!authorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

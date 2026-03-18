@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { RunScoutResponse } from "@/lib/scout/types";
+import { isManualOnlyMode, isManualTriggerRequest } from "@/lib/manual-mode";
 
 const DEFAULT_TIMEOUT_MS = 15000;
 
@@ -36,6 +37,16 @@ function isRootHealthLikePayload(value: unknown): value is { ok?: boolean; servi
 }
 
 export async function POST(request: Request) {
+  if (isManualOnlyMode() && !isManualTriggerRequest(request)) {
+    return NextResponse.json(
+      {
+        error: "Manual trigger required",
+        message: "Manual trigger only. Start Scout from the admin Run Scout button.",
+        manual_only_mode: true,
+      },
+      { status: 403 }
+    );
+  }
   const baseUrl = scoutBaseUrl();
   if (!baseUrl) {
     return NextResponse.json(
@@ -81,6 +92,7 @@ export async function POST(request: Request) {
   const headers: HeadersInit = {
     Authorization: `Bearer ${accessToken}`,
     "Content-Type": "application/json",
+    "X-Manual-Trigger": "true",
   };
   console.info("[Scout Proxy] forwarding Authorization header for run");
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;

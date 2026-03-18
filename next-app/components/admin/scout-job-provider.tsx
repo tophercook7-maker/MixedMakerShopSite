@@ -13,6 +13,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import type { RunScoutResponse, ScoutJobStatusResponse, ScoutScanSettings } from "@/lib/scout/types";
+import { isManualOnlyModeClient } from "@/lib/manual-mode";
 
 type JobUiStatus =
   | "idle"
@@ -122,6 +123,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   const [persistenceDebug, setPersistenceDebug] = useState<ScoutJobStatusResponse["persistence_debug"] | null>(null);
   const [scanSettings, setScanSettings] = useState<ScoutScanSettings | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  const manualOnlyMode = isManualOnlyModeClient();
 
   const isBusy = isStarting || jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing";
 
@@ -414,6 +416,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
   }, [pollJob, writeAndSetState]);
 
   useEffect(() => {
+    if (manualOnlyMode) return;
     let cancelled = false;
     async function runRestore() {
       if (cancelled) return;
@@ -423,15 +426,16 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [restoreActiveJobFromWorkspace]);
+  }, [manualOnlyMode, restoreActiveJobFromWorkspace]);
 
   useEffect(() => {
+    if (manualOnlyMode) return;
     if (isBusy || jobId) return;
     const timer = setInterval(() => {
       void restoreActiveJobFromWorkspace();
     }, 8000);
     return () => clearInterval(timer);
-  }, [isBusy, jobId, restoreActiveJobFromWorkspace]);
+  }, [manualOnlyMode, isBusy, jobId, restoreActiveJobFromWorkspace]);
 
   useEffect(() => {
     if (isBusy) {
@@ -455,7 +459,10 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         const timeout = setTimeout(() => controller.abort(), 12000);
         const res = await fetch("/api/scout/run", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Manual-Trigger": "true",
+          },
           body: JSON.stringify({
             scan_settings: selectedScanSettings || null,
           }),

@@ -54,6 +54,7 @@ export type RunScoutResponse = {
 
 export type ScoutScanScope = "single_city" | "nearby_cities" | "arkansas_region" | "all_arkansas";
 export type ScoutScanDepth = "quick" | "normal" | "deep";
+export type ScoutDiscoveryMode = "reduced_free" | "paid_discovery";
 
 export type ScoutScanSettings = {
   scope: ScoutScanScope;
@@ -62,6 +63,11 @@ export type ScoutScanSettings = {
   categories: string[];
   issue_filters: string[];
   depth: ScoutScanDepth;
+  discovery_mode?: ScoutDiscoveryMode;
+  mode?: "reduced" | "discovery";
+  city?: string | null;
+  category?: string | null;
+  lead_limit?: number | null;
 };
 
 export type ScoutJobStatusResponse = {

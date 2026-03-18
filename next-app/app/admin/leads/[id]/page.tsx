@@ -1321,6 +1321,11 @@ export default async function AdminLeadDetailPage({
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              {resolvedLeadId ? (
+                <Link href={`/preview/${encodeURIComponent(resolvedLeadId)}`} target="_blank" className="admin-btn-primary">
+                  Generate Preview
+                </Link>
+              ) : null}
               {displayEmail ? (
                 <a href={`mailto:${displayEmail}`} className="admin-btn-primary">
                   Email

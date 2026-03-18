@@ -104,6 +104,10 @@ function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: stri
   return query ? `${base}?${query}` : base;
 }
 
+function previewHref(lead: Pick<WorkflowLead, "id">): string {
+  return `/preview/${encodeURIComponent(lead.id)}`;
+}
+
 function actionDebug(action: string, payload: Record<string, unknown>) {
   console.info("[Action Debug]", action, payload);
 }
@@ -760,6 +764,15 @@ export function LeadsWorkflowView({
                   >
                     Open Lead
                   </a>
+                  <a
+                    href={previewHref(lead)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="admin-btn-ghost text-xs"
+                    onClick={() => actionDebug("Generate Preview clicked", { leadId: lead.id })}
+                  >
+                    Generate Preview
+                  </a>
                   {lead.website ? (
                     <a
                       href={lead.website}
@@ -1043,6 +1056,15 @@ export function LeadsWorkflowView({
                           onClick={() => actionDebug("Open Lead clicked", { leadId: lead.id })}
                         >
                           Open Lead
+                        </a>
+                        <a
+                          href={previewHref(lead)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={() => actionDebug("Generate Preview clicked", { leadId: lead.id })}
+                        >
+                          Generate Preview
                         </a>
                         {lead.website ? (
                           <a

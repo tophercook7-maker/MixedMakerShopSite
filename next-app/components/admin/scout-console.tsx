@@ -7,6 +7,7 @@ import type { ScoutLead, ScoutScanSettings, ScoutSummary } from "@/lib/scout/typ
 import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
+import { isManualOnlyModeClient } from "@/lib/manual-mode";
 
 type Props = {
   integrationReady: boolean;
@@ -43,6 +44,53 @@ function conversionFocusScore(lead: ScoutLead): number {
     score += 8;
   }
   return Math.max(0, Math.min(100, score));
+}
+
+function targetedPriorityScore(lead: ScoutLead): number {
+  const website = String(lead.website || "").trim();
+  const reason = String(lead.opportunity_reason || "").toLowerCase();
+  const signals = Array.isArray(lead.opportunity_signals)
+    ? lead.opportunity_signals.map((v) => String(v || "").toLowerCase())
+    : [];
+  const contact = String(lead.best_contact_method || "").toLowerCase();
+  let score = 0;
+  const noWebsite = !website || reason.includes("no website") || signals.some((s) => s.includes("no_website"));
+  const weakSite =
+    reason.includes("outdated") ||
+    reason.includes("weak") ||
+    reason.includes("broken") ||
+    reason.includes("call-to-action") ||
+    signals.some((s) => s.includes("outdated") || s.includes("broken") || s.includes("cta"));
+  const noContact = contact === "none" || reason.includes("no contact") || signals.some((s) => s.includes("no_contact"));
+  const lowReviews = reason.includes("low review") || signals.some((s) => s.includes("review_count") || s.includes("low_reviews"));
+  if (noWebsite) score += 3;
+  if (noContact) score += 2;
+  if (weakSite) score += 2;
+  if (lowReviews) score += 1;
+  return score;
+}
+
+function targetedBadges(lead: ScoutLead): string[] {
+  const website = String(lead.website || "").trim();
+  const reason = String(lead.opportunity_reason || "").toLowerCase();
+  const signals = Array.isArray(lead.opportunity_signals)
+    ? lead.opportunity_signals.map((v) => String(v || "").toLowerCase())
+    : [];
+  const contact = String(lead.best_contact_method || "").toLowerCase();
+  const out: string[] = [];
+  if (!website || reason.includes("no website") || signals.some((s) => s.includes("no_website"))) out.push("No Website");
+  if (contact === "none" || reason.includes("no contact") || signals.some((s) => s.includes("no_contact"))) out.push("No Contact");
+  if (
+    reason.includes("outdated") ||
+    reason.includes("weak") ||
+    reason.includes("broken") ||
+    reason.includes("call-to-action") ||
+    signals.some((s) => s.includes("outdated") || s.includes("broken") || s.includes("cta"))
+  ) {
+    out.push("Weak Site");
+  }
+  if (reason.includes("low review") || signals.some((s) => s.includes("review_count") || s.includes("low_reviews"))) out.push("Low Reviews");
+  return out.slice(0, 4);
 }
 
 const SCAN_CITIES = [
@@ -86,14 +134,13 @@ const CATEGORY_OPTIONS = [
 ];
 
 const ISSUE_FILTER_OPTIONS = [
-  "no website",
-  "facebook only",
-  "broken website",
-  "insecure HTTP",
-  "missing contact page",
-  "outdated website",
-  "mobile issues",
-  "easy wins only",
+  "No Website",
+  "Weak / Outdated Website",
+  "No Contact Info",
+  "Facebook Only Presence",
+  "Low Reviews (< 10)",
+  "Low Rating (< 4.0)",
+  "No Clear Call-To-Action",
 ];
 
 const PRESET_STORAGE_KEY = "mixedmakershop.scout.custom-presets.v1";
@@ -124,7 +171,7 @@ const BUILT_IN_PRESETS: ScanPreset[] = [
         "church",
         "restaurant",
       ],
-      issue_filters: ["no website", "broken website", "insecure HTTP", "missing contact page"],
+      issue_filters: ["No Website", "Weak / Outdated Website", "No Contact Info"],
       depth: "normal",
     },
   },
@@ -136,7 +183,7 @@ const BUILT_IN_PRESETS: ScanPreset[] = [
       single_city: "Hot Springs",
       region: null,
       categories: CATEGORY_OPTIONS,
-      issue_filters: ["no website"],
+      issue_filters: ["No Website"],
       depth: "quick",
     },
   },
@@ -148,7 +195,7 @@ const BUILT_IN_PRESETS: ScanPreset[] = [
       single_city: "Hot Springs",
       region: null,
       categories: CATEGORY_OPTIONS,
-      issue_filters: ["facebook only"],
+      issue_filters: ["Facebook Only Presence"],
       depth: "normal",
     },
   },
@@ -160,7 +207,7 @@ const BUILT_IN_PRESETS: ScanPreset[] = [
       single_city: "Hot Springs",
       region: null,
       categories: ["church", "small church"],
-      issue_filters: ["no website", "facebook only", "mobile issues", "outdated website"],
+      issue_filters: ["No Website", "Facebook Only Presence", "Weak / Outdated Website"],
       depth: "normal",
     },
   },
@@ -172,7 +219,7 @@ const BUILT_IN_PRESETS: ScanPreset[] = [
       single_city: null,
       region: null,
       categories: CATEGORY_OPTIONS,
-      issue_filters: ["easy wins only", "outdated website", "mobile issues"],
+      issue_filters: ["No Website", "No Contact Info", "Weak / Outdated Website"],
       depth: "deep",
     },
   },
@@ -185,6 +232,7 @@ export function ScoutConsole({
   initialError,
 }: Props) {
   const scout = useGlobalScoutJob();
+  const manualOnlyMode = isManualOnlyModeClient();
   const [pageError, setPageError] = useState<string | null>(initialError);
   const [scope, setScope] = useState<ScoutScanSettings["scope"]>("single_city");
   const [singleCity, setSingleCity] = useState<string>("Hot Springs");
@@ -196,12 +244,14 @@ export function ScoutConsole({
     "electrician",
   ]);
   const [selectedIssueFilters, setSelectedIssueFilters] = useState<string[]>([
-    "no website",
-    "broken website",
-    "insecure HTTP",
-    "missing contact page",
+    "No Website",
+    "No Contact Info",
   ]);
   const [depth, setDepth] = useState<ScoutScanSettings["depth"]>("normal");
+  const [discoveryMode, setDiscoveryMode] = useState<ScoutScanSettings["discovery_mode"]>("reduced_free");
+  const [runCity, setRunCity] = useState("Hot Springs");
+  const [runCategory, setRunCategory] = useState("plumber");
+  const [leadLimit, setLeadLimit] = useState<number>(20);
   const [customPresetName, setCustomPresetName] = useState("");
   const [customPresets, setCustomPresets] = useState<ScanPreset[]>([]);
   const [creatingLeadForOppId, setCreatingLeadForOppId] = useState<string | null>(null);
@@ -218,12 +268,17 @@ export function ScoutConsole({
   };
 
   const buildScanSettings = (): ScoutScanSettings => ({
-    scope,
-    single_city: scope === "single_city" || scope === "nearby_cities" ? singleCity : null,
+    scope: "single_city",
+    single_city: runCity || singleCity,
     region: scope === "arkansas_region" ? region : null,
-    categories: selectedCategories,
+    categories: [runCategory || selectedCategories[0] || "plumber"],
     issue_filters: selectedIssueFilters,
     depth,
+    discovery_mode: discoveryMode || "reduced_free",
+    mode: discoveryMode === "paid_discovery" ? "discovery" : "reduced",
+    city: runCity || null,
+    category: runCategory || null,
+    lead_limit: Number.isFinite(leadLimit) ? Math.max(1, Math.min(200, leadLimit)) : 20,
   });
 
   const applySettings = (settings: ScoutScanSettings) => {
@@ -233,6 +288,12 @@ export function ScoutConsole({
     setSelectedCategories(Array.isArray(settings.categories) ? settings.categories : []);
     setSelectedIssueFilters(Array.isArray(settings.issue_filters) ? settings.issue_filters : []);
     setDepth(settings.depth || "normal");
+    setDiscoveryMode(settings.discovery_mode || "reduced_free");
+    if (settings.city) setRunCity(String(settings.city));
+    if (settings.category) setRunCategory(String(settings.category));
+    if (Number.isFinite(Number(settings.lead_limit))) {
+      setLeadLimit(Math.max(1, Math.min(200, Number(settings.lead_limit))));
+    }
   };
 
   const saveCustomPreset = () => {
@@ -283,6 +344,14 @@ export function ScoutConsole({
     console.info("[Admin Click] Scout run click fired");
     setPageError(null);
     console.info("[Admin Click] Scout handler entered");
+    if (!runCategory.trim()) {
+      setPageError("Category is required.");
+      return;
+    }
+    if (!runCity.trim()) {
+      setPageError("City is required.");
+      return;
+    }
     const result = await scout.startScout(integrationReady, buildScanSettings());
     if (!result.ok && result.error) {
       console.error("[Admin Click] Scout start failed", { error: result.error });
@@ -344,6 +413,13 @@ export function ScoutConsole({
     console.info("[Admin Click] Scout preset run click fired", { preset: preset.id });
     setPageError(null);
     applySettings(preset.settings);
+    const presetCity = String(preset.settings.city || preset.settings.single_city || "").trim();
+    const presetCategory =
+      String(preset.settings.category || (Array.isArray(preset.settings.categories) ? preset.settings.categories[0] : "") || "").trim();
+    if (!presetCategory || !presetCity) {
+      setPageError("Category and city are required.");
+      return;
+    }
     console.info("[Admin Click] Scout preset handler entered", { preset: preset.id });
     const result = await scout.startScout(integrationReady, preset.settings);
     if (!result.ok && result.error) {
@@ -364,6 +440,8 @@ export function ScoutConsole({
 
   const prioritizedTopLeads = useMemo(() => {
     return [...initialTopLeads].sort((a, b) => {
+      const targeted = targetedPriorityScore(b) - targetedPriorityScore(a);
+      if (targeted !== 0) return targeted;
       const delta = conversionFocusScore(b) - conversionFocusScore(a);
       if (delta !== 0) return delta;
       return Number(b.opportunity_score ?? b.score ?? 0) - Number(a.opportunity_score ?? a.score ?? 0);
@@ -405,6 +483,87 @@ export function ScoutConsole({
             </button>
           )}
         </div>
+        <div className="mt-3">
+          <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+            Scout Mode
+          </h2>
+          <div className="grid gap-2 md:grid-cols-2 text-xs">
+            <button
+              type="button"
+              className={discoveryMode === "reduced_free" ? "admin-btn-primary text-left" : "admin-btn-ghost text-left"}
+              onClick={() => setDiscoveryMode("reduced_free")}
+              disabled={scout.isBusy}
+            >
+              <div className="font-semibold">Reduced (Free)</div>
+              <div style={{ color: "var(--admin-muted)" }}>Uses existing data and enrichment only</div>
+            </button>
+            <button
+              type="button"
+              className={discoveryMode === "paid_discovery" ? "admin-btn-primary text-left" : "admin-btn-ghost text-left"}
+              onClick={() => setDiscoveryMode("paid_discovery")}
+              disabled={scout.isBusy}
+            >
+              <div className="font-semibold">Discovery (Paid)</div>
+              <div style={{ color: "#fca5a5" }}>May use paid API calls</div>
+            </button>
+          </div>
+          <div className="mt-2 text-xs" style={{ color: "var(--admin-muted)" }}>
+            <span className="font-semibold">
+              {discoveryMode === "paid_discovery" ? "Paid discovery mode" : "Reduced mode (free)"}
+            </span>
+            {" "}·{" "}
+            <span className="font-semibold">
+              {discoveryMode === "paid_discovery" ? "May use Google Places" : "No paid Google discovery"}
+            </span>
+            {" "}·{" "}
+            <span className="font-semibold">{manualOnlyMode ? "Manual trigger only" : "Enabled by configuration"}</span>
+          </div>
+        </div>
+        {discoveryMode === "paid_discovery" ? (
+          <div
+            className="mt-3 rounded-md border px-3 py-2 text-xs"
+            style={{ borderColor: "rgba(252, 165, 165, 0.5)", background: "rgba(127, 29, 29, 0.18)", color: "#fecaca" }}
+          >
+            This run may use paid APIs (Google Places). Nothing will run automatically. This will only execute once when you click Run Scout.
+          </div>
+        ) : null}
+        <div className="mt-3 grid gap-3 md:grid-cols-3 text-xs">
+          <label className="space-y-1">
+            <span style={{ color: "var(--admin-muted)" }}>City</span>
+            <input
+              className="admin-input h-9"
+              value={runCity}
+              onChange={(e) => setRunCity(e.target.value)}
+              placeholder="Hot Springs"
+              disabled={scout.isBusy}
+            />
+          </label>
+          <label className="space-y-1">
+            <span style={{ color: "var(--admin-muted)" }}>Category</span>
+            <input
+              className="admin-input h-9"
+              value={runCategory}
+              onChange={(e) => setRunCategory(e.target.value)}
+              placeholder="plumber"
+              disabled={scout.isBusy}
+            />
+          </label>
+          <label className="space-y-1">
+            <span style={{ color: "var(--admin-muted)" }}>Lead limit</span>
+            <input
+              type="number"
+              min={1}
+              max={200}
+              className="admin-input h-9"
+              value={leadLimit}
+              onChange={(e) => setLeadLimit(Number(e.target.value || 20))}
+              disabled={scout.isBusy}
+            />
+          </label>
+        </div>
+        <p className="mt-2 text-xs" style={{ color: "var(--admin-muted)" }}>
+          Run settings are applied once per click. Nothing runs automatically.
+        </p>
       </section>
 
       {(pageError || scout.jobError) && (
@@ -634,21 +793,20 @@ export function ScoutConsole({
 
           <div>
             <p className="text-sm mb-2" style={{ color: "var(--admin-muted)" }}>
-              Website problem filters (multi-select)
+              Opportunity Filters
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-2 md:grid-cols-2 text-xs">
               {ISSUE_FILTER_OPTIONS.map((item) => {
                 const selected = selectedIssueFilters.includes(item);
                 return (
-                  <button
-                    key={item}
-                    type="button"
-                    className="admin-btn-ghost text-xs"
-                    style={selected ? { borderColor: "var(--admin-gold)", color: "var(--admin-gold)" } : undefined}
-                    onClick={() => toggleSelection(item, selectedIssueFilters, setSelectedIssueFilters)}
-                  >
-                    {item}
-                  </button>
+                  <label key={item} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => toggleSelection(item, selectedIssueFilters, setSelectedIssueFilters)}
+                    />
+                    <span>{item}</span>
+                  </label>
                 );
               })}
             </div>
@@ -711,6 +869,10 @@ export function ScoutConsole({
                 <p>Business types: {activeScanSettings.categories?.length ? activeScanSettings.categories.join(", ") : "all"}</p>
                 <p>Target filters: {activeScanSettings.issue_filters?.length ? activeScanSettings.issue_filters.join(", ") : "none"}</p>
                 <p>Depth: {activeScanSettings.depth || "normal"}</p>
+                <p>
+                  Discovery mode:{" "}
+                  {activeScanSettings.discovery_mode === "paid_discovery" ? "Paid discovery mode" : "Reduced mode (free)"}
+                </p>
               </div>
             )}
         </section>
@@ -721,6 +883,26 @@ export function ScoutConsole({
           <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
             This Scan Summary
           </h2>
+          <div className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+            <p>
+              mode used:{" "}
+              {scout.scanSettings?.mode === "discovery" || scout.scanSettings?.discovery_mode === "paid_discovery"
+                ? "Discovery (Paid)"
+                : "Reduced (Free)"}
+            </p>
+            <p>
+              leads found: {Number(scout.persistenceDebug?.intake?.leads_created || scout.persistenceDebug?.intake?.created || 0)} |
+              {" "}records enriched: {Number(scout.persistenceDebug?.intake?.records_enriched || scout.persistenceDebug?.intake?.enriched_count || 0)} |
+              {" "}emails found: {Number(scout.persistenceDebug?.intake?.emails_found || scout.persistenceDebug?.intake?.leads_with_email || 0)} |
+              {" "}contact leads: {Number(scout.persistenceDebug?.intake?.contact_available || scout.persistenceDebug?.intake?.leads_with_contact_page || 0)} |
+              {" "}door candidates: {Number(scout.persistenceDebug?.intake?.door_to_door_candidates || scout.persistenceDebug?.intake?.door_to_door_candidates_created || 0)}
+            </p>
+            <p style={{ color: "#fde68a" }}>
+              {scout.scanSettings?.mode === "discovery" || scout.scanSettings?.discovery_mode === "paid_discovery"
+                ? "Google Places used"
+                : "No paid APIs used"}
+            </p>
+          </div>
           <div className="text-xs mb-2 space-y-1" style={{ color: "var(--admin-muted)" }}>
             {Boolean(scout.persistenceDebug?.intake?.reduced_mode) ? (
               <p style={{ color: "#fde68a" }}>
@@ -867,7 +1049,7 @@ export function ScoutConsole({
         <section className="admin-card">
           <div className="flex items-center justify-between gap-3 mb-3">
             <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Top Opportunities (Conversion Prioritized)
+              Top Opportunities (Targeted)
             </h2>
             <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
               <ExternalLink className="h-4 w-4" />
@@ -905,10 +1087,21 @@ export function ScoutConsole({
                         <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score ?? lead.score} />
                       </td>
                       <td>
-                        {String(lead.opportunity_reason || "").trim() ||
-                          (Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
-                            ? lead.opportunity_signals.slice(0, 3).join(", ")
-                            : "Contact info is hard to find")}
+                        <div className="space-y-2">
+                          <div>
+                            {String(lead.opportunity_reason || "").trim() ||
+                              (Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
+                                ? lead.opportunity_signals.slice(0, 3).join(", ")
+                                : "Contact info is hard to find")}
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {targetedBadges(lead).map((badge) => (
+                              <span key={`${lead.id || lead.slug || lead.business_name}-${badge}`} className="admin-priority-badge admin-priority-badge-high">
+                                {badge}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </td>
                       <td>{lead.best_contact_method ?? "—"}</td>
                       <td>{lead.recommended_next_action ?? "Send First Touch"}</td>
