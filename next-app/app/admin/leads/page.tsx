@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView, type WorkflowLead } from "@/components/admin/leads-workflow-view";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type LeadRow = {
   id: string;
   owner_id?: string | null;
@@ -209,7 +212,24 @@ export default async function AdminLeadsPage({
     console.error("Leads load failed:", err);
   }
 
-  const workflowLeads = rows.map(toWorkflowLead);
+  const dedupedRows = Array.from(
+    new Map(
+      rows
+        .map((row) => [String(row.id || "").trim(), row] as const)
+        .filter(([id]) => Boolean(id))
+    ).values()
+  );
+  let workflowLeads = dedupedRows.map(toWorkflowLead);
+  const renderedLeadsCountBeforeGuard = workflowLeads.length;
+  if (renderedLeadsCountBeforeGuard > totalLeadsCount) {
+    console.error("[Leads Page] rendered rows exceeded db leads count; trimming to db count", {
+      owner_id: ownerId,
+      db_leads_count: totalLeadsCount,
+      rendered_leads_count: renderedLeadsCountBeforeGuard,
+    });
+    workflowLeads = workflowLeads.slice(0, totalLeadsCount);
+  }
+  const renderedLeadsCount = workflowLeads.length;
   const emptyStateReason =
     workflowLeads.length === 0
       ? "No real leads yet. Run Scout or seed leads."
@@ -238,7 +258,7 @@ export default async function AdminLeadsPage({
           Leads list source of truth: <strong>public.leads</strong>
         </p>
         <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-          DB reality - public.leads: {totalLeadsCount} | public.opportunities: {totalOpportunitiesCount}
+          DB reality - db_leads_count: {totalLeadsCount} | db_opportunities_count: {totalOpportunitiesCount} | rendered_leads_count: {renderedLeadsCount}
         </p>
       </section>
 

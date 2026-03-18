@@ -811,6 +811,7 @@ export default async function AdminLeadDetailPage({
 
   const hasAnyData = Boolean(lead || caseRow || opp);
   if (!hasAnyData) {
+    const canRecreateFromOpportunity = opportunityFoundForFallback && isUuidLike(targetId);
     return (
       <div className="space-y-4">
         <section className="admin-card">
@@ -825,7 +826,7 @@ export default async function AdminLeadDetailPage({
             <Link href="/admin/dashboard" className="admin-btn-ghost">
               Open Dashboard
             </Link>
-            {isUuidLike(targetId) ? (
+            {canRecreateFromOpportunity ? (
               <Link
                 href={`/admin/opportunities/${encodeURIComponent(targetId)}/open-lead`}
                 className="admin-btn-ghost"
