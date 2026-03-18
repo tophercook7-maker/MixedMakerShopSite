@@ -60,9 +60,10 @@ export default function ContactPage() {
             <div className="form-group">
               <label className="form-label" htmlFor="contact-project">What do you need?</label>
               <select className="form-select" id="contact-project" name="project">
-                <option>New Website Build ($950)</option>
+                <option>Starter Website ($300-$500)</option>
+                <option>Standard Website ($600-$900)</option>
                 <option>Free Website Check</option>
-                <option>Hosting & Support</option>
+                <option>Hosting & Support ($89/mo)</option>
                 <option>Website Updates</option>
                 <option>3D Printing Project</option>
                 <option>Other</option>
