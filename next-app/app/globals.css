@@ -1151,6 +1151,168 @@ html {
   line-height: 1.55;
 }
 
+/* Standalone sample draft experience */
+.sample-standalone {
+  background: var(--sd-bg);
+  color: var(--sd-text);
+  min-height: 100dvh;
+  padding-bottom: 22px;
+}
+.sample-standalone .sample-hero {
+  padding: var(--sd-hero-pad) 0 36px;
+  background-image: var(--sd-hero-bg);
+}
+.sample-hero-inner {
+  background: var(--sd-surface);
+  border: var(--sd-card-border) solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  box-shadow: var(--sd-shadow);
+  padding: clamp(24px, 5vw, 54px);
+}
+.sample-business-name {
+  margin: 0;
+  font-size: clamp(17px, 2vw, 20px);
+  font-weight: 900;
+  color: var(--sd-accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sample-tagline {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--sd-muted);
+  font-weight: 800;
+}
+.sample-local {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--sd-accent);
+  font-weight: 800;
+}
+.sample-brand-badge {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--sd-border);
+  color: var(--sd-muted);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sample-h1 {
+  margin: 12px 0 10px;
+  font-size: var(--sd-h1-size);
+  line-height: 1.02;
+  letter-spacing: -1px;
+  font-weight: var(--sd-hero-weight);
+}
+.sample-h2 {
+  margin: 0 0 18px;
+  font-size: var(--sd-h2-size);
+  line-height: 1.1;
+}
+.sample-sub {
+  margin: 0 0 16px;
+  font-size: var(--sd-body-size);
+  max-width: 70ch;
+  color: var(--sd-muted);
+}
+.sample-standalone .section {
+  padding: var(--sd-section-pad) 0;
+}
+.sample-section .panel,
+.sample-section .card,
+.sample-section .how-it-works-card {
+  background: var(--sd-surface-alt);
+  border: var(--sd-card-border) solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  box-shadow: var(--sd-shadow);
+}
+.sample-standalone .btn {
+  border-radius: var(--sd-btn-radius);
+}
+.sample-standalone .btn.gold {
+  border-color: transparent;
+  background: var(--sd-primary);
+  color: var(--sd-primary-text);
+  box-shadow: var(--sd-shadow);
+}
+.sample-standalone .btn.ghost {
+  background: var(--sd-secondary);
+  color: var(--sd-secondary-text);
+  border: 1px solid var(--sd-border);
+}
+.sample-standalone .small {
+  color: var(--sd-muted);
+}
+
+.sample-editor-controls {
+  padding: 16px 0 0;
+}
+.sample-editor-card {
+  background: var(--sd-surface);
+  border: 1px solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  box-shadow: var(--sd-shadow);
+  padding: 16px;
+}
+.sample-editor-header {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sample-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sample-control span {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--sd-muted);
+}
+.sample-control input,
+.sample-control select,
+.sample-control textarea {
+  border-radius: 10px;
+  border: 1px solid var(--sd-border);
+  background: var(--sd-surface-alt);
+  color: var(--sd-text);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.sample-control textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+.sample-control.full {
+  grid-column: 1 / -1;
+}
+.sample-export {
+  margin: 10px 0 0;
+  border-radius: 10px;
+  border: 1px solid var(--sd-border);
+  background: var(--sd-surface-alt);
+  color: var(--sd-text);
+  padding: 10px;
+  max-height: 280px;
+  overflow: auto;
+  font-size: 12px;
+}
+
+body.sample-presentation-mode .nav,
+body.sample-presentation-mode .footer {
+  display: none !important;
+}
+body.sample-presentation-mode main {
+  padding-top: 0 !important;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   html,

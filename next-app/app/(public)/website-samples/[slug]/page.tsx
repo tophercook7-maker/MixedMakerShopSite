@@ -1,29 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSampleBySlug } from "@/lib/website-samples";
+import { SampleDraftClient, type SampleDraft } from "./sample-draft-client";
 
 type ShowcaseType = "coffee" | "restaurant" | "church" | "plumbing" | "lawn";
-
-type ShowcaseContent = {
-  heroHeadline: string;
-  heroSub: string;
-  heroPrimaryCta: string;
-  heroSecondaryCta: string;
-  offeringsTitle: string;
-  offerings: Array<{ name: string; text: string }>;
-  aboutTitle: string;
-  aboutText: string;
-  trustTitle: string;
-  trustQuotes: Array<{ quote: string; by: string }>;
-  locationTitle: string;
-  locationName: string;
-  address: string;
-  phone: string;
-  hours: string[];
-  finalTitle: string;
-  finalSub: string;
-  finalCta: string;
-};
 
 function getShowcaseType(category: string, slug: string, name: string): ShowcaseType {
   if (category === "coffee") return "coffee";
@@ -34,9 +13,12 @@ function getShowcaseType(category: string, slug: string, name: string): Showcase
   return "lawn";
 }
 
-function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseContent {
+function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft {
   if (type === "coffee") {
     return {
+      businessName,
+      tagline: "Neighborhood Coffee Bar",
+      localPositioning: "Hot Springs, Arkansas",
       heroHeadline: "Craft Coffee, Fresh Pastries, and a Spot You Will Want to Return To",
       heroSub: "Your neighborhood coffee shop in Hot Springs for hand-crafted drinks, quick breakfast, and easy online ordering.",
       heroPrimaryCta: "Order Online",
@@ -67,6 +49,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseCont
   }
   if (type === "restaurant") {
     return {
+      businessName,
+      tagline: "Local Southern Kitchen",
+      localPositioning: "Downtown Hot Springs",
       heroHeadline: "Southern Comfort Food Worth Coming Back For",
       heroSub: "Fresh daily specials, quick reservations, and a family-friendly dining room in Hot Springs.",
       heroPrimaryCta: "Reserve a Table",
@@ -97,6 +82,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseCont
   }
   if (type === "church") {
     return {
+      businessName,
+      tagline: "Everyone Is Welcome Here",
+      localPositioning: "Serving Hot Springs Families",
       heroHeadline: "A Place to Belong, Grow, and Serve Together",
       heroSub: "Join us this Sunday in Hot Springs for worship, biblical teaching, and a welcoming church family.",
       heroPrimaryCta: "Plan Your Visit",
@@ -127,6 +115,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseCont
   }
   if (type === "plumbing") {
     return {
+      businessName,
+      tagline: "Licensed and Insured Plumbing Team",
+      localPositioning: "Emergency Service Across Hot Springs",
       heroHeadline: "Fast, Reliable Plumbing Service in Hot Springs",
       heroSub: "From emergency repairs to full fixture installs, we show up on time and fix it right the first time.",
       heroPrimaryCta: "Call Now",
@@ -156,6 +147,9 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseCont
     };
   }
   return {
+    businessName,
+    tagline: "Reliable Local Lawn Professionals",
+    localPositioning: "Hot Springs Service Area",
     heroHeadline: "Dependable Lawn Care for Yards That Stand Out",
     heroSub: "Routine mowing, edging, cleanup, and seasonal treatments for homeowners across Hot Springs.",
     heroPrimaryCta: "Request Service",
@@ -185,118 +179,19 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): ShowcaseCont
   };
 }
 
-export default async function WebsiteSamplePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function WebsiteSamplePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ mode?: string }>;
+}) {
   const { slug } = await params;
+  const { mode } = await searchParams;
   const sample = getSampleBySlug(slug);
   if (!sample || sample.externalHref) notFound();
   const type = getShowcaseType(sample.category, sample.slug, sample.name);
   const copy = getShowcaseCopy(type, sample.name);
 
-  return (
-    <div style={{ background: "linear-gradient(180deg, rgba(255,255,255,.02), transparent)", paddingBottom: 24 }}>
-      {/* Hero */}
-      <section className="section" style={{ paddingBottom: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <p className="small" style={{ margin: "0 0 6px", opacity: 0.8 }}>
-              {sample.name}
-            </p>
-            <h1 style={{ margin: "0 0 10px" }}>{copy.heroHeadline}</h1>
-            <p className="subhead" style={{ marginBottom: 16 }}>{copy.heroSub}</p>
-            <div className="btn-row" style={{ marginBottom: 18 }}>
-              <Link href={type === "restaurant" || type === "coffee" ? "/contact" : `tel:${copy.phone.replace(/[^\d]/g, "")}`} className="btn gold">
-                {copy.heroPrimaryCta}
-              </Link>
-              <Link href={type === "restaurant" || type === "coffee" ? "/website-samples" : "/contact"} className="btn ghost">
-                {copy.heroSecondaryCta}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services or menu */}
-      <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 12px" }}>{copy.offeringsTitle}</h2>
-            <div className="how-it-works-grid">
-              {copy.offerings.map((item) => (
-                <article key={item.name} className="how-it-works-card">
-                  <h3 className="how-it-works-title">{item.name}</h3>
-                  <p className="how-it-works-copy">{item.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About / story */}
-      <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 12px" }}>{copy.aboutTitle}</h2>
-            <p className="subhead" style={{ margin: 0 }}>{copy.aboutText}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust section */}
-      <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>{copy.trustTitle}</h2>
-            <div className="grid-2">
-              {copy.trustQuotes.map((entry) => (
-                <blockquote key={entry.by} className="card" style={{ margin: 0 }}>
-                  <p style={{ margin: "0 0 10px" }}>"{entry.quote}"</p>
-                  <p className="small" style={{ margin: 0, opacity: 0.8 }}>- {entry.by}</p>
-                </blockquote>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Location / hours */}
-      <section className="section" style={{ paddingTop: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>{copy.locationTitle}</h2>
-            <div className="grid-2">
-              <div className="card">
-                <h3 style={{ margin: "0 0 8px" }}>{copy.locationName}</h3>
-                <p className="small" style={{ margin: "0 0 6px" }}>{copy.address}</p>
-                <p className="small" style={{ margin: 0 }}>{copy.phone}</p>
-              </div>
-              <div className="card">
-                <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {copy.hours.map((line) => (
-                    <li key={line} className="small" style={{ marginBottom: 6 }}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="section" style={{ paddingTop: 8 }}>
-        <div className="container">
-          <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>{copy.finalTitle}</h2>
-            <p className="subhead" style={{ margin: "0 0 14px" }}>{copy.finalSub}</p>
-            <div className="btn-row">
-              <Link href={copy.finalCta === "Call Now" ? `tel:${copy.phone.replace(/[^\d]/g, "")}` : "/contact"} className="btn gold">
-                {copy.finalCta}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+  return <SampleDraftClient initialDraft={copy} initialMode={mode === "presentation" ? "presentation" : "edit"} />;
 }
