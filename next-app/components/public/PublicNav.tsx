@@ -40,7 +40,7 @@ export function PublicNav() {
             Home
           </Link>
           <Link href="/web-design" className="pill">
-            Web Design
+            Work With Topher
           </Link>
           <Link href="/website-samples" className="pill">
             Website Samples
@@ -51,7 +51,7 @@ export function PublicNav() {
           <Link href="/website-roast" className="pill">
             Free Website Roast
           </Link>
-          <Link href="/#free-mockup-request" className="pill cta">
+          <Link href="/web-design" className="pill cta">
             Get My Free Mockup ➜
           </Link>
           <Link href="/auth/login" className="pill">

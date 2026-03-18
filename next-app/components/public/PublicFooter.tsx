@@ -46,10 +46,10 @@ export function PublicFooter() {
           </div>
         </div>
         <div className="small" style={{ marginTop: 20 }}>
-          Custom 3D printing and small business web design. Founder-led studio.
+          MixedMakerShop is the studio. Topher Web Design is the client-service side for business websites.
         </div>
         <div className="small" style={{ marginTop: 10 }}>
-          <Link href="/">Home</Link> • <Link href="/web-design">Web Design</Link> •{" "}
+          <Link href="/">Home</Link> • <Link href="/web-design">Work With Topher</Link> •{" "}
           <Link href="/website-roast">Free Website Roast</Link> • <Link href="/tools">Tools</Link> •{" "}
           <Link href="/restaurant-website-redesign">Restaurant Redesign Demo</Link> •{" "}
           <Link href="/3d-printing">3D Printing</Link> • <Link href="/contact">Contact</Link>

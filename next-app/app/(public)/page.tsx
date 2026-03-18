@@ -86,14 +86,18 @@ export default function HomePage() {
       <section className="section" id="need-a-website">
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>Need a website?</h2>
+            <h2 style={{ margin: "0 0 10px" }}>Work Directly With Topher</h2>
             <p className="subhead" style={{ margin: "0 0 14px" }}>
-              Topher Web Design is a dedicated sales experience with focused messaging, examples, pricing, and a clear
-              next step.
+              MixedMakerShop is the umbrella studio. Topher Web Design is the dedicated client-service side for
+              businesses that need modern websites. If you need a cleaner online presence that drives more trust and
+              inquiries, head to the web design page.
             </p>
             <div className="btn-row">
               <Link className="btn gold" href="/web-design">
-                Go to Topher Web Design
+                Work With Topher
+              </Link>
+              <Link className="btn ghost" href="/website-samples">
+                View Website Samples
               </Link>
             </div>
           </div>
