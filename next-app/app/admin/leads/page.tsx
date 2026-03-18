@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView, type WorkflowLead } from "@/components/admin/leads-workflow-view";
+import { syncLeadsFromOpportunities } from "@/lib/opportunity-lead-sync";
 
 type LeadRow = {
   id: string;
@@ -129,6 +130,22 @@ export default async function AdminLeadsPage({
         </p>
       </section>
     );
+  }
+
+  try {
+    const syncStats = await syncLeadsFromOpportunities(supabase, ownerId);
+    console.info("[Leads Sync] opportunities -> leads", {
+      owner_id: ownerId,
+      scanned: syncStats.scanned,
+      created: syncStats.created,
+      skipped_existing: syncStats.skipped_existing,
+      failed: syncStats.failed,
+    });
+  } catch (syncError) {
+    console.error("[Leads Sync] opportunities -> leads failed", {
+      owner_id: ownerId,
+      error: syncError,
+    });
   }
 
   let rows: LeadRow[] = [];

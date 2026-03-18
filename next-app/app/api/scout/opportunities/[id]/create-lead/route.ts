@@ -155,6 +155,7 @@ export async function POST(
   });
 
   const insertPayload = {
+    id: opp.id,
     owner_id: ownerId,
     workspace_id: String(opp.workspace_id || "").trim() || null,
     linked_opportunity_id: opp.id,

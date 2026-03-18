@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
@@ -7,6 +8,7 @@ import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath, isUuidLike, leadRouteMatches, parseLeadRouteToken } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
+import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
 
 type LeadRow = {
   id: string;
@@ -437,6 +439,30 @@ export default async function AdminLeadDetailPage({
       error,
     });
     loadWarnings.push("Lead base record could not be loaded.");
+  }
+
+  if (!lead) {
+    try {
+      const recovery = await ensureLeadFromOpportunityToken(supabase, ownerId, targetId);
+      if (recovery.leadId) {
+        console.info("[Lead Detail] auto-created lead from opportunity fallback", {
+          lead_token: targetId,
+          opportunity_id: recovery.opportunityId,
+          lead_id: recovery.leadId,
+          created: recovery.created,
+        });
+        redirect(`/admin/leads/${encodeURIComponent(recovery.leadId)}`);
+      } else {
+        console.info("[Lead Detail] no opportunity available for lead auto-create fallback", {
+          lead_token: targetId,
+        });
+      }
+    } catch (recoveryError) {
+      console.error("[Lead Detail] auto-create from opportunity fallback failed", {
+        lead_token: targetId,
+        error: recoveryError,
+      });
+    }
   }
 
   let caseRow: CaseRow | null = null;
