@@ -151,6 +151,7 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "notes",
     "created_at",
   ].join(","),
+  "id,owner_id,workspace_id,business_name,email,phone,website,industry,status,notes,created_at",
 ] as const;
 
 async function selectLeadsWithVariants(args: {
@@ -576,13 +577,25 @@ export default async function AdminLeadDetailPage({
         leadTokenForLog: targetId,
       });
       const scopedLeadRows = scopedResult.rows;
-      if (scopedResult.errors.length > 0 && scopedLeadRows.length === 0) {
+      const allVariantsFailed = scopedResult.errors.length > 0 && scopedLeadRows.length === 0;
+      if (allVariantsFailed) {
         loadWarnings.push("Lead detail query had schema mismatches; using compatible fallback.");
+        console.warn("[Lead Detail] all SELECT variants failed", {
+          lead_token: targetId,
+          variant_errors: scopedResult.errors,
+        });
       }
       const scopedLead = (scopedLeadRows[0] as LeadRow | undefined) || null;
+      const ownerIdMatches = Boolean(unscopedLead) && leadOwnerOnRow === ownerId;
       ownerWorkspaceFilterBlockedRow = Boolean(unscopedLead && !scopedLead);
       lead = scopedLead || null;
-      if (ownerWorkspaceFilterBlockedRow) {
+      if (ownerWorkspaceFilterBlockedRow && ownerIdMatches && allVariantsFailed) {
+        detailFailureReason = null;
+        lead = unscopedLead as LeadRow | null;
+        console.info("[Lead Detail] owner matches but all SELECT variants failed, using unscoped lead as fallback", {
+          lead_token: targetId,
+        });
+      } else if (ownerWorkspaceFilterBlockedRow) {
         detailFailureReason = "owner_workspace_mismatch";
       } else if (!unscopedLead) {
         detailFailureReason = "not_found";
@@ -593,6 +606,8 @@ export default async function AdminLeadDetailPage({
         current_user_id: ownerId,
         lead_owner_id: leadOwnerOnRow,
         lead_workspace_id: leadWorkspaceOnRow,
+        owner_id_matches: ownerIdMatches,
+        all_variants_failed: allVariantsFailed,
         owner_workspace_filter_blocked_row: ownerWorkspaceFilterBlockedRow,
         matched_lead_id: lead?.id || null,
         detail_failure_reason: detailFailureReason,
@@ -1046,6 +1061,19 @@ export default async function AdminLeadDetailPage({
           {isWorkspaceMismatch ? (
             <ClaimLeadToWorkspace leadId={targetId} redirectQuery={redirectQuery} />
           ) : null}
+          <details className="mt-3">
+            <summary className="text-xs cursor-pointer" style={{ color: "var(--admin-muted)" }}>Debug info</summary>
+            <div className="mt-2 text-xs space-y-1 font-mono" style={{ color: "var(--admin-muted)" }}>
+              <p>lead_id: {targetId}</p>
+              <p>current_user_id: {ownerId}</p>
+              <p>lead_owner_id: {leadOwnerOnRow || "null"}</p>
+              <p>lead_workspace_id: {leadWorkspaceOnRow || "null"}</p>
+              <p>owner_id_matches: {leadOwnerOnRow === ownerId ? "true" : "false"}</p>
+              <p>lead_exists_by_id: {leadExistsById ? "true" : "false"}</p>
+              <p>detail_failure_reason: {detailFailureReason || "none"}</p>
+              <p>scoped_query_errors: {loadWarnings.length > 0 ? loadWarnings.join("; ") : "none"}</p>
+            </div>
+          </details>
           <div className="mt-4 flex gap-2">
             <Link href="/admin/leads" className="admin-btn-primary">
               Back to Leads
