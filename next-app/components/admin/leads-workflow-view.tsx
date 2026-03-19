@@ -534,23 +534,70 @@ export function LeadsWorkflowView({
       setSubmitMessage("Lead is already saved to backend.");
       return;
     }
+    const promoted = await promoteLeadToWorkspace(lead);
+    if (!promoted) {
+      setSubmitMessage("Save to backend failed. Lead is still local only.");
+      return;
+    }
+    setSubmitMessage("Lead saved to backend workspace.");
+  }
+
+  async function promoteLeadToWorkspace(lead: WorkflowLead): Promise<WorkflowLead | null> {
+    if (!isLocalOnlyLead(lead)) return lead;
     const payload = toCreatePayload(lead);
-    console.info("[LeadsWorkflowView] Retry save requested", {
+    console.info("[LeadsWorkflowView] backend save attempted", {
       lead_id: lead.id,
       source: lead.source || null,
       payload,
     });
-    const success = await createLead(payload);
-    if (!success) {
-      setSubmitMessage("Retry save failed. Lead is still local only.");
-      return;
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      if (!res.ok) {
+        const backendError =
+          typeof body.error === "string"
+            ? body.error
+            : body.error
+              ? JSON.stringify(body.error)
+              : "Unknown backend error";
+        console.info("[LeadsWorkflowView] backend save failed", {
+          lead_id: lead.id,
+          status: res.status,
+          error: backendError,
+        });
+        setError(`This lead must be saved to backend before continuing. ${backendError}`);
+        return null;
+      }
+      const promotedLead = toWorkflowLeadFromPayload(body, {
+        fallbackId: String(body.id || lead.id),
+        source: "server",
+      });
+      setLeads((prev) => [promotedLead, ...prev.filter((row) => row.id !== promotedLead.id && row.id !== lead.id)]);
+      setLocalFallbackLeads((prev) => {
+        const next = prev.filter((row) => row.id !== lead.id && row.id !== promotedLead.id);
+        persistFallbackLeads(next);
+        return next;
+      });
+      setOptimisticLeads((prev) => prev.filter((row) => row.id !== lead.id && row.id !== promotedLead.id));
+      console.info("[LeadsWorkflowView] local lead promoted to server", {
+        old_lead_id: lead.id,
+        new_lead_id: promotedLead.id,
+      });
+      setError(null);
+      return promotedLead;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "network error";
+      console.info("[LeadsWorkflowView] backend save failed", {
+        lead_id: lead.id,
+        error: message,
+      });
+      setError(`This lead must be saved to backend before continuing. ${message}`);
+      return null;
     }
-    setLocalFallbackLeads((prev) => {
-      const next = prev.filter((item) => item.id !== lead.id);
-      persistFallbackLeads(next);
-      return next;
-    });
-    setOptimisticLeads((prev) => prev.filter((item) => item.id !== lead.id));
   }
 
   async function updateLeadStatusQuick(lead: WorkflowLead, nextStatus: WorkflowLead["status"]) {
@@ -834,25 +881,29 @@ export function LeadsWorkflowView({
     lead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly">,
     query?: string
   ) {
+    let resolvedLead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly"> = lead;
     if (isLocalOnlyLead(lead)) {
-      const message =
-        "This lead is saved locally only and is not yet available in the full lead detail page.";
-      setError(message);
-      actionDebug("Lead navigation blocked", {
-        leadId: lead.id,
-        source: lead.source || null,
-        isLocalOnly: true,
-        reason: "local_only",
-      });
-      if (typeof window !== "undefined") window.alert(message);
-      return;
+      const candidate = mergedLeads.find((entry) => entry.id === lead.id);
+      if (!candidate) {
+        const message = "This lead must be saved to backend before continuing.";
+        setError(message);
+        if (typeof window !== "undefined") window.alert(message);
+        return;
+      }
+      const promoted = await promoteLeadToWorkspace(candidate);
+      if (!promoted) {
+        const message = "This lead must be saved to backend before continuing.";
+        if (typeof window !== "undefined") window.alert(message);
+        return;
+      }
+      resolvedLead = promoted;
     }
-    const destination = leadHref(lead, query);
-    const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
+    const destination = leadHref(resolvedLead, query);
+    const check = await verifyLeadBeforeNavigation(String(resolvedLead.id || ""));
     if (!check.ok) {
       setError(check.message);
       actionDebug("Lead navigation blocked", {
-        leadId: lead.id,
+        leadId: resolvedLead.id,
         status: check.status,
         reason: check.reason,
         diagnostics: check.diagnostics || null,
@@ -864,27 +915,32 @@ export function LeadsWorkflowView({
   }
 
   async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id" | "source" | "isLocalOnly">) {
+    let resolvedLead = lead;
     if (isLocalOnlyLead(lead)) {
-      setError("This lead is saved locally only and preview generation requires a backend-saved lead.");
-      actionDebug("Preview blocked", {
-        leadId: lead.id,
-        source: lead.source || null,
-        reason: "local_only",
-      });
-      return;
+      const candidate = mergedLeads.find((entry) => entry.id === lead.id);
+      if (!candidate) {
+        setError("This lead must be saved to backend before continuing.");
+        return;
+      }
+      const promoted = await promoteLeadToWorkspace(candidate);
+      if (!promoted) {
+        setError("This lead must be saved to backend before continuing.");
+        return;
+      }
+      resolvedLead = promoted;
     }
-    const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
+    const check = await verifyLeadBeforeNavigation(String(resolvedLead.id || ""));
     if (!check.ok) {
       setError(check.message);
       actionDebug("Preview blocked", {
-        leadId: lead.id,
+        leadId: resolvedLead.id,
         status: check.status,
         reason: check.reason,
         diagnostics: check.diagnostics || null,
       });
       return;
     }
-    if (typeof window !== "undefined") window.open(previewHref(lead), "_blank", "noopener,noreferrer");
+    if (typeof window !== "undefined") window.open(previewHref(resolvedLead), "_blank", "noopener,noreferrer");
   }
 
   async function markTextSent(lead: WorkflowLead) {
@@ -1641,17 +1697,6 @@ export function LeadsWorkflowView({
                     className="admin-btn-ghost text-xs"
                     onClick={(event) => {
                       event.preventDefault();
-                      if (localOnly) {
-                        const message =
-                          "This lead is saved locally only. Save it to the backend before generating email.";
-                        setError(message);
-                        actionDebug("Generate Email blocked", {
-                          leadId: lead.id,
-                          source: lead.source || "unknown",
-                          reason: "local_only",
-                        });
-                        return;
-                      }
                       if (!hasContactPath) {
                         setError("No data returned: no contact path available.");
                         actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
@@ -1668,17 +1713,6 @@ export function LeadsWorkflowView({
                     className="admin-btn-ghost text-xs"
                     onClick={(event) => {
                       event.preventDefault();
-                      if (localOnly) {
-                        const message =
-                          "This lead is saved locally only. Save it to the backend before generating email.";
-                        setError(message);
-                        actionDebug("Send Email blocked", {
-                          leadId: lead.id,
-                          source: lead.source || "unknown",
-                          reason: "local_only",
-                        });
-                        return;
-                      }
                       if (!hasContactPath) {
                         setError("No data returned: no contact path available.");
                         actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
@@ -1794,8 +1828,13 @@ export function LeadsWorkflowView({
                       className="admin-btn-ghost text-xs"
                       onClick={() => void retrySaveLocalLead(lead)}
                     >
-                      Save to Backend
+                      Save Lead to Workspace
                     </button>
+                  ) : null}
+                  {localOnly ? (
+                    <p className="text-[11px]" style={{ color: "#fbbf24" }}>
+                      This lead must be saved to backend before continuing.
+                    </p>
                   ) : null}
                       </>
                     );
@@ -2032,15 +2071,6 @@ export function LeadsWorkflowView({
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
                             event.preventDefault();
-                            if (localOnly) {
-                              setError("This lead is saved locally only. Save it to the backend before generating email.");
-                              actionDebug("Generate Email blocked", {
-                                leadId: lead.id,
-                                source: lead.source || "unknown",
-                                reason: "local_only",
-                              });
-                              return;
-                            }
                             if (!hasContactPath) {
                               setError("No data returned: no contact path available.");
                               actionDebug("Generate Email blocked", { leadId: lead.id, reason: "no_contact_path" });
@@ -2057,15 +2087,6 @@ export function LeadsWorkflowView({
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
                             event.preventDefault();
-                            if (localOnly) {
-                              setError("This lead is saved locally only. Save it to the backend before generating email.");
-                              actionDebug("Send Email blocked", {
-                                leadId: lead.id,
-                                source: lead.source || "unknown",
-                                reason: "local_only",
-                              });
-                              return;
-                            }
                             if (!hasContactPath) {
                               setError("No data returned: no contact path available.");
                               actionDebug("Send Email blocked", { leadId: lead.id, reason: "no_contact_path" });
@@ -2207,7 +2228,7 @@ export function LeadsWorkflowView({
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                             onClick={() => void retrySaveLocalLead(lead)}
                           >
-                            Save to Backend
+                            Save Lead to Workspace
                           </button>
                         ) : null}
                       </div>

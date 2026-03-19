@@ -9,6 +9,7 @@ import { buildLeadPath, isUuidLike, leadRouteMatches, parseLeadRouteToken } from
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
+import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-workspace";
 
 type LeadRow = {
   id: string;
@@ -513,11 +514,12 @@ export default async function AdminLeadDetailPage({
       <section className="admin-card">
         <h1 className="text-2xl font-bold">Lead workspace</h1>
         <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
-          This lead is saved locally only and is not yet available in the full lead detail page.
+          This lead is not saved to your workspace yet.
         </p>
         <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-          Save to backend successfully first, then open the full workspace.
+          Save this lead to backend before continuing with CRM actions.
         </p>
+        <SaveLocalLeadToWorkspace localLeadId={targetId} />
         <div className="mt-4 flex gap-2">
           <Link href="/admin/leads" className="admin-btn-primary">
             Back to Leads
