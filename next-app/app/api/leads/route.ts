@@ -44,24 +44,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const supabase = await createClient();
-  const email = String(parsed.data.email || "").trim();
-  const phone = String(parsed.data.phone || "").trim();
-  const manual = Boolean(parsed.data.is_manual);
-  const forceDoor = String(parsed.data.lead_bucket || "").trim().toLowerCase() === "door_to_door";
-  const shouldDoor = manual || forceDoor || !email || !phone;
+  const normalizedInput = {
+    business_name: String(parsed.data.business_name || "").trim(),
+    contact_name: parsed.data.contact_name,
+    email: String(parsed.data.email || "").trim() || undefined,
+    phone: String(parsed.data.phone || "").trim() || undefined,
+    website: String(parsed.data.website || "").trim() || undefined,
+    industry: parsed.data.industry,
+    category: parsed.data.category,
+    city: parsed.data.city,
+    address: parsed.data.address,
+    lead_source: parsed.data.lead_source,
+    status: parsed.data.status || "new",
+    notes: parsed.data.notes,
+    follow_up_date: parsed.data.follow_up_date,
+    is_manual: parsed.data.is_manual,
+    known_owner_name: parsed.data.known_owner_name,
+    known_context: parsed.data.known_context,
+    lead_bucket: parsed.data.lead_bucket,
+    door_status: parsed.data.door_status,
+  } as const;
   const row = {
-    ...parsed.data,
+    ...normalizedInput,
     owner_id: user.id,
-    lead_bucket: shouldDoor ? "door_to_door" : parsed.data.lead_bucket,
-    door_status: shouldDoor ? parsed.data.door_status || "not_visited" : parsed.data.door_status || null,
     last_updated_at: new Date().toISOString(),
   };
+  console.info("[Leads API] sanitized create payload", {
+    request_id: requestId,
+    payload: row,
+  });
   const droppedColumns: string[] = [];
   let insertPayload: Record<string, unknown> = { ...row };
   let data: Record<string, unknown> | null = null;
   let errorMessage: string | null = null;
 
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
+  for (let attempt = 1; attempt <= Object.keys(row).length + 2; attempt += 1) {
+    console.info("[Leads API] insert attempt", {
+      request_id: requestId,
+      attempt,
+      payload_keys: Object.keys(insertPayload),
+    });
     const { data: insertData, error } = await supabase
       .from("leads")
       .insert(insertPayload)
@@ -117,12 +139,24 @@ export async function POST(request: Request) {
     lead_id: String(data.id || ""),
     dropped_columns: droppedColumns,
   });
-  return NextResponse.json({
+  const responseBody = {
     ...data,
+    id: String(data.id || ""),
+    business_name: String(data.business_name || normalizedInput.business_name || ""),
+    status: String(data.status || normalizedInput.status || "new"),
+    source: "server",
+    isLocalOnly: false,
     _create_debug: {
       request_id: requestId,
       dropped_columns: droppedColumns,
       persisted_with_column_fallback: droppedColumns.length > 0,
     },
+  };
+  console.info("[Leads API] create response sent", {
+    request_id: requestId,
+    status: 200,
+    lead_id: responseBody.id,
+    source: responseBody.source,
   });
+  return NextResponse.json(responseBody);
 }
