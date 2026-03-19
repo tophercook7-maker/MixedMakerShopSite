@@ -12,12 +12,19 @@ const ALLOWED_SAMPLE_FIELDS = [
   "template_key",
   "business_name",
   "business_type",
+  "site_goal",
+  "headline_style",
+  "cta_style",
+  "visual_theme",
+  "template_type",
+  "suggested_image_category",
   "hero_headline",
   "hero_subheadline",
   "cta_text",
   "intro_text",
   "services",
   "image_urls",
+  "additional_image_urls",
   "primary_image_url",
   "gallery_image_urls",
   "accent_mode",
@@ -100,7 +107,7 @@ export async function POST(request: Request) {
   const createdMs = new Date(String(row.created_at || 0)).getTime();
   const updatedMs = new Date(String(row.updated_at || 0)).getTime();
   const eventType = Math.abs(updatedMs - createdMs) < 4000 ? "preview_generated" : "preview_updated";
-  await recordLeadActivity(supabase, {
+  void recordLeadActivity(supabase, {
     ownerId: user.id,
     leadId: String(normalized.lead_id || "").trim(),
     eventType,

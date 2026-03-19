@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PORTFOLIO_SAMPLES } from "@/lib/portfolio-samples";
 import {
   WEBSITE_SAMPLES,
   SAMPLE_CATEGORIES,
@@ -23,9 +24,51 @@ export default function WebsiteSamplesPage() {
         <div className="panel">
           <h1 style={{ margin: "0 0 10px" }}>Website Samples</h1>
           <p className="subhead" style={{ margin: "0 0 20px" }}>
-            Example sites in different styles — coffee shops, restaurants, churches, redesigns. Yours can follow one of
-            these or go fully custom.
+            Polished portfolio examples for common local trades (always available), plus interactive concepts — coffee,
+            restaurants, churches, and more. Yours can follow any of these or go fully custom.
           </p>
+
+          <div style={{ marginBottom: 36 }}>
+            <h2 className="section-heading" style={{ margin: "0 0 8px", fontSize: "1.35rem" }}>
+              Evergreen portfolio samples
+            </h2>
+            <p className="small" style={{ margin: "0 0 18px", opacity: 0.9, maxWidth: 720 }}>
+              Ready-to-send homepage demos for pressure washing, detailing, landscaping, plumbing/HVAC, and restaurant /
+              food truck. These are permanent public pages — separate from CRM-generated previews for individual leads.
+            </p>
+            <div className="grid-2">
+              {PORTFOLIO_SAMPLES.map((p) => (
+                <article
+                  key={p.routeSlug}
+                  className="card sample-card"
+                  style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.cardImageUrl}
+                    alt=""
+                    style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
+                  />
+                  <div style={{ padding: "16px 18px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <p className="small" style={{ margin: "0 0 6px", opacity: 0.85 }}>
+                      {p.category}
+                    </p>
+                    <h3 style={{ margin: "0 0 8px", fontSize: "1.15rem" }}>{p.title}</h3>
+                    <p className="small" style={{ margin: "0 0 14px", flex: 1, lineHeight: 1.45 }}>
+                      {p.description}
+                    </p>
+                    <Link className="btn gold" href={`/samples/${p.routeSlug}`} style={{ alignSelf: "flex-start" }}>
+                      Open preview
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <h2 className="section-heading" style={{ margin: "0 0 16px", fontSize: "1.25rem" }}>
+            More sample concepts
+          </h2>
 
           {/* Filter bar - optional, does not hide samples by default */}
           <div

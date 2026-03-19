@@ -62,27 +62,4 @@ set
 where outreach_sent is true
   and email_sent is false;
 
--- Activity log (append-only)
-create table if not exists public.lead_activities (
-  id uuid primary key default gen_random_uuid(),
-  lead_id uuid not null references public.leads(id) on delete cascade,
-  owner_id uuid not null references public.profiles(id) on delete cascade,
-  event_type text not null,
-  meta jsonb not null default '{}'::jsonb,
-  created_at timestamptz not null default now()
-);
-
-create index if not exists idx_lead_activities_lead_created
-  on public.lead_activities(lead_id, created_at desc);
-
-create index if not exists idx_lead_activities_owner_created
-  on public.lead_activities(owner_id, created_at desc);
-
-alter table public.lead_activities enable row level security;
-
-drop policy if exists lead_activities_owner on public.lead_activities;
-create policy lead_activities_owner
-  on public.lead_activities
-  for all
-  using (auth.uid() = owner_id)
-  with check (auth.uid() = owner_id);
+-- Activity log table: see migration 20260319003000_lead_activities_canonical.sql

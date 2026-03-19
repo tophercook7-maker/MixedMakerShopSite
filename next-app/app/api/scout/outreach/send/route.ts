@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       })
       .eq("id", leadIdEarly)
       .eq("owner_id", ownerIdEarly);
-    await recordLeadActivity(supabase, {
+    void recordLeadActivity(supabase, {
       ownerId: ownerIdEarly,
       leadId: leadIdEarly,
       eventType: "email_failed",
@@ -222,10 +222,11 @@ export async function POST(request: Request) {
       if (!leadUpdateError) {
         leadUpdates = updatePayload;
         if (hasEmail) {
-          await recordLeadActivity(supabase, {
+          void recordLeadActivity(supabase, {
             ownerId,
             leadId,
             eventType: "email_sent",
+            message: subject ? `Sent: ${subject}` : undefined,
             meta: {
               subject,
               preview_url: previewUrl,

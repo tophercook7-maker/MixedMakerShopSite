@@ -1,13 +1,32 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { recordLeadActivity } from "@/lib/lead-activity";
+import { isLeadActivitiesUnavailable, recordLeadActivity } from "@/lib/lead-activity";
 import { z } from "zod";
 
-const postSchema = z.object({
-  event_type: z.string().min(1).max(120),
-  meta: z.record(z.string(), z.unknown()).optional(),
-});
+const postSchema = z
+  .object({
+    type: z.string().min(1).max(120).optional(),
+    event_type: z.string().min(1).max(120).optional(),
+    message: z.string().max(2000).optional(),
+    meta: z.record(z.string(), z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
+  })
+  .transform((d) => {
+    const type = String(d.type || d.event_type || "").trim();
+    return {
+      type,
+      message: d.message,
+      metadata: d.metadata ?? d.meta ?? {},
+    };
+  })
+  .pipe(
+    z.object({
+      type: z.string().min(1).max(120),
+      message: z.string().max(2000).optional(),
+      metadata: z.record(z.string(), z.unknown()),
+    })
+  );
 
 export async function GET(
   _request: Request,
@@ -31,14 +50,14 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("lead_activities")
-    .select("id,event_type,meta,created_at")
+    .select("id,type,message,metadata,created_at,actor_user_id")
     .eq("lead_id", leadId)
-    .eq("owner_id", ownerId)
+    .eq("actor_user_id", ownerId)
     .order("created_at", { ascending: false })
     .limit(100);
 
   if (error) {
-    if (String(error.message || "").toLowerCase().includes("does not exist")) {
+    if (isLeadActivitiesUnavailable(error)) {
       return NextResponse.json({ items: [], reason: "table_missing" });
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -71,11 +90,12 @@ export async function POST(
     .maybeSingle();
   if (!leadOk) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
 
-  await recordLeadActivity(supabase, {
+  void recordLeadActivity(supabase, {
     ownerId,
     leadId,
-    eventType: parsed.data.event_type,
-    meta: parsed.data.meta,
+    eventType: parsed.data.type,
+    message: parsed.data.message,
+    meta: parsed.data.metadata,
   });
   return NextResponse.json({ ok: true });
 }

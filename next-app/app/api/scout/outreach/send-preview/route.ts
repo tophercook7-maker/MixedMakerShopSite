@@ -205,7 +205,7 @@ export async function POST(request: Request) {
         })
         .eq("id", leadId)
         .eq("owner_id", ownerId);
-      await recordLeadActivity(supabase, {
+      void recordLeadActivity(supabase, {
         ownerId,
         leadId,
         eventType: "email_failed",
@@ -364,10 +364,11 @@ export async function POST(request: Request) {
       );
     }
 
-    await recordLeadActivity(supabase, {
+    void recordLeadActivity(supabase, {
       ownerId,
       leadId,
       eventType: "preview_email_sent",
+      message: subject ? `Preview sent: ${subject}` : undefined,
       meta: { preview_url: previewUrl, subject },
     });
 

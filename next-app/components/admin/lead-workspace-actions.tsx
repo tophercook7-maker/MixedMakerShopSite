@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
   BUSINESS_TYPE_OPTIONS,
@@ -16,7 +16,9 @@ import {
   buildDefaultLeadSample,
   getSuggestedServicesForBusinessType,
   normalizeLeadSampleRecord,
+  pickCtaPairFromSiteGoal,
   readableBusinessType,
+  type LeadSampleAutofillOptions,
   type LeadSampleImage,
   type LeadSampleRecord,
   type LeadSampleStatus,
@@ -69,6 +71,35 @@ type PreparedOutreachDraft = {
 };
 
 const LOCAL_SAMPLES_KEY = "crm.lead_samples";
+
+/** Stable fingerprint for dirty-check / auto-save (not cryptographic). */
+function sampleDraftFingerprint(s: LeadSampleRecord): string {
+  const svc = [...s.services].join("\u001f");
+  const imgs = s.images.map((i) => `${i.id}:${i.role}:${i.src}`).join("\u001f");
+  return [
+    s.hero_headline,
+    s.hero_subheadline,
+    s.cta_text,
+    s.cta_style,
+    s.intro_text,
+    svc,
+    s.primary_image_url,
+    s.business_name,
+    s.business_type,
+    s.site_goal,
+    s.template_key,
+    s.headline_style,
+    s.visual_theme,
+    s.template_type,
+    s.accent_mode,
+    s.preview_slug,
+    s.status,
+    imgs,
+    s.gallery_image_urls.join("\u001f"),
+    s.image_urls.join("\u001f"),
+    s.additional_image_urls.join("\u001f"),
+  ].join("\u0000");
+}
 const OUTREACH_DRAFTS_KEY = "crm.outreach_prepared_drafts";
 
 const DEFAULT_SMS_TEMPLATE =
@@ -321,6 +352,14 @@ export function LeadWorkspaceActions({
   const [isPreparingSend, setIsPreparingSend] = useState(false);
   const [preparedPreviewUrl, setPreparedPreviewUrl] = useState("");
   const [isPreparedReady, setIsPreparedReady] = useState(false);
+  type DraftSaveUiState = "idle" | "saving" | "saved" | "saved_local" | "failed";
+  const [draftSaveUi, setDraftSaveUi] = useState<DraftSaveUiState>("idle");
+  const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
+  const lastSavedDraftFingerprintRef = useRef<string>("");
+  const sampleLatestRef = useRef<LeadSampleRecord | null>(null);
+  const skipAutosaveUntilRef = useRef(0);
+  sampleLatestRef.current = sample;
+
   const [outreachEcho, setOutreachEcho] = useState<{
     ok: boolean;
     channel: "email" | "preview_email";
@@ -344,6 +383,12 @@ export function LeadWorkspaceActions({
   useEffect(() => {
     if (autoOpenSampleBuilder) setSampleBuilderOpen(true);
   }, [autoOpenSampleBuilder]);
+
+  useEffect(() => {
+    if (sampleBuilderOpen) {
+      skipAutosaveUntilRef.current = Date.now() + 2000;
+    }
+  }, [sampleBuilderOpen]);
 
   const outreachBanner = useMemo(() => {
     if (outreachEcho) return outreachEcho;
@@ -505,16 +550,24 @@ export function LeadWorkspaceActions({
     setGeneratedSampleText(textBody);
   }
 
-  function applyAutofill(base: LeadSampleRecord, trigger: "open_builder" | "first_generate"): LeadSampleRecord {
-    const result = autofillLeadSample(base, {
-      businessName: initialBusinessName,
-      category: initialCategory,
-      city: initialCity,
-      issue: initialIssue,
-      quickFixSummary,
-      notes: savedNotes,
-      website,
-    });
+  function applyAutofill(
+    base: LeadSampleRecord,
+    trigger: "open_builder" | "first_generate",
+    opts?: LeadSampleAutofillOptions
+  ): LeadSampleRecord {
+    const result = autofillLeadSample(
+      base,
+      {
+        businessName: initialBusinessName,
+        category: initialCategory,
+        city: initialCity,
+        issue: initialIssue,
+        quickFixSummary,
+        notes: savedNotes,
+        website,
+      },
+      opts
+    );
     if (process.env.NODE_ENV !== "production" && result.filledFields.length > 0) {
       console.info("[Lead Sample Autofill]", {
         lead_id: leadId,
@@ -566,9 +619,11 @@ export function LeadWorkspaceActions({
       businessType: initialCategory,
       note: initialIssue,
     });
-    const withDefaults = applyAutofill(base, "first_generate");
+    const withDefaults = applyAutofill(base, "first_generate", { forcePersonalizedCopy: true });
     setSampleAndRefresh(withDefaults);
-    setMessage("Reset to suggested defaults.");
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(withDefaults);
+    setDraftSaveUi("idle");
+    setMessage("Reset to suggested copy and defaults.");
     setError(null);
   }
 
@@ -594,8 +649,10 @@ export function LeadWorkspaceActions({
       template_type: "",
       visual_theme: "",
     });
-    const withDefaults = applyAutofill(suggested, "open_builder");
+    const withDefaults = applyAutofill(suggested, "open_builder", { forcePersonalizedCopy: true });
     setSampleAndRefresh(withDefaults);
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(withDefaults);
+    setDraftSaveUi("idle");
     setMessage("Copy regenerated from lead insights.");
     setError(null);
   }
@@ -774,6 +831,7 @@ export function LeadWorkspaceActions({
       setSampleStorageSource("local");
       buildPreviewUrl(fallback);
       generateShareCopy(fallback);
+      lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(fallback);
     }
     try {
       const res = await fetch(`/api/lead-samples?lead_id=${encodeURIComponent(leadId)}`, {
@@ -808,6 +866,7 @@ export function LeadWorkspaceActions({
         setSampleStorageSource("server");
         buildPreviewUrl(normalized);
         generateShareCopy(normalized);
+        lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(normalized);
       }
     } catch {
       // local fallback already loaded when available
@@ -817,6 +876,9 @@ export function LeadWorkspaceActions({
   }
 
   useEffect(() => {
+    setDraftSaveUi("idle");
+    setLastDraftSavedAt(null);
+    lastSavedDraftFingerprintRef.current = "";
     void loadLeadSample();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leadId]);
@@ -833,6 +895,7 @@ export function LeadWorkspaceActions({
       });
     const next = applyAutofill(base, "open_builder");
     setSampleAndRefresh(next);
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sampleBuilderOpen, isSampleLoading]);
 
@@ -1384,6 +1447,7 @@ export function LeadWorkspaceActions({
         updated_at: new Date().toISOString(),
       })
     );
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(saved);
     console.info("[Lead Sample Preview] sample saved", {
       lead_id: leadId,
       sample_id: saved.id,
@@ -1415,7 +1479,10 @@ export function LeadWorkspaceActions({
     }
   }
 
-  async function persistSample(nextSample: LeadSampleRecord): Promise<LeadSampleRecord> {
+  async function persistSampleRecord(
+    nextSample: LeadSampleRecord,
+    options?: { silent?: boolean }
+  ): Promise<{ record: LeadSampleRecord; backendOk: boolean }> {
     const payload = normalizeLeadSampleRecord({
       ...nextSample,
       updated_at: new Date().toISOString(),
@@ -1436,17 +1503,71 @@ export function LeadWorkspaceActions({
       });
       upsertLocalSample(serverSaved);
       setSampleStorageSource("server");
-      return serverSaved;
+      return { record: serverSaved, backendOk: true };
     } catch (e) {
       const localSaved = normalizeLeadSampleRecord({ ...payload, source: "local", isLocalOnly: true });
       upsertLocalSample(localSaved);
       setSampleStorageSource("local");
-      setError(
-        `Saved locally. Backend save failed: ${e instanceof Error ? e.message : "unknown error"}`
-      );
-      return localSaved;
+      if (!options?.silent) {
+        setError(
+          `Saved locally. Backend save failed: ${e instanceof Error ? e.message : "unknown error"}`
+        );
+      }
+      return { record: localSaved, backendOk: false };
     }
   }
+
+  async function persistSample(nextSample: LeadSampleRecord): Promise<LeadSampleRecord> {
+    const { record } = await persistSampleRecord(nextSample);
+    return record;
+  }
+
+  async function handleSaveSampleDraft() {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    setDraftSaveUi("saving");
+    setError(null);
+    const { record, backendOk } = await persistSampleRecord(
+      normalizeLeadSampleRecord({ ...base, updated_at: new Date().toISOString() }),
+      { silent: true }
+    );
+    setSampleAndRefresh(record);
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(record);
+    setLastDraftSavedAt(new Date().toISOString());
+    setDraftSaveUi(backendOk ? "saved" : "saved_local");
+    setMessage(backendOk ? "Draft saved to backend." : "Draft saved locally (backend unavailable).");
+  }
+
+  useEffect(() => {
+    if (!sampleBuilderOpen || isSampleLoading || !sample) return;
+    const fp = sampleDraftFingerprint(sample);
+    if (fp === lastSavedDraftFingerprintRef.current) return;
+    const timer = window.setTimeout(() => {
+      if (Date.now() < skipAutosaveUntilRef.current) return;
+      const latest = sampleLatestRef.current;
+      if (!latest) return;
+      const latestFp = sampleDraftFingerprint(latest);
+      if (latestFp === lastSavedDraftFingerprintRef.current) return;
+      void (async () => {
+        setDraftSaveUi("saving");
+        const { record, backendOk } = await persistSampleRecord(
+          normalizeLeadSampleRecord({ ...latest, updated_at: new Date().toISOString() }),
+          { silent: true }
+        );
+        lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(record);
+        setSampleAndRefresh(record);
+        setLastDraftSavedAt(new Date().toISOString());
+        setDraftSaveUi(backendOk ? "saved" : "saved_local");
+      })();
+    }, 1600);
+    return () => window.clearTimeout(timer);
+  }, [sample, sampleBuilderOpen, isSampleLoading]);
 
   async function createOrOpenSample() {
     setError(null);
@@ -1462,13 +1583,16 @@ export function LeadWorkspaceActions({
     const prefilled = applyAutofill(base, "first_generate");
     const saved = await persistSample(prefilled);
     setSampleAndRefresh(saved);
+    lastSavedDraftFingerprintRef.current = sampleDraftFingerprint(saved);
+    setLastDraftSavedAt(new Date().toISOString());
+    setDraftSaveUi(saved.isLocalOnly ? "saved_local" : "saved");
     setMessage(saved.isLocalOnly ? "Sample saved locally." : "Sample saved to backend.");
     setSampleBuilderOpen(true);
   }
 
   async function updateSampleField<K extends keyof LeadSampleRecord>(field: K, value: LeadSampleRecord[K]) {
     const base = sample || buildDefaultLeadSample({ leadId, businessName: initialBusinessName, businessType: initialCategory, note: initialIssue });
-    const next = normalizeLeadSampleRecord({
+    let next = normalizeLeadSampleRecord({
       ...base,
       [field]: value,
       lead_id: leadId,
@@ -1476,9 +1600,22 @@ export function LeadWorkspaceActions({
       business_type: base.business_type || initialCategory || "service business",
       updated_at: new Date().toISOString(),
     });
-    const shouldDerive = ["business_type", "headline_style", "cta_style", "visual_theme", "template_type"].includes(
-      String(field)
-    );
+    if (field === "site_goal") {
+      const pair = pickCtaPairFromSiteGoal(String(value));
+      next = normalizeLeadSampleRecord({
+        ...next,
+        cta_style: pair.cta_style,
+        cta_text: pair.cta_text,
+      });
+    }
+    const shouldDerive = [
+      "business_type",
+      "headline_style",
+      "cta_style",
+      "visual_theme",
+      "template_type",
+      "site_goal",
+    ].includes(String(field));
     setSampleAndRefresh(shouldDerive ? applySelectionDerivations(next) : next);
   }
 
@@ -2117,6 +2254,15 @@ export function LeadWorkspaceActions({
             </label>
 
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Local trust line (auto — shows as local positioning on the sample)
+              <textarea
+                className="admin-input mt-1 min-h-[56px]"
+                value={sampleForUi.intro_text || ""}
+                onChange={(e) => void updateSampleField("intro_text", e.target.value)}
+              />
+            </label>
+
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
               Step 3: Services (auto)
               <textarea
                 className="admin-input mt-1 min-h-[90px]"
@@ -2149,33 +2295,73 @@ export function LeadWorkspaceActions({
               </select>
             </label>
 
+            <div
+              className="rounded border p-2 space-y-2"
+              style={{ borderColor: "var(--admin-border)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+                Save &amp; preview
+              </p>
+              <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+                Headline, subheadline, services, trust line, and CTA are auto-filled from the lead. Tweak below, then save
+                or generate.
+              </p>
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  type="button"
+                  className="admin-btn-primary text-xs"
+                  onClick={() => void handleSaveSampleDraft()}
+                  disabled={draftSaveUi === "saving"}
+                >
+                  {draftSaveUi === "saving" ? "Saving..." : "Save Draft"}
+                </button>
+                <button type="button" className="admin-btn-ghost text-xs" onClick={() => resetToSuggestedDefaults()}>
+                  Reset to Suggested
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn-ghost text-xs"
+                  onClick={() => void openGeneratedPreview(sampleForUi)}
+                >
+                  Generate Preview
+                </button>
+              </div>
+              <p className="text-[11px] font-medium" style={{ color: "var(--admin-fg)" }}>
+                {draftSaveUi === "saving"
+                  ? "Saving..."
+                  : draftSaveUi === "failed"
+                    ? "Save failed — try again or check your connection."
+                    : draftSaveUi === "saved"
+                      ? `Draft saved · Last saved at ${lastDraftSavedAt ? new Date(lastDraftSavedAt).toLocaleString() : "—"}`
+                      : draftSaveUi === "saved_local"
+                        ? `Saved locally only · Last saved at ${lastDraftSavedAt ? new Date(lastDraftSavedAt).toLocaleString() : "—"} — backend save did not succeed.`
+                        : lastDraftSavedAt
+                          ? `Last saved at ${new Date(lastDraftSavedAt).toLocaleString()} — auto-save runs ~1.5s after you stop editing.`
+                          : "Auto-save runs ~1.5s after you stop editing. Use Save Draft anytime."}
+              </p>
+            </div>
+
             <div className="space-y-1">
               <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
-                Section 4: Generate + Prepare Send
+                More actions
               </p>
               <div className="flex flex-wrap gap-2">
-              <button
-                className="admin-btn-primary text-xs"
-                onClick={() => void generateAndPrepareSend()}
-                disabled={isPreparingSend}
-              >
-                {isPreparingSend ? "Preparing..." : "Generate + Prepare Send"}
-              </button>
-              <button
-                className="admin-btn-ghost text-xs"
-                onClick={() => void openGeneratedPreview(sampleForUi)}
-              >
-                Generate Preview Only
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => quickGenerateWithDefaults()}>
-                Generate Preview (Use Defaults)
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
-                Copy Preview Link
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void copyEmail()}>
-                Copy Message
-              </button>
+                <button
+                  className="admin-btn-primary text-xs"
+                  onClick={() => void generateAndPrepareSend()}
+                  disabled={isPreparingSend}
+                >
+                  {isPreparingSend ? "Preparing..." : "Generate + Prepare Send"}
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => quickGenerateWithDefaults()}>
+                  Generate Preview (Use Defaults)
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
+                  Copy Preview Link
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => void copyEmail()}>
+                  Copy Message
+                </button>
               </div>
             </div>
 
@@ -2276,10 +2462,10 @@ export function LeadWorkspaceActions({
                     Regenerate Images
                   </button>
                   <button className="admin-btn-ghost text-xs" onClick={() => resetToSuggestedDefaults()}>
-                    Reset To Suggested Defaults
+                    Reset to Suggested
                   </button>
-                  <button className="admin-btn-ghost text-xs" onClick={() => void createOrOpenSample()}>
-                    Save Sample
+                  <button className="admin-btn-ghost text-xs" onClick={() => void handleSaveSampleDraft()}>
+                    Save Draft
                   </button>
                 </div>
                 {isLikelyFacebookOnly ? (

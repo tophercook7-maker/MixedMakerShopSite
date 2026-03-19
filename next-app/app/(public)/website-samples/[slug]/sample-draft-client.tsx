@@ -42,9 +42,23 @@ export type SampleDraft = {
   finalCta: string;
 };
 
+export type SampleDraftEmbedOptions = {
+  /** Hide edit UI; keep presentation-only (e.g. public portfolio pages). */
+  lockPresentation?: boolean;
+  initialStylePreset?: StylePreset;
+  initialColorPreset?: ColorPreset;
+  /** Hero secondary CTA target (e.g. `#services`, `/website-samples`). Default `/website-samples`. */
+  secondaryHref?: string;
+  /** Footer attribution line for portfolio samples. */
+  portfolioFooter?: boolean;
+  /** Replace internal “demo” helper copy with sendable portfolio tone. */
+  portfolioCopy?: boolean;
+};
+
 type Props = {
   initialDraft: SampleDraft;
   initialMode: Mode;
+  embedOptions?: SampleDraftEmbedOptions;
 };
 
 const STYLE_PRESET_OPTIONS: Array<{ id: StylePreset; label: string }> = [
@@ -247,15 +261,20 @@ function withDraftDefaults(d: SampleDraft): SampleDraft {
   };
 }
 
-export function SampleDraftClient({ initialDraft, initialMode }: Props) {
-  const [mode, setMode] = useState<Mode>(initialMode);
-  const [stylePreset, setStylePreset] = useState<StylePreset>("clean-modern");
-  const [colorPreset, setColorPreset] = useState<ColorPreset>("blue");
+export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: Props) {
+  const lockPresentation = Boolean(embedOptions?.lockPresentation);
+  const [mode, setMode] = useState<Mode>(lockPresentation ? "presentation" : initialMode);
+  const [stylePreset, setStylePreset] = useState<StylePreset>(embedOptions?.initialStylePreset ?? "clean-modern");
+  const [colorPreset, setColorPreset] = useState<ColorPreset>(embedOptions?.initialColorPreset ?? "blue");
   const [draft, setDraft] = useState<SampleDraft>(() => withDraftDefaults(initialDraft));
 
   useEffect(() => {
     setDraft(withDraftDefaults(initialDraft));
   }, [initialDraft]);
+
+  useEffect(() => {
+    if (lockPresentation) setMode("presentation");
+  }, [lockPresentation]);
 
   useEffect(() => {
     const body = document.body;
@@ -351,6 +370,14 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
   const telHref = `tel:${draft.phone.replace(/[^\d]/g, "")}`;
   const galleryList = draft.galleryImages ?? [];
   const whyBullets = draft.whyChooseBullets ?? [];
+  const secondaryHref = embedOptions?.secondaryHref ?? "/website-samples";
+  const portfolioCopy = Boolean(embedOptions?.portfolioCopy);
+  const servicesLead = portfolioCopy
+    ? "Clear service names and short benefits help visitors compare options and call faster."
+    : "Service cards like these help visitors scan what you offer and pick up the phone faster.";
+  const galleryLead = portfolioCopy
+    ? "Project-style photography and real jobs build confidence before the first conversation."
+    : "Real photos build trust. Your live site would feature your own shots here.";
   const exportPayload = useMemo(
     () => ({
       mode,
@@ -416,9 +443,15 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
               <a href={telHref} className="btn gold">
                 {draft.heroPrimaryCta}
               </a>
-              <Link href="/website-samples" className="btn ghost">
-                {draft.heroSecondaryCta}
-              </Link>
+              {secondaryHref.startsWith("/") && !secondaryHref.startsWith("/#") ? (
+                <Link href={secondaryHref} className="btn ghost">
+                  {draft.heroSecondaryCta}
+                </Link>
+              ) : (
+                <a href={secondaryHref} className="btn ghost">
+                  {draft.heroSecondaryCta}
+                </a>
+              )}
             </div>
           </div>
             <figure className="sample-hero-spotlight" aria-label={draft.heroImageAlt ?? `${draft.businessName} featured image`}>
@@ -437,9 +470,7 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
       <section className="section sample-section" id="services">
         <div className="container">
           <h2 className="sample-h2">{draft.offeringsTitle}</h2>
-          <p className="sample-sub sample-section-lead">
-            Service cards like these help visitors scan what you offer and pick up the phone faster.
-          </p>
+          <p className="sample-sub sample-section-lead">{servicesLead}</p>
           <div className="how-it-works-grid sample-service-grid">
             {draft.offerings.map((item) => (
               <article key={item.name} className="how-it-works-card sample-service-card">
@@ -468,9 +499,7 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
         <section className="section sample-section sample-gallery-section" id="gallery">
           <div className="container">
             <h2 className="sample-h2">{draft.gallerySectionTitle}</h2>
-            <p className="sample-sub sample-section-lead">
-              Real photos build trust. Your live site would feature your own shots here.
-            </p>
+            <p className="sample-sub sample-section-lead">{galleryLead}</p>
             <div className="sample-gallery-grid">
               {galleryList.map((src, idx) => (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -576,12 +605,33 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
           </div>
         </div>
       </section>
+
+      {embedOptions?.portfolioFooter ? (
+        <footer className="section sample-section" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <p
+              className="small"
+              style={{
+                margin: 0,
+                textAlign: "center",
+                opacity: 0.88,
+                maxWidth: 560,
+                marginLeft: "auto",
+                marginRight: "auto",
+                lineHeight: 1.5,
+              }}
+            >
+              This is a sample concept showing the kind of website Topher can build for local businesses.
+            </p>
+          </div>
+        </footer>
+      ) : null}
     </>
   );
 
   return (
     <div className={`sample-standalone ${mode === "presentation" ? "is-presentation" : "is-edit"}`} style={visualVars}>
-      {mode === "edit" ? (
+      {mode === "edit" && !lockPresentation ? (
         <div className="sample-live-builder">
           <aside className="sample-editor-dock">
             <div className="sample-editor-card">
@@ -671,7 +721,9 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
           </aside>
           <div className="sample-live-canvas">{site}</div>
         </div>
-      ) : site}
+      ) : (
+        site
+      )}
     </div>
   );
 }

@@ -106,11 +106,37 @@ export const TEMPLATE_TYPE_OPTIONS = [
   "Local Trust Builder",
 ] as const;
 
-type LeadSampleAutofillResult = {
+export type LeadSampleAutofillResult = {
   sample: LeadSampleRecord;
   filledFields: string[];
   sources: Record<string, string>;
 };
+
+export type LeadSampleAutofillOptions = {
+  /** Overwrite headline, subheadline, services, trust intro, and CTA with smart lead-based defaults. */
+  forcePersonalizedCopy?: boolean;
+};
+
+const PLACEHOLDER_SUBHEADLINE_SNIPPETS = [
+  "this sample shows how your business could look online with clearer messaging and stronger calls to action.",
+  "turn more visitors into calls with a cleaner, modern layout.",
+];
+
+function isWeakHeroHeadline(value: string): boolean {
+  const v = String(value || "").trim().toLowerCase();
+  if (!v) return true;
+  if (isPlaceholderLike(value, ["a cleaner, more modern website for your business"])) return true;
+  if (v === "a better website for business name") return true;
+  if (v.startsWith("clean, modern website for service business")) return true;
+  if (v.startsWith("get more calls for your service business business")) return true;
+  return false;
+}
+
+function isWeakSubheadline(value: string): boolean {
+  const v = String(value || "").trim().toLowerCase();
+  if (!v) return true;
+  return PLACEHOLDER_SUBHEADLINE_SNIPPETS.some((s) => v.includes(s)) || v.length < 24;
+}
 
 export const IMAGE_POOLS: Record<string, string[]> = {
   detailing: [
@@ -233,14 +259,75 @@ export function readableBusinessType(category: string): string {
   return Array.from(new Set(labels)).join(" & ");
 }
 
+/** Detects common local-service combos from lead category / business type text. */
+export function detectLeadOfferingsSegments(text: string): {
+  detailing: boolean;
+  pressureWashing: boolean;
+} {
+  const lower = String(text || "").toLowerCase();
+  const detailing =
+    /\bdetail|\bdetailing|mobile detail|auto detail|car detail|ceramic|wash and wax|interior clean/i.test(lower);
+  const pressureWashing =
+    /pressure wash|power wash|soft wash|house wash|driveway clean|sidewalk|deck.{0,8}patio|exterior wash/i.test(
+      lower
+    ) || (lower.includes("washing") && lower.includes("pressure"));
+  return { detailing, pressureWashing };
+}
+
+export function buildPersonalizedHeadline(input: {
+  category: string;
+  businessTypeLabel: string;
+  businessName: string;
+  city?: string | null;
+}): string {
+  const name = String(input.businessName || "Your Business").trim() || "Your Business";
+  const raw = `${input.category || ""} ${input.businessTypeLabel || ""}`;
+  const { detailing, pressureWashing } = detectLeadOfferingsSegments(raw);
+  if (detailing && pressureWashing) {
+    return "Mobile Detailing & Pressure Washing That Helps You Stand Out";
+  }
+  if (detailing) {
+    return "Auto Detailing That Makes Your Vehicle Look Its Best";
+  }
+  if (pressureWashing) {
+    return "Professional Pressure Washing for Homes, Driveways, and More";
+  }
+  return `A Better Website for ${name}`;
+}
+
+export function buildPersonalizedSubheadline(hasWebsite: boolean): string {
+  return hasWebsite
+    ? "Make it easier for customers to see your services, trust your work, and request a quote."
+    : "A clean, modern website can help turn local visitors into real calls.";
+}
+
+export function buildLocalTrustLine(input: { city?: string | null; businessName?: string | null }): string {
+  const city = String(input.city || "").trim();
+  if (city) {
+    return `Serving ${city} and nearby customers with reliable service and quick response.`;
+  }
+  return "Built to help nearby customers find you fast and request a quote.";
+}
+
+export function pickCtaPairFromSiteGoal(siteGoal: string): { cta_style: string; cta_text: string } {
+  const g = String(siteGoal || "").toLowerCase();
+  if (g.includes("call")) return { cta_style: "Call Now", cta_text: "Call Now" };
+  if (g.includes("quote request") || g.includes("quote")) return { cta_style: "Request Estimate", cta_text: "Request Estimate" };
+  if (g.includes("contact easier") || g.includes("contact")) return { cta_style: "Get Quote", cta_text: "Get Quote" };
+  if (g.includes("trust")) return { cta_style: "Request Estimate", cta_text: "Request Estimate" };
+  if (g.includes("show service") || g.includes("clearly")) return { cta_style: "Book Service", cta_text: "Book Service" };
+  if (g.includes("modern")) return { cta_style: "Get Quote", cta_text: "Get Quote" };
+  return { cta_style: "Get Quote", cta_text: "Get Quote" };
+}
+
 const SERVICES_BY_CATEGORY: Array<{ key: string; services: string[] }> = [
   {
     key: "detail",
-    services: ["Exterior Detailing", "Interior Detailing", "Full Detail Packages"],
+    services: ["Mobile Detailing", "Interior Cleaning", "Exterior Wash & Wax", "Full Detail Packages"],
   },
   {
     key: "pressure wash",
-    services: ["Driveway Cleaning", "House Washing", "Deck & Patio Cleaning"],
+    services: ["Driveway Cleaning", "House Washing", "Deck & Patio Cleaning", "Sidewalk Cleaning"],
   },
   {
     key: "landscap",
@@ -392,25 +479,10 @@ export function applyRandomImagesToSample(
   return { sample: normalizeLeadSampleRecord(sample), poolKey };
 }
 
-function introFromInsights(args: {
-  issue: string;
-  quickFixSummary: string;
-  notes: string[];
-  hasWebsite: boolean;
-}): string {
-  const source = [args.issue, args.quickFixSummary, ...args.notes].join(" ").toLowerCase();
-  if (!args.hasWebsite || source.includes("no website")) {
-    return "Right now, customers may not have a clear online place to learn about your business or contact you. This sample shows how a modern site can build trust and turn visitors into real inquiries.";
-  }
-  if (source.includes("contact") || source.includes("hard to find")) {
-    return "Right now, customers may have trouble quickly finding your contact info. This sample shows how a clearer layout can help turn visitors into real inquiries.";
-  }
-  return "Make it easier for customers to find you, trust your work, and contact you. This sample focuses on a cleaner layout built to convert visits into calls.";
-}
-
 export function autofillLeadSample(
   input: Partial<LeadSampleRecord>,
-  context: LeadSampleAutofillContext
+  context: LeadSampleAutofillContext,
+  options?: LeadSampleAutofillOptions
 ): LeadSampleAutofillResult {
   const sample = normalizeLeadSampleRecord(input);
   const filledFields: string[] = [];
@@ -423,12 +495,13 @@ export function autofillLeadSample(
   const notes = Array.isArray(context.notes) ? context.notes.map((n) => String(n || "").trim()).filter(Boolean) : [];
   const typeLabel = readableBusinessType(category || sample.business_type);
   const hasWebsite = Boolean(String(context.website || "").trim());
+  const force = Boolean(options?.forcePersonalizedCopy);
 
   const siteGoalEmpty = !String(sample.site_goal || "").trim();
-  if (siteGoalEmpty) {
+  if (siteGoalEmpty || force) {
     sample.site_goal = inferSiteGoalFromInsights(issue || quickFixSummary, hasWebsite);
     filledFields.push("site_goal");
-    sources.site_goal = "lead_insights";
+    sources.site_goal = force && !siteGoalEmpty ? "lead_insights_refresh" : "lead_insights";
   }
 
   const visualThemeEmpty = !String(sample.visual_theme || "").trim();
@@ -447,18 +520,19 @@ export function autofillLeadSample(
     sources.template_type = "default";
   }
 
+  const ctaPair = pickCtaPairFromSiteGoal(sample.site_goal);
   const ctaStyleEmpty = !String(sample.cta_style || "").trim();
-  if (ctaStyleEmpty) {
-    sample.cta_style = sample.site_goal === "Get More Calls" ? "Call Now" : "Get Quote";
+  if (ctaStyleEmpty || force) {
+    sample.cta_style = ctaPair.cta_style;
     filledFields.push("cta_style");
-    sources.cta_style = "site_goal";
+    sources.cta_style = force ? "site_goal_force" : "site_goal";
   }
 
   const ctaTextEmpty = !String(sample.cta_text || "").trim() || isPlaceholderLike(sample.cta_text, ["get started"]);
-  if (ctaTextEmpty) {
-    sample.cta_text = sample.cta_style || "Get Quote";
+  if (ctaTextEmpty || force) {
+    sample.cta_text = ctaPair.cta_text;
     filledFields.push("cta_text");
-    sources.cta_text = "cta_style";
+    sources.cta_text = force ? "site_goal_force" : "cta_style";
   }
 
   const headlineStyleEmpty = !String(sample.headline_style || "").trim();
@@ -482,15 +556,15 @@ export function autofillLeadSample(
   const headlineEmpty =
     !String(sample.hero_headline || "").trim() ||
     isPlaceholderLike(sample.hero_headline, ["a cleaner, more modern website for your business"]);
-  if (headlineEmpty) {
-    sample.hero_headline = buildHeadlineFromStyle({
-      style: sample.headline_style,
-      businessType: typeLabel,
-      city,
+  if (force || headlineEmpty || isWeakHeroHeadline(sample.hero_headline)) {
+    sample.hero_headline = buildPersonalizedHeadline({
+      category: `${category} ${sample.business_type}`,
+      businessTypeLabel: typeLabel,
       businessName,
+      city,
     });
     filledFields.push("hero_headline");
-    sources.hero_headline = "headline_style";
+    sources.hero_headline = force ? "personalized_force" : "personalized_lead";
   }
 
   const subheadlineEmpty =
@@ -498,10 +572,10 @@ export function autofillLeadSample(
     isPlaceholderLike(sample.hero_subheadline, [
       "this sample shows how your business could look online with clearer messaging and stronger calls to action.",
     ]);
-  if (subheadlineEmpty) {
-    sample.hero_subheadline = "Turn more visitors into calls with a cleaner, modern layout.";
+  if (force || subheadlineEmpty || isWeakSubheadline(sample.hero_subheadline)) {
+    sample.hero_subheadline = buildPersonalizedSubheadline(hasWebsite);
     filledFields.push("hero_subheadline");
-    sources.hero_subheadline = "benefit_template";
+    sources.hero_subheadline = force ? "personalized_force" : "personalized_lead";
   }
 
   const introEmpty =
@@ -510,27 +584,23 @@ export function autofillLeadSample(
       "we help local businesses make a stronger first impression and turn more visitors into calls.",
       "this sample is tailored for your business and can be refined into a live production site.",
     ]);
-  if (introEmpty) {
-    sample.intro_text = introFromInsights({
-      issue,
-      quickFixSummary,
-      notes,
-      hasWebsite,
-    });
+  if (force || introEmpty) {
+    sample.intro_text = buildLocalTrustLine({ city, businessName });
     filledFields.push("intro_text");
-    sources.intro_text = "lead_insights";
+    sources.intro_text = "local_trust_line";
   }
 
   const servicesEmpty =
     sample.services.length === 0 ||
     sample.services.every((entry) => /^service (one|two|three)$/i.test(String(entry || "").trim()));
-  if (servicesEmpty) {
-    const mapped = servicesFromCategory(category || sample.business_type);
-    sample.services = mapped.length ? mapped.slice(0, 6) : ["Service One", "Service Two", "Service Three"];
-    if (mapped.length) {
-      filledFields.push("services");
-      sources.services = "category";
-    }
+  if (force || servicesEmpty) {
+    const mapped = servicesFromCategory(`${category} ${sample.business_type}`);
+    const nextServices = mapped.length
+      ? mapped.slice(0, 8)
+      : getSuggestedServicesForBusinessType(typeLabel).slice(0, 6);
+    sample.services = nextServices.length ? nextServices : ["Service One", "Service Two", "Service Three"];
+    filledFields.push("services");
+    sources.services = force ? "category_force" : "category";
   }
 
   const imageUrlsEmpty = sample.image_urls.length === 0;
