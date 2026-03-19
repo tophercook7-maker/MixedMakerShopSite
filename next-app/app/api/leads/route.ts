@@ -5,14 +5,27 @@ import { leadSchema } from "@/lib/validations";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { isManualOnlyMode } from "@/lib/manual-mode";
 
-function parseMissingColumnFromError(message: string): string | null {
-  const text = String(message || "");
-  const quoted = text.match(/column ["']?([a-zA-Z0-9_]+)["']? .* does not exist/i);
-  if (quoted?.[1]) return quoted[1];
-  const unquoted = text.match(/column ([a-zA-Z0-9_]+) does not exist/i);
-  if (unquoted?.[1]) return unquoted[1];
-  return null;
-}
+const ALLOWED_LEAD_INSERT_FIELDS = [
+  "business_name",
+  "contact_name",
+  "email",
+  "phone",
+  "website",
+  "industry",
+  "category",
+  "address",
+  "lead_source",
+  "status",
+  "notes",
+  "follow_up_date",
+  "is_manual",
+  "known_owner_name",
+  "known_context",
+  "lead_bucket",
+  "door_status",
+  "owner_id",
+  "last_updated_at",
+] as const;
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -52,7 +65,6 @@ export async function POST(request: Request) {
     website: String(parsed.data.website || "").trim() || undefined,
     industry: parsed.data.industry,
     category: parsed.data.category,
-    city: parsed.data.city,
     address: parsed.data.address,
     lead_source: parsed.data.lead_source,
     status: parsed.data.status || "new",
@@ -73,62 +85,43 @@ export async function POST(request: Request) {
     request_id: requestId,
     payload: row,
   });
-  const droppedColumns: string[] = [];
-  let insertPayload: Record<string, unknown> = { ...row };
-  let data: Record<string, unknown> | null = null;
-  let errorMessage: string | null = null;
 
-  for (let attempt = 1; attempt <= Object.keys(row).length + 2; attempt += 1) {
-    console.info("[Leads API] insert attempt", {
+  const safePayload = Object.fromEntries(
+    Object.entries(row).filter(([key]) =>
+      ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number])
+    )
+  );
+  const removedFields = Object.keys(row).filter(
+    (key) => !ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number])
+  );
+  console.info("[Leads API] filtered payload", {
+    request_id: requestId,
+    payload: safePayload,
+    removed_fields: removedFields,
+  });
+
+  console.info("[Leads API] insert attempt", {
+    request_id: requestId,
+    payload_keys: Object.keys(safePayload),
+  });
+  const { data, error } = await supabase
+    .from("leads")
+    .insert(safePayload)
+    .select()
+    .single();
+
+  if (error || !data) {
+    const dbErrorMessage = String(error?.message || "Lead insert failed.");
+    console.error("[Leads API] create failed", {
       request_id: requestId,
-      attempt,
-      payload_keys: Object.keys(insertPayload),
-    });
-    const { data: insertData, error } = await supabase
-      .from("leads")
-      .insert(insertPayload)
-      .select()
-      .single();
-
-    if (!error) {
-      data = (insertData || null) as Record<string, unknown> | null;
-      errorMessage = null;
-      break;
-    }
-
-    const message = String(error.message || "unknown insert error");
-    errorMessage = message;
-    const missingColumn = parseMissingColumnFromError(message);
-    if (!missingColumn || !(missingColumn in insertPayload)) {
-      console.error("[Leads API] create failed", {
-        request_id: requestId,
-        attempt,
-        error: message,
-      });
-      break;
-    }
-
-    droppedColumns.push(missingColumn);
-    const { [missingColumn]: _removed, ...nextPayload } = insertPayload;
-    insertPayload = nextPayload;
-    console.warn("[Leads API] create retrying without missing column", {
-      request_id: requestId,
-      attempt,
-      dropped_column: missingColumn,
-    });
-  }
-
-  if (!data) {
-    console.error("[Leads API] create final failure", {
-      request_id: requestId,
-      error: errorMessage,
-      dropped_columns: droppedColumns,
+      error: dbErrorMessage,
+      payload: safePayload,
     });
     return NextResponse.json(
       {
-        error: errorMessage || "Lead insert failed.",
+        error: dbErrorMessage,
         reason: "insert_failed",
-        dropped_columns: droppedColumns,
+        details: "Lead could not be persisted to backend.",
       },
       { status: 500 }
     );
@@ -137,7 +130,6 @@ export async function POST(request: Request) {
   console.info("[Leads API] create succeeded", {
     request_id: requestId,
     lead_id: String(data.id || ""),
-    dropped_columns: droppedColumns,
   });
   const responseBody = {
     ...data,
@@ -148,8 +140,8 @@ export async function POST(request: Request) {
     isLocalOnly: false,
     _create_debug: {
       request_id: requestId,
-      dropped_columns: droppedColumns,
-      persisted_with_column_fallback: droppedColumns.length > 0,
+      removed_fields: removedFields,
+      filtered_payload_keys: Object.keys(safePayload),
     },
   };
   console.info("[Leads API] create response sent", {
