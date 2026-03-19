@@ -243,6 +243,11 @@ export function LeadsWorkflowView({
   const [adding, setAdding] = useState(false);
   const [addOpenHandled, setAddOpenHandled] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [saveToWorkspaceBlock, setSaveToWorkspaceBlock] = useState<{
+    leadId: string;
+    query?: string;
+    reason?: string;
+  } | null>(null);
   const [optimisticLeads, setOptimisticLeads] = useState<WorkflowLead[]>([]);
   const [localFallbackLeads, setLocalFallbackLeads] = useState<WorkflowLead[]>([]);
   const LOCAL_WORKFLOW_LEADS_KEY = "mixedmakershop.local_workflow_leads";
@@ -887,23 +892,49 @@ export function LeadsWorkflowView({
 
   async function navigateToLeadWithGuard(
     lead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly">,
-    query?: string
+    query?: string,
+    options?: { actionName?: string; showSaveBlockOnPromotionFailure?: boolean }
   ) {
+    const actionName = String(options?.actionName || "Open Lead");
+    console.info("[LeadsWorkflowView] navigation action clicked", {
+      action: actionName,
+      lead_id: lead.id,
+      source: lead.source || "server",
+      is_local_only: Boolean(lead.isLocalOnly),
+      query: query || null,
+    });
     let resolvedLead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly"> = lead;
     if (isLocalOnlyLead(lead)) {
       const candidate = mergedLeads.find((entry) => entry.id === lead.id);
       if (!candidate) {
         const message = "This lead must be saved to backend before continuing.";
         setError(message);
-        if (typeof window !== "undefined") window.alert(message);
+        if (options?.showSaveBlockOnPromotionFailure) {
+          setSaveToWorkspaceBlock({
+            leadId: lead.id,
+            query,
+            reason: "Local lead data could not be found. Save from the lead list and retry.",
+          });
+        } else if (typeof window !== "undefined") {
+          window.alert(message);
+        }
         return;
       }
       const promoted = await promoteLeadToWorkspace(candidate);
       if (!promoted) {
-        const message = "This lead must be saved to backend before continuing.";
-        if (typeof window !== "undefined") window.alert(message);
+        if (options?.showSaveBlockOnPromotionFailure) {
+          setSaveToWorkspaceBlock({
+            leadId: candidate.id,
+            query,
+            reason:
+              "This lead needs to be saved to your workspace before you can build a sample.",
+          });
+        } else if (typeof window !== "undefined") {
+          window.alert("This lead must be saved to backend before continuing.");
+        }
         return;
       }
+      setSaveToWorkspaceBlock(null);
       resolvedLead = promoted;
     }
     const destination = leadHref(resolvedLead, query);
@@ -919,6 +950,30 @@ export function LeadsWorkflowView({
       if (typeof window !== "undefined") window.alert(check.message);
       return;
     }
+    console.info("[LeadsWorkflowView] final route opened", {
+      action: actionName,
+      lead_id: resolvedLead.id,
+      destination,
+    });
+    if (typeof window !== "undefined") window.location.assign(destination);
+  }
+
+  async function continueBlockedSaveToWorkspace() {
+    if (!saveToWorkspaceBlock) return;
+    const candidate = mergedLeads.find((entry) => entry.id === saveToWorkspaceBlock.leadId);
+    if (!candidate) {
+      setError("Local lead data was not found. Go back to Leads and try again.");
+      return;
+    }
+    const promoted = await promoteLeadToWorkspace(candidate);
+    if (!promoted) return;
+    setSaveToWorkspaceBlock(null);
+    const destination = leadHref(promoted, saveToWorkspaceBlock.query);
+    console.info("[LeadsWorkflowView] final route opened", {
+      action: "Build Sample",
+      lead_id: promoted.id,
+      destination,
+    });
     if (typeof window !== "undefined") window.location.assign(destination);
   }
 
@@ -1398,6 +1453,35 @@ export function LeadsWorkflowView({
             {submitMessage}
           </div>
         ) : null}
+        {saveToWorkspaceBlock ? (
+          <div
+            className="mb-3 rounded-lg border px-3 py-3 space-y-2"
+            style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.2)" }}
+          >
+            <h3 className="text-sm font-semibold">Save this lead to continue</h3>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              This lead needs to be saved to your workspace before you can build a sample.
+            </p>
+            {saveToWorkspaceBlock.reason ? (
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                {saveToWorkspaceBlock.reason}
+              </p>
+            ) : null}
+            {error ? (
+              <p className="text-xs" style={{ color: "#fca5a5" }}>
+                Backend error: {error}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="admin-btn-primary text-xs" onClick={() => void continueBlockedSaveToWorkspace()}>
+                Save to Workspace
+              </button>
+              <button type="button" className="admin-btn-ghost text-xs" onClick={() => setSaveToWorkspaceBlock(null)}>
+                Dismiss
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {filtered.length === 0 ? (
           <div className="admin-empty !py-8">
@@ -1648,8 +1732,15 @@ export function LeadsWorkflowView({
                     className="admin-btn-ghost text-xs"
                     onClick={(event) => {
                       event.preventDefault();
-                      actionDebug("Build Sample clicked", { leadId: lead.id });
-                      void navigateToLeadWithGuard(lead, "sample=1");
+                      actionDebug("Build Sample clicked", {
+                        leadId: lead.id,
+                        source: lead.source || "server",
+                        isLocalOnly: Boolean(lead.isLocalOnly),
+                      });
+                      void navigateToLeadWithGuard(lead, "sample=1", {
+                        actionName: "Build Sample",
+                        showSaveBlockOnPromotionFailure: true,
+                      });
                     }}
                   >
                     Build Sample
@@ -2022,8 +2113,15 @@ export function LeadsWorkflowView({
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
                             event.preventDefault();
-                            actionDebug("Build Sample clicked", { leadId: lead.id });
-                            void navigateToLeadWithGuard(lead, "sample=1");
+                            actionDebug("Build Sample clicked", {
+                              leadId: lead.id,
+                              source: lead.source || "server",
+                              isLocalOnly: Boolean(lead.isLocalOnly),
+                            });
+                            void navigateToLeadWithGuard(lead, "sample=1", {
+                              actionName: "Build Sample",
+                              showSaveBlockOnPromotionFailure: true,
+                            });
                           }}
                         >
                           Build Sample

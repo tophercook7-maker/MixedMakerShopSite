@@ -46,7 +46,13 @@ function toCreatePayload(lead: LocalWorkflowLead): Record<string, unknown> {
   };
 }
 
-export function SaveLocalLeadToWorkspace({ localLeadId }: { localLeadId: string }) {
+export function SaveLocalLeadToWorkspace({
+  localLeadId,
+  redirectQuery,
+}: {
+  localLeadId: string;
+  redirectQuery?: string;
+}) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,8 +118,10 @@ export function SaveLocalLeadToWorkspace({ localLeadId }: { localLeadId: string 
         new_lead_id: nextId,
         status: res.status,
       });
+      const targetPath = buildLeadPath(nextId, nextBusinessName);
+      const redirectPath = redirectQuery ? `${targetPath}?${redirectQuery}` : targetPath;
       setMessage("Lead saved to workspace.");
-      router.replace(buildLeadPath(nextId, nextBusinessName));
+      router.replace(redirectPath);
       router.refresh();
     } catch (e) {
       const detail = e instanceof Error ? e.message : "network error";

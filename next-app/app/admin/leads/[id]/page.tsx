@@ -500,6 +500,8 @@ export default async function AdminLeadDetailPage({
     );
   }
   const targetId = String(id || "").trim();
+  const redirectQuery =
+    sample === "1" ? "sample=1" : generate === "1" ? "generate=1" : compose === "1" ? "compose=1" : undefined;
   if (!targetId) {
     return (
       <section className="admin-card">
@@ -519,7 +521,7 @@ export default async function AdminLeadDetailPage({
         <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
           Save this lead to backend before continuing with CRM actions.
         </p>
-        <SaveLocalLeadToWorkspace localLeadId={targetId} />
+        <SaveLocalLeadToWorkspace localLeadId={targetId} redirectQuery={redirectQuery} />
         <div className="mt-4 flex gap-2">
           <Link href="/admin/leads" className="admin-btn-primary">
             Back to Leads
