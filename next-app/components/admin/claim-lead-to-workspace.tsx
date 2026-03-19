@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { buildLeadPath } from "@/lib/lead-route";
 
 export function ClaimLeadToWorkspace({
@@ -11,16 +10,17 @@ export function ClaimLeadToWorkspace({
   leadId: string;
   redirectQuery?: string;
 }) {
-  const router = useRouter();
   const [isClaiming, setIsClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [claimedRedirectUrl, setClaimedRedirectUrl] = useState<string | null>(null);
+
+  const hasSampleIntent = redirectQuery === "sample=1";
 
   async function claimLead() {
     setIsClaiming(true);
     setError(null);
-    setMessage(null);
-    console.info("[Claim Lead] attempting claim", { lead_id: leadId });
+    setClaimedRedirectUrl(null);
+    console.info("[Claim Lead] claim started", { lead_id: leadId, redirect_query: redirectQuery || null });
     try {
       const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/claim`, {
         method: "POST",
@@ -35,12 +35,17 @@ export function ClaimLeadToWorkspace({
       }
       const nextId = String(data.id || leadId).trim();
       const nextBusinessName = String(data.business_name || "").trim();
-      console.info("[Claim Lead] claim succeeded", { lead_id: leadId, claimed_id: nextId });
-      setMessage("Lead claimed to your workspace.");
       const targetPath = buildLeadPath(nextId, nextBusinessName);
       const redirectPath = redirectQuery ? `${targetPath}?${redirectQuery}` : targetPath;
-      router.replace(redirectPath);
-      router.refresh();
+      console.info("[Claim Lead] claim success, redirecting", {
+        lead_id: leadId,
+        claimed_id: nextId,
+        target_redirect_url: redirectPath,
+      });
+      setClaimedRedirectUrl(redirectPath);
+      if (typeof window !== "undefined") {
+        window.location.assign(redirectPath);
+      }
     } catch (e) {
       const detail = e instanceof Error ? e.message : "network error";
       console.info("[Claim Lead] claim failed", { lead_id: leadId, error: detail });
@@ -55,10 +60,17 @@ export function ClaimLeadToWorkspace({
       <button type="button" className="admin-btn-primary" onClick={() => void claimLead()} disabled={isClaiming}>
         {isClaiming ? "Claiming..." : "Claim to Workspace"}
       </button>
-      {message ? (
-        <p className="text-xs" style={{ color: "#86efac" }}>
-          {message}
-        </p>
+      {claimedRedirectUrl ? (
+        <div className="space-y-2">
+          <p className="text-xs" style={{ color: "#86efac" }}>
+            Lead claimed — redirecting...
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <a href={claimedRedirectUrl} className="admin-btn-primary text-xs">
+              {hasSampleIntent ? "Continue to Sample Builder" : "Continue to Lead"}
+            </a>
+          </div>
+        </div>
       ) : null}
       {error ? (
         <p className="text-xs" style={{ color: "#fca5a5" }}>

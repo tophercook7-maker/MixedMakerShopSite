@@ -57,6 +57,8 @@ export function SaveLocalLeadToWorkspace({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [savedRedirectUrl, setSavedRedirectUrl] = useState<string | null>(null);
+  const hasSampleIntent = redirectQuery === "sample=1";
 
   const localLead = useMemo(() => {
     if (typeof window === "undefined") return null;
@@ -120,9 +122,15 @@ export function SaveLocalLeadToWorkspace({
       });
       const targetPath = buildLeadPath(nextId, nextBusinessName);
       const redirectPath = redirectQuery ? `${targetPath}?${redirectQuery}` : targetPath;
-      setMessage("Lead saved to workspace.");
-      router.replace(redirectPath);
-      router.refresh();
+      console.info("[Save Local Lead] redirecting", { target_redirect_url: redirectPath });
+      setMessage("Lead saved to workspace — redirecting...");
+      setSavedRedirectUrl(redirectPath);
+      if (typeof window !== "undefined") {
+        window.location.assign(redirectPath);
+      } else {
+        router.replace(redirectPath);
+        router.refresh();
+      }
     } catch (e) {
       const detail = e instanceof Error ? e.message : "network error";
       console.info("[Save Local Lead] backend save failed", { local_lead_id: localLeadId, error: detail });
@@ -137,7 +145,18 @@ export function SaveLocalLeadToWorkspace({
       <button type="button" className="admin-btn-primary" onClick={() => void saveToWorkspace()} disabled={isSaving}>
         {isSaving ? "Saving..." : "Save to Workspace"}
       </button>
-      {message ? (
+      {savedRedirectUrl ? (
+        <div className="space-y-2">
+          <p className="text-xs" style={{ color: "#86efac" }}>
+            {message || "Lead saved — redirecting..."}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <a href={savedRedirectUrl} className="admin-btn-primary text-xs">
+              {hasSampleIntent ? "Continue to Sample Builder" : "Continue to Lead"}
+            </a>
+          </div>
+        </div>
+      ) : message ? (
         <p className="text-xs" style={{ color: "#86efac" }}>
           {message}
         </p>
