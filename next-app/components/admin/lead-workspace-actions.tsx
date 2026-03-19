@@ -29,6 +29,8 @@ type LeadWorkspaceActionsProps = {
   initialIssue: string;
   initialStatus: string | null;
   initialDealStatus: string | null;
+  initialDealStage?: "new" | "interested" | "pricing" | "closing" | "won";
+  initialLastReplyPreview?: string | null;
   initialEmail: string | null;
   initialPhone: string | null;
   website: string | null;
@@ -52,21 +54,169 @@ type TemplateResponse = {
   follow_up_note?: string;
 };
 
+type PreparedOutreachDraft = {
+  leadId: string;
+  subject: string;
+  body: string;
+  previewUrl: string;
+  updatedAt: string;
+};
+
 const LOCAL_SAMPLES_KEY = "crm.lead_samples";
+const OUTREACH_DRAFTS_KEY = "crm.outreach_prepared_drafts";
 
 const DEFAULT_SMS_TEMPLATE =
-  "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
+  "Hi, this is Topher with Topher's Web Design. I noticed an online visibility opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
-function fallbackDraft(name: string, issue: string) {
+const QUICK_REPLY_STORAGE_KEY = "crm.quick_replies.custom";
+
+type DealStage = "new" | "interested" | "pricing" | "closing" | "won";
+
+type QuickReplyTemplate = {
+  id: string;
+  label: string;
+  message: string;
+  isCustom?: boolean;
+};
+
+const QUICK_REPLIES: QuickReplyTemplate[] = [
+  {
+    id: "interested",
+    label: "👍 Interested",
+    message:
+      "Nice, glad you like it 👍\n\nI can turn that into a real live site for you pretty quickly — want me to show you how it would work and pricing?",
+  },
+  {
+    id: "price",
+    label: "💰 Pricing Question",
+    message:
+      "Good question — it depends a bit on what you want, but most small business sites I do are in the $300–$500 range.\n\nI can keep it simple and focused on getting you more calls.\n\nWant me to break down what you'd get?",
+  },
+  {
+    id: "facebook",
+    label: "📱 Uses Facebook Only",
+    message:
+      "Totally get that — a lot of people rely on Facebook.\n\nThe difference is a simple site like this makes it way easier for new customers to find you, trust you, and actually reach out.\n\nIt works alongside your Facebook, not replaces it.",
+  },
+  {
+    id: "not_now",
+    label: "🕐 Not Now",
+    message:
+      "No worries at all 👍\n\nIf you ever want something like that set up later, just let me know — I can get it done pretty quick.",
+  },
+  {
+    id: "more_info",
+    label: "👀 More Info",
+    message:
+      "For sure — I keep it simple.\n\nI build you a clean site like the sample, make it easy for people to contact you, and help it look legit when people find you online.\n\nI can also handle updates if you ever need them.",
+  },
+  {
+    id: "ready",
+    label: "🔥 Ready to Start",
+    message:
+      "Awesome 🙌\n\nI’ll keep this simple — I just need a few details from you and I can get started.\n\nWhat’s the best way to reach you — text or call?",
+  },
+];
+
+type ClosingReplyTemplate = {
+  id: "interest" | "pricing" | "closing" | "lock_in";
+  label: string;
+  message: string;
+  stage: DealStage;
+  nextAction: string;
+};
+
+const CLOSING_REPLIES: ClosingReplyTemplate[] = [
+  {
+    id: "interest",
+    label: "INTEREST",
+    stage: "interested",
+    nextAction: "Show how it works and share pricing range.",
+    message:
+      "Nice, glad you like it 👍\n\nI can get something like that live for you pretty quickly.\n\nWant me to show you how it would work and pricing?",
+  },
+  {
+    id: "pricing",
+    label: "PRICING",
+    stage: "pricing",
+    nextAction: "Confirm scope and align on budget.",
+    message:
+      "I keep it simple — most sites like that are in the $300–$500 range depending on what you need.\n\nMain goal is just to help you get more calls and make it easy for customers to reach you.\n\nWant me to walk you through it real quick?",
+  },
+  {
+    id: "closing",
+    label: "CLOSING",
+    stage: "closing",
+    nextAction: "Ask for go-ahead and collect kickoff details.",
+    message:
+      "If you’re good with it, I can start putting it together for you and we can tweak anything you want as we go.\n\nI just need a couple details from you to get started.",
+  },
+  {
+    id: "lock_in",
+    label: "LOCK IN",
+    stage: "won",
+    nextAction: "Lock preferred contact method and kickoff.",
+    message:
+      "Awesome — what’s the best way to reach you, text or call?\n\nI’ll make this super simple and get you set up 👍",
+  },
+];
+
+function normalizeDealStage(value: unknown): DealStage {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "interested" || normalized === "pricing" || normalized === "closing" || normalized === "won") {
+    return normalized;
+  }
+  return "new";
+}
+
+function inferSuggestedClosingReply(replyText: string, currentStatus: string): ClosingReplyTemplate {
+  const text = String(replyText || "").toLowerCase();
+  const status = String(currentStatus || "").toLowerCase();
+  if (
+    text.includes("price") ||
+    text.includes("cost") ||
+    text.includes("budget") ||
+    text.includes("$") ||
+    text.includes("how much")
+  ) {
+    return CLOSING_REPLIES.find((entry) => entry.id === "pricing") || CLOSING_REPLIES[1];
+  }
+  if (
+    text.includes("sounds good") ||
+    text.includes("lets do it") ||
+    text.includes("let's do it") ||
+    text.includes("ready") ||
+    text.includes("go ahead") ||
+    text.includes("start")
+  ) {
+    return CLOSING_REPLIES.find((entry) => entry.id === "closing") || CLOSING_REPLIES[2];
+  }
+  if (
+    status === "replied" ||
+    text.includes("interested") ||
+    text.includes("looks good") ||
+    text.includes("like it") ||
+    text.includes("yes")
+  ) {
+    return CLOSING_REPLIES.find((entry) => entry.id === "interest") || CLOSING_REPLIES[0];
+  }
+  return CLOSING_REPLIES[0];
+}
+
+function fallbackDraft(name: string, issue: string, opts?: { hasWebsite?: boolean; hasScreenshot?: boolean }) {
+  const hasWebsite = Boolean(opts?.hasWebsite);
+  const hasScreenshot = Boolean(opts?.hasScreenshot);
+  const opener = hasWebsite
+    ? `I was looking at your website and noticed: ${issue || "something that might be affecting conversions"}.`
+    : `I was looking at your business online and noticed: ${issue || "you do not have a clear website presence yet"}.`;
   return {
-    subject: "quick question about your website",
+    subject: hasWebsite ? "quick question about your website" : "quick idea for your business",
     body: [
       `Hi ${name || ""},`,
       "",
-      `I was looking at your website and noticed: ${issue || "something that might be affecting conversions"}.`,
+      opener,
       "",
-      "I grabbed a quick screenshot showing it.",
-      "",
+      ...(hasScreenshot ? ["I grabbed a quick screenshot showing it.", ""] : []),
       "Would you like me to send it over?",
       "",
       "- Topher",
@@ -86,6 +236,21 @@ function beginnerPricingSuggestion(category: string): { label: string; midpoint:
     : { label: "Basic website ($150-$300)", midpoint: 225 };
 }
 
+function sanitizeOutreachBody(body: string, opts: { hasWebsite: boolean; hasScreenshot: boolean }): string {
+  let next = String(body || "").trim();
+  if (!opts.hasWebsite) {
+    next = next.replace(/looking at your website/gi, "looking at your business online");
+    next = next.replace(/your website/gi, "your online presence");
+  }
+  if (!opts.hasScreenshot) {
+    next = next
+      .split("\n")
+      .filter((line) => !/screenshot/i.test(line))
+      .join("\n");
+  }
+  return next;
+}
+
 export function LeadWorkspaceActions({
   leadId,
   linkedOpportunityId,
@@ -95,6 +260,8 @@ export function LeadWorkspaceActions({
   initialIssue,
   initialStatus,
   initialDealStatus,
+  initialDealStage = "new",
+  initialLastReplyPreview = null,
   initialEmail,
   initialPhone,
   website,
@@ -111,6 +278,7 @@ export function LeadWorkspaceActions({
   autoCompose = false,
   autoOpenSampleBuilder = false,
 }: LeadWorkspaceActionsProps) {
+  const hasWebsitePresence = Boolean(String(website || "").trim());
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -136,6 +304,14 @@ export function LeadWorkspaceActions({
   const [pastedImageUrl, setPastedImageUrl] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isAddingImageUrl, setIsAddingImageUrl] = useState(false);
+  const [quickReplyMode, setQuickReplyMode] = useState<"replace" | "append">("replace");
+  const [selectedQuickReplyId, setSelectedQuickReplyId] = useState("");
+  const [customQuickReplies, setCustomQuickReplies] = useState<QuickReplyTemplate[]>([]);
+  const [selectedClosingReplyId, setSelectedClosingReplyId] = useState("");
+  const [dealStage, setDealStage] = useState<DealStage>(normalizeDealStage(initialDealStage));
+  const [isPreparingSend, setIsPreparingSend] = useState(false);
+  const [preparedPreviewUrl, setPreparedPreviewUrl] = useState("");
+  const [isPreparedReady, setIsPreparedReady] = useState(false);
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -153,6 +329,61 @@ export function LeadWorkspaceActions({
   useEffect(() => {
     if (autoOpenSampleBuilder) setSampleBuilderOpen(true);
   }, [autoOpenSampleBuilder]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(QUICK_REPLY_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Array<QuickReplyTemplate>;
+      if (!Array.isArray(parsed)) return;
+      const normalized = parsed
+        .map((item) => ({
+          id: String(item.id || "").trim() || `custom-${crypto.randomUUID()}`,
+          label: String(item.label || "").trim(),
+          message: String(item.message || "").trim(),
+          isCustom: true,
+        }))
+        .filter((item) => item.label && item.message);
+      setCustomQuickReplies(normalized);
+    } catch {
+      // ignore parse failures
+    }
+  }, []);
+
+  useEffect(() => {
+    const suggested = inferSuggestedClosingReply(
+      String(initialLastReplyPreview || ""),
+      String(initialStatus || "")
+    );
+    setSelectedClosingReplyId(suggested.id);
+  }, [initialLastReplyPreview, initialStatus, leadId]);
+
+  useEffect(() => {
+    const draft = readPreparedOutreachDraft(leadId);
+    if (!draft) return;
+    if (draft.subject) setSubject(draft.subject);
+    if (draft.body) setBody(draft.body);
+    if (draft.previewUrl) {
+      setPreparedPreviewUrl(draft.previewUrl);
+      setPreviewUrl(draft.previewUrl);
+      setIsPreparedReady(true);
+    }
+  }, [leadId]);
+
+  useEffect(() => {
+    const preview = String(preparedPreviewUrl || previewUrl || "").trim();
+    const draftBody = String(body || "").trim();
+    const draftSubject = String(subject || "").trim();
+    if (!preview && !draftBody && !draftSubject) return;
+    writePreparedOutreachDraft({
+      leadId,
+      subject: subject || "",
+      body: body || "",
+      previewUrl: preview,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [body, leadId, previewUrl, preparedPreviewUrl, subject]);
 
   function readLocalSamples(): LeadSampleRecord[] {
     if (typeof window === "undefined") return [];
@@ -176,6 +407,38 @@ export function LeadWorkspaceActions({
     const current = readLocalSamples();
     const remaining = current.filter((item) => item.id !== nextSample.id);
     writeLocalSamples([nextSample, ...remaining]);
+  }
+
+  function readPreparedOutreachDraft(lookupLeadId: string): PreparedOutreachDraft | null {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem(OUTREACH_DRAFTS_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as Record<string, PreparedOutreachDraft>;
+      const entry = parsed?.[lookupLeadId];
+      if (!entry) return null;
+      return {
+        leadId: lookupLeadId,
+        subject: String(entry.subject || ""),
+        body: String(entry.body || ""),
+        previewUrl: String(entry.previewUrl || ""),
+        updatedAt: String(entry.updatedAt || ""),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function writePreparedOutreachDraft(draft: PreparedOutreachDraft) {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(OUTREACH_DRAFTS_KEY);
+      const parsed = raw ? (JSON.parse(raw) as Record<string, PreparedOutreachDraft>) : {};
+      parsed[draft.leadId] = draft;
+      localStorage.setItem(OUTREACH_DRAFTS_KEY, JSON.stringify(parsed));
+    } catch {
+      // Ignore storage failures.
+    }
   }
 
   function buildSamplePreviewLink(sampleId: string): string {
@@ -557,7 +820,10 @@ export function LeadWorkspaceActions({
       console.info("[Action Debug] Generate Email response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not generate outreach preview.");
 
-      const fallback = fallbackDraft(initialBusinessName, initialIssue);
+      const fallback = fallbackDraft(initialBusinessName, initialIssue, {
+        hasWebsite: hasWebsitePresence,
+        hasScreenshot: false,
+      });
       const nextSubject = fallback.subject;
       let nextBody =
         String(data.short_email || "").trim() ||
@@ -570,18 +836,31 @@ export function LeadWorkspaceActions({
       ) {
         nextBody = `${nextBody}\n\nI put together a quick improvement idea: ${quickFixSummary}`;
       }
+      nextBody = sanitizeOutreachBody(nextBody, {
+        hasWebsite: hasWebsitePresence,
+        hasScreenshot: false,
+      });
 
       setSubject(nextSubject);
       setBody(nextBody);
       setMessage("Outreach draft generated.");
       console.info("[Action Debug] Generate Email request succeeded", { leadId });
     } catch (e) {
-      const fallback = fallbackDraft(initialBusinessName, initialIssue);
+      const fallback = fallbackDraft(initialBusinessName, initialIssue, {
+        hasWebsite: hasWebsitePresence,
+        hasScreenshot: false,
+      });
       setSubject(fallback.subject);
       setBody(
-        quickFixSummary
-          ? `${fallback.body}\n\nI put together a quick improvement idea: ${quickFixSummary}`
-          : fallback.body
+        sanitizeOutreachBody(
+          quickFixSummary
+            ? `${fallback.body}\n\nI put together a quick improvement idea: ${quickFixSummary}`
+            : fallback.body,
+          {
+            hasWebsite: hasWebsitePresence,
+            hasScreenshot: false,
+          }
+        )
       );
       setError(e instanceof Error ? e.message : "Could not generate outreach draft.");
       console.error("[Action Debug] Generate Email request failed", {
@@ -618,6 +897,17 @@ export function LeadWorkspaceActions({
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       console.info("[Action Debug] Send Email response", { leadId, status: res.status, body: data });
       if (!res.ok) throw new Error(data.error || "Could not send outreach email.");
+      const inferredStage = inferDealStageFromBodyText(body.trim());
+      if (inferredStage) {
+        const patchRes = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deal_stage: inferredStage }),
+        });
+        if (patchRes.ok) {
+          setDealStage(inferredStage);
+        }
+      }
       setMessage("Outreach email sent.");
       console.info("[Action Debug] Send Email request succeeded", { leadId });
     } catch (e) {
@@ -774,9 +1064,10 @@ export function LeadWorkspaceActions({
         ? window.prompt("Monthly plan amount ($15-$30 recommended)", recurringDefault)
         : null;
       const recurringParsed = Number(recurringInput || "");
-      await updateLead(
+      const ok = await updateLead(
         {
           deal_status: "won",
+          deal_stage: "won",
           deal_value: Number.isFinite(parsed) && parsed > 0 ? parsed : pricing.midpoint,
           closed_at: nowIso,
           status: "closed_won",
@@ -794,19 +1085,23 @@ export function LeadWorkspaceActions({
           ? "Deal marked won and recurring plan started."
           : "Deal marked won."
       );
+      if (ok) setDealStage("won");
       return;
     }
     if (nextStatus === "lost") {
-      await updateLead(
-        { deal_status: "lost", closed_at: nowIso, status: "closed_lost", sequence_active: false },
+      const ok = await updateLead(
+        { deal_status: "lost", deal_stage: "new", closed_at: nowIso, status: "closed_lost", sequence_active: false },
         "Deal marked lost."
       );
+      if (ok) setDealStage("new");
       return;
     }
-    await updateLead(
-      { deal_status: nextStatus, status: "contacted" },
+    const mappedStage = nextStatus === "interested" ? "interested" : "pricing";
+    const ok = await updateLead(
+      { deal_status: nextStatus, deal_stage: nextStatus === "interested" ? "interested" : "pricing", status: "contacted" },
       nextStatus === "interested" ? "Deal marked interested." : "Proposal marked sent."
     );
+    if (ok) setDealStage(mappedStage);
   }
 
   async function updateDoorStatus(nextDoorStatus: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost") {
@@ -911,8 +1206,8 @@ export function LeadWorkspaceActions({
 
   function smsTemplate() {
     return DEFAULT_SMS_TEMPLATE.replace(
-      "a website opportunity",
-      `a website opportunity for ${initialBusinessName || "your business"}`
+      "an online visibility opportunity",
+      `an online visibility opportunity for ${initialBusinessName || "your business"}`
     );
   }
 
@@ -1156,6 +1451,179 @@ export function LeadWorkspaceActions({
     setError(null);
   }
 
+  function sampleHasHeroImage(nextSample: LeadSampleRecord | null | undefined): boolean {
+    if (!nextSample) return false;
+    const heroByRole = Array.isArray(nextSample.images)
+      ? nextSample.images.some((entry) => entry.role === "hero" && String(entry.src || "").trim())
+      : false;
+    const heroByField = Boolean(String(nextSample.primary_image_url || "").trim());
+    return heroByRole || heroByField;
+  }
+
+  function openGeneratedPreview(nextSample: LeadSampleRecord) {
+    const url = buildPreviewUrl(nextSample);
+    if (!sampleHasHeroImage(nextSample)) {
+      setMessage("Add an image to generate a strong preview.");
+    }
+    if (url && typeof window !== "undefined") {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  function imageSourceRank(source: LeadSampleImage["source"]): number {
+    if (source === "upload") return 0;
+    if (source === "url") return 1;
+    return 2;
+  }
+
+  function enforceHeroImagePriority(nextSample: LeadSampleRecord): LeadSampleRecord {
+    const images = Array.isArray(nextSample.images) ? [...nextSample.images] : [];
+    if (!images.length) return nextSample;
+    const explicitHero = images.find((entry) => entry.role === "hero");
+    if (explicitHero) return nextSample;
+    const sorted = [...images].sort((a, b) => imageSourceRank(a.source) - imageSourceRank(b.source));
+    const bestId = sorted[0]?.id;
+    if (!bestId) return nextSample;
+    const nextImages = images.map((entry) => ({
+      ...entry,
+      role: entry.id === bestId ? "hero" : "gallery",
+    })) as LeadSampleImage[];
+    return normalizeLeadSampleRecord({
+      ...nextSample,
+      images: nextImages,
+      ...deriveImageFieldsFromImages(nextImages),
+    });
+  }
+
+  function buildPreparedOutreachMessage(previewLink: string): { subject: string; body: string } {
+    const hasWebsite = Boolean(String(website || "").trim());
+    const hasFacebook = Boolean(String(facebookUrl || "").trim());
+    const business = String(initialBusinessName || "your business").trim();
+    const issue = String(initialIssue || "a few opportunities").trim();
+    if (!hasWebsite) {
+      if (hasFacebook) {
+        return {
+          subject: `Quick sample for ${business}`,
+          body: [
+            `Hey ${business},`,
+            "",
+            "I came across your business and put together a quick sample showing what your website could look like:",
+            previewLink,
+            "",
+            "Totally optional, but if you want I can build this out quickly and keep it simple.",
+            "",
+            "- Topher",
+          ].join("\n"),
+        };
+      }
+      return {
+        subject: `Quick website idea for ${business}`,
+        body: [
+          `Hi ${business},`,
+          "",
+          "I came across your business and put together a quick sample showing what your website could look like:",
+          previewLink,
+          "",
+          "This is just a quick mockup to make it easier for customers to find you, trust you, and reach out.",
+          "",
+          "- Topher",
+        ].join("\n"),
+      };
+    }
+    return {
+      subject: `Quick idea for ${business}'s website`,
+      body: [
+        `Hi ${business},`,
+        "",
+        `I was looking at your website and noticed ${issue}.`,
+        "I put together a quick sample showing an updated version here:",
+        previewLink,
+        "",
+        "If you want, I can build this out into a live site quickly.",
+        "",
+        "- Topher",
+      ].join("\n"),
+    };
+  }
+
+  async function generateAndPrepareSend() {
+    setIsPreparingSend(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const base =
+        sample ||
+        buildDefaultLeadSample({
+          leadId,
+          businessName: initialBusinessName,
+          businessType: initialCategory,
+          note: initialIssue,
+        });
+      const prefilled = applySelectionDerivations(applyAutofill(base, "first_generate"));
+      const withImage =
+        sampleHasHeroImage(prefilled)
+          ? prefilled
+          : applyRandomImagesToSample(prefilled, initialCategory || prefilled.business_type, {
+              force: false,
+              minAdditional: 2,
+              maxAdditional: 4,
+            }).sample;
+      const prioritized = enforceHeroImagePriority(withImage);
+      const saved = await persistSample(
+        normalizeLeadSampleRecord({
+          ...prioritized,
+          status: "ready",
+        })
+      );
+      setSampleAndRefresh(saved);
+      setSampleBuilderOpen(true);
+      const finalPreviewUrl = buildPreviewUrl(saved);
+      const finalLink = finalPreviewUrl || buildSamplePreviewLink(saved.id);
+      setPreparedPreviewUrl(finalLink);
+      const outreach = buildPreparedOutreachMessage(finalLink);
+      setSubject(outreach.subject);
+      setBody(outreach.body);
+      setGeneratedSampleEmail(`Subject: ${outreach.subject}\n\n${outreach.body}`);
+      setGeneratedSampleText(outreach.body);
+      writePreparedOutreachDraft({
+        leadId,
+        subject: outreach.subject,
+        body: outreach.body,
+        previewUrl: finalLink,
+        updatedAt: new Date().toISOString(),
+      });
+      setIsPreparedReady(true);
+      setMessage("Preview and outreach message are ready to review.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not generate and prepare send.");
+    } finally {
+      setIsPreparingSend(false);
+    }
+  }
+
+  function quickGenerateWithDefaults() {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const prefilled = applyAutofill(base, "first_generate");
+    const withImage = sampleHasHeroImage(prefilled)
+      ? prefilled
+      : applyRandomImagesToSample(prefilled, initialCategory || prefilled.business_type, {
+          force: false,
+          minAdditional: 2,
+          maxAdditional: 4,
+        }).sample;
+    setSampleAndRefresh(withImage);
+    setSampleBuilderOpen(true);
+    setError(null);
+    openGeneratedPreview(withImage);
+  }
+
   function removeAdditionalImage(index: number) {
     if (!sample) return;
     const galleryImages = sample.images.filter((entry) => entry.role === "gallery");
@@ -1276,6 +1744,92 @@ export function LeadWorkspaceActions({
     }
   }
 
+  function quickReplyOptions(): QuickReplyTemplate[] {
+    return [...QUICK_REPLIES, ...customQuickReplies];
+  }
+
+  function applyQuickReply(replyId: string) {
+    const id = String(replyId || "").trim();
+    if (!id) return;
+    const selected = quickReplyOptions().find((entry) => entry.id === id);
+    if (!selected) return;
+    setSelectedQuickReplyId(id);
+    setBody((prev) => {
+      if (quickReplyMode === "append" && String(prev || "").trim()) {
+        return `${String(prev).trim()}\n\n${selected.message}`;
+      }
+      return selected.message;
+    });
+    setMessage("Quick reply inserted.");
+    setError(null);
+  }
+
+  function closingReplyById(replyId: string): ClosingReplyTemplate | null {
+    return CLOSING_REPLIES.find((entry) => entry.id === replyId) || null;
+  }
+
+  function applyClosingReply(replyId: string) {
+    const selected = closingReplyById(String(replyId || "").trim());
+    if (!selected) return;
+    setSelectedClosingReplyId(selected.id);
+    setBody((prev) => {
+      if (quickReplyMode === "append" && String(prev || "").trim()) {
+        return `${String(prev).trim()}\n\n${selected.message}`;
+      }
+      return selected.message;
+    });
+    setMessage(`Closing reply inserted (${selected.label}).`);
+    setError(null);
+  }
+
+  function recommendedClosingAction(currentStage: DealStage): string {
+    if (currentStage === "new") return "Send INTEREST reply";
+    if (currentStage === "interested") return "Send PRICING reply";
+    if (currentStage === "pricing") return "Send CLOSING reply";
+    if (currentStage === "closing") return "Send LOCK IN reply";
+    return "Collect payment / kickoff details";
+  }
+
+  function inferDealStageFromBodyText(text: string): DealStage | null {
+    const normalized = String(text || "").toLowerCase();
+    if (!normalized) return null;
+    if (normalized.includes("best way to reach you") || normalized.includes("text or call")) return "won";
+    if (normalized.includes("i just need a couple details") || normalized.includes("start putting it together")) return "closing";
+    if (
+      normalized.includes("$300") ||
+      normalized.includes("$500") ||
+      normalized.includes("most sites like that") ||
+      normalized.includes("pricing")
+    ) {
+      return "pricing";
+    }
+    if (normalized.includes("glad you like it") || normalized.includes("show you how it would work")) return "interested";
+    return null;
+  }
+
+  function saveCurrentAsQuickReply() {
+    const current = String(body || "").trim();
+    if (!current) {
+      setError("Write or insert a message first.");
+      return;
+    }
+    const label = String(window.prompt("Template label", "Custom Reply") || "").trim();
+    if (!label) return;
+    const nextTemplate: QuickReplyTemplate = {
+      id: `custom-${Date.now()}`,
+      label,
+      message: current,
+      isCustom: true,
+    };
+    const next = [...customQuickReplies, nextTemplate];
+    setCustomQuickReplies(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(QUICK_REPLY_STORAGE_KEY, JSON.stringify(next));
+    }
+    setMessage("Saved custom quick reply.");
+    setError(null);
+  }
+
   const sampleForUi =
     sample ||
     applyAutofill(
@@ -1290,6 +1844,7 @@ export function LeadWorkspaceActions({
   const suggestedBusinessType = sampleForUi.business_type || readableBusinessType(initialCategory || "service business");
   const suggestedServices = getSuggestedServicesForBusinessType(suggestedBusinessType);
   const isLikelyFacebookOnly = !String(website || "").trim();
+  const selectedClosingTemplate = closingReplyById(selectedClosingReplyId);
 
   return (
     <aside className="space-y-3 sticky top-4">
@@ -1337,175 +1892,106 @@ export function LeadWorkspaceActions({
           ) : null}
         </div>
         {sampleBuilderOpen ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)", background: "rgba(255,255,255,0.02)" }}>
-              <p className="text-xs font-semibold">Suggested for this lead</p>
+              <p className="text-xs font-semibold">Section 1: Business Summary</p>
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Business Type: {sampleForUi.business_type} - Goal: {sampleForUi.site_goal} - Template: {sampleForUi.template_type}
+                {sampleForUi.business_name || initialBusinessName} - {sampleForUi.business_type || suggestedBusinessType}
               </p>
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Theme: {sampleForUi.visual_theme} - CTA: {sampleForUi.cta_style}
+                Suggested defaults: CTA {sampleForUi.cta_style} - Theme {sampleForUi.visual_theme} - Template {sampleForUi.template_type}
               </p>
-              {isLikelyFacebookOnly ? (
-                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-                  Facebook-only flow detected (no website): use Upload Image or Add Business Image From URL.
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Typical time: 30-60 seconds.
+              </p>
+            </div>
+
+            <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+                Step 1: Choose Main Image
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <label className="admin-btn-primary text-xs cursor-pointer">
+                  {isUploadingImage ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => void handleUploadImages(e.target.files)}
+                    disabled={isUploadingImage}
+                  />
+                </label>
+                <button className="admin-btn-ghost text-xs" onClick={() => useSuggestedStockImages()}>
+                  Use Suggested Images
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => void useFacebookOrWebsiteImage()}>
+                  Use Facebook / Website Image
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  className="admin-input h-9"
+                  value={pastedImageUrl}
+                  onChange={(e) => setPastedImageUrl(e.target.value)}
+                  placeholder="Paste image URL"
+                />
+                <button className="admin-btn-ghost text-xs" onClick={() => void addImageFromUrl()} disabled={isAddingImageUrl}>
+                  {isAddingImageUrl ? "Adding..." : "Paste Image URL"}
+                </button>
+              </div>
+              {!sampleHasHeroImage(sampleForUi) ? (
+                <p className="text-xs" style={{ color: "#fbbf24" }}>
+                  Add an image to generate a strong preview.
                 </p>
               ) : null}
+              {sample?.images?.length ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {sample.images.map((image) => {
+                    const isHero = image.role === "hero";
+                    return (
+                      <div
+                        key={image.id}
+                        className="rounded border p-1"
+                        style={{ borderColor: isHero ? "var(--admin-gold)" : "var(--admin-border)" }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image.src} alt={image.label || "Sample image"} style={{ width: "100%", height: 96, objectFit: "cover", borderRadius: 6 }} />
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => setImageAsHero(image.id)}>
+                            Set Hero
+                          </button>
+                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => removeImage(image.id)}>
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Business Name
-                <input
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.business_name || initialBusinessName || ""}
-                  onChange={(e) => void updateSampleField("business_name", e.target.value)}
-                />
-              </label>
-              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Business Type
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.business_type || "Small Business"}
-                  onChange={(e) => void updateSampleField("business_type", e.target.value)}
-                >
-                  {BUSINESS_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                Site Goal / Focus
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.site_goal}
-                  onChange={(e) => void updateSampleField("site_goal", e.target.value)}
-                >
-                  {SITE_GOAL_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                Headline Style
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.headline_style}
-                  onChange={(e) => void updateSampleField("headline_style", e.target.value)}
-                >
-                  {HEADLINE_STYLE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Headline
+              Section 3: Optional Text Tweaks - Headline
               <input
                 className="admin-input mt-1 h-9"
                 value={sampleForUi.hero_headline || ""}
                 onChange={(e) => void updateSampleField("hero_headline", e.target.value)}
               />
             </label>
+
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Subheadline
+              Subheadline (prefilled)
               <textarea
                 className="admin-input mt-1 min-h-[70px]"
                 value={sampleForUi.hero_subheadline || ""}
                 onChange={(e) => void updateSampleField("hero_subheadline", e.target.value)}
               />
             </label>
+
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Intro / About
-              <textarea
-                className="admin-input mt-1 min-h-[70px]"
-                value={sampleForUi.intro_text || ""}
-                onChange={(e) => void updateSampleField("intro_text", e.target.value)}
-              />
-            </label>
-            <div className="grid gap-2 md:grid-cols-2">
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                CTA Style
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.cta_style}
-                  onChange={(e) => void updateSampleField("cta_style", e.target.value)}
-                >
-                  {CTA_STYLE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                Visual Style / Theme
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.visual_theme}
-                  onChange={(e) => void updateSampleField("visual_theme", e.target.value)}
-                >
-                  {VISUAL_THEME_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2">
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                Template Type
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.template_type}
-                  onChange={(e) => void updateSampleField("template_type", e.target.value)}
-                >
-                  {TEMPLATE_TYPE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                CTA Text
-                <input
-                  className="admin-input mt-1 h-9"
-                  value={sampleForUi.cta_text || ""}
-                  onChange={(e) => void updateSampleField("cta_text", e.target.value)}
-                />
-              </label>
-            </div>
-            <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs font-medium" style={{ color: "var(--admin-fg)" }}>
-                Quick-Pick Services
-              </p>
-              <div className="mt-2 grid gap-2 md:grid-cols-2">
-                {suggestedServices.map((service) => {
-                  const checked = sampleForUi.services.includes(service);
-                  return (
-                    <label key={service} className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => void updateServiceSelection(service, e.target.checked)}
-                      />
-                      {service}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Services (one per line)
+              Step 3: Services (auto)
               <textarea
                 className="admin-input mt-1 min-h-[90px]"
                 value={sampleForUi.services.join("\n") || ""}
@@ -1521,142 +2007,293 @@ export function LeadWorkspaceActions({
                 }
               />
             </label>
-            <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs font-medium" style={{ color: "var(--admin-fg)" }}>Images</p>
+
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              CTA
+              <select
+                className="admin-input mt-1 h-9"
+                value={sampleForUi.cta_style}
+                onChange={(e) => void updateSampleField("cta_style", e.target.value)}
+              >
+                {CTA_STYLE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="space-y-1">
+              <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+                Section 4: Generate + Prepare Send
+              </p>
               <div className="flex flex-wrap gap-2">
-                <label className="admin-btn-ghost text-xs cursor-pointer">
-                  {isUploadingImage ? "Uploading..." : "Upload Image"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => void handleUploadImages(e.target.files)}
-                    disabled={isUploadingImage}
-                  />
-                </label>
-                <button className="admin-btn-ghost text-xs" onClick={() => useSuggestedStockImages()}>
-                  Use Suggested Stock Images
-                </button>
-                <button className="admin-btn-ghost text-xs" onClick={() => void useFacebookOrWebsiteImage()}>
-                  Use Facebook / Website Image
-                </button>
-                <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
-                  Regenerate Stock Images
-                </button>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  className="admin-input h-9"
-                  value={pastedImageUrl}
-                  onChange={(e) => setPastedImageUrl(e.target.value)}
-                  placeholder="Paste image URL (Facebook, website, etc.)"
-                />
-                <button className="admin-btn-ghost text-xs" onClick={() => void addImageFromUrl()} disabled={isAddingImageUrl}>
-                  {isAddingImageUrl ? "Adding..." : "Add Image From URL"}
-                </button>
-              </div>
-              {sample?.images?.length ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {sample.images.map((image) => {
-                    const isHero = image.role === "hero";
-                    const galleryIndex = sample.images.filter((entry) => entry.role === "gallery").findIndex((entry) => entry.id === image.id);
-                    return (
-                      <div
-                        key={image.id}
-                        className="rounded border p-1"
-                        style={{ borderColor: isHero ? "var(--admin-gold)" : "var(--admin-border)" }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={image.src} alt={image.label || "Sample image"} style={{ width: "100%", height: 96, objectFit: "cover", borderRadius: 6 }} />
-                        <p className="text-[11px] mt-1" style={{ color: "var(--admin-muted)" }}>
-                          {isHero ? "Hero" : "Gallery"} - {image.source}
-                        </p>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => setImageAsHero(image.id)}>
-                            Set As Hero
-                          </button>
-                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => setImageAsGallery(image.id)}>
-                            Add To Gallery
-                          </button>
-                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => removeImage(image.id)}>
-                            Remove
-                          </button>
-                        </div>
-                        {image.role === "gallery" ? (
-                          <input
-                            className="admin-input mt-1 h-8 text-[11px]"
-                            value={image.src}
-                            onChange={(e) => replaceAdditionalImage(galleryIndex, e.target.value)}
-                            placeholder="Replace URL (optional)"
-                          />
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                  Add images by upload, paste URL, or stock suggestions.
-                </p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
               <button
                 className="admin-btn-primary text-xs"
-                onClick={() => {
-                  const url = buildPreviewUrl(sampleForUi);
-                  if (url) window.open(url, "_blank", "noopener,noreferrer");
-                }}
+                onClick={() => void generateAndPrepareSend()}
+                disabled={isPreparingSend}
               >
-                Generate Preview
+                {isPreparingSend ? "Preparing..." : "Generate + Prepare Send"}
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleCopy()}>
-                Regenerate Copy
+              <button
+                className="admin-btn-ghost text-xs"
+                onClick={() => openGeneratedPreview(sampleForUi)}
+              >
+                Generate Preview Only
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
-                Regenerate Images
+              <button className="admin-btn-ghost text-xs" onClick={() => quickGenerateWithDefaults()}>
+                Generate Preview (Use Defaults)
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => resetToSuggestedDefaults()}>
-                Reset To Suggested Defaults
+              <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
+                Copy Preview Link
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void createOrOpenSample()}>
-                Save Sample
+              <button className="admin-btn-ghost text-xs" onClick={() => void copyEmail()}>
+                Copy Message
               </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void saveSampleStatus("ready")} disabled={!sample}>
-                Mark Ready
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleEmail()} disabled={!sample}>
-                Generate Email
-              </button>
-              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleText()} disabled={!sample}>
-                Generate Text
-              </button>
+              </div>
             </div>
-            {generatedSampleEmail ? (
-              <textarea
-                className="admin-input min-h-[120px]"
-                value={generatedSampleEmail}
-                readOnly
-                aria-label="Generated sample email copy"
-                title="Generated sample email copy"
-              />
-            ) : null}
-            {generatedSampleText ? (
-              <textarea
-                className="admin-input min-h-[80px]"
-                value={generatedSampleText}
-                readOnly
-                aria-label="Generated sample text copy"
-                title="Generated sample text copy"
-              />
+
+            <details className="rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+              <summary className="cursor-pointer text-xs font-medium" style={{ color: "var(--admin-fg)" }}>
+                Advanced options
+              </summary>
+              <div className="mt-2 space-y-2">
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                    Business Name
+                    <input
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.business_name || initialBusinessName || ""}
+                      onChange={(e) => void updateSampleField("business_name", e.target.value)}
+                    />
+                  </label>
+                  <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                    Business Type
+                    <select
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.business_type || "Small Business"}
+                      onChange={(e) => void updateSampleField("business_type", e.target.value)}
+                    >
+                      {BUSINESS_TYPE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                    Site Goal / Focus
+                    <select
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.site_goal}
+                      onChange={(e) => void updateSampleField("site_goal", e.target.value)}
+                    >
+                      {SITE_GOAL_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                    Headline Style
+                    <select
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.headline_style}
+                      onChange={(e) => void updateSampleField("headline_style", e.target.value)}
+                    >
+                      {HEADLINE_STYLE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                    Visual Style / Theme
+                    <select
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.visual_theme}
+                      onChange={(e) => void updateSampleField("visual_theme", e.target.value)}
+                    >
+                      {VISUAL_THEME_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                    Template Type
+                    <select
+                      className="admin-input mt-1 h-9"
+                      value={sampleForUi.template_type}
+                      onChange={(e) => void updateSampleField("template_type", e.target.value)}
+                    >
+                      {TEMPLATE_TYPE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleCopy()}>
+                    Regenerate Copy
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
+                    Regenerate Images
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => resetToSuggestedDefaults()}>
+                    Reset To Suggested Defaults
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => void createOrOpenSample()}>
+                    Save Sample
+                  </button>
+                </div>
+                {isLikelyFacebookOnly ? (
+                  <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                    Facebook-only flow detected: Upload Image or Paste Image URL is the fastest path.
+                  </p>
+                ) : null}
+              </div>
+            </details>
+
+            {(isPreparedReady || preparedPreviewUrl || previewUrl) ? (
+              <div className="rounded border p-2 space-y-2" style={{ borderColor: "var(--admin-border)", background: "rgba(255,255,255,0.02)" }}>
+                <p className="text-xs font-semibold">Section 5: Ready to Send</p>
+                <div>
+                  <p className="text-xs font-medium">Preview Ready</p>
+                  <p className="text-xs break-all" style={{ color: "var(--admin-muted)" }}>
+                    {preparedPreviewUrl || previewUrl || "No preview URL yet"}
+                  </p>
+                  <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                    Sample status: {sample?.status || "draft"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Message Ready</p>
+                  <textarea
+                    className="admin-input min-h-[120px]"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder="Generated outreach message appears here."
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="admin-btn-primary text-xs"
+                    onClick={() => {
+                      const url = preparedPreviewUrl || previewUrl;
+                      if (url) window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                  >
+                    Open Preview
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => void copyPreviewUrl()}>
+                    Copy Preview Link
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => void copyEmail()}>
+                    Copy Message
+                  </button>
+                  {facebookUrl ? (
+                    <a href={facebookUrl} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                      Open Facebook
+                    </a>
+                  ) : null}
+                  <button className="admin-btn-primary text-xs" onClick={() => void sendEmail()} disabled={isSending}>
+                    {isSending ? "Sending..." : "Send Email"}
+                  </button>
+                  <button className="admin-btn-ghost text-xs" onClick={() => void markContactedWithFollowUp()} disabled={isUpdating}>
+                    Mark Contacted
+                  </button>
+                </div>
+                {sampleStorageSource === "local" ? (
+                  <p className="text-[11px]" style={{ color: "#fbbf24" }}>
+                    Local-only lead: preview and message prep work now, send/email actions may require backend save.
+                  </p>
+                ) : null}
+              </div>
             ) : null}
           </div>
         ) : null}
       </div>
 
+      <div className="admin-card space-y-2">
+        <h3 className="text-sm font-semibold">Deal Progress</h3>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Current stage: <strong>{dealStage}</strong>
+        </p>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Next recommended action: {recommendedClosingAction(dealStage)}
+        </p>
+        {initialLastReplyPreview ? (
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Last reply signal: "{String(initialLastReplyPreview).slice(0, 140)}"
+          </p>
+        ) : null}
+      </div>
+
       <div className="admin-card space-y-3">
         <h3 className="text-sm font-semibold">Outreach Panel</h3>
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_180px_auto]">
+          <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Quick Replies
+            <select
+              className="admin-input mt-1 h-9"
+              value={selectedQuickReplyId}
+              onChange={(e) => applyQuickReply(e.target.value)}
+            >
+              <option value="">Select a quick reply...</option>
+              {quickReplyOptions().map((reply) => (
+                <option key={reply.id} value={reply.id}>
+                  {reply.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Closing Replies
+            <select
+              className="admin-input mt-1 h-9"
+              value={selectedClosingReplyId}
+              onChange={(e) => applyClosingReply(e.target.value)}
+            >
+              <option value="">Select a closing reply...</option>
+              {CLOSING_REPLIES.map((reply) => (
+                <option key={reply.id} value={reply.id}>
+                  {reply.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Insert Mode
+            <select
+              className="admin-input mt-1 h-9"
+              value={quickReplyMode}
+              onChange={(e) => setQuickReplyMode(e.target.value === "append" ? "append" : "replace")}
+            >
+              <option value="replace">Replace</option>
+              <option value="append">Append</option>
+            </select>
+          </label>
+          <div className="flex items-end">
+            <button className="admin-btn-ghost text-xs" onClick={() => saveCurrentAsQuickReply()}>
+              Save as Template
+            </button>
+          </div>
+        </div>
+        {selectedClosingTemplate ? (
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Suggested stage: <strong>{selectedClosingTemplate.stage}</strong> - {selectedClosingTemplate.nextAction}
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <button className="admin-btn-primary text-xs" onClick={() => void generateDraft()} disabled={isGenerating}>
             {isGenerating ? "Generating..." : "Generate Email"}

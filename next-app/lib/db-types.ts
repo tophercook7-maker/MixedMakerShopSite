@@ -22,6 +22,7 @@ export type LeadStatus =
   | "research_later"
   | "do_not_contact";
 export type DealStatus = "none" | "interested" | "proposal_sent" | "won" | "lost";
+export type DealStage = "new" | "interested" | "pricing" | "closing" | "won";
 export type DoorStatus = "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost";
 export type Lead = {
   id: string;
@@ -61,12 +62,15 @@ export type Lead = {
   auto_intake?: boolean;
   status: LeadStatus;
   deal_status?: DealStatus | null;
+  deal_stage?: DealStage | null;
   deal_value?: number | null;
   closed_at?: string | null;
   sequence_active?: boolean | null;
   notes: string | null;
   follow_up_date: string | null;
   last_contacted_at?: string | null;
+  follow_up_stage?: number | null;
+  follow_up_status?: "pending" | "completed" | null;
   outreach_sent_at?: string | null;
   replied_at?: string | null;
   next_follow_up_at?: string | null;

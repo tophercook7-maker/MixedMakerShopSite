@@ -29,6 +29,10 @@ type LeadRow = {
   conversion_score?: number | null;
   why_this_lead_is_here?: string | null;
   visual_business?: boolean | null;
+  last_contacted_at?: string | null;
+  follow_up_stage?: number | null;
+  next_follow_up_at?: string | null;
+  follow_up_status?: "pending" | "completed" | null;
 };
 
 function isMissingColumnError(message: string): boolean {
@@ -136,6 +140,14 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
           ? null
           : Number(row.opportunity_score)
         : Number(row.conversion_score),
+    last_contacted_at: String(row.last_contacted_at || "").trim() || null,
+    follow_up_stage:
+      row.follow_up_stage == null || Number.isNaN(Number(row.follow_up_stage))
+        ? 0
+        : Math.max(0, Math.min(3, Number(row.follow_up_stage))),
+    next_follow_up_at: String(row.next_follow_up_at || "").trim() || null,
+    follow_up_status:
+      String(row.follow_up_status || "").trim().toLowerCase() === "completed" ? "completed" : "pending",
     score_breakdown: null,
     from_latest_scan: false,
     is_archived: false,
@@ -209,10 +221,10 @@ export default async function AdminLeadsPage({
   let rows: LeadRow[] = [];
   try {
     const selectVariants = [
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,last_contacted_at,next_follow_up_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address,opportunity_score",
     ];
     for (const selectClause of selectVariants) {

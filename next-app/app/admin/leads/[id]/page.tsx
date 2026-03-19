@@ -23,6 +23,8 @@ type LeadRow = {
   opportunity_score?: number | null;
   status?: string | null;
   deal_status?: string | null;
+  deal_stage?: "new" | "interested" | "pricing" | "closing" | "won" | null;
+  last_reply_preview?: string | null;
   deal_value?: number | null;
   closed_at?: string | null;
   is_recurring_client?: boolean | null;
@@ -55,6 +57,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "opportunity_score",
     "status",
     "deal_status",
+    "deal_stage",
+    "last_reply_preview",
     "deal_value",
     "closed_at",
     "is_recurring_client",
@@ -84,6 +88,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "opportunity_score",
     "status",
     "deal_status",
+    "deal_stage",
+    "last_reply_preview",
     "deal_value",
     "closed_at",
     "is_recurring_client",
@@ -112,6 +118,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "opportunity_score",
     "status",
     "deal_status",
+    "deal_stage",
+    "last_reply_preview",
     "deal_value",
     "closed_at",
     "is_recurring_client",
@@ -136,6 +144,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "opportunity_score",
     "status",
     "deal_status",
+    "deal_stage",
+    "last_reply_preview",
     "notes",
     "created_at",
   ].join(","),
@@ -1311,6 +1321,7 @@ export default async function AdminLeadDetailPage({
               <p><span style={{ color: "var(--admin-muted)" }}>Estimated value:</span> {valueInfo.estimated_value} ({valueInfo.estimated_price_range})</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Beginner pricing lane:</span> {Number(displayScore || 0) >= 75 ? "Standard site ($300-$500)" : "Basic website ($150-$300)"}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Deal status:</span> {String(lead?.deal_status || "none").replace(/_/g, " ")}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Deal stage:</span> {String(lead?.deal_stage || "new").replace(/_/g, " ")}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Deal value:</span> {lead?.deal_value ? `$${Number(lead.deal_value).toFixed(0)}` : "Not set yet"}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Closed at:</span> {fmtDate(lead?.closed_at)}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Recurring client:</span> {lead?.is_recurring_client ? "Yes" : "No"}</p>
@@ -1749,6 +1760,8 @@ export default async function AdminLeadDetailPage({
               initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
               initialStatus={lead?.status || null}
               initialDealStatus={lead?.deal_status || null}
+              initialDealStage={lead?.deal_stage || "new"}
+              initialLastReplyPreview={lead?.last_reply_preview || null}
               initialEmail={displayEmail || null}
               initialPhone={displayPhone || null}
               website={displayWebsite || null}

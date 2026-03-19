@@ -12,6 +12,32 @@ import { LeadForm } from "@/components/admin/lead-form";
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
+type FollowUpStatus = "pending" | "completed";
+
+const FOLLOW_UP_TEMPLATES: Record<number, string> = {
+  1: "Hey, just wanted to follow up real quick — did you get a chance to check out that sample I sent?\n\nNo rush, just wanted to make sure it didn’t get buried 👍",
+  2: "Hey, just circling back — even something simple like that sample can help you get more calls and make things easier for customers to reach you.\n\nIf you want, I can build it out pretty quickly.",
+  3: "Hey, I’ll leave you alone after this 😄\n\nIf you ever want a site like that sample set up, just let me know — I can get it done quick.\n\nEither way, wishing you the best 👍",
+};
+
+function followUpDelayDaysForStage(stage: number): number {
+  if (stage <= 1) return 2;
+  if (stage === 2) return 5;
+  return 10;
+}
+
+function nextFollowUpIsoFromStage(stage: number): string {
+  const now = new Date();
+  now.setDate(now.getDate() + followUpDelayDaysForStage(stage));
+  return now.toISOString();
+}
+
+function clampFollowUpStage(value: unknown): number {
+  const num = Number(value ?? 0);
+  if (!Number.isFinite(num)) return 0;
+  return Math.max(0, Math.min(3, Math.floor(num)));
+}
+
 type TimelineEntry = {
   id: string;
   direction?: string | null;
@@ -91,6 +117,10 @@ export type WorkflowLead = {
   is_hot_lead?: boolean | null;
   last_reply_at?: string | null;
   last_reply_preview?: string | null;
+  last_contacted_at?: string | null;
+  follow_up_stage?: number;
+  next_follow_up_at?: string | null;
+  follow_up_status?: FollowUpStatus;
   conversion_score?: number | null;
   score_breakdown?: Record<string, unknown> | null;
   from_latest_scan?: boolean | null;
@@ -360,6 +390,11 @@ export function LeadsWorkflowView({
       is_hot_lead: false,
       last_reply_at: null,
       last_reply_preview: null,
+      last_contacted_at: String(payload.last_contacted_at || "").trim() || null,
+      follow_up_stage: clampFollowUpStage(payload.follow_up_stage),
+      next_follow_up_at: String(payload.next_follow_up_at || "").trim() || null,
+      follow_up_status:
+        String(payload.follow_up_status || "").trim().toLowerCase() === "completed" ? "completed" : "pending",
       conversion_score: null,
       score_breakdown: null,
       from_latest_scan: false,
@@ -482,6 +517,10 @@ export function LeadsWorkflowView({
       status: lead.status || "new",
       notes: Array.isArray(lead.notes) && lead.notes.length > 0 ? String(lead.notes[lead.notes.length - 1] || "").trim() : undefined,
       follow_up_date: undefined,
+      last_contacted_at: lead.last_contacted_at || undefined,
+      follow_up_stage: clampFollowUpStage(lead.follow_up_stage),
+      next_follow_up_at: String(lead.next_follow_up_at || "").trim() || undefined,
+      follow_up_status: lead.follow_up_status || "pending",
       is_manual: true,
       known_owner_name: String(lead.known_owner_name || "").trim() || undefined,
       known_context: String(lead.known_context || "").trim() || undefined,
@@ -521,10 +560,19 @@ export function LeadsWorkflowView({
         : nextStatus === "won"
           ? "won"
           : nextStatus;
+    const shouldStopFollowUps =
+      nextStatus === "replied" || nextStatus === "not_interested" || nextStatus === "won";
+    const patchPayload: Record<string, unknown> = {
+      status: mappedStatus,
+    };
+    if (shouldStopFollowUps) {
+      patchPayload.follow_up_status = "completed";
+      patchPayload.next_follow_up_at = null;
+    }
     const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: mappedStatus }),
+      body: JSON.stringify(patchPayload),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     if (!res.ok) {
@@ -532,11 +580,209 @@ export function LeadsWorkflowView({
       return;
     }
     setLeads((prev) =>
-      prev.map((row) => (row.id === lead.id ? { ...row, status: nextStatus } : row))
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: nextStatus,
+              follow_up_status: shouldStopFollowUps ? "completed" : row.follow_up_status,
+              next_follow_up_at: shouldStopFollowUps ? null : row.next_follow_up_at,
+            }
+          : row
+      )
     );
     setLocalFallbackLeads((prev) =>
-      prev.map((row) => (row.id === lead.id ? { ...row, status: nextStatus } : row))
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: nextStatus,
+              follow_up_status: shouldStopFollowUps ? "completed" : row.follow_up_status,
+              next_follow_up_at: shouldStopFollowUps ? null : row.next_follow_up_at,
+            }
+          : row
+      )
     );
+  }
+
+  async function scheduleFollowUps(lead: WorkflowLead) {
+    const nextStage = 1;
+    const nextFollowUpAt = nextFollowUpIsoFromStage(nextStage);
+    const patchPayload: Record<string, unknown> = {
+      follow_up_stage: nextStage,
+      follow_up_status: "pending",
+      next_follow_up_at: nextFollowUpAt,
+    };
+    const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchPayload),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setError(body.error || "Could not schedule follow-ups.");
+      return;
+    }
+    setLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              follow_up_stage: nextStage,
+              follow_up_status: "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setLocalFallbackLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              follow_up_stage: nextStage,
+              follow_up_status: "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setError(null);
+    actionDebug("Schedule Follow-Ups", { leadId: lead.id, next_stage: nextStage, next_follow_up_at: nextFollowUpAt });
+  }
+
+  async function sendFollowUpForLead(lead: WorkflowLead) {
+    const stage = clampFollowUpStage(lead.follow_up_stage || 1) || 1;
+    const template = FOLLOW_UP_TEMPLATES[stage];
+    if (!template) {
+      setError("No follow-up template found for this stage.");
+      return;
+    }
+    const sendRes = await fetch("/api/scout/outreach/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lead_id: lead.id,
+        subject: `Quick follow-up for ${lead.business_name}`,
+        body: template,
+        message_type: "short",
+      }),
+    });
+    const sendBody = (await sendRes.json().catch(() => ({}))) as { error?: string };
+    if (!sendRes.ok) {
+      setError(sendBody.error || "Could not send follow-up.");
+      return;
+    }
+    const nowIso = new Date().toISOString();
+    const nextStage = Math.min(3, stage + 1);
+    const isCompleted = stage >= 3;
+    const nextFollowUpAt = isCompleted ? null : nextFollowUpIsoFromStage(nextStage);
+    const patchPayload: Record<string, unknown> = {
+      last_contacted_at: nowIso,
+      follow_up_stage: isCompleted ? 3 : nextStage,
+      follow_up_status: isCompleted ? "completed" : "pending",
+      next_follow_up_at: nextFollowUpAt,
+      status: "follow_up",
+    };
+    const patchRes = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchPayload),
+    });
+    const patchBody = (await patchRes.json().catch(() => ({}))) as { error?: string };
+    if (!patchRes.ok) {
+      setError(patchBody.error || "Follow-up sent but lead update failed.");
+      return;
+    }
+    setLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: "follow_up",
+              last_contacted_at: nowIso,
+              follow_up_stage: isCompleted ? 3 : nextStage,
+              follow_up_status: isCompleted ? "completed" : "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setLocalFallbackLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: "follow_up",
+              last_contacted_at: nowIso,
+              follow_up_stage: isCompleted ? 3 : nextStage,
+              follow_up_status: isCompleted ? "completed" : "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setError(null);
+    actionDebug("Send Follow-Up", { leadId: lead.id, sent_stage: stage, next_stage: isCompleted ? null : nextStage });
+  }
+
+  async function markFollowUpSent(lead: WorkflowLead) {
+    const stage = clampFollowUpStage(lead.follow_up_stage || 1) || 1;
+    const nowIso = new Date().toISOString();
+    const nextStage = Math.min(3, stage + 1);
+    const isCompleted = stage >= 3;
+    const nextFollowUpAt = isCompleted ? null : nextFollowUpIsoFromStage(nextStage);
+    const patchPayload: Record<string, unknown> = {
+      last_contacted_at: nowIso,
+      follow_up_stage: isCompleted ? 3 : nextStage,
+      follow_up_status: isCompleted ? "completed" : "pending",
+      next_follow_up_at: nextFollowUpAt,
+      status: "follow_up",
+    };
+    const patchRes = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patchPayload),
+    });
+    const patchBody = (await patchRes.json().catch(() => ({}))) as { error?: string };
+    if (!patchRes.ok) {
+      setError(patchBody.error || "Could not mark follow-up as sent.");
+      return;
+    }
+    setLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: "follow_up",
+              last_contacted_at: nowIso,
+              follow_up_stage: isCompleted ? 3 : nextStage,
+              follow_up_status: isCompleted ? "completed" : "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setLocalFallbackLeads((prev) =>
+      prev.map((row) =>
+        row.id === lead.id
+          ? {
+              ...row,
+              status: "follow_up",
+              last_contacted_at: nowIso,
+              follow_up_stage: isCompleted ? 3 : nextStage,
+              follow_up_status: isCompleted ? "completed" : "pending",
+              next_follow_up_at: nextFollowUpAt,
+            }
+          : row
+      )
+    );
+    setError(null);
+    actionDebug("Mark Follow-Up Sent", {
+      leadId: lead.id,
+      sent_stage: stage,
+      next_stage: isCompleted ? null : nextStage,
+    });
   }
 
   async function deleteLeadQuick(lead: WorkflowLead) {
@@ -856,6 +1102,21 @@ export function LeadsWorkflowView({
     }
     return counts;
   }, [mergedLeads]);
+
+  const pendingFollowUps = useMemo(() => {
+    return [...mergedLeads]
+      .filter((lead) => {
+        const status = String(lead.status || "").toLowerCase();
+        if (status === "replied" || status === "not_interested" || status === "won") return false;
+        if (String(lead.follow_up_status || "pending").toLowerCase() !== "pending") return false;
+        return Boolean(String(lead.next_follow_up_at || "").trim());
+      })
+      .sort((a, b) => {
+        const aTime = new Date(String(a.next_follow_up_at || 0)).getTime();
+        const bTime = new Date(String(b.next_follow_up_at || 0)).getTime();
+        return aTime - bTime;
+      });
+  }, [mergedLeads]);
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
@@ -883,6 +1144,72 @@ export function LeadsWorkflowView({
           <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Archived</h2>
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.archived}</p>
         </div>
+      </section>
+
+      <section className="admin-card space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+            Follow-Up Panel
+          </h2>
+          <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Pending: {pendingFollowUps.length}
+          </span>
+        </div>
+        {pendingFollowUps.length === 0 ? (
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            No pending follow-ups right now.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {pendingFollowUps.slice(0, 20).map((lead) => {
+              const stage = clampFollowUpStage(lead.follow_up_stage || 1) || 1;
+              const previewMessage = FOLLOW_UP_TEMPLATES[stage] || FOLLOW_UP_TEMPLATES[1];
+              return (
+                <article
+                  key={`followup-${lead.id}`}
+                  className="rounded-lg border p-3 space-y-2"
+                  style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.2)" }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{lead.business_name}</p>
+                    <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                      Due {lead.next_follow_up_at ? new Date(lead.next_follow_up_at).toLocaleString() : "—"}
+                    </span>
+                  </div>
+                  <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                    Stage {stage} · Status {lead.follow_up_status || "pending"}
+                  </p>
+                  <p className="text-xs whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
+                    {previewMessage}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="admin-btn-primary text-xs"
+                      onClick={() => void sendFollowUpForLead(lead)}
+                    >
+                      Send Follow-Up
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-ghost text-xs"
+                      onClick={() => void scheduleFollowUps(lead)}
+                    >
+                      Schedule Follow-Ups
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn-ghost text-xs"
+                      onClick={() => void markFollowUpSent(lead)}
+                    >
+                      Mark as Sent
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="admin-card">
@@ -1208,6 +1535,9 @@ export function LeadsWorkflowView({
                   </button>
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
                     Follow Up
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void scheduleFollowUps(lead)}>
+                    Schedule Follow-Ups
                   </button>
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
                     No Response
@@ -1610,6 +1940,9 @@ export function LeadsWorkflowView({
                         </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
                           Follow Up
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void scheduleFollowUps(lead)}>
+                          Schedule Follow-Ups
                         </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
                           No Response

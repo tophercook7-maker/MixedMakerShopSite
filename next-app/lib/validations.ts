@@ -18,6 +18,7 @@ const leadStatuses = [
   "do_not_contact",
 ] as const;
 const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
+const dealStages = ["new", "interested", "pricing", "closing", "won"] as const;
 const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
@@ -64,6 +65,7 @@ export const leadSchema = z.object({
   lead_source: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   status: z.enum(leadStatuses),
   deal_status: z.enum(dealStatuses).optional(),
+  deal_stage: z.enum(dealStages).optional(),
   deal_value: z.number().min(0).optional(),
   closed_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
   replied_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
@@ -88,6 +90,10 @@ export const leadSchema = z.object({
   sequence_active: z.boolean().optional(),
   notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),
   follow_up_date: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  last_contacted_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  follow_up_stage: z.number().int().min(0).max(3).optional(),
+  next_follow_up_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  follow_up_status: z.enum(["pending", "completed"]).optional(),
 });
 
 export const clientSchema = z.object({

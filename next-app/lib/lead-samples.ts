@@ -692,17 +692,27 @@ function sampleHours(businessType: string): string[] {
   return ["Mon-Fri 8:00 AM-5:00 PM", "Saturday 9:00 AM-2:00 PM", "Sunday Closed"];
 }
 
+function imageSourcePriority(source: LeadSampleImageSource): number {
+  if (source === "upload") return 0;
+  if (source === "url") return 1;
+  return 2;
+}
+
 export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
   const services = sample.services.length
     ? sample.services
     : ["Service One", "Service Two", "Service Three"];
+  const prioritizedImages = [...sample.images].sort(
+    (a, b) => imageSourcePriority(a.source) - imageSourcePriority(b.source)
+  );
   const heroImage =
-    sample.images.find((entry) => entry.role === "hero")?.src ||
+    prioritizedImages.find((entry) => entry.role === "hero")?.src ||
+    prioritizedImages[0]?.src ||
     sample.primary_image_url ||
     sample.additional_image_urls[0] ||
     sample.image_urls[0] ||
     undefined;
-  const galleryImages = sample.images
+  const galleryImages = prioritizedImages
     .filter((entry) => entry.role === "gallery")
     .map((entry) => entry.src)
     .filter(Boolean);
