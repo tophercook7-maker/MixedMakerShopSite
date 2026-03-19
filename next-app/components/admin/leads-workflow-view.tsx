@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
+import { LeadForm } from "@/components/admin/lead-form";
 
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
@@ -173,10 +175,13 @@ function websiteStatusDisplay(status: string | null | undefined): string {
 export function LeadsWorkflowView({
   initialLeads,
   emptyStateReason,
+  initialAddOpen = false,
 }: {
   initialLeads: WorkflowLead[];
   emptyStateReason?: string;
+  initialAddOpen?: boolean;
 }) {
+  const router = useRouter();
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
@@ -200,12 +205,189 @@ export function LeadsWorkflowView({
   const [error, setError] = useState<string | null>(null);
   const [selectedDoorLeadIds, setSelectedDoorLeadIds] = useState<string[]>([]);
   const [routePlan, setRoutePlan] = useState<WorkflowLead[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [addOpenHandled, setAddOpenHandled] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [localFallbackLeads, setLocalFallbackLeads] = useState<WorkflowLead[]>([]);
+  const LOCAL_WORKFLOW_LEADS_KEY = "mixedmakershop.local_workflow_leads";
 
   useEffect(() => {
     setLeads(initialLeads);
     setSelectedDoorLeadIds([]);
     setRoutePlan([]);
   }, [initialLeads]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_WORKFLOW_LEADS_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as WorkflowLead[];
+      if (Array.isArray(parsed)) {
+        setLocalFallbackLeads(parsed);
+      }
+    } catch {
+      // Ignore malformed fallback payloads.
+    }
+  }, []);
+
+  useEffect(() => {
+    console.info("[LeadsWorkflowView] Add Lead modal state changed", { isOpen: adding });
+  }, [adding]);
+
+  useEffect(() => {
+    if (!initialAddOpen || addOpenHandled) return;
+    console.info("[LeadsWorkflowView] Initial add=1 detected, opening Add Lead modal");
+    setAdding(true);
+    setAddOpenHandled(true);
+    router.replace("/admin/leads");
+  }, [addOpenHandled, initialAddOpen, router]);
+
+  function persistFallbackLeads(nextLeads: WorkflowLead[]) {
+    try {
+      localStorage.setItem(LOCAL_WORKFLOW_LEADS_KEY, JSON.stringify(nextLeads));
+    } catch {
+      // Ignore storage write failures.
+    }
+  }
+
+  function toWorkflowLeadFromPayload(payload: Record<string, unknown>, fallbackId?: string): WorkflowLead {
+    const now = new Date().toISOString();
+    const statusRaw = String(payload.status || "new")
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, "_");
+    const status = (
+      statusRaw === "new" ||
+      statusRaw === "contacted" ||
+      statusRaw === "follow_up_due" ||
+      statusRaw === "replied" ||
+      statusRaw === "no_response" ||
+      statusRaw === "closed" ||
+      statusRaw === "closed_won" ||
+      statusRaw === "closed_lost" ||
+      statusRaw === "do_not_contact" ||
+      statusRaw === "research_later"
+        ? statusRaw
+        : "new"
+    ) as WorkflowLead["status"];
+    const email = String(payload.email || "").trim();
+    const phone = String(payload.phone || payload.phone_from_site || "").trim();
+    const contactPage = String(payload.contact_page || "").trim();
+    const facebook = String(payload.facebook_url || "").trim();
+    const hasEmail = Boolean(email);
+    const hasContactAvailable = Boolean(contactPage || facebook || phone);
+    return {
+      id: String(payload.id || fallbackId || `local-${Date.now()}`),
+      workspace_id: String(payload.workspace_id || "").trim() || null,
+      related_case_id: null,
+      lead_source: String(payload.lead_source || "").trim() || "manual",
+      opportunity_id: null,
+      business_name: String(payload.business_name || "").trim() || "Untitled business",
+      category: String(payload.category || payload.industry || "").trim() || null,
+      city: String(payload.city || "").trim() || null,
+      address: String(payload.address || "").trim() || null,
+      website_status: String(payload.website_status || "").trim() || null,
+      opportunity_score: payload.opportunity_score == null ? null : Number(payload.opportunity_score),
+      lead_bucket: canonicalLeadBucket(String(payload.lead_bucket || "").trim() || null, payload.opportunity_score as number | null),
+      close_probability: "medium",
+      lead_type: hasEmail ? "Easy Win" : "Needs Review",
+      best_contact_method: hasEmail ? "email" : hasContactAvailable ? "contact_page" : "none",
+      primary_problem: null,
+      why_it_matters: null,
+      why_this_lead_is_here: null,
+      best_pitch_angle: null,
+      estimated_value: "low",
+      estimated_price_range: "$",
+      expected_close_probability: null,
+      email_pitch: null,
+      text_pitch: null,
+      door_pitch: null,
+      recommended_next_action: hasEmail ? "Generate Email" : hasContactAvailable ? "Open Contact Path" : "Research Later",
+      outreach_channel: hasEmail ? "email" : hasContactAvailable ? "contact" : "skip",
+      is_door_to_door_candidate: false,
+      website: String(payload.website || "").trim() || null,
+      email: email || null,
+      email_source: String(payload.email_source || "").trim() || (email ? "manual" : "No Email Found"),
+      phone_from_site: phone || null,
+      contact_page: contactPage || null,
+      facebook_url: facebook || null,
+      google_review_count: null,
+      google_rating: null,
+      door_score: null,
+      distance_km: null,
+      contact_method: hasEmail ? "email" : hasContactAvailable ? "contact_available" : "No Contact Path",
+      detected_issue_summary: String(payload.opportunity_reason || "").trim() || "Manual lead",
+      detected_issues: [],
+      status,
+      created_at: String(payload.created_at || "").trim() || now,
+      screenshot_urls: [],
+      annotated_screenshot_url: null,
+      timeline: [],
+      notes: String(payload.notes || "").trim() ? [String(payload.notes).trim()] : [],
+      is_hot_lead: false,
+      last_reply_at: null,
+      last_reply_preview: null,
+      conversion_score: null,
+      score_breakdown: null,
+      from_latest_scan: false,
+      is_archived: false,
+      is_manual: true,
+      known_owner_name: String(payload.known_owner_name || "").trim() || null,
+      known_context: String(payload.known_context || "").trim() || null,
+      door_status:
+        String(payload.door_status || "").trim() === "planned" ||
+        String(payload.door_status || "").trim() === "visited" ||
+        String(payload.door_status || "").trim() === "follow_up" ||
+        String(payload.door_status || "").trim() === "closed_won" ||
+        String(payload.door_status || "").trim() === "closed_lost"
+          ? (String(payload.door_status).trim() as WorkflowLead["door_status"])
+          : "not_visited",
+      last_updated_at: now,
+    };
+  }
+
+  async function createLead(payload: Record<string, unknown>) {
+    console.info("[LeadsWorkflowView] Add Lead save start", payload);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      if (!res.ok) {
+        const localLead = toWorkflowLeadFromPayload(payload, `local-${Date.now()}`);
+        setLocalFallbackLeads((prev) => {
+          const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
+          persistFallbackLeads(next);
+          return next;
+        });
+        setAdding(false);
+        setSubmitMessage("Lead saved locally (backend unavailable).");
+        console.info("[LeadsWorkflowView] Add Lead fallback save used", { status: res.status });
+        return true;
+      }
+      const createdLead = toWorkflowLeadFromPayload(body, String(body.id || `created-${Date.now()}`));
+      setLeads((prev) => [createdLead, ...prev.filter((lead) => lead.id !== createdLead.id)]);
+      setAdding(false);
+      setSubmitMessage("Lead added successfully.");
+      console.info("[LeadsWorkflowView] Add Lead save succeeded", { leadId: createdLead.id });
+      return true;
+    } catch (error) {
+      const localLead = toWorkflowLeadFromPayload(payload, `local-${Date.now()}`);
+      setLocalFallbackLeads((prev) => {
+        const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
+        persistFallbackLeads(next);
+        return next;
+      });
+      setAdding(false);
+      setSubmitMessage("Lead saved locally (network issue).");
+      console.info("[LeadsWorkflowView] Add Lead network fallback save used", {
+        error: error instanceof Error ? error.message : "unknown_error",
+      });
+      return true;
+    }
+  }
 
   async function copyText(value: string, errorMessage: string) {
     try {
@@ -372,9 +554,17 @@ export function LeadsWorkflowView({
     setRoutePlan(planned);
   }
 
+  const mergedLeads = useMemo(
+    () =>
+      [...localFallbackLeads, ...leads].filter(
+        (lead, index, arr) => arr.findIndex((candidate) => candidate.id === lead.id) === index
+      ),
+    [leads, localFallbackLeads]
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const bySegment = leads.filter((lead) => {
+    const bySegment = mergedLeads.filter((lead) => {
       const ws = String(lead.website_status || "").toLowerCase();
       const cat = String(lead.category || "").toLowerCase();
       const hasEmail = Boolean(String(lead.email || "").trim());
@@ -443,11 +633,11 @@ export function LeadsWorkflowView({
       if (conversionDelta !== 0) return conversionDelta;
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     });
-  }, [leads, search, segment]);
+  }, [mergedLeads, search, segment]);
 
   const queueCounts = useMemo(() => {
     const counts = {
-      totalStoredLeads: leads.length,
+      totalStoredLeads: mergedLeads.length,
       actionableNow: 0,
       newToday: 0,
       fromThisScan: 0,
@@ -457,7 +647,7 @@ export function LeadsWorkflowView({
     };
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    for (const lead of leads) {
+    for (const lead of mergedLeads) {
       const s = String(lead.status || "").toLowerCase();
       const hasEmail = Boolean(String(lead.email || "").trim());
       const isActionable = hasEmail && !Boolean(lead.is_archived);
@@ -472,7 +662,7 @@ export function LeadsWorkflowView({
       if (Boolean(lead.is_archived) || String(lead.outreach_channel || "").trim() === "skip") counts.archived += 1;
     }
     return counts;
-  }, [leads]);
+  }, [mergedLeads]);
   return (
     <div className="space-y-6">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
@@ -574,7 +764,7 @@ export function LeadsWorkflowView({
               className="admin-input h-9 w-80"
             />
             <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Showing {filtered.length} of {leads.length}
+              Showing {filtered.length} of {mergedLeads.length}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -608,6 +798,16 @@ export function LeadsWorkflowView({
           <div className="flex items-center gap-2 text-xs">
             <button
               type="button"
+              className="admin-btn-primary"
+              onClick={() => {
+                console.info("[LeadsWorkflowView] Add Lead button clicked");
+                setAdding(true);
+              }}
+            >
+              Add Lead
+            </button>
+            <button
+              type="button"
               className={viewMode === "cards" ? "admin-btn-primary" : "admin-btn-ghost"}
               onClick={() => setViewMode("cards")}
             >
@@ -622,6 +822,12 @@ export function LeadsWorkflowView({
             </button>
           </div>
         </div>
+
+        {submitMessage ? (
+          <div className="mb-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}>
+            {submitMessage}
+          </div>
+        ) : null}
 
         {filtered.length === 0 ? (
           <div className="admin-empty !py-8">
@@ -860,7 +1066,6 @@ export function LeadsWorkflowView({
                   <a
                     href={leadHref(lead, "generate=1")}
                     className="admin-btn-ghost text-xs"
-                    aria-disabled={!hasContactPath}
                     onClick={(event) => {
                       event.preventDefault();
                       if (!hasContactPath) {
@@ -877,7 +1082,6 @@ export function LeadsWorkflowView({
                   <a
                     href={leadHref(lead, "compose=1")}
                     className="admin-btn-ghost text-xs"
-                    aria-disabled={!hasContactPath}
                     onClick={(event) => {
                       event.preventDefault();
                       if (!hasContactPath) {
@@ -1328,6 +1532,13 @@ export function LeadsWorkflowView({
           </div>
         )}
       </section>
+
+      {adding ? (
+        <LeadForm
+          onClose={() => setAdding(false)}
+          onSave={(payload) => createLead(payload as Record<string, unknown>)}
+        />
+      ) : null}
 
       {error ? (
         <p className="text-sm" style={{ color: "#fca5a5" }}>

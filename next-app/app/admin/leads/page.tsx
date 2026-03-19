@@ -136,9 +136,9 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
 export default async function AdminLeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; add?: string }>;
 }) {
-  const { error, detail } = await searchParams;
+  const { error, detail, add } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -269,7 +269,11 @@ export default async function AdminLeadsPage({
         </p>
       </section>
 
-      <LeadsWorkflowView initialLeads={workflowLeads} emptyStateReason={emptyStateReason} />
+      <LeadsWorkflowView
+        initialLeads={workflowLeads}
+        emptyStateReason={emptyStateReason}
+        initialAddOpen={String(add || "") === "1"}
+      />
     </div>
   );
 }

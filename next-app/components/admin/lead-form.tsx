@@ -190,6 +190,8 @@ export function LeadForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    event.stopPropagation();
+    console.info("[LeadForm] submit start", { mode: lead ? "edit" : "add" });
     await handleSave();
   };
 
