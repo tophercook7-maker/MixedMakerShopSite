@@ -937,23 +937,36 @@ export function LeadsWorkflowView({
       setSaveToWorkspaceBlock(null);
       resolvedLead = promoted;
     }
+    const justPromoted = resolvedLead !== lead;
     const destination = leadHref(resolvedLead, query);
-    const check = await verifyLeadBeforeNavigation(String(resolvedLead.id || ""));
-    if (!check.ok) {
-      setError(check.message);
-      actionDebug("Lead navigation blocked", {
-        leadId: resolvedLead.id,
-        status: check.status,
-        reason: check.reason,
-        diagnostics: check.diagnostics || null,
-      });
-      if (typeof window !== "undefined") window.alert(check.message);
-      return;
+    if (!justPromoted) {
+      const check = await verifyLeadBeforeNavigation(String(resolvedLead.id || ""));
+      if (!check.ok) {
+        actionDebug("Lead navigation blocked", {
+          leadId: resolvedLead.id,
+          status: check.status,
+          reason: check.reason,
+          diagnostics: check.diagnostics || null,
+        });
+        if (options?.showSaveBlockOnPromotionFailure) {
+          setError(check.message);
+          setSaveToWorkspaceBlock({
+            leadId: resolvedLead.id,
+            query,
+            reason: check.message,
+          });
+        } else {
+          setError(check.message);
+          if (typeof window !== "undefined") window.alert(check.message);
+        }
+        return;
+      }
     }
     console.info("[LeadsWorkflowView] final route opened", {
       action: actionName,
       lead_id: resolvedLead.id,
       destination,
+      just_promoted: justPromoted,
     });
     if (typeof window !== "undefined") window.location.assign(destination);
   }
@@ -1727,11 +1740,10 @@ export function LeadsWorkflowView({
                   >
                     Open Lead
                   </a>
-                  <a
-                    href={leadHref(lead, "sample=1")}
+                  <button
+                    type="button"
                     className="admin-btn-ghost text-xs"
-                    onClick={(event) => {
-                      event.preventDefault();
+                    onClick={() => {
                       actionDebug("Build Sample clicked", {
                         leadId: lead.id,
                         source: lead.source || "server",
@@ -1744,7 +1756,7 @@ export function LeadsWorkflowView({
                     }}
                   >
                     Build Sample
-                  </a>
+                  </button>
                   <a
                     href={previewHref(lead)}
                     className="admin-btn-ghost text-xs"
@@ -2108,11 +2120,10 @@ export function LeadsWorkflowView({
                         >
                           Open Lead
                         </a>
-                        <a
-                          href={leadHref(lead, "sample=1")}
+                        <button
+                          type="button"
                           className="text-[var(--admin-gold)] hover:underline text-xs"
-                          onClick={(event) => {
-                            event.preventDefault();
+                          onClick={() => {
                             actionDebug("Build Sample clicked", {
                               leadId: lead.id,
                               source: lead.source || "server",
@@ -2125,7 +2136,7 @@ export function LeadsWorkflowView({
                           }}
                         >
                           Build Sample
-                        </a>
+                        </button>
                         <a
                           href={previewHref(lead)}
                           className="text-[var(--admin-gold)] hover:underline text-xs"

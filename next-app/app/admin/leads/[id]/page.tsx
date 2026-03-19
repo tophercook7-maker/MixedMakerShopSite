@@ -10,6 +10,7 @@ import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/comp
 import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
 import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-workspace";
+import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
 
 type LeadRow = {
   id: string;
@@ -1028,15 +1029,23 @@ export default async function AdminLeadDetailPage({
   const hasAnyData = Boolean(lead || caseRow || opp);
   if (!hasAnyData) {
     const canRecreateFromOpportunity = opportunityFoundForFallback && isUuidLike(targetId);
+    const isWorkspaceMismatch = detailFailureReason === "owner_workspace_mismatch";
     return (
       <div className="space-y-4">
         <section className="admin-card">
-          <h1 className="text-2xl font-bold">Lead workspace</h1>
+          <h1 className="text-2xl font-bold">
+            {isWorkspaceMismatch
+              ? "This lead is not in your workspace"
+              : "Lead not found"}
+          </h1>
           <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
-            {detailFailureReason === "owner_workspace_mismatch"
-              ? "Lead exists but is not in your workspace."
-              : "Lead does not exist."}
+            {isWorkspaceMismatch
+              ? "This lead exists but belongs to a different workspace. Claim it to continue."
+              : "This lead does not exist or could not be loaded."}
           </p>
+          {isWorkspaceMismatch ? (
+            <ClaimLeadToWorkspace leadId={targetId} redirectQuery={redirectQuery} />
+          ) : null}
           <div className="mt-4 flex gap-2">
             <Link href="/admin/leads" className="admin-btn-primary">
               Back to Leads
