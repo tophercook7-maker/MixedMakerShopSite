@@ -470,10 +470,10 @@ export default async function AdminLeadDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ generate?: string; compose?: string }>;
+  searchParams: Promise<{ generate?: string; compose?: string; sample?: string }>;
 }) {
   const { id } = await params;
-  const { generate, compose } = await searchParams;
+  const { generate, compose, sample } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -1761,6 +1761,7 @@ export default async function AdminLeadDetailPage({
               quickFixSummary={quickFixSummary}
               autoGenerate={generate === "1"}
               autoCompose={compose === "1"}
+              autoOpenSampleBuilder={sample === "1"}
             />
           ) : (
             <section className="admin-card">

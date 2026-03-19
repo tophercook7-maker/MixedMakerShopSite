@@ -3,6 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
 
+function normalizeLeadStatus(status: unknown): string {
+  const normalized = String(status || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+  if (!normalized) return "new";
+  if (normalized === "follow_up_due") return "follow_up";
+  if (normalized === "closed_won") return "won";
+  if (normalized === "closed_lost") return "no_response";
+  if (normalized === "do_not_contact") return "not_interested";
+  if (normalized === "research_later") return "archived";
+  return normalized;
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -132,7 +146,10 @@ export async function PATCH(
   }
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
-  const payload = { ...parsed.data, last_updated_at: new Date().toISOString() };
+  const payload = { ...parsed.data, last_updated_at: new Date().toISOString() } as Record<string, unknown>;
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    payload.status = normalizeLeadStatus(payload.status);
+  }
   const { data, error } = await supabase
     .from("leads")
     .update(payload)

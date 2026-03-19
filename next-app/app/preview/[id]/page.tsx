@@ -26,6 +26,14 @@ type PreviewParams = {
   export?: string;
   style_preset?: string;
   color_preset?: string;
+  edit?: string;
+  hero_image?: string;
+  primary_image?: string;
+  image_urls?: string;
+  service_image_1?: string;
+  service_image_2?: string;
+  service_image_3?: string;
+  gallery_images?: string;
 };
 
 type LeadPreviewRow = {
@@ -627,6 +635,93 @@ function parseServicesFromQuery(qs: PreviewParams, fallback: string[]): string[]
   return merged.slice(0, 6);
 }
 
+function parseImageList(raw: string | undefined): string[] {
+  return String(raw || "")
+    .split(/\n|,/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function fallbackImageSet(category: string): { hero: string; services: string[]; gallery: string[] } {
+  const c = String(category || "").toLowerCase();
+  if (isInCategory(c, ["coffee", "cafe"])) {
+    return {
+      hero: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1400&q=80",
+      services: [
+        "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1459755486867-b55449bb39ff?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&q=80",
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=900&q=80",
+      ],
+    };
+  }
+  if (isInCategory(c, ["plumb", "hvac", "electric", "contractor", "pressure wash", "clean"])) {
+    return {
+      hero: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80",
+      services: [
+        "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1600566753151-384129cf4e3e?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80",
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80",
+      ],
+    };
+  }
+  if (isInCategory(c, ["church", "ministry", "chapel"])) {
+    return {
+      hero: "https://images.unsplash.com/photo-1438032005730-c779502df39b?auto=format&fit=crop&w=1400&q=80",
+      services: [
+        "https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1520681018967-2ddd4f8f8f3d?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1466442929976-97f336a657be?auto=format&fit=crop&w=900&q=80",
+      ],
+      gallery: [
+        "https://images.unsplash.com/photo-1444927714506-8492d94b4e3d?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1544531585-9847b68c8c86?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=900&q=80",
+      ],
+    };
+  }
+  return {
+    hero: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80",
+    services: [
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=900&q=80",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?auto=format&fit=crop&w=900&q=80",
+    ],
+  };
+}
+
+function serviceDescription(category: string, service: string, city: string, businessName: string): string {
+  const normalized = String(category || "").toLowerCase();
+  const label = String(service || "").toLowerCase();
+  if (isInCategory(normalized, ["pressure wash", "clean"])) {
+    return `${service} that helps ${city} properties look cleaner, newer, and ready for customers.`;
+  }
+  if (isInCategory(normalized, ["detail", "auto"])) {
+    return `${service} focused on lasting finish, detail quality, and reliable scheduling.`;
+  }
+  if (isInCategory(normalized, ["plumb", "hvac", "electric", "contractor"])) {
+    return `${service} handled by ${businessName} with clear communication and dependable follow-through.`;
+  }
+  if (isInCategory(normalized, ["coffee", "restaurant"])) {
+    return `${service} designed to make ordering and visits easy for people in ${city}.`;
+  }
+  return `${service} tailored for customers in ${city} who want dependable results.`;
+}
+
 function sectionByType<T extends DraftSection["type"]>(
   draft: ClientSiteDraft,
   type: T
@@ -789,7 +884,6 @@ export default async function PreviewPage({
   const city = safeCity(String(lead?.city || qs.city || ""));
   const phone = String(lead?.phone || qs.phone || "(555) 555-5555").trim() || "(555) 555-5555";
   const address = String(lead?.address || qs.address || "").trim();
-  const generationStartedAt = Date.now();
   const copy = categoryPreviewCopy(category, city, businessName);
   const stylePreset = parseStylePreset(qs.style_preset);
   const colorPreset = qs.color_preset
@@ -800,15 +894,33 @@ export default async function PreviewPage({
   const rating = parseNumber(qs.rating);
   const headline = String(qs.headline || copy.headline).trim() || copy.headline;
   const subheadline = String(qs.subheadline || copy.subheadline).trim() || copy.subheadline;
-  const ctaLabel = String(qs.cta || copy.primary_cta).trim() || copy.primary_cta;
-  const secondaryCta = String(qs.secondary_cta || copy.secondary_cta).trim() || copy.secondary_cta;
+  const ctaLabel = "Call Now";
+  const secondaryCta = "Get Quote";
   const services = parseServicesFromQuery(qs, copy.services);
   const hasRealPhone = Boolean(String(lead?.phone || qs.phone || "").trim());
   const ctaHref = hasRealPhone ? `tel:${normalizePhone(phone)}` : "#contact";
-  const presentationMode = String(qs.presentation || "").trim() === "1";
-  const showEditBar = !presentationMode;
+  const presentationMode = true;
+  const showEditBar = String(qs.edit || "").trim() === "1";
   const showExport = !presentationMode && String(qs.export || "").trim() === "1";
-  const servicesInputValue = services.join("\n");
+  const benefitHeadline = headline || `Trusted ${category} services in ${city}`;
+
+  const fallbackImages = fallbackImageSet(category);
+  const additionalImageUrls = parseImageList(qs.image_urls);
+  const galleryImages = parseImageList(qs.gallery_images);
+  const serviceImagesFromQuery = [
+    String(qs.service_image_1 || "").trim(),
+    String(qs.service_image_2 || "").trim(),
+    String(qs.service_image_3 || "").trim(),
+  ].filter(Boolean);
+  const heroImageUrl =
+    String(qs.hero_image || "").trim() ||
+    String(qs.primary_image || "").trim() ||
+    additionalImageUrls[0] ||
+    fallbackImages.hero;
+  const serviceImageUrls = (
+    serviceImagesFromQuery.length ? serviceImagesFromQuery : additionalImageUrls.slice(1, 4)
+  ).concat(fallbackImages.services).slice(0, 3);
+  const galleryImageUrls = (galleryImages.length ? galleryImages : additionalImageUrls.slice(4).concat(fallbackImages.gallery)).slice(0, 6);
 
   const contactPhone = hasRealPhone ? phone : "Phone available on request";
   const contactAddress = address || `${city} and nearby neighborhoods`;
@@ -834,7 +946,6 @@ export default async function PreviewPage({
   const trust = sectionByType(clientSiteDraft, "trust");
   const servicesSection = sectionByType(clientSiteDraft, "services");
   const about = sectionByType(clientSiteDraft, "about");
-  const testimonial = sectionByType(clientSiteDraft, "testimonial");
   const contact = sectionByType(clientSiteDraft, "contact");
   const exportPrompt = [
     "Build a responsive website using this structure:",
@@ -842,7 +953,6 @@ export default async function PreviewPage({
     "Use modern React + Tailwind.",
     "Componentize each section.",
   ].join("\n\n");
-  const generationMs = Date.now() - generationStartedAt;
   const cssVars = {
     "--bg": palette.background,
     "--surface": palette.surface,
@@ -941,18 +1051,47 @@ export default async function PreviewPage({
           margin-bottom: var(--section-gap);
         }
         .hero-visual {
-          min-height: 236px;
+          min-height: 320px;
           border-radius: var(--card-radius);
           border: var(--border-weight) solid var(--border);
+          overflow: hidden;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), var(--soft-shadow);
+          position: relative;
+        }
+        .hero-visual img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .hero-overlay {
+          position: absolute;
+          inset: 0;
           background:
-            linear-gradient(130deg, color-mix(in srgb, var(--primary) 16%, transparent), transparent 52%),
-            linear-gradient(25deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%),
-            var(--surface-soft);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), var(--soft-shadow);
+            linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--text) 36%, transparent) 100%),
+            linear-gradient(110deg, color-mix(in srgb, var(--primary) 24%, transparent), transparent 46%);
+        }
+        .service-image {
+          width: 100%;
+          height: 148px;
+          object-fit: cover;
+          display: block;
+          border-radius: 12px;
+          border: var(--border-weight) solid color-mix(in srgb, var(--border) 80%, transparent);
+          margin-bottom: 10px;
+        }
+        .gallery-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 10px;
-          padding: 16px;
+          gap: 12px;
+        }
+        .gallery-grid img {
+          width: 100%;
+          height: 170px;
+          object-fit: cover;
+          border-radius: 12px;
+          border: var(--border-weight) solid color-mix(in srgb, var(--border) 80%, transparent);
+          display: block;
         }
         .service-grid, .value-grid, .testimonial-grid {
           display: grid;
@@ -992,65 +1131,19 @@ export default async function PreviewPage({
         }
         @media (max-width: 1180px) {
           .preview-wrap { max-width: 100%; padding: ${presentationMode ? "20px 16px 60px" : "22px 16px 62px"}; }
-          .hero-visual { min-height: 220px; }
+          .hero-visual { min-height: 260px; }
         }
         @media (max-width: 980px) {
           .service-grid, .value-grid, .testimonial-grid { grid-template-columns: 1fr 1fr; }
+          .gallery-grid { grid-template-columns: 1fr 1fr; }
           .footer-grid { grid-template-columns: 1fr; }
-          .hero-visual { grid-template-columns: 1fr; min-height: auto; }
+          .hero-visual { min-height: 240px; }
         }
         @media (max-width: 640px) {
-          .service-grid, .value-grid, .testimonial-grid { grid-template-columns: 1fr; }
+          .service-grid, .value-grid, .testimonial-grid, .gallery-grid { grid-template-columns: 1fr; }
         }
       `}</style>
       <div className="preview-wrap">
-        {showEditBar ? (
-          <section className="preview-card" style={{ marginBottom: 14, padding: 14 }}>
-            <form method="get" style={{ display: "grid", gap: 8 }}>
-              <div className="grid gap-2 md:grid-cols-2">
-                <input name="headline" defaultValue={headline} placeholder="Headline" className="admin-input h-9" />
-                <input name="subheadline" defaultValue={subheadline} placeholder="Subheadline" className="admin-input h-9" />
-              </div>
-              <div className="grid gap-2 md:grid-cols-2">
-                <input name="cta" defaultValue={ctaLabel} placeholder="CTA text" className="admin-input h-9" />
-                <input name="secondary_cta" defaultValue={secondaryCta} placeholder="Secondary CTA text" className="admin-input h-9" />
-              </div>
-              <div className="grid gap-2 md:grid-cols-2">
-                <select name="style_preset" defaultValue={stylePreset} className="admin-input h-9">
-                  <option value="clean_modern">Clean / Modern</option>
-                  <option value="bold_premium">Bold / Premium</option>
-                  <option value="friendly_local">Friendly / Local</option>
-                  <option value="minimal_elegant">Minimal / Elegant</option>
-                </select>
-                <select name="color_preset" defaultValue={colorPreset} className="admin-input h-9">
-                  <option value="blue">Blue</option>
-                  <option value="green">Green</option>
-                  <option value="dark">Dark</option>
-                  <option value="warm_neutral">Warm Neutral</option>
-                  <option value="bold_accent">Bold Accent</option>
-                </select>
-              </div>
-              <textarea
-                name="services"
-                defaultValue={servicesInputValue}
-                placeholder="Service labels, one per line"
-                className="admin-input min-h-[120px]"
-              />
-              <input type="hidden" name="presentation" value="0" />
-              <input type="hidden" name="export" value={showExport ? "1" : "0"} />
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button type="submit" className="admin-btn-primary text-xs">Update Preview Copy</button>
-                <a href="?presentation=1" className="admin-btn-ghost text-xs">Presentation Mode</a>
-                <button type="submit" name="export" value="1" className="admin-btn-ghost text-xs">
-                  Export to Build
-                </button>
-              </div>
-              <p className="text-xs" style={{ color: "var(--muted)", margin: 0 }}>
-                Generate Client Site Draft ({generationMs}ms)
-              </p>
-            </form>
-          </section>
-        ) : null}
         {showEditBar && (leadLoadError || previewWarning) ? (
           <section className="preview-card" style={{ marginBottom: 14, padding: 12, borderColor: "rgba(252, 165, 165, 0.45)" }}>
             <p className="text-xs" style={{ color: "#fca5a5", margin: 0 }}>
@@ -1063,36 +1156,30 @@ export default async function PreviewPage({
             ) : null}
           </section>
         ) : null}
-
-        {showExport ? <ExportBuildBox prompt={exportPrompt} /> : null}
+        {showEditBar && showExport ? <ExportBuildBox prompt={exportPrompt} /> : null}
 
         <section className="preview-card section-block" style={{ padding: "var(--card-padding)" }}>
           <div className="hero-grid">
             <div className="hero-copy">
-              <h1 style={{ margin: "8px 0 10px", lineHeight: 1.02 }}>{clientSiteDraft.business_name}</h1>
-              <h2 style={{ margin: "0 0 10px", color: "var(--text)", lineHeight: 1.12 }}>{hero.headline}</h2>
+              <h1 style={{ margin: "8px 0 10px", lineHeight: 1.02 }}>{safeBusinessName(businessName)}</h1>
+              <h2 style={{ margin: "0 0 10px", color: "var(--text)", lineHeight: 1.12 }}>{benefitHeadline}</h2>
               <p style={{ margin: 0, color: "var(--muted)", maxWidth: 780, lineHeight: 1.52 }}>{hero.subheadline}</p>
               <p style={{ margin: "12px 0 0", color: "var(--text)", fontWeight: 600 }}>
-                Trusted in {city} for responsive service and clear communication.
+                Serving {city} with responsive service and clear communication.
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
                 <a href={ctaHref} className="preview-btn-primary">
-                  {hero.cta_primary}
+                  {ctaLabel}
                 </a>
                 <a href="#contact" className="preview-btn-secondary">
-                  {hero.cta_secondary}
+                  {secondaryCta}
                 </a>
               </div>
             </div>
             <div className="hero-visual">
-              {trust.bullets.slice(0, 3).map((point) => (
-                <div key={point} className="trust-chip" style={{ padding: 12, background: "color-mix(in srgb, var(--surface) 90%, white)" }}>
-                  <strong style={{ display: "block", marginBottom: 4 }}>{point}</strong>
-                  <span style={{ color: "var(--muted)", fontSize: 13 }}>
-                    {safeBusinessName(businessName)} serves {city}.
-                  </span>
-                </div>
-              ))}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={heroImageUrl} alt={`${safeBusinessName(businessName)} hero`} />
+              <div className="hero-overlay" />
             </div>
           </div>
         </section>
@@ -1110,11 +1197,13 @@ export default async function PreviewPage({
         <section className="section-block">
           <h2 className="section-title">Services</h2>
           <div className="service-grid">
-            {servicesSection.items.map((service) => (
+            {servicesSection.items.map((service, index) => (
               <article key={service} className="service-item" style={{ padding: 18 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={serviceImageUrls[index % serviceImageUrls.length]} alt={service} className="service-image" />
                 <h3 style={{ margin: "0 0 6px", fontSize: 18 }}>{service}</h3>
                 <p style={{ margin: 0, color: "var(--muted)" }}>
-                  Professional {service.toLowerCase()} from {safeBusinessName(businessName)} in {city}.
+                  {serviceDescription(category, service, city, safeBusinessName(businessName))}
                 </p>
               </article>
             ))}
@@ -1122,7 +1211,7 @@ export default async function PreviewPage({
         </section>
 
         <section className="preview-card section-block" style={{ padding: "var(--card-padding)" }}>
-          <h2 className="section-title">{about.title}</h2>
+          <h2 className="section-title">Why Choose Us</h2>
           <p style={{ margin: "0 0 12px", color: "var(--muted)" }}>
             {about.body}
           </p>
@@ -1135,15 +1224,26 @@ export default async function PreviewPage({
           </div>
         </section>
 
-        <section className="section-block">
-          <h2 className="section-title">Client Feedback</h2>
-          <div className="testimonial-grid">
-            {testimonial.items.map((item) => (
-              <article key={item.quote} className="testimonial-item" style={{ padding: 18 }}>
-                <p style={{ margin: 0, color: "var(--text)", lineHeight: 1.6 }}>&quot;{item.quote}&quot;</p>
-                <p style={{ margin: "10px 0 0", color: "var(--muted)", fontWeight: 600 }}>{item.name}</p>
-              </article>
-            ))}
+        {galleryImageUrls.length > 0 ? (
+          <section className="section-block">
+            <h2 className="section-title">Gallery</h2>
+            <div className="gallery-grid">
+              {galleryImageUrls.map((url, idx) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={`${url}-${idx}`} src={url} alt={`${safeBusinessName(businessName)} gallery ${idx + 1}`} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="preview-soft section-block" style={{ padding: "24px 20px" }}>
+          <h2 className="section-title" style={{ marginBottom: 8 }}>Ready for a better website?</h2>
+          <p style={{ margin: "0 0 14px", color: "var(--muted)" }}>
+            We can turn this direction into a live website with your exact services, photos, and branding.
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <a href={ctaHref} className="preview-btn-primary">{ctaLabel}</a>
+            <a href="#contact" className="preview-btn-secondary">{secondaryCta}</a>
           </div>
         </section>
 

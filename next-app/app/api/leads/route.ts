@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { isManualOnlyMode } from "@/lib/manual-mode";
+import { findLeadDuplicate, normalizeBusinessName, normalizeEmail, normalizePhone } from "@/lib/leads-dedup";
 
 const ALLOWED_LEAD_INSERT_FIELDS = [
   "business_name",
@@ -12,6 +13,12 @@ const ALLOWED_LEAD_INSERT_FIELDS = [
   "phone",
   "notes",
   "owner_id",
+] as const;
+
+const OPTIONAL_FINGERPRINT_FIELDS = [
+  "normalized_business_name",
+  "normalized_email",
+  "normalized_phone",
 ] as const;
 
 export async function GET() {
@@ -24,6 +31,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("leads")
     .select("*")
+    .eq("owner_id", user.id)
     .order("created_at", { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
@@ -46,13 +54,25 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const normalizedInput = {
     business_name: String(parsed.data.business_name || "").trim(),
-    status: parsed.data.status || "new",
+    status:
+      String(parsed.data.status || "new").trim().toLowerCase() === "follow_up_due"
+        ? "follow_up"
+        : String(parsed.data.status || "new").trim().toLowerCase() === "closed_won"
+          ? "won"
+          : String(parsed.data.status || "new").trim().toLowerCase() === "do_not_contact"
+            ? "not_interested"
+            : String(parsed.data.status || "new").trim().toLowerCase() === "research_later"
+              ? "archived"
+              : parsed.data.status || "new",
     email: String(parsed.data.email || "").trim() || undefined,
     phone: String(parsed.data.phone || "").trim() || undefined,
     notes: parsed.data.notes,
   } as const;
   const candidatePayload = {
     ...normalizedInput,
+    normalized_business_name: normalizeBusinessName(normalizedInput.business_name),
+    normalized_email: normalizeEmail(normalizedInput.email || ""),
+    normalized_phone: normalizePhone(normalizedInput.phone || ""),
     owner_id: user.id,
   };
   console.info("[Leads API] sanitized create payload", {
@@ -60,10 +80,53 @@ export async function POST(request: Request) {
     payload: candidatePayload,
   });
 
+  const dedup = await findLeadDuplicate({
+    supabase,
+    ownerId: user.id,
+    businessName: normalizedInput.business_name,
+    email: normalizedInput.email || null,
+    phone: normalizedInput.phone || null,
+  });
+  console.info("[Leads API] dedup check", {
+    request_id: requestId,
+    duplicate: dedup.duplicate,
+    reason: dedup.reason,
+    matched_lead_id: dedup.matchedLeadId,
+    normalized_business_name: dedup.normalized_business_name,
+    normalized_email: dedup.normalized_email,
+    normalized_phone: dedup.normalized_phone,
+  });
+  if (dedup.duplicate && dedup.matchedLeadId) {
+    const { data: existing } = await supabase
+      .from("leads")
+      .select("id,business_name,status")
+      .eq("owner_id", user.id)
+      .eq("id", dedup.matchedLeadId)
+      .maybeSingle();
+    return NextResponse.json({
+      id: String(existing?.id || dedup.matchedLeadId),
+      business_name: String(existing?.business_name || normalizedInput.business_name),
+      status: String(existing?.status || "new"),
+      source: "server",
+      isLocalOnly: false,
+      duplicate_skipped: true,
+      duplicate_reason: dedup.reason,
+    });
+  }
+
+  const fingerprintProbe = await supabase
+    .from("leads")
+    .select("normalized_business_name,normalized_email,normalized_phone")
+    .limit(1);
+  const fingerprintFieldsAvailable = !fingerprintProbe.error;
+  const allowedInsertFields = [
+    ...ALLOWED_LEAD_INSERT_FIELDS,
+    ...(fingerprintFieldsAvailable ? OPTIONAL_FINGERPRINT_FIELDS : []),
+  ] as readonly string[];
   const safeInsertPayload = Object.fromEntries(
     Object.entries(candidatePayload).filter(
       ([key, value]) =>
-        ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number]) &&
+        allowedInsertFields.includes(key) &&
         value !== undefined
     )
   );

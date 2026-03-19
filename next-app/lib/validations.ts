@@ -3,9 +3,14 @@ import { z } from "zod";
 const leadStatuses = [
   "new",
   "contacted",
-  "follow_up_due",
+  "follow_up",
   "replied",
+  "won",
   "no_response",
+  "not_interested",
+  "archived",
+  // Legacy statuses kept for backward compatibility
+  "follow_up_due",
   "closed",
   "closed_won",
   "closed_lost",

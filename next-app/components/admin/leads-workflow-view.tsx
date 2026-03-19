@@ -77,14 +77,12 @@ export type WorkflowLead = {
   status:
     | "new"
     | "contacted"
-    | "follow_up_due"
+    | "follow_up"
     | "replied"
+    | "won"
     | "no_response"
-    | "closed"
-    | "closed_won"
-    | "closed_lost"
-    | "do_not_contact"
-    | "research_later";
+    | "not_interested"
+    | "archived";
   created_at: string | null;
   screenshot_urls: string[];
   annotated_screenshot_url?: string | null;
@@ -98,6 +96,7 @@ export type WorkflowLead = {
   from_latest_scan?: boolean | null;
   is_archived?: boolean | null;
   is_manual?: boolean | null;
+  visual_business?: boolean | null;
   known_owner_name?: string | null;
   known_context?: string | null;
   door_status?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
@@ -198,22 +197,16 @@ export function LeadsWorkflowView({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
-    | "actionable_email"
-    | "contact_available"
-    | "door_to_door_candidates"
-    | "low_priority"
-    | "from_this_scan"
-    | "archived"
-    | "phone_leads"
-    | "textable_leads"
-    | "replies_waiting"
-    | "no_website_email"
-    | "broken_website_email"
-    | "facebook_only_email"
-    | "churches_email"
-    | "no_email_research"
+    | "new"
+    | "follow_up"
+    | "replied"
+    | "closed"
     | "all"
-  >("actionable_email");
+  >("new");
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [scoutQualityFilter, setScoutQualityFilter] = useState<
+    "all" | "high_conversion" | "visual_business" | "no_website"
+  >("all");
   const [error, setError] = useState<string | null>(null);
   const [selectedDoorLeadIds, setSelectedDoorLeadIds] = useState<string[]>([]);
   const [routePlan, setRoutePlan] = useState<WorkflowLead[]>([]);
@@ -284,18 +277,28 @@ export function LeadsWorkflowView({
       .trim()
       .toLowerCase()
       .replace(/[\s-]+/g, "_");
+    const normalizedStatus =
+      statusRaw === "follow_up_due"
+        ? "follow_up"
+        : statusRaw === "closed_won"
+          ? "won"
+          : statusRaw === "closed_lost"
+            ? "no_response"
+            : statusRaw === "do_not_contact"
+              ? "not_interested"
+              : statusRaw === "research_later"
+                ? "archived"
+                : statusRaw;
     const status = (
-      statusRaw === "new" ||
-      statusRaw === "contacted" ||
-      statusRaw === "follow_up_due" ||
-      statusRaw === "replied" ||
-      statusRaw === "no_response" ||
-      statusRaw === "closed" ||
-      statusRaw === "closed_won" ||
-      statusRaw === "closed_lost" ||
-      statusRaw === "do_not_contact" ||
-      statusRaw === "research_later"
-        ? statusRaw
+      normalizedStatus === "new" ||
+      normalizedStatus === "contacted" ||
+      normalizedStatus === "follow_up" ||
+      normalizedStatus === "replied" ||
+      normalizedStatus === "won" ||
+      normalizedStatus === "no_response" ||
+      normalizedStatus === "not_interested" ||
+      normalizedStatus === "archived"
+        ? normalizedStatus
         : "new"
     ) as WorkflowLead["status"];
     const email = String(payload.email || "").trim();
@@ -362,6 +365,7 @@ export function LeadsWorkflowView({
       from_latest_scan: false,
       is_archived: false,
       is_manual: true,
+      visual_business: false,
       known_owner_name: String(payload.known_owner_name || "").trim() || null,
       known_context: String(payload.known_context || "").trim() || null,
       door_status:
@@ -508,6 +512,67 @@ export function LeadsWorkflowView({
       return next;
     });
     setOptimisticLeads((prev) => prev.filter((item) => item.id !== lead.id));
+  }
+
+  async function updateLeadStatusQuick(lead: WorkflowLead, nextStatus: WorkflowLead["status"]) {
+    const mappedStatus =
+      nextStatus === "follow_up"
+        ? "follow_up"
+        : nextStatus === "won"
+          ? "won"
+          : nextStatus;
+    const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: mappedStatus }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setError(body.error || "Could not update lead status.");
+      return;
+    }
+    setLeads((prev) =>
+      prev.map((row) => (row.id === lead.id ? { ...row, status: nextStatus } : row))
+    );
+    setLocalFallbackLeads((prev) =>
+      prev.map((row) => (row.id === lead.id ? { ...row, status: nextStatus } : row))
+    );
+  }
+
+  async function deleteLeadQuick(lead: WorkflowLead) {
+    const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
+      method: "DELETE",
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setError(body.error || "Could not delete lead.");
+      return;
+    }
+    setLeads((prev) => prev.filter((row) => row.id !== lead.id));
+    setLocalFallbackLeads((prev) => {
+      const next = prev.filter((row) => row.id !== lead.id);
+      persistFallbackLeads(next);
+      return next;
+    });
+    setSelectedLeadIds((prev) => prev.filter((id) => id !== lead.id));
+  }
+
+  function toggleSelectedLead(leadId: string) {
+    setSelectedLeadIds((prev) =>
+      prev.includes(leadId) ? prev.filter((id) => id !== leadId) : [...prev, leadId]
+    );
+  }
+
+  async function bulkUpdateStatus(nextStatus: WorkflowLead["status"]) {
+    const selected = filtered.filter((lead) => selectedLeadIds.includes(lead.id));
+    await Promise.all(selected.map((lead) => updateLeadStatusQuick(lead, nextStatus)));
+    setSelectedLeadIds([]);
+  }
+
+  async function bulkDeleteSelected() {
+    const selected = filtered.filter((lead) => selectedLeadIds.includes(lead.id));
+    await Promise.all(selected.map((lead) => deleteLeadQuick(lead)));
+    setSelectedLeadIds([]);
   }
 
   async function copyText(value: string, errorMessage: string) {
@@ -659,7 +724,7 @@ export function LeadsWorkflowView({
 
   async function markInterested(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "follow_up_due", "follow_up");
+    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "follow_up", "follow_up");
   }
 
   async function markDoorPlanned(lead: WorkflowLead) {
@@ -669,12 +734,12 @@ export function LeadsWorkflowView({
 
   async function markDoorWon(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door won ${ts}`, "closed_won", "closed_won");
+    await appendLeadNoteAndStatus(lead, `Door-to-door won ${ts}`, "won", "closed_won");
   }
 
   async function markDoorLost(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door lost ${ts}`, "closed_lost", "closed_lost");
+    await appendLeadNoteAndStatus(lead, `Door-to-door lost ${ts}`, "no_response", "closed_lost");
   }
 
   async function addDoorNote(lead: WorkflowLead) {
@@ -711,42 +776,41 @@ export function LeadsWorkflowView({
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const bySegment = mergedLeads.filter((lead) => {
-      const ws = String(lead.website_status || "").toLowerCase();
-      const cat = String(lead.category || "").toLowerCase();
-      const hasEmail = Boolean(String(lead.email || "").trim());
-      const hasContactAvailable = Boolean(
-        String(lead.contact_page || "").trim() || String(lead.facebook_url || "").trim() || String(lead.phone_from_site || "").trim()
-      );
-      const archived = Boolean(lead.is_archived);
-      const hasRequired = Boolean(String(lead.business_name || "").trim() && hasEmail);
-      if (segment === "actionable_email") return hasRequired && !archived;
-      if (segment === "contact_available") return !hasEmail && hasContactAvailable;
-      if (segment === "door_to_door_candidates") {
-        const bucket = String(lead.lead_bucket || "").toLowerCase();
+      if (segment === "new") return lead.status === "new";
+      if (segment === "follow_up") return lead.status === "follow_up" || lead.status === "contacted";
+      if (segment === "replied") return lead.status === "replied";
+      if (segment === "closed") {
         return (
-          bucket.includes("door_to_door") ||
-          String(lead.outreach_channel || "").trim() === "door_to_door" ||
-          Boolean(lead.is_door_to_door_candidate) ||
-          Boolean(lead.is_manual) ||
-          Boolean(lead.door_status)
+          lead.status === "won" ||
+          lead.status === "no_response" ||
+          lead.status === "not_interested" ||
+          lead.status === "archived"
         );
       }
-      if (segment === "low_priority") return String(lead.outreach_channel || "").trim() === "skip";
-      if (segment === "from_this_scan") return Boolean(lead.from_latest_scan) && !archived;
-      if (segment === "archived") return archived || String(lead.outreach_channel || "").trim() === "skip";
-      if (segment === "phone_leads") return Boolean(String(lead.phone_from_site || "").trim());
-      if (segment === "textable_leads") return Boolean(String(lead.phone_from_site || "").trim()) && !hasEmail;
-      if (segment === "replies_waiting") return lead.status === "replied" || Boolean(lead.is_hot_lead);
-      if (segment === "no_website_email") return hasRequired && ws === "no_website";
-      if (segment === "broken_website_email") return hasRequired && ws === "broken_website";
-      if (segment === "facebook_only_email") return hasRequired && ws === "facebook_only";
-      if (segment === "churches_email") return hasRequired && cat.includes("church");
-      if (segment === "no_email_research") return (!hasEmail && !hasContactAvailable) || lead.status === "research_later";
+      return true;
+    });
+    const byScoutQuality = bySegment.filter((lead) => {
+      if (scoutQualityFilter === "high_conversion") {
+        const score = Number(lead.conversion_score ?? lead.opportunity_score ?? 0);
+        return score >= 60;
+      }
+      if (scoutQualityFilter === "visual_business") {
+        const category = String(lead.category || "").toLowerCase();
+        const visualByCategory =
+          category.includes("detail") ||
+          category.includes("pressure wash") ||
+          category.includes("landscap");
+        return Boolean(lead.visual_business) || visualByCategory;
+      }
+      if (scoutQualityFilter === "no_website") {
+        const ws = String(lead.website_status || "").toLowerCase();
+        return !String(lead.website || "").trim() || ws === "no_website";
+      }
       return true;
     });
     const searched = !q
-      ? bySegment
-      : bySegment.filter((lead) =>
+      ? byScoutQuality
+      : byScoutQuality.filter((lead) =>
       [
         lead.business_name,
         lead.category || "",
@@ -762,56 +826,39 @@ export function LeadsWorkflowView({
         .toLowerCase()
         .includes(q)
     );
-    if (segment === "door_to_door_candidates") {
-      return [...searched].sort((a, b) => {
-        const rankDelta = doorStatusRank(a.door_status) - doorStatusRank(b.door_status);
-        if (rankDelta !== 0) return rankDelta;
-        const scoreDelta = Number(b.door_score || 0) - Number(a.door_score || 0);
-        if (scoreDelta !== 0) return scoreDelta;
-        return (
-          new Date(b.last_updated_at || b.created_at || 0).getTime() -
-          new Date(a.last_updated_at || a.created_at || 0).getTime()
-        );
-      });
-    }
     return [...searched].sort((a, b) => {
       const conversionDelta = Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
       if (conversionDelta !== 0) return conversionDelta;
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     });
-  }, [mergedLeads, search, segment]);
+  }, [mergedLeads, scoutQualityFilter, search, segment]);
 
   const queueCounts = useMemo(() => {
     const counts = {
       totalStoredLeads: mergedLeads.length,
       actionableNow: 0,
       newToday: 0,
-      fromThisScan: 0,
-      researchLater: 0,
-      doorToDoor: 0,
+      followUp: 0,
+      replied: 0,
       archived: 0,
     };
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     for (const lead of mergedLeads) {
       const s = String(lead.status || "").toLowerCase();
-      const hasEmail = Boolean(String(lead.email || "").trim());
-      const isActionable = hasEmail && !Boolean(lead.is_archived);
-      const isDoor =
-        String(lead.outreach_channel || "").trim() === "door_to_door" || Boolean(lead.is_door_to_door_candidate);
+      const isActionable = s === "new";
       const createdAt = new Date(lead.created_at || 0).getTime();
       if (isActionable) counts.actionableNow += 1;
       if (createdAt >= todayStart.getTime()) counts.newToday += 1;
-      if (Boolean(lead.from_latest_scan)) counts.fromThisScan += 1;
-      if (s === "research_later") counts.researchLater += 1;
-      if (isDoor) counts.doorToDoor += 1;
-      if (Boolean(lead.is_archived) || String(lead.outreach_channel || "").trim() === "skip") counts.archived += 1;
+      if (s === "follow_up" || s === "contacted") counts.followUp += 1;
+      if (s === "replied") counts.replied += 1;
+      if (s === "archived" || Boolean(lead.is_archived)) counts.archived += 1;
     }
     return counts;
   }, [mergedLeads]);
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <div className="admin-card">
           <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Total Stored Leads</h2>
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.totalStoredLeads}</p>
@@ -825,79 +872,18 @@ export function LeadsWorkflowView({
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.newToday}</p>
         </div>
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>From This Scan</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.fromThisScan}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Follow Up</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.followUp}</p>
+        </div>
+        <div className="admin-card">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Replies Waiting</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.replied}</p>
         </div>
         <div className="admin-card">
           <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Archived</h2>
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.archived}</p>
         </div>
-        <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Research Later</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.researchLater}</p>
-        </div>
-        <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Door-to-Door</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.doorToDoor}</p>
-        </div>
       </section>
-
-      {segment === "door_to_door_candidates" ? (
-        <section className="admin-card">
-          <div className="grid gap-3 md:grid-cols-3 mb-3">
-            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Total Door Leads</p>
-              <p className="text-xl font-semibold">{filtered.length}</p>
-            </div>
-            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Planned Today</p>
-              <p className="text-xl font-semibold">
-                {
-                  filtered.filter((lead) => {
-                    if (lead.door_status !== "planned") return false;
-                    const stamp = new Date(lead.last_updated_at || lead.created_at || 0);
-                    const today = new Date();
-                    return stamp.toDateString() === today.toDateString();
-                  }).length
-                }
-              </p>
-            </div>
-            <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)" }}>
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>Visited Today</p>
-              <p className="text-xl font-semibold">
-                {
-                  filtered.filter((lead) => {
-                    if (lead.door_status !== "visited") return false;
-                    const stamp = new Date(lead.last_updated_at || lead.created_at || 0);
-                    const today = new Date();
-                    return stamp.toDateString() === today.toDateString();
-                  }).length
-                }
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="admin-btn-primary text-xs" onClick={buildRoute}>
-              Build Route
-            </button>
-            <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Selected: {selectedDoorLeadIds.length}
-            </span>
-          </div>
-          {routePlan.length > 0 ? (
-            <ol className="mt-3 list-decimal pl-5 space-y-1 text-sm" style={{ color: "var(--admin-muted)" }}>
-              {routePlan.map((lead) => (
-                <li key={`route-${lead.id}`}>
-                  {lead.business_name} - {lead.address || "No address"}{" "}
-                  <a href={mapDirectionsHref(lead)} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-                    Map
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : null}
-        </section>
-      ) : null}
 
       <section className="admin-card">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -912,23 +898,54 @@ export function LeadsWorkflowView({
             <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
               Showing {filtered.length} of {mergedLeads.length}
             </span>
+            <button
+              type="button"
+              className="admin-btn-ghost text-xs"
+              onClick={() =>
+                setSelectedLeadIds((prev) =>
+                  prev.length === filtered.length ? [] : filtered.map((lead) => lead.id)
+                )
+              }
+            >
+              {selectedLeadIds.length === filtered.length && filtered.length > 0 ? "Clear Selection" : "Select All"}
+            </button>
+            <div className="flex flex-wrap items-center gap-1">
+              <button
+                type="button"
+                className={scoutQualityFilter === "all" ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+                onClick={() => setScoutQualityFilter("all")}
+              >
+                All Quality
+              </button>
+              <button
+                type="button"
+                className={scoutQualityFilter === "high_conversion" ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+                onClick={() => setScoutQualityFilter("high_conversion")}
+              >
+                High Conversion Only
+              </button>
+              <button
+                type="button"
+                className={scoutQualityFilter === "visual_business" ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+                onClick={() => setScoutQualityFilter("visual_business")}
+              >
+                Visual Businesses
+              </button>
+              <button
+                type="button"
+                className={scoutQualityFilter === "no_website" ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+                onClick={() => setScoutQualityFilter("no_website")}
+              >
+                No Website Only
+              </button>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
-              ["actionable_email", "Email Leads"],
-              ["contact_available", "Contact Available"],
-              ["no_email_research", "Research Later"],
-              ["from_this_scan", "From This Scan"],
-              ["archived", "Archived"],
-              ["door_to_door_candidates", "Door-to-Door"],
-              ["low_priority", "Low Priority / Skip"],
-              ["phone_leads", "Phone Leads"],
-              ["textable_leads", "Textable Leads"],
-              ["replies_waiting", "Replies Waiting"],
-              ["no_website_email", "No Website + Email"],
-              ["broken_website_email", "Broken Website + Email"],
-              ["facebook_only_email", "Facebook Only + Email"],
-              ["churches_email", "Churches + Email"],
+              ["new", "New"],
+              ["follow_up", "Follow Up"],
+              ["replied", "Replied"],
+              ["closed", "Closed"],
               ["all", "All"],
             ].map(([id, label]) => (
               <button
@@ -942,6 +959,22 @@ export function LeadsWorkflowView({
             ))}
           </div>
           <div className="flex items-center gap-2 text-xs">
+            {selectedLeadIds.length > 0 ? (
+              <>
+                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("contacted")}>
+                  Bulk Contacted
+                </button>
+                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("no_response")}>
+                  Bulk No Response
+                </button>
+                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("archived")}>
+                  Bulk Archive
+                </button>
+                <button type="button" className="admin-btn-danger" onClick={() => void bulkDeleteSelected()}>
+                  Bulk Delete
+                </button>
+              </>
+            ) : null}
             <button
               type="button"
               className="admin-btn-primary"
@@ -1161,6 +1194,36 @@ export function LeadsWorkflowView({
                     const localOnly = isLocalOnlyLead(lead);
                     return (
                       <>
+                  <label className="admin-btn-ghost text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedLeadIds.includes(lead.id)}
+                      onChange={() => toggleSelectedLead(lead.id)}
+                      style={{ marginRight: 6 }}
+                    />
+                    Select
+                  </label>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "contacted")}>
+                    Mark Contacted
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
+                    Follow Up
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
+                    No Response
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "not_interested")}>
+                    Not Interested
+                  </button>
+                  <button type="button" className="admin-btn-primary text-xs" onClick={() => void updateLeadStatusQuick(lead, "won")}>
+                    Won
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "archived")}>
+                    Archive
+                  </button>
+                  <button type="button" className="admin-btn-danger text-xs" onClick={() => void deleteLeadQuick(lead)}>
+                    Delete
+                  </button>
                   <a
                     href={leadHref(lead)}
                     className="admin-btn-primary text-xs"
@@ -1187,6 +1250,17 @@ export function LeadsWorkflowView({
                     Open Lead
                   </a>
                   <a
+                    href={leadHref(lead, "sample=1")}
+                    className="admin-btn-ghost text-xs"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      actionDebug("Build Sample clicked", { leadId: lead.id });
+                      void navigateToLeadWithGuard(lead, "sample=1");
+                    }}
+                  >
+                    Build Sample
+                  </a>
+                  <a
                     href={previewHref(lead)}
                     className="admin-btn-ghost text-xs"
                     onClick={(event) => {
@@ -1196,6 +1270,17 @@ export function LeadsWorkflowView({
                     }}
                   >
                     Generate Client Site Draft
+                  </a>
+                  <a
+                    href={leadHref(lead, "sample=1")}
+                    className="admin-btn-ghost text-xs"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      actionDebug("Send Sample clicked", { leadId: lead.id });
+                      void navigateToLeadWithGuard(lead, "sample=1");
+                    }}
+                  >
+                    Send Sample
                   </a>
                   {lead.website ? (
                     <a
@@ -1315,7 +1400,7 @@ export function LeadsWorkflowView({
                       </button>
                     </>
                   ) : null}
-                  {segment === "door_to_door_candidates" || lead.outreach_channel === "door_to_door" ? (
+                  {lead.outreach_channel === "door_to_door" ? (
                     <>
                       <a
                         href={mapDirectionsHref(lead)}
@@ -1511,6 +1596,36 @@ export function LeadsWorkflowView({
                     </td>
                     <td>
                       <div className="flex flex-wrap gap-2">
+                        <label className="text-[var(--admin-gold)] hover:underline text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedLeadIds.includes(lead.id)}
+                            onChange={() => toggleSelectedLead(lead.id)}
+                            style={{ marginRight: 6 }}
+                          />
+                          Select
+                        </label>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "contacted")}>
+                          Mark Contacted
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
+                          Follow Up
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
+                          No Response
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "not_interested")}>
+                          Not Interested
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "won")}>
+                          Won
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "archived")}>
+                          Archive
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void deleteLeadQuick(lead)}>
+                          Delete
+                        </button>
                         <a
                           href={leadHref(lead)}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
@@ -1523,6 +1638,17 @@ export function LeadsWorkflowView({
                           Open Lead
                         </a>
                         <a
+                          href={leadHref(lead, "sample=1")}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            actionDebug("Build Sample clicked", { leadId: lead.id });
+                            void navigateToLeadWithGuard(lead, "sample=1");
+                          }}
+                        >
+                          Build Sample
+                        </a>
+                        <a
                           href={previewHref(lead)}
                           className="text-[var(--admin-gold)] hover:underline text-xs"
                           onClick={(event) => {
@@ -1532,6 +1658,17 @@ export function LeadsWorkflowView({
                           }}
                         >
                           Generate Client Site Draft
+                        </a>
+                        <a
+                          href={leadHref(lead, "sample=1")}
+                          className="text-[var(--admin-gold)] hover:underline text-xs"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            actionDebug("Send Sample clicked", { leadId: lead.id });
+                            void navigateToLeadWithGuard(lead, "sample=1");
+                          }}
+                        >
+                          Send Sample
                         </a>
                         {lead.website ? (
                           <a
@@ -1646,7 +1783,7 @@ export function LeadsWorkflowView({
                             </button>
                           </>
                         ) : null}
-                        {segment === "door_to_door_candidates" || lead.outreach_channel === "door_to_door" ? (
+                        {lead.outreach_channel === "door_to_door" ? (
                           <>
                             <a
                               href={mapDirectionsHref(lead)}

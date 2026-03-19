@@ -9,6 +9,7 @@ import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { isManualOnlyModeClient } from "@/lib/manual-mode";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
+import { scoreScoutLead } from "@/lib/scout-conversion";
 
 type Props = {
   integrationReady: boolean;
@@ -27,24 +28,21 @@ function formatDate(value: string | null) {
 }
 
 function conversionFocusScore(lead: ScoutLead): number {
-  const baseScore = Number(lead.opportunity_score ?? lead.score ?? 0);
   const contact = String(lead.best_contact_method || "").toLowerCase();
-  const reason = String(lead.opportunity_reason || "").toLowerCase();
-  const category = String(lead.category || "").toLowerCase();
-  const lane = String(lead.lane || "").toLowerCase();
-  const signals = Array.isArray(lead.opportunity_signals) ? lead.opportunity_signals.map((v) => String(v || "").toLowerCase()) : [];
-  let score = Math.max(0, Math.min(100, baseScore));
-  if (contact === "email") score += 18;
-  else if (contact === "contact_page") score += 10;
-  else if (contact === "phone" || contact === "facebook") score += 2;
-  else score -= 20;
-  if (reason) score += 8;
-  if (signals.length > 0) score += 4;
-  if (lane.includes("easy") || lane.includes("high")) score += 6;
-  if (["plumber", "roofer", "hvac", "electrician", "church", "landscaping", "auto repair"].some((token) => category.includes(token))) {
-    score += 8;
-  }
-  return Math.max(0, Math.min(100, score));
+  const score = scoreScoutLead({
+    business_name: lead.business_name,
+    category: lead.category,
+    website: lead.website,
+    phone: contact === "phone" ? "phone" : "",
+    email: contact === "email" ? "email@example.com" : "",
+    review_count: null,
+    issue_texts: [
+      String(lead.opportunity_reason || ""),
+      ...(Array.isArray(lead.opportunity_signals) ? lead.opportunity_signals : []),
+    ],
+    website_status: null,
+  });
+  return score.lead_score;
 }
 
 function targetedPriorityScore(lead: ScoutLead): number {
@@ -92,6 +90,24 @@ function targetedBadges(lead: ScoutLead): string[] {
   }
   if (reason.includes("low review") || signals.some((s) => s.includes("review_count") || s.includes("low_reviews"))) out.push("Low Reviews");
   return out.slice(0, 4);
+}
+
+function scoutWhyLead(lead: ScoutLead): string {
+  const contact = String(lead.best_contact_method || "").toLowerCase();
+  const score = scoreScoutLead({
+    business_name: lead.business_name,
+    category: lead.category,
+    website: lead.website,
+    phone: contact === "phone" ? "phone" : "",
+    email: contact === "email" ? "email@example.com" : "",
+    review_count: null,
+    issue_texts: [
+      String(lead.opportunity_reason || ""),
+      ...(Array.isArray(lead.opportunity_signals) ? lead.opportunity_signals : []),
+    ],
+    website_status: null,
+  });
+  return score.why_this_lead;
 }
 
 const SCAN_CITIES = [
@@ -491,7 +507,26 @@ export function ScoutConsole({
   }, [initialSummary, initialTopLeads.length, pageError, scout.jobError]);
 
   const prioritizedTopLeads = useMemo(() => {
-    return [...initialTopLeads].sort((a, b) => {
+    return [...initialTopLeads]
+      .filter((lead) => {
+        const contact = String(lead.best_contact_method || "").toLowerCase();
+        const score = scoreScoutLead({
+          business_name: lead.business_name,
+          category: lead.category,
+          website: lead.website,
+          phone: contact === "phone" ? "phone" : "",
+          email: contact === "email" ? "email@example.com" : "",
+          review_count: null,
+          issue_texts: [
+            String(lead.opportunity_reason || ""),
+            ...(Array.isArray(lead.opportunity_signals) ? lead.opportunity_signals : []),
+          ],
+          website_status: null,
+        });
+        const contactable = contact === "phone" || contact === "email";
+        return !score.excluded && contactable && score.lead_score >= 60;
+      })
+      .sort((a, b) => {
       const targeted = targetedPriorityScore(b) - targetedPriorityScore(a);
       if (targeted !== 0) return targeted;
       const delta = conversionFocusScore(b) - conversionFocusScore(a);
@@ -772,6 +807,8 @@ export function ScoutConsole({
                 style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                 value={scope}
                 onChange={(e) => setScope(e.target.value as ScoutScanSettings["scope"])}
+                aria-label="Where to scan"
+                title="Where to scan"
               >
                 <option value="single_city">single city</option>
                 <option value="nearby_cities">nearby cities</option>
@@ -789,6 +826,8 @@ export function ScoutConsole({
                   style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                   value={singleCity}
                   onChange={(e) => setSingleCity(e.target.value)}
+                  aria-label="Scan city"
+                  title="Scan city"
                 >
                   {SCAN_CITIES.map((city) => (
                     <option key={city} value={city}>
@@ -808,6 +847,8 @@ export function ScoutConsole({
                   style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
+                  aria-label="Scan region"
+                  title="Scan region"
                 >
                   {SCAN_REGIONS.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -826,6 +867,8 @@ export function ScoutConsole({
                 style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                 value={depth}
                 onChange={(e) => setDepth(e.target.value as ScoutScanSettings["depth"])}
+                aria-label="Scan depth"
+                title="Scan depth"
               >
                 <option value="quick">quick (25 businesses)</option>
                 <option value="normal">normal (100 businesses)</option>
@@ -1177,6 +1220,7 @@ export function ScoutConsole({
                     <th>Category</th>
                     <th>City</th>
                     <th>Score</th>
+                    <th>Why This Lead</th>
                     <th>Lead Bucket</th>
                     <th>Opportunity Reason</th>
                     <th>Best Contact</th>
@@ -1190,7 +1234,8 @@ export function ScoutConsole({
                       <td>{lead.business_name ?? "Unknown"}</td>
                       <td>{lead.category ?? "—"}</td>
                       <td>{lead.city ?? "—"}</td>
-                      <td>{lead.opportunity_score ?? lead.score ?? "—"}</td>
+                      <td>{conversionFocusScore(lead)}</td>
+                      <td>{scoutWhyLead(lead)}</td>
                       <td>
                         <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score ?? lead.score} />
                       </td>

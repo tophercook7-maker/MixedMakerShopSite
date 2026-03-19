@@ -1,3 +1,6 @@
+import { findLeadDuplicate } from "@/lib/leads-dedup";
+import { scoreScoutLead } from "@/lib/scout-conversion";
+
 type SupabaseLike = {
   from: (table: string) => any;
 };
@@ -28,6 +31,8 @@ type SyncStats = {
   skipped_missing_workspace_id: number;
   skipped_owner_mismatch: number;
   skipped_missing_contact_path: number;
+  skipped_low_conversion: number;
+  skipped_excluded: number;
   skipped_missing_opportunity: number;
   skipped_duplicate: number;
   insert_failed: number;
@@ -104,6 +109,26 @@ export async function upsertLeadFromOpportunity(
   }
   if (!email && !phone && !website) return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
 
+  const conversion = scoreScoutLead({
+    business_name: businessName,
+    category: String(opp.category || opp.industry || "").trim() || null,
+    website,
+    phone,
+    email,
+    review_count: null,
+    issue_texts: [],
+    website_status: null,
+  });
+  if (conversion.excluded) {
+    return { leadId: null, created: false, skipped: true, reason: "excluded", error: null };
+  }
+  if (!conversion.has_phone && !conversion.has_email) {
+    return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
+  }
+  if (conversion.lead_score < 60) {
+    return { leadId: null, created: false, skipped: true, reason: "low_conversion_score", error: null };
+  }
+
   const existing = await supabase
     .from("leads")
     .select("id")
@@ -122,6 +147,17 @@ export async function upsertLeadFromOpportunity(
   const existingId = String((existing.data || [])[0]?.id || "").trim();
   if (existingId) return { leadId: existingId, created: false, skipped: true, reason: "duplicate", error: null };
 
+  const dedup = await findLeadDuplicate({
+    supabase,
+    ownerId,
+    businessName,
+    email,
+    phone,
+  });
+  if (dedup.duplicate && dedup.matchedLeadId) {
+    return { leadId: dedup.matchedLeadId, created: false, skipped: true, reason: "duplicate", error: null };
+  }
+
   const payload: Record<string, unknown> = {
     id: oppId,
     owner_id: ownerId,
@@ -133,7 +169,11 @@ export async function upsertLeadFromOpportunity(
     email: email || null,
     industry: String(opp.industry || opp.category || "").trim() || null,
     address: String(opp.address || "").trim() || null,
-    status: email ? "new" : "research_later",
+    why_this_lead_is_here: conversion.why_this_lead,
+    visual_business: conversion.visual_business,
+    conversion_score: conversion.lead_score,
+    opportunity_score: conversion.lead_score,
+    status: "new",
     notes: "Auto-created from opportunity sync.",
   };
   const createdAt = String(opp.created_at || "").trim();
@@ -184,6 +224,8 @@ export async function syncLeadsFromOpportunities(
     skipped_missing_workspace_id: 0,
     skipped_owner_mismatch: 0,
     skipped_missing_contact_path: 0,
+    skipped_low_conversion: 0,
+    skipped_excluded: 0,
     skipped_missing_opportunity: 0,
     skipped_duplicate: 0,
     insert_failed: 0,
@@ -235,6 +277,12 @@ export async function syncLeadsFromOpportunities(
         pushFailureSample(opp, reason);
       } else if (reason === "missing_contact_path") {
         stats.skipped_missing_contact_path += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "low_conversion_score") {
+        stats.skipped_low_conversion += 1;
+        pushFailureSample(opp, reason);
+      } else if (reason === "excluded") {
+        stats.skipped_excluded += 1;
         pushFailureSample(opp, reason);
       } else if (reason === "owner_mismatch") {
         stats.skipped_owner_mismatch += 1;

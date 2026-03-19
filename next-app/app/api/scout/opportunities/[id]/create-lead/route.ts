@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
+import { findLeadDuplicate } from "@/lib/leads-dedup";
+import { scoreScoutLead } from "@/lib/scout-conversion";
 
 type OpportunityRow = {
   id: string;
@@ -27,6 +29,7 @@ type CaseRow = {
   facebook?: string | null;
   audit_issues?: string[] | null;
   strongest_problems?: string[] | null;
+  google_review_count?: number | null;
 };
 
 function missingOpportunityReasonColumn(message: string): boolean {
@@ -229,7 +232,7 @@ export async function POST(
   const { data: caseRows } = await supabase
     .from("case_files")
     .select(
-      "id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,created_at"
+      "id,email,phone_from_site,contact_page,contact_form_url,facebook_url,facebook,audit_issues,strongest_problems,google_review_count,created_at"
     )
     .eq("opportunity_id", opportunityId)
     .order("created_at", { ascending: false })
@@ -248,6 +251,44 @@ export async function POST(
   ]
     .map((v) => String(v || "").trim())
     .filter(Boolean);
+  const conversion = scoreScoutLead({
+    business_name: opp.business_name,
+    category: opp.category,
+    website: opp.website,
+    phone: caseRow?.phone_from_site || null,
+    email: caseRow?.email || null,
+    review_count: Number(caseRow?.google_review_count || 0),
+    issue_texts: issueList,
+    website_status: null,
+  });
+  if (conversion.excluded) {
+    return NextResponse.json({
+      ok: true,
+      created: false,
+      reason: "excluded",
+      excluded_reason: conversion.excluded_reason,
+      lead_score: conversion.lead_score,
+      message: "Lead excluded by high-conversion filters.",
+    });
+  }
+  if (!conversion.has_phone && !conversion.has_email) {
+    return NextResponse.json({
+      ok: true,
+      created: false,
+      reason: "missing_contactability",
+      lead_score: conversion.lead_score,
+      message: "Lead skipped: requires phone or email.",
+    });
+  }
+  if (conversion.lead_score < 60) {
+    return NextResponse.json({
+      ok: true,
+      created: false,
+      reason: "low_conversion_score",
+      lead_score: conversion.lead_score,
+      message: "Lead skipped: score below conversion threshold.",
+    });
+  }
   const reason = String(opp.opportunity_reason || "").trim();
   const assessment = buildLeadAssessment({
     website: String(opp.website || "").trim() || null,
@@ -273,16 +314,39 @@ export async function POST(
     phone: String(caseRow?.phone_from_site || "").trim() || null,
     website: String(opp.website || "").trim() || null,
     industry: String(opp.category || "").trim() || null,
-    lead_source: "scout-brain",
+    lead_source: "scout-high-conversion",
     address: String(opp.address || "").trim() || null,
     best_contact_method: assessment.best_contact_method || "none",
-    opportunity_score: Number(opp.opportunity_score ?? 0),
+    opportunity_score: conversion.lead_score,
+    conversion_score: conversion.lead_score,
+    why_this_lead_is_here: conversion.why_this_lead,
+    visual_business: conversion.visual_business,
     auto_intake: true,
-    status: String(caseRow?.email || "").trim() ? "new" : "research_later",
-    notes: `Created from Top Opportunities. Why this lead is here: ${assessment.why_this_lead_is_here}. Problem: ${
+    status: "new",
+    notes: `Created from Top Opportunities. Why this lead is here: ${conversion.why_this_lead}. Problem: ${
       assessment.primary_problem
     }. Opportunity reason: ${reason || assessment.primary_problem}.`,
   };
+
+  const dedup = await findLeadDuplicate({
+    supabase,
+    ownerId,
+    businessName: insertPayload.business_name,
+    email: insertPayload.email || null,
+    phone: insertPayload.phone || null,
+  });
+  if (dedup.duplicate && dedup.matchedLeadId) {
+    return NextResponse.json({
+      ok: true,
+      created: false,
+      reason: "duplicate_existing_lead",
+      lead_id: dedup.matchedLeadId,
+      case_id: existingCaseId,
+      business_name: insertPayload.business_name,
+      message: "Lead already exists.",
+      duplicate_reason: dedup.reason,
+    });
+  }
 
   console.info("[Action Debug] lead insert attempted", {
     opportunityId,

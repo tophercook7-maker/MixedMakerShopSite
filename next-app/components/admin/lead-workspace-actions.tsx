@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  buildDefaultLeadSample,
+  normalizeLeadSampleRecord,
+  type LeadSampleRecord,
+  type LeadSampleStatus,
+} from "@/lib/lead-samples";
 
 type LeadWorkspaceActionsProps = {
   leadId: string;
@@ -23,6 +29,7 @@ type LeadWorkspaceActionsProps = {
   quickFixSummary?: string | null;
   autoGenerate?: boolean;
   autoCompose?: boolean;
+  autoOpenSampleBuilder?: boolean;
 };
 
 type TemplateResponse = {
@@ -30,6 +37,8 @@ type TemplateResponse = {
   longer_email?: string;
   follow_up_note?: string;
 };
+
+const LOCAL_SAMPLES_KEY = "crm.lead_samples";
 
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
@@ -84,6 +93,7 @@ export function LeadWorkspaceActions({
   quickFixSummary = null,
   autoGenerate = false,
   autoCompose = false,
+  autoOpenSampleBuilder = false,
 }: LeadWorkspaceActionsProps) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -101,6 +111,12 @@ export function LeadWorkspaceActions({
   const [realWorldWhyTarget, setRealWorldWhyTarget] = useState(String(initialRealWorldWhyTarget || ""));
   const [realWorldWalkInPitch, setRealWorldWalkInPitch] = useState(String(initialRealWorldWalkInPitch || ""));
   const [bestTimeToVisit, setBestTimeToVisit] = useState(String(initialBestTimeToVisit || ""));
+  const [isSampleLoading, setIsSampleLoading] = useState(false);
+  const [sampleBuilderOpen, setSampleBuilderOpen] = useState(autoOpenSampleBuilder);
+  const [sample, setSample] = useState<LeadSampleRecord | null>(null);
+  const [sampleStorageSource, setSampleStorageSource] = useState<"server" | "local" | null>(null);
+  const [generatedSampleEmail, setGeneratedSampleEmail] = useState("");
+  const [generatedSampleText, setGeneratedSampleText] = useState("");
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -114,6 +130,113 @@ export function LeadWorkspaceActions({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoGenerate, leadId]);
+
+  useEffect(() => {
+    if (autoOpenSampleBuilder) setSampleBuilderOpen(true);
+  }, [autoOpenSampleBuilder]);
+
+  function readLocalSamples(): LeadSampleRecord[] {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(LOCAL_SAMPLES_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as LeadSampleRecord[];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map((item) => normalizeLeadSampleRecord(item));
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalSamples(next: LeadSampleRecord[]) {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(LOCAL_SAMPLES_KEY, JSON.stringify(next));
+  }
+
+  function upsertLocalSample(nextSample: LeadSampleRecord) {
+    const current = readLocalSamples();
+    const remaining = current.filter((item) => item.id !== nextSample.id);
+    writeLocalSamples([nextSample, ...remaining]);
+  }
+
+  function buildSamplePreviewLink(sampleId: string): string {
+    if (typeof window === "undefined") return `/samples/${encodeURIComponent(sampleId)}`;
+    return `${window.location.origin}/samples/${encodeURIComponent(sampleId)}`;
+  }
+
+  function generateShareCopy(nextSample: LeadSampleRecord) {
+    const previewLink = buildSamplePreviewLink(nextSample.id);
+    const subject = `Quick website idea for ${nextSample.business_name}`;
+    const emailBody = [
+      `Hi ${nextSample.business_name},`,
+      "",
+      "I put together a quick sample to show how your business could look with a cleaner, more modern website.",
+      "",
+      "You can preview it here:",
+      previewLink,
+      "",
+      "If you want, I can build something like this out into a real live site for you.",
+      "",
+      "- Topher",
+    ].join("\n");
+    const textBody = [
+      "Hey, I put together a quick website sample to show what your business could look like online:",
+      previewLink,
+      "If you want, I can build something like this out for real.",
+    ].join("\n");
+    setGeneratedSampleEmail(`Subject: ${subject}\n\n${emailBody}`);
+    setGeneratedSampleText(textBody);
+  }
+
+  async function loadLeadSample() {
+    setIsSampleLoading(true);
+    const fallback = readLocalSamples().find((item) => item.lead_id === leadId) || null;
+    if (fallback) {
+      setSample(fallback);
+      setSampleStorageSource("local");
+      buildPreviewUrl(fallback);
+      generateShareCopy(fallback);
+    }
+    try {
+      const res = await fetch(`/api/lead-samples?lead_id=${encodeURIComponent(leadId)}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        items?: Array<Partial<LeadSampleRecord>>;
+      };
+      if (!res.ok) {
+        console.warn("[Lead Sample] server load failed", {
+          lead_id: leadId,
+          status: res.status,
+          error: data.error || "unknown",
+        });
+        return;
+      }
+      const first = Array.isArray(data.items) ? data.items[0] : null;
+      if (first) {
+        const normalized = normalizeLeadSampleRecord({
+          ...first,
+          source: "server",
+          isLocalOnly: false,
+        });
+        setSample(normalized);
+        setSampleStorageSource("server");
+        buildPreviewUrl(normalized);
+        generateShareCopy(normalized);
+      }
+    } catch {
+      // local fallback already loaded when available
+    } finally {
+      setIsSampleLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadLeadSample();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadId]);
 
   async function generateDraft() {
     console.info("[Action Debug] Generate Email clicked", { leadId });
@@ -533,11 +656,32 @@ export function LeadWorkspaceActions({
     setNoteDraft("");
   }
 
-  function buildPreviewUrl() {
+  function buildPreviewUrl(overrideSample?: LeadSampleRecord | null) {
     if (typeof window === "undefined") return "";
+    const activeSample = overrideSample || sample;
     const params = new URLSearchParams();
-    params.set("business", initialBusinessName || "Business");
-    params.set("category", initialCategory || "service");
+    params.set("business", activeSample?.business_name || initialBusinessName || "Business");
+    params.set("category", activeSample?.business_type || initialCategory || "service");
+    if (activeSample?.hero_headline) params.set("headline", activeSample.hero_headline);
+    if (activeSample?.hero_subheadline) params.set("subheadline", activeSample.hero_subheadline);
+    if (activeSample?.cta_text) params.set("cta", activeSample.cta_text);
+    if (activeSample?.primary_image_url) params.set("hero_image", activeSample.primary_image_url);
+    if (activeSample?.services?.length) params.set("services", activeSample.services.join("\n"));
+    if (activeSample?.image_urls?.length) params.set("image_urls", activeSample.image_urls.join(","));
+    if (activeSample?.gallery_image_urls?.length) params.set("gallery_images", activeSample.gallery_image_urls.join(","));
+    if (activeSample?.image_urls?.[0]) params.set("service_image_1", activeSample.image_urls[0]);
+    if (activeSample?.image_urls?.[1]) params.set("service_image_2", activeSample.image_urls[1]);
+    if (activeSample?.image_urls?.[2]) params.set("service_image_3", activeSample.image_urls[2]);
+    if (activeSample?.accent_mode) {
+      const styleMap: Record<string, string> = {
+        "clean-modern": "clean_modern",
+        "bold-premium": "bold_premium",
+        "friendly-local": "friendly_local",
+        "minimal-elegant": "minimal_elegant",
+      };
+      const mapped = styleMap[String(activeSample.accent_mode)] || String(activeSample.accent_mode || "");
+      if (mapped) params.set("style_preset", mapped);
+    }
     if (initialEmail) params.set("email", initialEmail);
     if (initialPhone) params.set("phone", initialPhone);
     if (website) params.set("website", website);
@@ -558,8 +702,331 @@ export function LeadWorkspaceActions({
     }
   }
 
+  async function persistSample(nextSample: LeadSampleRecord): Promise<LeadSampleRecord> {
+    const payload = normalizeLeadSampleRecord({
+      ...nextSample,
+      updated_at: new Date().toISOString(),
+    });
+    try {
+      const res = await fetch("/api/lead-samples", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      if (!res.ok) throw new Error(String(data.error || "Could not save to backend."));
+      const serverSaved = normalizeLeadSampleRecord({ ...data, source: "server", isLocalOnly: false });
+      upsertLocalSample(serverSaved);
+      setSampleStorageSource("server");
+      return serverSaved;
+    } catch (e) {
+      const localSaved = normalizeLeadSampleRecord({ ...payload, source: "local", isLocalOnly: true });
+      upsertLocalSample(localSaved);
+      setSampleStorageSource("local");
+      setError(
+        `Saved locally. Backend save failed: ${e instanceof Error ? e.message : "unknown error"}`
+      );
+      return localSaved;
+    }
+  }
+
+  async function createOrOpenSample() {
+    setError(null);
+    setMessage(null);
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const saved = await persistSample(base);
+    setSample(saved);
+    buildPreviewUrl(saved);
+    generateShareCopy(saved);
+    setMessage(saved.isLocalOnly ? "Sample saved locally." : "Sample saved to backend.");
+    setSampleBuilderOpen(true);
+  }
+
+  async function updateSampleField<K extends keyof LeadSampleRecord>(field: K, value: LeadSampleRecord[K]) {
+    const base = sample || buildDefaultLeadSample({ leadId, businessName: initialBusinessName, businessType: initialCategory, note: initialIssue });
+    const next = normalizeLeadSampleRecord({
+      ...base,
+      [field]: value,
+      lead_id: leadId,
+      business_name: base.business_name || initialBusinessName || "Business Name",
+      business_type: base.business_type || initialCategory || "service business",
+      updated_at: new Date().toISOString(),
+    });
+    setSample(next);
+    buildPreviewUrl(next);
+    generateShareCopy(next);
+  }
+
+  async function saveSampleStatus(nextStatus: LeadSampleStatus) {
+    if (!sample) {
+      setError("Build a sample first.");
+      return;
+    }
+    const next = normalizeLeadSampleRecord({ ...sample, status: nextStatus, updated_at: new Date().toISOString() });
+    const saved = await persistSample(next);
+    setSample(saved);
+    buildPreviewUrl(saved);
+    generateShareCopy(saved);
+    setMessage(`Sample marked ${nextStatus}.`);
+  }
+
+  async function copySamplePreviewLink() {
+    if (!sample) {
+      setError("Build a sample first.");
+      return;
+    }
+    const link = buildSamplePreviewLink(sample.id);
+    try {
+      await navigator.clipboard.writeText(link);
+      setMessage("Sample preview link copied.");
+      if (sample.status === "draft") {
+        await saveSampleStatus("ready");
+      }
+    } catch {
+      setError("Could not copy sample preview link.");
+    }
+  }
+
+  async function copySampleEmail() {
+    if (!generatedSampleEmail.trim()) {
+      setError("Build a sample first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(generatedSampleEmail);
+      setMessage("Sample email copy copied.");
+    } catch {
+      setError("Could not copy sample email.");
+    }
+  }
+
+  async function copySampleText() {
+    if (!generatedSampleText.trim()) {
+      setError("Build a sample first.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(generatedSampleText);
+      setMessage("Sample text copy copied.");
+    } catch {
+      setError("Could not copy sample text.");
+    }
+  }
+
   return (
     <aside className="space-y-3 sticky top-4">
+      <div className="admin-card space-y-3">
+        <h3 className="text-sm font-semibold">Lead Sample Generator</h3>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Status: <strong>{sample?.status || "none"}</strong>
+          {sampleStorageSource ? ` - ${sampleStorageSource === "server" ? "Backend" : "Local only"}` : ""}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {!sample ? (
+            <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()} disabled={isSampleLoading}>
+              {isSampleLoading ? "Loading..." : "Build Sample"}
+            </button>
+          ) : (
+            <>
+              <button className="admin-btn-primary text-xs" onClick={() => setSampleBuilderOpen((prev) => !prev)}>
+                {sampleBuilderOpen ? "Hide Builder" : "Open Sample"}
+              </button>
+              <a href={buildSamplePreviewLink(sample.id)} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                Open Preview
+              </a>
+            </>
+          )}
+          {sample ? (
+            <>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copySamplePreviewLink()}>
+                Copy Preview Link
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleEmail()}>
+                Copy Email
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleText()}>
+                Copy Text
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void saveSampleStatus("sent")}>
+                Mark Sent
+              </button>
+            </>
+          ) : null}
+        </div>
+        {sampleBuilderOpen ? (
+          <div className="space-y-2">
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Business Name
+                <input
+                  className="admin-input mt-1 h-9"
+                  value={sample?.business_name || initialBusinessName || ""}
+                  onChange={(e) => void updateSampleField("business_name", e.target.value)}
+                />
+              </label>
+              <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Business Type
+                <input
+                  className="admin-input mt-1 h-9"
+                  value={sample?.business_type || initialCategory || ""}
+                  onChange={(e) => void updateSampleField("business_type", e.target.value)}
+                />
+              </label>
+            </div>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Headline
+              <input
+                className="admin-input mt-1 h-9"
+                value={sample?.hero_headline || ""}
+                onChange={(e) => void updateSampleField("hero_headline", e.target.value)}
+              />
+            </label>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Subheadline
+              <textarea
+                className="admin-input mt-1 min-h-[70px]"
+                value={sample?.hero_subheadline || ""}
+                onChange={(e) => void updateSampleField("hero_subheadline", e.target.value)}
+              />
+            </label>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Intro / About
+              <textarea
+                className="admin-input mt-1 min-h-[70px]"
+                value={sample?.intro_text || ""}
+                onChange={(e) => void updateSampleField("intro_text", e.target.value)}
+              />
+            </label>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                CTA Text
+                <input
+                  className="admin-input mt-1 h-9"
+                  value={sample?.cta_text || ""}
+                  onChange={(e) => void updateSampleField("cta_text", e.target.value)}
+                />
+              </label>
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                Template
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sample?.template_key || "service-business"}
+                  onChange={(e) => void updateSampleField("template_key", e.target.value)}
+                >
+                  <option value="service-business">Service Business</option>
+                  <option value="coffee">Coffee Shop</option>
+                  <option value="restaurant">Restaurant</option>
+                  <option value="church">Church</option>
+                  <option value="lawn">Lawn Care</option>
+                  <option value="plumbing">Plumbing</option>
+                </select>
+              </label>
+            </div>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Services (one per line)
+              <textarea
+                className="admin-input mt-1 min-h-[90px]"
+                value={sample?.services.join("\n") || ""}
+                onChange={(e) =>
+                  void updateSampleField(
+                    "services",
+                    e.target.value
+                      .split(/\n|,/g)
+                      .map((item) => item.trim())
+                      .filter(Boolean)
+                      .slice(0, 6)
+                  )
+                }
+              />
+            </label>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Primary Image URL
+              <input
+                className="admin-input mt-1 h-9"
+                value={sample?.primary_image_url || ""}
+                onChange={(e) => void updateSampleField("primary_image_url", e.target.value)}
+                placeholder="https://..."
+              />
+            </label>
+            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+              Additional Image URLs (one per line)
+              <textarea
+                className="admin-input mt-1 min-h-[90px]"
+                value={sample?.image_urls.join("\n") || ""}
+                onChange={(e) =>
+                  void updateSampleField(
+                    "image_urls",
+                    e.target.value
+                      .split(/\n|,/g)
+                      .map((item) => item.trim())
+                      .filter(Boolean)
+                  )
+                }
+              />
+            </label>
+            {sample?.primary_image_url ? (
+              <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={sample.primary_image_url}
+                  alt={`${sample.business_name} primary`}
+                  style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }}
+                />
+              </div>
+            ) : null}
+            {sample?.image_urls?.length ? (
+              <div className="grid grid-cols-2 gap-2">
+                {sample.image_urls.slice(0, 4).map((imageUrl) => (
+                  <div key={imageUrl} className="rounded border p-1" style={{ borderColor: "var(--admin-border)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt="Sample preview" style={{ width: "100%", height: 90, objectFit: "cover", borderRadius: 6 }} />
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()}>
+                Save Sample
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void saveSampleStatus("ready")} disabled={!sample}>
+                Mark Ready
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleEmail()} disabled={!sample}>
+                Generate Email
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void copySampleText()} disabled={!sample}>
+                Generate Text
+              </button>
+            </div>
+            {generatedSampleEmail ? (
+              <textarea
+                className="admin-input min-h-[120px]"
+                value={generatedSampleEmail}
+                readOnly
+                aria-label="Generated sample email copy"
+                title="Generated sample email copy"
+              />
+            ) : null}
+            {generatedSampleText ? (
+              <textarea
+                className="admin-input min-h-[80px]"
+                value={generatedSampleText}
+                readOnly
+                aria-label="Generated sample text copy"
+                title="Generated sample text copy"
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
       <div className="admin-card space-y-3">
         <h3 className="text-sm font-semibold">Outreach Panel</h3>
         <div className="flex flex-wrap gap-2">
@@ -622,6 +1089,8 @@ export function LeadWorkspaceActions({
                 className="admin-input min-h-[220px]"
                 value={proposalText}
                 onChange={(e) => setProposalText(e.target.value)}
+                aria-label="Generated proposal copy"
+                title="Generated proposal copy"
               />
             ) : (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>

@@ -25,6 +25,10 @@ type LeadRow = {
   best_contact_method?: string | null;
   email_source?: string | null;
   opportunity_reason?: string | null;
+  opportunity_score?: number | null;
+  conversion_score?: number | null;
+  why_this_lead_is_here?: string | null;
+  visual_business?: boolean | null;
 };
 
 function isMissingColumnError(message: string): boolean {
@@ -38,17 +42,20 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
   if (!normalized) return "new";
+  if (normalized === "follow_up_due") return "follow_up";
+  if (normalized === "closed_won") return "won";
+  if (normalized === "closed_lost") return "no_response";
+  if (normalized === "do_not_contact") return "not_interested";
+  if (normalized === "research_later") return "archived";
   if (
     normalized === "new" ||
     normalized === "contacted" ||
-    normalized === "follow_up_due" ||
+    normalized === "follow_up" ||
     normalized === "replied" ||
+    normalized === "won" ||
     normalized === "no_response" ||
-    normalized === "closed" ||
-    normalized === "closed_won" ||
-    normalized === "closed_lost" ||
-    normalized === "do_not_contact" ||
-    normalized === "research_later"
+    normalized === "not_interested" ||
+    normalized === "archived"
   ) {
     return normalized;
   }
@@ -83,14 +90,14 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     city: String(row.city || "").trim() || null,
     address: String(row.address || "").trim() || null,
     website_status: null,
-    opportunity_score: null,
+    opportunity_score: row.opportunity_score == null ? null : Number(row.opportunity_score),
     lead_bucket: hasEmail ? "Good Prospect" : hasContactAvailable ? "Needs Review" : "Low Priority",
     close_probability: null,
     lead_type: email ? "Easy Win" : "Needs Review",
     best_contact_method: resolvedBestContact,
     primary_problem: null,
     why_it_matters: null,
-    why_this_lead_is_here: null,
+    why_this_lead_is_here: String(row.why_this_lead_is_here || "").trim() || null,
     best_pitch_angle: null,
     estimated_value: "low",
     estimated_price_range: "$",
@@ -123,11 +130,17 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     is_hot_lead: false,
     last_reply_at: null,
     last_reply_preview: null,
-    conversion_score: null,
+    conversion_score:
+      row.conversion_score == null
+        ? row.opportunity_score == null
+          ? null
+          : Number(row.opportunity_score)
+        : Number(row.conversion_score),
     score_breakdown: null,
     from_latest_scan: false,
     is_archived: false,
     is_manual: false,
+    visual_business: row.visual_business ?? null,
     known_owner_name: null,
     known_context: null,
     door_status: "not_visited",
@@ -196,11 +209,11 @@ export default async function AdminLeadsPage({
   let rows: LeadRow[] = [];
   try {
     const selectVariants = [
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason",
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,notes,address,opportunity_score",
     ];
     for (const selectClause of selectVariants) {
       const { data, error: leadsError } = await supabase

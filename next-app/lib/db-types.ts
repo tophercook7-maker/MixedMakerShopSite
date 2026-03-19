@@ -9,9 +9,13 @@ export type Profile = {
 export type LeadStatus =
   | "new"
   | "contacted"
+  | "follow_up"
   | "follow_up_due"
   | "replied"
+  | "won"
   | "no_response"
+  | "not_interested"
+  | "archived"
   | "closed"
   | "closed_won"
   | "closed_lost"

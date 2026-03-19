@@ -16,11 +16,12 @@ type ScoutLeadRow = {
 const STATUS_OPTIONS: LeadStatus[] = [
   "new",
   "contacted",
-  "follow_up_due",
+  "follow_up",
   "replied",
-  "closed_won",
-  "closed_lost",
-  "do_not_contact",
+  "won",
+  "no_response",
+  "not_interested",
+  "archived",
 ];
 
 export function ScoutLeadsIntake({ leads }: { leads: ScoutLeadRow[] }) {

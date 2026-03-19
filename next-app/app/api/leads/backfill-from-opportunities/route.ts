@@ -77,10 +77,12 @@ export async function POST() {
     } else if (
       Number(stats.skipped_missing_business_name || 0) +
         Number(stats.skipped_missing_workspace_id || 0) +
-        Number(stats.skipped_missing_contact_path || 0) >=
+        Number(stats.skipped_missing_contact_path || 0) +
+        Number((stats as { skipped_low_conversion?: number }).skipped_low_conversion || 0) +
+        Number((stats as { skipped_excluded?: number }).skipped_excluded || 0) >=
       Number(stats.opportunities_found || 0)
     ) {
-      summary_reason = "All opportunities were missing required fields";
+      summary_reason = "All opportunities were filtered by qualification rules";
     } else {
       summary_reason = "No leads were created. Inspect failing records and exact_insert_errors.";
     }
@@ -100,6 +102,8 @@ export async function POST() {
         skipped_missing_workspace_id: stats.skipped_missing_workspace_id,
         skipped_owner_mismatch: stats.skipped_owner_mismatch,
         skipped_missing_contact_path: stats.skipped_missing_contact_path,
+        skipped_low_conversion: (stats as { skipped_low_conversion?: number }).skipped_low_conversion || 0,
+        skipped_excluded: (stats as { skipped_excluded?: number }).skipped_excluded || 0,
         skipped_missing_opportunity: stats.skipped_missing_opportunity,
         skipped_duplicate: stats.skipped_duplicate,
         insert_failed: stats.insert_failed,
