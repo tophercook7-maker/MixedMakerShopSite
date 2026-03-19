@@ -31,6 +31,10 @@ export function LeadsTable({
   const [editing, setEditing] = useState<Lead | null>(null);
   const [adding, setAdding] = useState(false);
   const [autoOpened, setAutoOpened] = useState(false);
+  const [localFallbackLeads, setLocalFallbackLeads] = useState<Lead[]>([]);
+  const [optimisticLeads, setOptimisticLeads] = useState<Lead[]>([]);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const LOCAL_LEADS_KEY = "mixedmakershop.local_leads";
 
   useEffect(() => {
     if (!initialLeadId || autoOpened || editing) return;
@@ -40,7 +44,22 @@ export function LeadsTable({
     setAutoOpened(true);
   }, [initialLeadId, autoOpened, editing, leads]);
 
-  const filtered = leads.filter((l) => {
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOCAL_LEADS_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Lead[];
+      if (Array.isArray(parsed)) setLocalFallbackLeads(parsed);
+    } catch {
+      // Ignore malformed localStorage payloads.
+    }
+  }, []);
+
+  const combinedLeads = [...optimisticLeads, ...localFallbackLeads, ...leads].filter(
+    (lead, index, arr) => arr.findIndex((candidate) => candidate.id === lead.id) === index,
+  );
+
+  const filtered = combinedLeads.filter((l) => {
     const matchSearch =
       !search ||
       [l.business_name, l.contact_name, l.email].some(
@@ -56,9 +75,11 @@ export function LeadsTable({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
-    if (!res.ok) return;
+    if (!res.ok) return false;
     setEditing(null);
+    setSubmitMessage("Lead updated.");
     router.refresh();
+    return true;
   }
 
   async function deleteLead(id: string) {
@@ -69,15 +90,80 @@ export function LeadsTable({
     router.refresh();
   }
 
+  function persistFallbackLeads(nextLeads: Lead[]) {
+    try {
+      localStorage.setItem(LOCAL_LEADS_KEY, JSON.stringify(nextLeads));
+    } catch {
+      // Ignore storage write failures.
+    }
+  }
+
+  function buildLocalLead(payload: Record<string, unknown>): Lead {
+    const now = new Date().toISOString();
+    return {
+      id: `local-${Date.now()}`,
+      owner_id: "local",
+      created_at: now,
+      business_name: String(payload.business_name || "Untitled lead"),
+      contact_name: String(payload.contact_name || "") || null,
+      email: String(payload.email || "") || null,
+      phone: String(payload.phone || "") || null,
+      website: String(payload.website || "") || null,
+      address: String(payload.address || "") || null,
+      category: String(payload.category || "") || null,
+      city: String(payload.city || "") || null,
+      industry: String(payload.industry || "") || null,
+      lead_source: String(payload.lead_source || "manual_local") || null,
+      status: (String(payload.status || "new") as Lead["status"]) || "new",
+      notes: String(payload.notes || "") || null,
+      follow_up_date: String(payload.follow_up_date || "") || null,
+      is_manual: true,
+      known_owner_name: String(payload.known_owner_name || "") || null,
+      known_context: String(payload.known_context || "") || null,
+      lead_bucket: String(payload.lead_bucket || "") || null,
+      door_status: (String(payload.door_status || "not_visited") as Lead["door_status"]) || "not_visited",
+      contact_method: null,
+      workspace_id: null,
+    };
+  }
+
   async function createLead(payload: Record<string, unknown>) {
-    const res = await fetch("/api/leads", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) return;
-    setAdding(false);
-    router.refresh();
+    console.info("[LeadsTable] Add lead submit payload", payload);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const localLead = buildLocalLead(payload);
+        setLocalFallbackLeads((prev) => {
+          const next = [localLead, ...prev];
+          persistFallbackLeads(next);
+          return next;
+        });
+        setAdding(false);
+        setSubmitMessage("Lead saved locally (backend unavailable).");
+        return true;
+      }
+      const created = body as Lead;
+      setOptimisticLeads((prev) => [created, ...prev.filter((lead) => lead.id !== created.id)]);
+      setAdding(false);
+      setSubmitMessage("Lead added successfully.");
+      router.refresh();
+      return true;
+    } catch {
+      const localLead = buildLocalLead(payload);
+      setLocalFallbackLeads((prev) => {
+        const next = [localLead, ...prev];
+        persistFallbackLeads(next);
+        return next;
+      });
+      setAdding(false);
+      setSubmitMessage("Lead saved locally (network issue).");
+      return true;
+    }
   }
 
   async function convertToClient(leadId: string) {
@@ -154,6 +240,11 @@ export function LeadsTable({
         ) : null}
       </div>
       <div className="admin-table-wrap overflow-x-auto">
+        {submitMessage ? (
+          <div className="mb-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}>
+            {submitMessage}
+          </div>
+        ) : null}
         <table className="w-full text-sm">
           <thead>
             <tr>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import type { Lead } from "@/lib/db-types";
 
 const STATUSES = [
@@ -83,12 +84,35 @@ type GeneratedOutreachEmail = {
 type Props = {
   lead?: Lead;
   onClose: () => void;
-  onSave: (u: Partial<Lead> | Record<string, unknown>) => void;
+  onSave: (u: Partial<Lead> | Record<string, unknown>) => Promise<boolean | void> | boolean | void;
   onDelete?: () => void;
   onConvertToClient?: (leadId: string) => void;
   initialFocus?: string;
   initialGenerate?: string;
 };
+
+function createInitialForm(lead?: Lead) {
+  return {
+    business_name: lead?.business_name ?? "",
+    category: lead?.category ?? "",
+    city: lead?.city ?? "",
+    address: lead?.address ?? "",
+    contact_name: lead?.contact_name ?? "",
+    email: lead?.email ?? "",
+    phone: lead?.phone ?? "",
+    website: lead?.website ?? "",
+    industry: lead?.industry ?? "",
+    lead_source: lead?.lead_source ?? "",
+    status: (lead?.status ?? "new") as (typeof STATUSES)[number],
+    notes: lead?.notes ?? "",
+    follow_up_date: lead?.follow_up_date ?? "",
+    is_manual: Boolean(lead?.is_manual ?? !lead),
+    known_owner_name: lead?.known_owner_name ?? "",
+    known_context: lead?.known_context ?? "",
+    lead_bucket: lead?.lead_bucket ?? "",
+    door_status: (lead?.door_status ?? "not_visited") as (typeof DOOR_STATUSES)[number],
+  };
+}
 
 export function LeadForm({
   lead,
@@ -125,35 +149,16 @@ export function LeadForm({
     nextFollowUpAt: lead?.next_follow_up_at ?? null,
     lastContactedAt: lead?.last_contacted_at ?? null,
   });
-  const [form, setForm] = useState({
-    business_name: lead?.business_name ?? "",
-    category: lead?.category ?? "",
-    city: lead?.city ?? "",
-    address: lead?.address ?? "",
-    contact_name: lead?.contact_name ?? "",
-    email: lead?.email ?? "",
-    phone: lead?.phone ?? "",
-    website: lead?.website ?? "",
-    industry: lead?.industry ?? "",
-    lead_source: lead?.lead_source ?? "",
-    status: (lead?.status ?? "new") as (typeof STATUSES)[number],
-    notes: lead?.notes ?? "",
-    follow_up_date: lead?.follow_up_date ?? "",
-    is_manual: Boolean(lead?.is_manual ?? !lead),
-    known_owner_name: lead?.known_owner_name ?? "",
-    known_context: lead?.known_context ?? "",
-    lead_bucket: lead?.lead_bucket ?? "",
-    door_status: (lead?.door_status ?? "not_visited") as (typeof DOOR_STATUSES)[number],
-  });
+  const [form, setForm] = useState(createInitialForm(lead));
   const outreachSectionRef = useRef<HTMLDivElement | null>(null);
   const autoGenerateRef = useRef(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError(null);
     const businessName = form.business_name.trim();
     if (!businessName) {
       setError("Business name is required");
-      return;
+      return false;
     }
     const payload = {
       ...form,
@@ -174,7 +179,18 @@ export function LeadForm({
       lead_bucket: form.lead_bucket?.trim() || undefined,
       door_status: form.is_manual || form.lead_bucket === "door_to_door" ? form.door_status : undefined,
     };
-    onSave(payload);
+    console.info("[LeadForm] submit payload", payload);
+    const saved = await onSave(payload);
+    if (saved === false) return false;
+    if (!lead) {
+      setForm(createInitialForm(undefined));
+    }
+    return true;
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await handleSave();
   };
 
   const buildTemplate = (messageType: (typeof MESSAGE_TYPES)[number]) => {
@@ -538,7 +554,7 @@ export function LeadForm({
       <div className="admin-modal w-full max-w-md p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>{lead ? "Edit lead" : "Add lead"}</h3>
         {error && <p className="text-sm mb-3" style={{ color: "var(--admin-orange)" }}>{error}</p>}
-        <div className="space-y-3">
+        <form className="space-y-3" onSubmit={handleSubmit}>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: "var(--admin-muted)" }}>Business name *</label>
             <input
@@ -936,8 +952,7 @@ export function LeadForm({
               className="admin-input"
             />
           </div>
-        </div>
-        <div className="mt-4 flex justify-between gap-2 flex-wrap">
+          <div className="mt-4 flex justify-between gap-2 flex-wrap">
           <div className="flex gap-2 items-center">
             {lead && onConvertToClient && (
               <button type="button" onClick={() => onConvertToClient(lead.id)} className="admin-btn-primary">
@@ -954,11 +969,12 @@ export function LeadForm({
             <button type="button" onClick={onClose} className="admin-btn-ghost">
               Cancel
             </button>
-            <button type="button" onClick={handleSave} className="admin-btn-primary">
+            <button type="submit" className="admin-btn-primary">
               Save
             </button>
           </div>
         </div>
+        </form>
       </div>
     </div>
   );
