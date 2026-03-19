@@ -2,10 +2,19 @@
 
 import { useEffect, useState } from "react";
 import {
+  BUSINESS_TYPE_OPTIONS,
+  CTA_STYLE_OPTIONS,
+  HEADLINE_STYLE_OPTIONS,
+  SITE_GOAL_OPTIONS,
+  TEMPLATE_TYPE_OPTIONS,
+  VISUAL_THEME_OPTIONS,
   applyRandomImagesToSample,
   autofillLeadSample,
+  buildHeadlineFromStyle,
   buildDefaultLeadSample,
+  getSuggestedServicesForBusinessType,
   normalizeLeadSampleRecord,
+  readableBusinessType,
   type LeadSampleImage,
   type LeadSampleRecord,
   type LeadSampleStatus,
@@ -24,6 +33,7 @@ type LeadWorkspaceActionsProps = {
   initialPhone: string | null;
   website: string | null;
   contactPage: string | null;
+  facebookUrl?: string | null;
   caseHref: string | null;
   initialNotes: string[];
   initialDoorStatus?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
@@ -89,6 +99,7 @@ export function LeadWorkspaceActions({
   initialPhone,
   website,
   contactPage,
+  facebookUrl = null,
   caseHref,
   initialNotes,
   initialDoorStatus = "not_visited",
@@ -215,6 +226,80 @@ export function LeadWorkspaceActions({
       });
     }
     return result.sample;
+  }
+
+  function applySelectionDerivations(base: LeadSampleRecord): LeadSampleRecord {
+    const next = normalizeLeadSampleRecord({
+      ...base,
+      business_type: String(base.business_type || "").trim() || readableBusinessType(initialCategory || "service business"),
+      template_key:
+        String(base.template_type || "").toLowerCase().includes("before")
+          ? "before-after"
+          : String(base.template_type || "").toLowerCase().includes("lead gen")
+            ? "lead-gen"
+            : String(base.template_type || "").toLowerCase().includes("trust")
+              ? "local-trust"
+              : "service-business",
+      accent_mode:
+        String(base.visual_theme || "").toLowerCase().includes("bold")
+          ? "bold-premium"
+          : String(base.visual_theme || "").toLowerCase().includes("friendly")
+            ? "friendly-local"
+            : String(base.visual_theme || "").toLowerCase().includes("premium")
+              ? "minimal-elegant"
+              : "clean-modern",
+    });
+    return normalizeLeadSampleRecord({
+      ...next,
+      hero_headline: buildHeadlineFromStyle({
+        style: next.headline_style,
+        businessType: next.business_type,
+        city: initialCity,
+        businessName: next.business_name || initialBusinessName,
+      }),
+      cta_text: next.cta_style || next.cta_text,
+    });
+  }
+
+  function resetToSuggestedDefaults() {
+    const base = buildDefaultLeadSample({
+      leadId,
+      businessName: initialBusinessName,
+      businessType: initialCategory,
+      note: initialIssue,
+    });
+    const withDefaults = applyAutofill(base, "first_generate");
+    setSampleAndRefresh(withDefaults);
+    setMessage("Reset to suggested defaults.");
+    setError(null);
+  }
+
+  function regenerateSampleCopy() {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const suggested = normalizeLeadSampleRecord({
+      ...base,
+      hero_headline: "",
+      hero_subheadline: "",
+      intro_text: "",
+      services: [],
+      site_goal: "",
+      headline_style: "",
+      cta_style: "",
+      cta_text: "",
+      template_type: "",
+      visual_theme: "",
+    });
+    const withDefaults = applyAutofill(suggested, "open_builder");
+    setSampleAndRefresh(withDefaults);
+    setMessage("Copy regenerated from lead insights.");
+    setError(null);
   }
 
   function setSampleAndRefresh(next: LeadSampleRecord) {
@@ -411,7 +496,12 @@ export function LeadWorkspaceActions({
       }
       const first = Array.isArray(data.items) ? data.items[0] : null;
       if (first) {
+        const localTwin =
+          fallback && String(fallback.id || "").trim() === String((first as Record<string, unknown>).id || "").trim()
+            ? fallback
+            : null;
         const normalized = normalizeLeadSampleRecord({
+          ...(localTwin || {}),
           ...first,
           source: "server",
           isLocalOnly: false,
@@ -929,7 +1019,12 @@ export function LeadWorkspaceActions({
       });
       const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
       if (!res.ok) throw new Error(String(data.error || "Could not save to backend."));
-      const serverSaved = normalizeLeadSampleRecord({ ...data, source: "server", isLocalOnly: false });
+      const serverSaved = normalizeLeadSampleRecord({
+        ...payload,
+        ...data,
+        source: "server",
+        isLocalOnly: false,
+      });
       upsertLocalSample(serverSaved);
       setSampleStorageSource("server");
       return serverSaved;
@@ -972,7 +1067,44 @@ export function LeadWorkspaceActions({
       business_type: base.business_type || initialCategory || "service business",
       updated_at: new Date().toISOString(),
     });
+    const shouldDerive = ["business_type", "headline_style", "cta_style", "visual_theme", "template_type"].includes(
+      String(field)
+    );
+    setSampleAndRefresh(shouldDerive ? applySelectionDerivations(next) : next);
+  }
+
+  async function updateServiceSelection(service: string, selected: boolean) {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const current = Array.isArray(base.services) ? base.services : [];
+    const nextServices = selected
+      ? Array.from(new Set([...current, service])).slice(0, 8)
+      : current.filter((entry) => entry !== service);
+    const next = normalizeLeadSampleRecord({
+      ...base,
+      services: nextServices,
+      updated_at: new Date().toISOString(),
+    });
     setSampleAndRefresh(next);
+  }
+
+  async function useFacebookOrWebsiteImage() {
+    const preferred = String(facebookUrl || "").trim() || String(website || "").trim();
+    if (!preferred) {
+      setError("No Facebook or website URL found on this lead. Paste an image URL or upload an image.");
+      return;
+    }
+    setPastedImageUrl(preferred);
+    setMessage("URL added to image input. Paste a direct image URL if needed.");
+    if (looksLikeImageUrl(preferred)) {
+      await addImageFromUrl();
+    }
   }
 
   function regenerateSampleImages() {
@@ -1144,6 +1276,21 @@ export function LeadWorkspaceActions({
     }
   }
 
+  const sampleForUi =
+    sample ||
+    applyAutofill(
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      }),
+      "open_builder"
+    );
+  const suggestedBusinessType = sampleForUi.business_type || readableBusinessType(initialCategory || "service business");
+  const suggestedServices = getSuggestedServicesForBusinessType(suggestedBusinessType);
+  const isLikelyFacebookOnly = !String(website || "").trim();
+
   return (
     <aside className="space-y-3 sticky top-4">
       <div className="admin-card space-y-3">
@@ -1152,6 +1299,11 @@ export function LeadWorkspaceActions({
           Status: <strong>{sample?.status || "none"}</strong>
           {sampleStorageSource ? ` - ${sampleStorageSource === "server" ? "Backend" : "Local only"}` : ""}
         </p>
+        {sampleStorageSource === "local" ? (
+          <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+            Local-only sample is usable for building previews. Send/email actions work best after backend save succeeds.
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {!sample ? (
             <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()} disabled={isSampleLoading}>
@@ -1186,29 +1338,79 @@ export function LeadWorkspaceActions({
         </div>
         {sampleBuilderOpen ? (
           <div className="space-y-2">
+            <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)", background: "rgba(255,255,255,0.02)" }}>
+              <p className="text-xs font-semibold">Suggested for this lead</p>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Business Type: {sampleForUi.business_type} - Goal: {sampleForUi.site_goal} - Template: {sampleForUi.template_type}
+              </p>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Theme: {sampleForUi.visual_theme} - CTA: {sampleForUi.cta_style}
+              </p>
+              {isLikelyFacebookOnly ? (
+                <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+                  Facebook-only flow detected (no website): use Upload Image or Add Business Image From URL.
+                </p>
+              ) : null}
+            </div>
             <div className="grid gap-2 md:grid-cols-2">
               <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
                 Business Name
                 <input
                   className="admin-input mt-1 h-9"
-                  value={sample?.business_name || initialBusinessName || ""}
+                  value={sampleForUi.business_name || initialBusinessName || ""}
                   onChange={(e) => void updateSampleField("business_name", e.target.value)}
                 />
               </label>
               <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
                 Business Type
-                <input
+                <select
                   className="admin-input mt-1 h-9"
-                  value={sample?.business_type || initialCategory || ""}
+                  value={sampleForUi.business_type || "Small Business"}
                   onChange={(e) => void updateSampleField("business_type", e.target.value)}
-                />
+                >
+                  {BUSINESS_TYPE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                Site Goal / Focus
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sampleForUi.site_goal}
+                  onChange={(e) => void updateSampleField("site_goal", e.target.value)}
+                >
+                  {SITE_GOAL_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                Headline Style
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sampleForUi.headline_style}
+                  onChange={(e) => void updateSampleField("headline_style", e.target.value)}
+                >
+                  {HEADLINE_STYLE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </label>
             </div>
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
               Headline
               <input
                 className="admin-input mt-1 h-9"
-                value={sample?.hero_headline || ""}
+                value={sampleForUi.hero_headline || ""}
                 onChange={(e) => void updateSampleField("hero_headline", e.target.value)}
               />
             </label>
@@ -1216,7 +1418,7 @@ export function LeadWorkspaceActions({
               Subheadline
               <textarea
                 className="admin-input mt-1 min-h-[70px]"
-                value={sample?.hero_subheadline || ""}
+                value={sampleForUi.hero_subheadline || ""}
                 onChange={(e) => void updateSampleField("hero_subheadline", e.target.value)}
               />
             </label>
@@ -1224,40 +1426,89 @@ export function LeadWorkspaceActions({
               Intro / About
               <textarea
                 className="admin-input mt-1 min-h-[70px]"
-                value={sample?.intro_text || ""}
+                value={sampleForUi.intro_text || ""}
                 onChange={(e) => void updateSampleField("intro_text", e.target.value)}
               />
             </label>
             <div className="grid gap-2 md:grid-cols-2">
               <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                CTA Style
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sampleForUi.cta_style}
+                  onChange={(e) => void updateSampleField("cta_style", e.target.value)}
+                >
+                  {CTA_STYLE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                Visual Style / Theme
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sampleForUi.visual_theme}
+                  onChange={(e) => void updateSampleField("visual_theme", e.target.value)}
+                >
+                  {VISUAL_THEME_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="grid gap-2 md:grid-cols-2">
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
+                Template Type
+                <select
+                  className="admin-input mt-1 h-9"
+                  value={sampleForUi.template_type}
+                  onChange={(e) => void updateSampleField("template_type", e.target.value)}
+                >
+                  {TEMPLATE_TYPE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
                 CTA Text
                 <input
                   className="admin-input mt-1 h-9"
-                  value={sample?.cta_text || ""}
+                  value={sampleForUi.cta_text || ""}
                   onChange={(e) => void updateSampleField("cta_text", e.target.value)}
                 />
               </label>
-              <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-                Template
-                <select
-                  className="admin-input mt-1 h-9"
-                  value={sample?.template_key || "service-business"}
-                  onChange={(e) => void updateSampleField("template_key", e.target.value)}
-                >
-                  <option value="service-business">Service Business</option>
-                  <option value="coffee">Coffee Shop</option>
-                  <option value="restaurant">Restaurant</option>
-                  <option value="church">Church</option>
-                  <option value="lawn">Lawn Care</option>
-                  <option value="plumbing">Plumbing</option>
-                </select>
-              </label>
+            </div>
+            <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs font-medium" style={{ color: "var(--admin-fg)" }}>
+                Quick-Pick Services
+              </p>
+              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                {suggestedServices.map((service) => {
+                  const checked = sampleForUi.services.includes(service);
+                  return (
+                    <label key={service} className="text-xs flex items-center gap-2" style={{ color: "var(--admin-muted)" }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => void updateServiceSelection(service, e.target.checked)}
+                      />
+                      {service}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
             <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
               Services (one per line)
               <textarea
                 className="admin-input mt-1 min-h-[90px]"
-                value={sample?.services.join("\n") || ""}
+                value={sampleForUi.services.join("\n") || ""}
                 onChange={(e) =>
                   void updateSampleField(
                     "services",
@@ -1286,6 +1537,9 @@ export function LeadWorkspaceActions({
                 </label>
                 <button className="admin-btn-ghost text-xs" onClick={() => useSuggestedStockImages()}>
                   Use Suggested Stock Images
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => void useFacebookOrWebsiteImage()}>
+                  Use Facebook / Website Image
                 </button>
                 <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
                   Regenerate Stock Images
@@ -1348,7 +1602,25 @@ export function LeadWorkspaceActions({
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()}>
+              <button
+                className="admin-btn-primary text-xs"
+                onClick={() => {
+                  const url = buildPreviewUrl(sampleForUi);
+                  if (url) window.open(url, "_blank", "noopener,noreferrer");
+                }}
+              >
+                Generate Preview
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleCopy()}>
+                Regenerate Copy
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
+                Regenerate Images
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => resetToSuggestedDefaults()}>
+                Reset To Suggested Defaults
+              </button>
+              <button className="admin-btn-ghost text-xs" onClick={() => void createOrOpenSample()}>
                 Save Sample
               </button>
               <button className="admin-btn-ghost text-xs" onClick={() => void saveSampleStatus("ready")} disabled={!sample}>

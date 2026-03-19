@@ -18,6 +18,12 @@ export type LeadSampleRecord = {
   template_key: string;
   business_name: string;
   business_type: string;
+  site_goal: string;
+  headline_style: string;
+  cta_style: string;
+  visual_theme: string;
+  template_type: string;
+  suggested_image_category: string;
   hero_headline: string;
   hero_subheadline: string;
   cta_text: string;
@@ -46,6 +52,59 @@ type LeadSampleAutofillContext = {
   notes?: string[];
   website?: string | null;
 };
+
+export const BUSINESS_TYPE_OPTIONS = [
+  "Auto Detailing",
+  "Pressure Washing",
+  "Landscaping",
+  "Roofing",
+  "Plumbing",
+  "HVAC",
+  "Church",
+  "Restaurant",
+  "Coffee Shop",
+  "Small Business",
+  "Other",
+] as const;
+
+export const SITE_GOAL_OPTIONS = [
+  "Get More Calls",
+  "Get More Quote Requests",
+  "Make Contact Easier",
+  "Build Trust",
+  "Show Services Clearly",
+  "Modernize Online Presence",
+] as const;
+
+export const HEADLINE_STYLE_OPTIONS = [
+  "Professional [Business Type] in [City]",
+  "Get More Calls for Your [Business Type] Business",
+  "A Better Website for [Business Name]",
+  "Clean, Modern Website for [Business Type]",
+] as const;
+
+export const CTA_STYLE_OPTIONS = [
+  "Call Now",
+  "Get Quote",
+  "Request Estimate",
+  "Contact Us",
+  "Book Service",
+] as const;
+
+export const VISUAL_THEME_OPTIONS = [
+  "Clean / Modern",
+  "Bold / High Contrast",
+  "Local Service Pro",
+  "Friendly / Community",
+  "Premium / Refined",
+] as const;
+
+export const TEMPLATE_TYPE_OPTIONS = [
+  "Service Business",
+  "Before / After Focus",
+  "Simple Lead Gen",
+  "Local Trust Builder",
+] as const;
 
 type LeadSampleAutofillResult = {
   sample: LeadSampleRecord;
@@ -158,7 +217,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   lawn: "Lawn Care",
 };
 
-function readableBusinessType(category: string): string {
+export function readableBusinessType(category: string): string {
   const raw = categoryTokens(category);
   if (!raw.length) return "Service Business";
   const labels = raw.map((token) => {
@@ -212,6 +271,60 @@ function servicesFromCategory(category: string): string[] {
     }
   }
   return merged;
+}
+
+export function getSuggestedServicesForBusinessType(businessType: string): string[] {
+  const mapped = servicesFromCategory(businessType);
+  if (mapped.length) return mapped.slice(0, 8);
+  return ["Core Service", "Popular Service", "Premium Service"];
+}
+
+function inferSiteGoalFromInsights(issue: string, hasWebsite: boolean): string {
+  const lower = String(issue || "").toLowerCase();
+  if (!hasWebsite || lower.includes("no website")) return "Modernize Online Presence";
+  if (lower.includes("contact") || lower.includes("hard to find")) return "Make Contact Easier";
+  if (lower.includes("cta") || lower.includes("call")) return "Get More Calls";
+  if (lower.includes("trust") || lower.includes("outdated")) return "Build Trust";
+  return "Get More Calls";
+}
+
+export function buildHeadlineFromStyle(input: {
+  style: string;
+  businessType: string;
+  city?: string | null;
+  businessName?: string | null;
+}): string {
+  const style = String(input.style || "").trim();
+  const businessType = String(input.businessType || "Service Business").trim();
+  const city = String(input.city || "").trim();
+  const businessName = String(input.businessName || "Your Business").trim();
+  if (style === "Professional [Business Type] in [City]") {
+    return city ? `Professional ${businessType} in ${city}` : `Professional ${businessType}`;
+  }
+  if (style === "Get More Calls for Your [Business Type] Business") {
+    return `Get More Calls for Your ${businessType} Business`;
+  }
+  if (style === "A Better Website for [Business Name]") {
+    return `A Better Website for ${businessName}`;
+  }
+  return `Clean, Modern Website for ${businessType}`;
+}
+
+function mapThemeToAccentMode(theme: string): string {
+  const normalized = String(theme || "").toLowerCase();
+  if (normalized.includes("bold")) return "bold-premium";
+  if (normalized.includes("friendly") || normalized.includes("community")) return "friendly-local";
+  if (normalized.includes("premium")) return "minimal-elegant";
+  if (normalized.includes("local service")) return "clean-modern";
+  return "clean-modern";
+}
+
+function mapTemplateTypeToKey(templateType: string): string {
+  const normalized = String(templateType || "").toLowerCase();
+  if (normalized.includes("before")) return "before-after";
+  if (normalized.includes("lead gen")) return "lead-gen";
+  if (normalized.includes("trust")) return "local-trust";
+  return "service-business";
 }
 
 function resolveImagePoolKey(category: string): keyof typeof IMAGE_POOLS {
@@ -309,6 +422,53 @@ export function autofillLeadSample(
   const quickFixSummary = String(context.quickFixSummary || "").trim();
   const notes = Array.isArray(context.notes) ? context.notes.map((n) => String(n || "").trim()).filter(Boolean) : [];
   const typeLabel = readableBusinessType(category || sample.business_type);
+  const hasWebsite = Boolean(String(context.website || "").trim());
+
+  const siteGoalEmpty = !String(sample.site_goal || "").trim();
+  if (siteGoalEmpty) {
+    sample.site_goal = inferSiteGoalFromInsights(issue || quickFixSummary, hasWebsite);
+    filledFields.push("site_goal");
+    sources.site_goal = "lead_insights";
+  }
+
+  const visualThemeEmpty = !String(sample.visual_theme || "").trim();
+  if (visualThemeEmpty) {
+    sample.visual_theme = "Clean / Modern";
+    sample.accent_mode = mapThemeToAccentMode(sample.visual_theme);
+    filledFields.push("visual_theme");
+    sources.visual_theme = "default";
+  }
+
+  const templateTypeEmpty = !String(sample.template_type || "").trim();
+  if (templateTypeEmpty) {
+    sample.template_type = "Service Business";
+    sample.template_key = mapTemplateTypeToKey(sample.template_type);
+    filledFields.push("template_type");
+    sources.template_type = "default";
+  }
+
+  const ctaStyleEmpty = !String(sample.cta_style || "").trim();
+  if (ctaStyleEmpty) {
+    sample.cta_style = sample.site_goal === "Get More Calls" ? "Call Now" : "Get Quote";
+    filledFields.push("cta_style");
+    sources.cta_style = "site_goal";
+  }
+
+  const ctaTextEmpty = !String(sample.cta_text || "").trim() || isPlaceholderLike(sample.cta_text, ["get started"]);
+  if (ctaTextEmpty) {
+    sample.cta_text = sample.cta_style || "Get Quote";
+    filledFields.push("cta_text");
+    sources.cta_text = "cta_style";
+  }
+
+  const headlineStyleEmpty = !String(sample.headline_style || "").trim();
+  if (headlineStyleEmpty) {
+    sample.headline_style = city
+      ? "Professional [Business Type] in [City]"
+      : "Get More Calls for Your [Business Type] Business";
+    filledFields.push("headline_style");
+    sources.headline_style = city ? "city" : "default";
+  }
 
   const businessTypeEmpty =
     !String(sample.business_type || "").trim() ||
@@ -323,13 +483,14 @@ export function autofillLeadSample(
     !String(sample.hero_headline || "").trim() ||
     isPlaceholderLike(sample.hero_headline, ["a cleaner, more modern website for your business"]);
   if (headlineEmpty) {
-    sample.hero_headline = city
-      ? `Professional ${typeLabel} in ${city}`
-      : typeLabel
-        ? `Get More Calls for Your ${typeLabel} Business`
-        : `A Better Website for ${businessName}`;
+    sample.hero_headline = buildHeadlineFromStyle({
+      style: sample.headline_style,
+      businessType: typeLabel,
+      city,
+      businessName,
+    });
     filledFields.push("hero_headline");
-    sources.hero_headline = city ? "category+city" : "category";
+    sources.hero_headline = "headline_style";
   }
 
   const subheadlineEmpty =
@@ -354,7 +515,7 @@ export function autofillLeadSample(
       issue,
       quickFixSummary,
       notes,
-      hasWebsite: Boolean(String(context.website || "").trim()),
+      hasWebsite,
     });
     filledFields.push("intro_text");
     sources.intro_text = "lead_insights";
@@ -382,9 +543,11 @@ export function autofillLeadSample(
       maxAdditional: 4,
     });
     sample.primary_image_url = withImages.primary_image_url;
+    sample.images = withImages.images;
     sample.image_urls = withImages.image_urls;
     sample.additional_image_urls = withImages.additional_image_urls;
     sample.gallery_image_urls = withImages.gallery_image_urls;
+    sample.suggested_image_category = String(poolKey || "service_business");
     if (primaryImageEmpty) {
       filledFields.push("primary_image_url");
       sources.primary_image_url = `image_pool:${poolKey}`;
@@ -452,6 +615,12 @@ export function normalizeLeadSampleRecord(input: Partial<LeadSampleRecord>): Lea
     template_key: asString(input.template_key, "service-business"),
     business_name: asString(input.business_name, "Business Name"),
     business_type: asString(input.business_type, "service business"),
+    site_goal: asString(input.site_goal, "Get More Calls"),
+    headline_style: asString(input.headline_style, "Get More Calls for Your [Business Type] Business"),
+    cta_style: asString(input.cta_style, "Get Quote"),
+    visual_theme: asString(input.visual_theme, "Clean / Modern"),
+    template_type: asString(input.template_type, "Service Business"),
+    suggested_image_category: asString(input.suggested_image_category, "service_business"),
     hero_headline: asString(input.hero_headline, "A cleaner, more modern website for your business"),
     hero_subheadline: asString(
       input.hero_subheadline,

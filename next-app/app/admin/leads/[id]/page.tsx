@@ -1753,6 +1753,7 @@ export default async function AdminLeadDetailPage({
               initialPhone={displayPhone || null}
               website={displayWebsite || null}
               contactPage={displayContactPage || null}
+              facebookUrl={displayFacebook || null}
               caseHref={caseHref}
               initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
               initialDoorStatus={lead?.door_status || "not_visited"}
