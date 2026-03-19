@@ -7,24 +7,11 @@ import { isManualOnlyMode } from "@/lib/manual-mode";
 
 const ALLOWED_LEAD_INSERT_FIELDS = [
   "business_name",
-  "contact_name",
+  "status",
   "email",
   "phone",
-  "website",
-  "industry",
-  "category",
-  "address",
-  "lead_source",
-  "status",
   "notes",
-  "follow_up_date",
-  "is_manual",
-  "known_owner_name",
-  "known_context",
-  "lead_bucket",
-  "door_status",
   "owner_id",
-  "last_updated_at",
 ] as const;
 
 export async function GET() {
@@ -59,63 +46,66 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const normalizedInput = {
     business_name: String(parsed.data.business_name || "").trim(),
-    contact_name: parsed.data.contact_name,
+    status: parsed.data.status || "new",
     email: String(parsed.data.email || "").trim() || undefined,
     phone: String(parsed.data.phone || "").trim() || undefined,
-    website: String(parsed.data.website || "").trim() || undefined,
-    industry: parsed.data.industry,
-    category: parsed.data.category,
-    address: parsed.data.address,
-    lead_source: parsed.data.lead_source,
-    status: parsed.data.status || "new",
     notes: parsed.data.notes,
-    follow_up_date: parsed.data.follow_up_date,
-    is_manual: parsed.data.is_manual,
-    known_owner_name: parsed.data.known_owner_name,
-    known_context: parsed.data.known_context,
-    lead_bucket: parsed.data.lead_bucket,
-    door_status: parsed.data.door_status,
   } as const;
-  const row = {
+  const candidatePayload = {
     ...normalizedInput,
     owner_id: user.id,
-    last_updated_at: new Date().toISOString(),
   };
   console.info("[Leads API] sanitized create payload", {
     request_id: requestId,
-    payload: row,
+    payload: candidatePayload,
   });
 
-  const safePayload = Object.fromEntries(
-    Object.entries(row).filter(([key]) =>
-      ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number])
+  const safeInsertPayload = Object.fromEntries(
+    Object.entries(candidatePayload).filter(
+      ([key, value]) =>
+        ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number]) &&
+        value !== undefined
     )
   );
-  const removedFields = Object.keys(row).filter(
-    (key) => !ALLOWED_LEAD_INSERT_FIELDS.includes(key as (typeof ALLOWED_LEAD_INSERT_FIELDS)[number])
+  const droppedFields = Object.keys(candidatePayload).filter(
+    (key) =>
+      !Object.prototype.hasOwnProperty.call(
+        safeInsertPayload,
+        key
+      )
   );
-  console.info("[Leads API] filtered payload", {
+  console.info("[Leads API] safe insert payload", {
     request_id: requestId,
-    payload: safePayload,
-    removed_fields: removedFields,
+    payload: safeInsertPayload,
   });
+  console.info("[Leads API] dropped fields", {
+    request_id: requestId,
+    dropped_fields: droppedFields,
+  });
+
+  if (!safeInsertPayload.business_name) {
+    return NextResponse.json({ error: "business_name is required" }, { status: 400 });
+  }
+  if (!safeInsertPayload.status) {
+    return NextResponse.json({ error: "status is required" }, { status: 400 });
+  }
 
   console.info("[Leads API] insert attempt", {
     request_id: requestId,
-    payload_keys: Object.keys(safePayload),
+    payload_keys: Object.keys(safeInsertPayload),
   });
   const { data, error } = await supabase
     .from("leads")
-    .insert(safePayload)
+    .insert(safeInsertPayload)
     .select()
     .single();
 
   if (error || !data) {
     const dbErrorMessage = String(error?.message || "Lead insert failed.");
-    console.error("[Leads API] create failed", {
+    console.error("[Leads API] insert error", {
       request_id: requestId,
       error: dbErrorMessage,
-      payload: safePayload,
+      payload: safeInsertPayload,
     });
     return NextResponse.json(
       {
@@ -132,17 +122,11 @@ export async function POST(request: Request) {
     lead_id: String(data.id || ""),
   });
   const responseBody = {
-    ...data,
     id: String(data.id || ""),
-    business_name: String(data.business_name || normalizedInput.business_name || ""),
-    status: String(data.status || normalizedInput.status || "new"),
+    business_name: String(data.business_name || ""),
+    status: String(data.status || "new"),
     source: "server",
     isLocalOnly: false,
-    _create_debug: {
-      request_id: requestId,
-      removed_fields: removedFields,
-      filtered_payload_keys: Object.keys(safePayload),
-    },
   };
   console.info("[Leads API] create response sent", {
     request_id: requestId,
