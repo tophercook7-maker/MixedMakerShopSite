@@ -23,6 +23,8 @@ type TimelineEntry = {
 
 export type WorkflowLead = {
   id: string;
+  source?: "server" | "local" | "optimistic";
+  isLocalOnly?: boolean;
   workspace_id?: string | null;
   related_case_id?: string | null;
   lead_source?: string | null;
@@ -208,11 +210,20 @@ export function LeadsWorkflowView({
   const [adding, setAdding] = useState(false);
   const [addOpenHandled, setAddOpenHandled] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [optimisticLeads, setOptimisticLeads] = useState<WorkflowLead[]>([]);
   const [localFallbackLeads, setLocalFallbackLeads] = useState<WorkflowLead[]>([]);
   const LOCAL_WORKFLOW_LEADS_KEY = "mixedmakershop.local_workflow_leads";
 
+  function withLeadSource(lead: WorkflowLead, source: "server" | "local" | "optimistic"): WorkflowLead {
+    return {
+      ...lead,
+      source,
+      isLocalOnly: source !== "server",
+    };
+  }
+
   useEffect(() => {
-    setLeads(initialLeads);
+    setLeads(initialLeads.map((lead) => withLeadSource(lead, "server")));
     setSelectedDoorLeadIds([]);
     setRoutePlan([]);
   }, [initialLeads]);
@@ -223,7 +234,7 @@ export function LeadsWorkflowView({
       if (!raw) return;
       const parsed = JSON.parse(raw) as WorkflowLead[];
       if (Array.isArray(parsed)) {
-        setLocalFallbackLeads(parsed);
+        setLocalFallbackLeads(parsed.map((lead) => withLeadSource(lead, "local")));
       }
     } catch {
       // Ignore malformed fallback payloads.
@@ -250,7 +261,14 @@ export function LeadsWorkflowView({
     }
   }
 
-  function toWorkflowLeadFromPayload(payload: Record<string, unknown>, fallbackId?: string): WorkflowLead {
+  function toWorkflowLeadFromPayload(
+    payload: Record<string, unknown>,
+    options?: {
+      fallbackId?: string;
+      source?: "server" | "local" | "optimistic";
+    }
+  ): WorkflowLead {
+    const source = options?.source || "server";
     const now = new Date().toISOString();
     const statusRaw = String(payload.status || "new")
       .trim()
@@ -277,7 +295,9 @@ export function LeadsWorkflowView({
     const hasEmail = Boolean(email);
     const hasContactAvailable = Boolean(contactPage || facebook || phone);
     return {
-      id: String(payload.id || fallbackId || `local-${Date.now()}`),
+      id: String(payload.id || options?.fallbackId || `local-${Date.now()}`),
+      source,
+      isLocalOnly: source !== "server",
       workspace_id: String(payload.workspace_id || "").trim() || null,
       related_case_id: null,
       lead_source: String(payload.lead_source || "").trim() || "manual",
@@ -347,7 +367,13 @@ export function LeadsWorkflowView({
   }
 
   async function createLead(payload: Record<string, unknown>) {
-    console.info("[LeadsWorkflowView] Add Lead save start", payload);
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimisticLead = toWorkflowLeadFromPayload(payload, {
+      fallbackId: optimisticId,
+      source: "optimistic",
+    });
+    console.info("[LeadsWorkflowView] Add Lead save start", { optimistic_id: optimisticId, payload });
+    setOptimisticLeads((prev) => [optimisticLead, ...prev.filter((lead) => lead.id !== optimisticId)]);
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
@@ -355,35 +381,73 @@ export function LeadsWorkflowView({
         body: JSON.stringify(payload),
       });
       const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      console.info("[LeadsWorkflowView] Add Lead create response", {
+        status: res.status,
+        body,
+      });
       if (!res.ok) {
-        const localLead = toWorkflowLeadFromPayload(payload, `local-${Date.now()}`);
+        const backendError =
+          typeof body.error === "string"
+            ? body.error
+            : body.error
+              ? JSON.stringify(body.error)
+              : "Unknown backend error";
+        const localLead = toWorkflowLeadFromPayload(payload, {
+          fallbackId: `local-${Date.now()}`,
+          source: "local",
+        });
         setLocalFallbackLeads((prev) => {
           const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
           persistFallbackLeads(next);
           return next;
         });
+        setOptimisticLeads((prev) => prev.filter((lead) => lead.id !== optimisticId));
         setAdding(false);
-        setSubmitMessage("Lead saved locally (backend unavailable).");
-        console.info("[LeadsWorkflowView] Add Lead fallback save used", { status: res.status });
+        setSubmitMessage(`Lead saved locally. Backend create failed (${res.status}): ${backendError}`);
+        console.info("[LeadsWorkflowView] Add Lead fallback save used", {
+          status: res.status,
+          reason: body.reason || null,
+          backend_error: backendError,
+          local_lead_id: localLead.id,
+          source: localLead.source,
+        });
         return true;
       }
-      const createdLead = toWorkflowLeadFromPayload(body, String(body.id || `created-${Date.now()}`));
+      const createdLead = toWorkflowLeadFromPayload(body, {
+        fallbackId: String(body.id || `created-${Date.now()}`),
+        source: "server",
+      });
       setLeads((prev) => [createdLead, ...prev.filter((lead) => lead.id !== createdLead.id)]);
+      setOptimisticLeads((prev) => prev.filter((lead) => lead.id !== optimisticId));
+      setLocalFallbackLeads((prev) => {
+        const next = prev.filter((lead) => lead.id !== createdLead.id);
+        persistFallbackLeads(next);
+        return next;
+      });
       setAdding(false);
-      setSubmitMessage("Lead added successfully.");
-      console.info("[LeadsWorkflowView] Add Lead save succeeded", { leadId: createdLead.id });
+      setSubmitMessage("Lead added successfully (saved to backend).");
+      console.info("[LeadsWorkflowView] Add Lead save succeeded", {
+        leadId: createdLead.id,
+        source: createdLead.source,
+      });
       return true;
     } catch (error) {
-      const localLead = toWorkflowLeadFromPayload(payload, `local-${Date.now()}`);
+      const localLead = toWorkflowLeadFromPayload(payload, {
+        fallbackId: `local-${Date.now()}`,
+        source: "local",
+      });
       setLocalFallbackLeads((prev) => {
         const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
         persistFallbackLeads(next);
         return next;
       });
+      setOptimisticLeads((prev) => prev.filter((lead) => lead.id !== optimisticId));
       setAdding(false);
       setSubmitMessage("Lead saved locally (network issue).");
       console.info("[LeadsWorkflowView] Add Lead network fallback save used", {
         error: error instanceof Error ? error.message : "unknown_error",
+        local_lead_id: localLead.id,
+        source: localLead.source,
       });
       return true;
     }
@@ -398,7 +462,29 @@ export function LeadsWorkflowView({
     }
   }
 
-  async function navigateToLeadWithGuard(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string) {
+  async function navigateToLeadWithGuard(
+    lead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly">,
+    query?: string
+  ) {
+    const isLocalOnlyLead =
+      Boolean(lead.isLocalOnly) ||
+      String(lead.source || "") === "local" ||
+      String(lead.source || "") === "optimistic" ||
+      String(lead.id || "").startsWith("local-") ||
+      String(lead.id || "").startsWith("optimistic-");
+    if (isLocalOnlyLead) {
+      const message =
+        "This lead is saved locally only and is not yet available in the full lead detail page.";
+      setError(message);
+      actionDebug("Lead navigation blocked", {
+        leadId: lead.id,
+        source: lead.source || null,
+        isLocalOnly: true,
+        reason: "local_only",
+      });
+      if (typeof window !== "undefined") window.alert(message);
+      return;
+    }
     const destination = leadHref(lead, query);
     const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
     if (!check.ok) {
@@ -415,7 +501,22 @@ export function LeadsWorkflowView({
     if (typeof window !== "undefined") window.location.assign(destination);
   }
 
-  async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id">) {
+  async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id" | "source" | "isLocalOnly">) {
+    const isLocalOnlyLead =
+      Boolean(lead.isLocalOnly) ||
+      String(lead.source || "") === "local" ||
+      String(lead.source || "") === "optimistic" ||
+      String(lead.id || "").startsWith("local-") ||
+      String(lead.id || "").startsWith("optimistic-");
+    if (isLocalOnlyLead) {
+      setError("This lead is saved locally only and preview generation requires a backend-saved lead.");
+      actionDebug("Preview blocked", {
+        leadId: lead.id,
+        source: lead.source || null,
+        reason: "local_only",
+      });
+      return;
+    }
     const check = await verifyLeadBeforeNavigation(String(lead.id || ""));
     if (!check.ok) {
       setError(check.message);
@@ -556,10 +657,10 @@ export function LeadsWorkflowView({
 
   const mergedLeads = useMemo(
     () =>
-      [...localFallbackLeads, ...leads].filter(
+      [...optimisticLeads, ...localFallbackLeads, ...leads].filter(
         (lead, index, arr) => arr.findIndex((candidate) => candidate.id === lead.id) === index
       ),
-    [leads, localFallbackLeads]
+    [leads, localFallbackLeads, optimisticLeads]
   );
 
   const filtered = useMemo(() => {
@@ -833,7 +934,7 @@ export function LeadsWorkflowView({
           <div className="admin-empty !py-8">
             <div className="admin-empty-title">No leads found</div>
             <div className="admin-empty-desc">
-              {leads.length > 0
+              {mergedLeads.length > 0
                 ? "Current filters hide all leads. Switch to All or clear search."
                 : emptyStateReason || "Try a different search query."}
             </div>
@@ -848,9 +949,16 @@ export function LeadsWorkflowView({
               >
                 {(() => {
                   const bucket = canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score);
+                  const sourceLabel =
+                    lead.source === "local"
+                      ? "Local only"
+                      : lead.source === "optimistic"
+                        ? "Saving..."
+                        : "Backend";
                   return (
                     <div className="flex items-center justify-between gap-2">
                       <LeadBucketBadge bucket={bucket} score={lead.opportunity_score} />
+                      <span className="admin-badge admin-badge-progress">{sourceLabel}</span>
                     </div>
                   );
                 })()}
@@ -1022,7 +1130,11 @@ export function LeadsWorkflowView({
                     className="admin-btn-primary text-xs"
                     onClick={(event) => {
                       event.preventDefault();
-                      actionDebug("Open Lead clicked", { leadId: lead.id });
+                      actionDebug("Open Lead clicked", {
+                        leadId: lead.id,
+                        source: lead.source || "server",
+                        isLocalOnly: Boolean(lead.isLocalOnly),
+                      });
                       void navigateToLeadWithGuard(lead);
                     }}
                   >
@@ -1302,6 +1414,9 @@ export function LeadsWorkflowView({
                     <td>{lead.recommended_next_action || "Review Website"}</td>
                     <td>
                       <span className={`admin-badge ${leadStatusClass(lead.status)}`}>{prettyLeadStatus(lead.status)}</span>
+                      <div className="text-[10px] mt-1" style={{ color: "var(--admin-muted)" }}>
+                        Source: {lead.source === "local" ? "local" : lead.source === "optimistic" ? "optimistic" : "server"}
+                      </div>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {getLeadPriorityBadges({
                           isHotLead: Boolean(lead.is_hot_lead),

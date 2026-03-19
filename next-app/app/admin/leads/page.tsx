@@ -72,6 +72,8 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
   ) as WorkflowLead["best_contact_method"];
   return {
     id: String(row.id || ""),
+    source: "server",
+    isLocalOnly: false,
     workspace_id: String(row.workspace_id || "").trim() || null,
     related_case_id: null,
     lead_source: null,

@@ -18,6 +18,15 @@ export async function verifyLeadBeforeNavigation(leadId: string): Promise<LeadNa
       reason: "missing_lead_id",
     };
   }
+  if (id.startsWith("local-") || id.startsWith("optimistic-")) {
+    return {
+      ok: false,
+      message: "This lead is saved locally only and is not yet available in the full lead detail page.",
+      status: 409,
+      reason: "local_only",
+      diagnostics: { lead_id: id, source: id.startsWith("optimistic-") ? "optimistic" : "local" },
+    };
+  }
   try {
     console.info("[Lead Navigation] request started", { lead_id: id, route: `/api/leads/${encodeURIComponent(id)}` });
     const res = await fetch(`/api/leads/${encodeURIComponent(id)}`, {

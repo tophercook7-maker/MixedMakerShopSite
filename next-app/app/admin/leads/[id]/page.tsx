@@ -498,6 +498,24 @@ export default async function AdminLeadDetailPage({
       </section>
     );
   }
+  if (targetId.startsWith("local-") || targetId.startsWith("optimistic-")) {
+    return (
+      <section className="admin-card">
+        <h1 className="text-2xl font-bold">Lead workspace</h1>
+        <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
+          This lead is saved locally only and is not yet available in the full lead detail page.
+        </p>
+        <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+          Save to backend successfully first, then open the full workspace.
+        </p>
+        <div className="mt-4 flex gap-2">
+          <Link href="/admin/leads" className="admin-btn-primary">
+            Back to Leads
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   const loadWarnings: string[] = [];
   const normalizedTargetToken = targetId.toLowerCase();
