@@ -583,9 +583,17 @@ export function LeadsWorkflowView({
         return next;
       });
       setOptimisticLeads((prev) => prev.filter((row) => row.id !== lead.id && row.id !== promotedLead.id));
+      setSelectedLeadIds((prev) =>
+        prev.map((id) => (id === lead.id ? promotedLead.id : id)).filter((id, idx, arr) => arr.indexOf(id) === idx)
+      );
+      setSelectedDoorLeadIds((prev) =>
+        prev.map((id) => (id === lead.id ? promotedLead.id : id)).filter((id, idx, arr) => arr.indexOf(id) === idx)
+      );
+      setRoutePlan((prev) => prev.map((entry) => (entry.id === lead.id ? promotedLead : entry)));
       console.info("[LeadsWorkflowView] local lead promoted to server", {
         old_lead_id: lead.id,
         new_lead_id: promotedLead.id,
+        status: res.status,
       });
       setError(null);
       return promotedLead;
@@ -1415,7 +1423,7 @@ export function LeadsWorkflowView({
                       ? "Local only"
                       : lead.source === "optimistic"
                         ? "Saving..."
-                        : "Backend";
+                        : "Saved";
                   return (
                     <div className="flex items-center justify-between gap-2">
                       <LeadBucketBadge bucket={bucket} score={lead.opportunity_score} />
@@ -1828,7 +1836,7 @@ export function LeadsWorkflowView({
                       className="admin-btn-ghost text-xs"
                       onClick={() => void retrySaveLocalLead(lead)}
                     >
-                      Save Lead to Workspace
+                      Save to Workspace
                     </button>
                   ) : null}
                   {localOnly ? (
@@ -2228,7 +2236,7 @@ export function LeadsWorkflowView({
                             className="text-[var(--admin-gold)] hover:underline text-xs"
                             onClick={() => void retrySaveLocalLead(lead)}
                           >
-                            Save Lead to Workspace
+                            Save to Workspace
                           </button>
                         ) : null}
                       </div>

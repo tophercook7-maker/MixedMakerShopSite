@@ -512,9 +512,9 @@ export default async function AdminLeadDetailPage({
   if (targetId.startsWith("local-") || targetId.startsWith("optimistic-")) {
     return (
       <section className="admin-card">
-        <h1 className="text-2xl font-bold">Lead workspace</h1>
+        <h1 className="text-2xl font-bold">This lead is not saved to your workspace</h1>
         <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
-          This lead is not saved to your workspace yet.
+          You need to save this lead before continuing.
         </p>
         <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
           Save this lead to backend before continuing with CRM actions.

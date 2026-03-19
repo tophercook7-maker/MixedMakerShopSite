@@ -110,6 +110,7 @@ export function SaveLocalLeadToWorkspace({ localLeadId }: { localLeadId: string 
       console.info("[Save Local Lead] local lead promoted to server", {
         old_lead_id: localLeadId,
         new_lead_id: nextId,
+        status: res.status,
       });
       setMessage("Lead saved to workspace.");
       router.replace(buildLeadPath(nextId, nextBusinessName));
@@ -126,7 +127,7 @@ export function SaveLocalLeadToWorkspace({ localLeadId }: { localLeadId: string 
   return (
     <div className="mt-4 space-y-2">
       <button type="button" className="admin-btn-primary" onClick={() => void saveToWorkspace()} disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save Lead to Workspace"}
+        {isSaving ? "Saving..." : "Save to Workspace"}
       </button>
       {message ? (
         <p className="text-xs" style={{ color: "#86efac" }}>
