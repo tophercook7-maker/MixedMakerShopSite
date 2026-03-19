@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { normalizeLeadSampleRecord } from "@/lib/lead-samples";
+import { recordLeadActivity } from "@/lib/lead-activity";
 
 const TABLE = "lead_samples";
 
@@ -95,5 +96,15 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+  const row = data as { created_at?: string; updated_at?: string };
+  const createdMs = new Date(String(row.created_at || 0)).getTime();
+  const updatedMs = new Date(String(row.updated_at || 0)).getTime();
+  const eventType = Math.abs(updatedMs - createdMs) < 4000 ? "preview_generated" : "preview_updated";
+  await recordLeadActivity(supabase, {
+    ownerId: user.id,
+    leadId: String(normalized.lead_id || "").trim(),
+    eventType,
+    meta: { sample_id: String((data as { id?: string }).id || "").trim() || null },
+  });
   return NextResponse.json(normalizeLeadSampleRecord({ ...(data as Record<string, unknown>), source: "server", isLocalOnly: false }));
 }

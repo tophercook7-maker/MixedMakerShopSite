@@ -1334,6 +1334,130 @@ html {
   max-width: 64ch;
   color: var(--sd-muted);
 }
+.sample-section-lead {
+  margin-top: -8px;
+  margin-bottom: 22px;
+  opacity: 0.92;
+}
+.sample-service-grid {
+  gap: 20px !important;
+}
+.sample-service-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 14px !important;
+}
+.sample-service-card-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.sample-service-card-placeholder {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sd-primary) 22%, transparent), transparent);
+  border: 1px dashed var(--sd-border);
+}
+.sample-service-card-cta {
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--sd-accent);
+  text-decoration: none;
+}
+.sample-service-card-cta:hover {
+  text-decoration: underline;
+}
+.sample-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.sample-gallery-tile {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: var(--sd-radius);
+  border: var(--sd-card-border) solid var(--sd-border);
+  box-shadow: var(--sd-shadow);
+}
+.sample-why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.sample-why-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: var(--sd-radius);
+  background: var(--sd-surface-alt);
+  border: var(--sd-card-border) solid var(--sd-border);
+  box-shadow: var(--sd-shadow);
+}
+.sample-why-index {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sd-primary) 35%, transparent);
+  color: var(--sd-primary-text);
+  font-weight: 800;
+  font-size: 13px;
+}
+.sample-why-text {
+  margin: 0;
+  font-size: var(--sd-body-size);
+  line-height: 1.45;
+  color: var(--sd-text);
+}
+.sample-contact-band {
+  padding-top: calc(var(--sd-section-pad) * 0.85) !important;
+  padding-bottom: calc(var(--sd-section-pad) * 0.85) !important;
+}
+.sample-contact-band-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 26px;
+  margin-bottom: 28px;
+  border-radius: calc(var(--sd-radius) + 6px);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--sd-primary) 28%, var(--sd-surface)), var(--sd-surface-alt));
+  border: var(--sd-card-border) solid var(--sd-border);
+  box-shadow: var(--sd-shadow);
+}
+.sample-contact-band-title {
+  margin-bottom: 8px !important;
+}
+.sample-contact-band-sub {
+  margin-bottom: 0 !important;
+  max-width: 52ch;
+}
+.sample-contact-band-actions {
+  flex-shrink: 0;
+}
+.sample-h3-spacing {
+  margin-top: 8px !important;
+  font-size: calc(var(--sd-h2-size) * 0.78) !important;
+}
+.sample-final-panel {
+  text-align: center;
+}
+.sample-final-panel .sample-sub {
+  margin-left: auto;
+  margin-right: auto;
+}
 .sample-standalone .section {
   padding: var(--sd-section-pad) 0;
   transition: padding 240ms ease;

@@ -20,6 +20,11 @@ export type SampleDraft = {
   heroSecondaryCta: string;
   offeringsTitle: string;
   offerings: Array<{ name: string; text: string; image?: string }>;
+  /** Extra photos for a dedicated gallery band */
+  gallerySectionTitle?: string;
+  galleryImages?: string[];
+  whyChooseTitle?: string;
+  whyChooseBullets?: string[];
   aboutTitle: string;
   aboutText: string;
   trustTitle: string;
@@ -29,6 +34,9 @@ export type SampleDraft = {
   address: string;
   phone: string;
   hours: string[];
+  /** Prominent contact / quote strip above footer */
+  contactBandTitle?: string;
+  contactBandSub?: string;
   finalTitle: string;
   finalSub: string;
   finalCta: string;
@@ -225,11 +233,29 @@ const COLOR_PRESETS: Record<
   },
 };
 
+function withDraftDefaults(d: SampleDraft): SampleDraft {
+  return {
+    ...d,
+    gallerySectionTitle: d.gallerySectionTitle ?? "Gallery",
+    galleryImages: d.galleryImages ?? [],
+    whyChooseTitle: d.whyChooseTitle ?? "Why choose us",
+    whyChooseBullets: d.whyChooseBullets ?? [],
+    contactBandTitle: d.contactBandTitle ?? "Get in touch",
+    contactBandSub:
+      d.contactBandSub ??
+      "Customers can call, email, or request a quote in one click on a live site.",
+  };
+}
+
 export function SampleDraftClient({ initialDraft, initialMode }: Props) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [stylePreset, setStylePreset] = useState<StylePreset>("clean-modern");
   const [colorPreset, setColorPreset] = useState<ColorPreset>("blue");
-  const [draft, setDraft] = useState<SampleDraft>(initialDraft);
+  const [draft, setDraft] = useState<SampleDraft>(() => withDraftDefaults(initialDraft));
+
+  useEffect(() => {
+    setDraft(withDraftDefaults(initialDraft));
+  }, [initialDraft]);
 
   useEffect(() => {
     const body = document.body;
@@ -323,6 +349,8 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
   }, [colorPreset, stylePreset]);
 
   const telHref = `tel:${draft.phone.replace(/[^\d]/g, "")}`;
+  const galleryList = draft.galleryImages ?? [];
+  const whyBullets = draft.whyChooseBullets ?? [];
   const exportPayload = useMemo(
     () => ({
       mode,
@@ -366,7 +394,9 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
               {draft.businessName}
             </a>
             <div className="sample-site-links">
-              <a href="#menu">Menu</a>
+              <a href="#services">Services</a>
+              {galleryList.length ? <a href="#gallery">Gallery</a> : null}
+              <a href="#why">Why us</a>
               <a href="#about">About</a>
               <a href="#contact">Contact</a>
             </div>
@@ -404,23 +434,62 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
         </div>
       </header>
 
-      <section className="section sample-section" id="menu">
+      <section className="section sample-section" id="services">
         <div className="container">
           <h2 className="sample-h2">{draft.offeringsTitle}</h2>
-          <div className="how-it-works-grid">
+          <p className="sample-sub sample-section-lead">
+            Service cards like these help visitors scan what you offer and pick up the phone faster.
+          </p>
+          <div className="how-it-works-grid sample-service-grid">
             {draft.offerings.map((item) => (
-              <article key={item.name} className="how-it-works-card">
+              <article key={item.name} className="how-it-works-card sample-service-card">
                 {item.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.image}
                     alt={`${item.name} preview`}
-                    style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 10 }}
+                    className="sample-service-card-image"
                   />
-                ) : null}
+                ) : (
+                  <div className="sample-service-card-placeholder" aria-hidden="true" />
+                )}
                 <h3 className="how-it-works-title">{item.name}</h3>
                 <p className="how-it-works-copy">{item.text}</p>
+                <a href={telHref} className="sample-service-card-cta">
+                  {draft.heroPrimaryCta}
+                </a>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {galleryList.length ? (
+        <section className="section sample-section sample-gallery-section" id="gallery">
+          <div className="container">
+            <h2 className="sample-h2">{draft.gallerySectionTitle}</h2>
+            <p className="sample-sub sample-section-lead">
+              Real photos build trust. Your live site would feature your own shots here.
+            </p>
+            <div className="sample-gallery-grid">
+              {galleryList.map((src, idx) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={`${src}-${idx}`} src={src} alt={`${draft.businessName} gallery ${idx + 1}`} className="sample-gallery-tile" />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="section sample-section" id="why">
+        <div className="container">
+          <h2 className="sample-h2">{draft.whyChooseTitle}</h2>
+          <div className="sample-why-grid">
+            {whyBullets.map((line, idx) => (
+              <div key={idx} className="sample-why-card">
+                <span className="sample-why-index">{idx + 1}</span>
+                <p className="sample-why-text">{line}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -430,20 +499,22 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
         <div className="container">
           <div className="panel sample-panel">
             <h2 className="sample-h2">{draft.aboutTitle}</h2>
-            <p className="sample-sub" style={{ margin: 0 }}>{draft.aboutText}</p>
+            <p className="sample-sub" style={{ margin: 0 }}>
+              {draft.aboutText}
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="section sample-section" id="contact">
+      <section className="section sample-section">
         <div className="container">
           <h2 className="sample-h2">{draft.trustTitle}</h2>
           <div className="grid-2">
             {draft.trustQuotes.map((entry) => (
               <blockquote key={entry.by} className="card sample-quote">
-                <p style={{ margin: "0 0 10px" }}>"{entry.quote}"</p>
+                <p style={{ margin: "0 0 10px" }}>&ldquo;{entry.quote}&rdquo;</p>
                 <p className="small" style={{ margin: 0, opacity: 0.85 }}>
-                  - {entry.by}
+                  — {entry.by}
                 </p>
               </blockquote>
             ))}
@@ -451,13 +522,29 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
         </div>
       </section>
 
-      <section className="section sample-section">
+      <section className="section sample-section sample-contact-band" id="contact">
         <div className="container">
-          <h2 className="sample-h2">{draft.locationTitle}</h2>
+          <div className="sample-contact-band-inner">
+            <div>
+              <h2 className="sample-h2 sample-contact-band-title">{draft.contactBandTitle}</h2>
+              <p className="sample-sub sample-contact-band-sub">{draft.contactBandSub}</p>
+            </div>
+            <div className="btn-row sample-contact-band-actions">
+              <a href={telHref} className="btn gold">
+                {draft.heroPrimaryCta}
+              </a>
+              <a href={telHref} className="btn ghost">
+                Call {draft.phone}
+              </a>
+            </div>
+          </div>
+          <h3 className="sample-h2 sample-h3-spacing">{draft.locationTitle}</h3>
           <div className="grid-2">
             <div className="card sample-info">
               <h3 style={{ margin: "0 0 8px" }}>{draft.locationName}</h3>
-              <p className="small" style={{ margin: "0 0 6px" }}>{draft.address}</p>
+              <p className="small" style={{ margin: "0 0 6px" }}>
+                {draft.address}
+              </p>
               <a href={telHref} className="small" style={{ margin: 0, display: "inline-block" }}>
                 {draft.phone}
               </a>
@@ -478,7 +565,7 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
 
       <section className="section sample-section">
         <div className="container">
-          <div className="panel sample-panel">
+          <div className="panel sample-panel sample-final-panel">
             <h2 className="sample-h2">{draft.finalTitle}</h2>
             <p className="sample-sub">{draft.finalSub}</p>
             <div className="btn-row">

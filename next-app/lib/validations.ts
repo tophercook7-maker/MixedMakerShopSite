@@ -94,6 +94,15 @@ export const leadSchema = z.object({
   follow_up_stage: z.number().int().min(0).max(3).optional(),
   next_follow_up_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
   follow_up_status: z.enum(["pending", "completed"]).optional(),
+  last_outreach_channel: z.enum(["email", "facebook", "text"]).nullable().optional(),
+  last_outreach_status: z.enum(["draft", "sending", "sent", "failed"]).optional(),
+  last_outreach_sent_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  preview_sent: z.boolean().optional(),
+  email_sent: z.boolean().optional(),
+  facebook_sent: z.boolean().optional(),
+  text_sent: z.boolean().optional(),
+  outreach_sent: z.boolean().optional(),
+  preview_url: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
 });
 
 export const clientSchema = z.object({

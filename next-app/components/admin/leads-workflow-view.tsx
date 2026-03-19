@@ -8,6 +8,7 @@ import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 import { LeadForm } from "@/components/admin/lead-form";
+import { OutreachBadges } from "@/components/admin/outreach-badges";
 
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
@@ -131,6 +132,13 @@ export type WorkflowLead = {
   known_context?: string | null;
   door_status?: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost" | null;
   last_updated_at?: string | null;
+  last_outreach_channel?: "email" | "facebook" | "text" | null;
+  last_outreach_status?: "draft" | "sending" | "sent" | "failed" | null;
+  last_outreach_sent_at?: string | null;
+  preview_sent?: boolean;
+  email_sent?: boolean;
+  facebook_sent?: boolean;
+  text_sent?: boolean;
 };
 
 function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
@@ -227,12 +235,8 @@ export function LeadsWorkflowView({
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [search, setSearch] = useState("");
   const [segment, setSegment] = useState<
-    | "new"
-    | "follow_up"
-    | "replied"
-    | "closed"
-    | "all"
-  >("new");
+    "up_next" | "new" | "contacted" | "follow_up" | "replied" | "closed" | "all"
+  >("up_next");
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [scoutQualityFilter, setScoutQualityFilter] = useState<
     "all" | "high_conversion" | "visual_business" | "no_website"
@@ -394,7 +398,6 @@ export function LeadsWorkflowView({
       notes: String(payload.notes || "").trim() ? [String(payload.notes).trim()] : [],
       is_hot_lead: false,
       last_reply_at: null,
-      last_reply_preview: null,
       last_contacted_at: String(payload.last_contacted_at || "").trim() || null,
       follow_up_stage: clampFollowUpStage(payload.follow_up_stage),
       next_follow_up_at: String(payload.next_follow_up_at || "").trim() || null,
@@ -417,6 +420,22 @@ export function LeadsWorkflowView({
           ? (String(payload.door_status).trim() as WorkflowLead["door_status"])
           : "not_visited",
       last_updated_at: now,
+      last_outreach_channel: (() => {
+        const c = String(payload.last_outreach_channel || "").trim();
+        if (c === "email" || c === "facebook" || c === "text") return c;
+        return null;
+      })(),
+      last_outreach_status: (() => {
+        const st = String(payload.last_outreach_status || "").trim();
+        if (st === "draft" || st === "sending" || st === "sent" || st === "failed") return st;
+        return null;
+      })(),
+      last_outreach_sent_at: String(payload.last_outreach_sent_at || "").trim() || null,
+      preview_sent: Boolean(payload.preview_sent),
+      email_sent: Boolean(payload.email_sent),
+      facebook_sent: Boolean(payload.facebook_sent),
+      text_sent: Boolean(payload.text_sent),
+      last_reply_preview: String(payload.last_reply_preview || "").trim() || null,
     };
   }
 
@@ -1026,7 +1045,15 @@ export function LeadsWorkflowView({
     const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "contacted", notes: nextNotes }),
+      body: JSON.stringify({
+        status: "contacted",
+        notes: nextNotes,
+        text_sent: true,
+        last_contacted_at: ts,
+        last_outreach_channel: "text",
+        last_outreach_status: "sent",
+        last_outreach_sent_at: ts,
+      }),
     });
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     actionDebug("Mark Text Sent response", { leadId: lead.id, status: res.status, body });
@@ -1041,6 +1068,11 @@ export function LeadsWorkflowView({
               ...item,
               status: "contacted",
               notes: [...existingNotes, `Text sent ${ts}`],
+              text_sent: true,
+              last_outreach_channel: "text",
+              last_outreach_status: "sent",
+              last_outreach_sent_at: ts,
+              last_contacted_at: ts,
             }
           : item
       )
@@ -1153,19 +1185,39 @@ export function LeadsWorkflowView({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    function anyChannelSent(lead: WorkflowLead) {
+      return Boolean(lead.email_sent || lead.facebook_sent || lead.text_sent);
+    }
+    function isTerminal(lead: WorkflowLead) {
+      const s = lead.status;
+      return s === "won" || s === "no_response" || s === "not_interested" || s === "archived";
+    }
     const bySegment = mergedLeads.filter((lead) => {
-      if (segment === "new") return lead.status === "new";
-      if (segment === "follow_up") return lead.status === "follow_up" || lead.status === "contacted";
-      if (segment === "replied") return lead.status === "replied";
-      if (segment === "closed") {
-        return (
-          lead.status === "won" ||
-          lead.status === "no_response" ||
-          lead.status === "not_interested" ||
-          lead.status === "archived"
-        );
+      const s = lead.status;
+      if (segment === "all") return true;
+      if (segment === "new") return s === "new";
+      if (segment === "contacted") {
+        return (anyChannelSent(lead) || s === "contacted") && s !== "replied" && !isTerminal(lead);
       }
-      return true;
+      if (segment === "follow_up") return s === "follow_up" || s === "contacted";
+      if (segment === "replied") return s === "replied";
+      if (segment === "closed") {
+        return isTerminal(lead) || s === "won";
+      }
+      // up_next — needs action: new, no outbound yet, failed send, or overdue follow-up
+      if (s === "replied" || isTerminal(lead)) return false;
+      if (lead.last_outreach_status === "failed") return true;
+      if (s === "new") return true;
+      if (!anyChannelSent(lead)) return true;
+      const fu = lead.next_follow_up_at ? new Date(lead.next_follow_up_at).getTime() : NaN;
+      if (
+        Number.isFinite(fu) &&
+        fu <= Date.now() &&
+        String(lead.follow_up_status || "pending").toLowerCase() !== "completed"
+      ) {
+        return true;
+      }
+      return false;
     });
     const byScoutQuality = bySegment.filter((lead) => {
       if (scoutQualityFilter === "high_conversion") {
@@ -1224,7 +1276,11 @@ export function LeadsWorkflowView({
     todayStart.setHours(0, 0, 0, 0);
     for (const lead of mergedLeads) {
       const s = String(lead.status || "").toLowerCase();
-      const isActionable = s === "new";
+      const needs =
+        s === "new" ||
+        lead.last_outreach_status === "failed" ||
+        !(lead.email_sent || lead.facebook_sent || lead.text_sent);
+      const isActionable = needs && !["replied", "won", "no_response", "not_interested", "archived"].includes(s);
       const createdAt = new Date(lead.created_at || 0).getTime();
       if (isActionable) counts.actionableNow += 1;
       if (createdAt >= todayStart.getTime()) counts.newToday += 1;
@@ -1401,7 +1457,9 @@ export function LeadsWorkflowView({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {[
+              ["up_next", "Up next"],
               ["new", "New"],
+              ["contacted", "Contacted"],
               ["follow_up", "Follow Up"],
               ["replied", "Replied"],
               ["closed", "Closed"],
@@ -1549,7 +1607,7 @@ export function LeadsWorkflowView({
                     score: lead.opportunity_score,
                     email: lead.email,
                     phone: lead.phone_from_site,
-                  }).map((badge) => (
+                  }                  ).map((badge) => (
                     <span key={`${lead.id}-${badge.key}`} className={`admin-priority-badge ${badge.className}`}>
                       {badge.label}
                     </span>
@@ -1557,6 +1615,7 @@ export function LeadsWorkflowView({
                   <span className={`admin-priority-badge ${valueClass(lead.estimated_value)}`}>
                     Value {String(lead.estimated_value || "low").toUpperCase()} {lead.estimated_price_range || "$"}
                   </span>
+                  <OutreachBadges lead={lead} />
                 </div>
                 <div className="space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
                   {(() => {
@@ -2004,7 +2063,10 @@ export function LeadsWorkflowView({
                       const localOnly = isLocalOnlyLead(lead);
                       return (
                         <>
-                    <td>{lead.business_name}</td>
+                    <td>
+                      <div className="font-medium">{lead.business_name}</div>
+                      <OutreachBadges lead={lead} />
+                    </td>
                     <td>{lead.city || "—"}</td>
                     <td>{lead.category || "—"}</td>
                     <td>{websiteStatusDisplay(lead.website_status)}</td>

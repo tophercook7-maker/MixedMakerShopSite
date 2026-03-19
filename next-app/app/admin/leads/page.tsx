@@ -33,6 +33,14 @@ type LeadRow = {
   follow_up_stage?: number | null;
   next_follow_up_at?: string | null;
   follow_up_status?: "pending" | "completed" | null;
+  last_outreach_channel?: string | null;
+  last_outreach_status?: string | null;
+  last_outreach_sent_at?: string | null;
+  preview_sent?: boolean | null;
+  email_sent?: boolean | null;
+  facebook_sent?: boolean | null;
+  text_sent?: boolean | null;
+  last_reply_preview?: string | null;
 };
 
 function isMissingColumnError(message: string): boolean {
@@ -133,7 +141,7 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     notes: notes ? [notes] : [],
     is_hot_lead: false,
     last_reply_at: null,
-    last_reply_preview: null,
+    last_reply_preview: String(row.last_reply_preview || "").trim() || null,
     conversion_score:
       row.conversion_score == null
         ? row.opportunity_score == null
@@ -157,6 +165,22 @@ function toWorkflowLead(row: LeadRow): WorkflowLead {
     known_context: null,
     door_status: "not_visited",
     last_updated_at: String(row.created_at || "").trim() || null,
+    last_outreach_channel:
+      row.last_outreach_channel === "email" || row.last_outreach_channel === "facebook" || row.last_outreach_channel === "text"
+        ? row.last_outreach_channel
+        : null,
+    last_outreach_status:
+      row.last_outreach_status === "draft" ||
+      row.last_outreach_status === "sending" ||
+      row.last_outreach_status === "sent" ||
+      row.last_outreach_status === "failed"
+        ? row.last_outreach_status
+        : null,
+    last_outreach_sent_at: String(row.last_outreach_sent_at || "").trim() || null,
+    preview_sent: Boolean(row.preview_sent),
+    email_sent: Boolean(row.email_sent),
+    facebook_sent: Boolean(row.facebook_sent),
+    text_sent: Boolean(row.text_sent),
   };
 }
 
@@ -221,7 +245,7 @@ export default async function AdminLeadsPage({
   let rows: LeadRow[] = [];
   try {
     const selectVariants = [
-      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status",
+      "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,last_contacted_at,next_follow_up_at",

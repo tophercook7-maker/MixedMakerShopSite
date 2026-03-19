@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { buildLeadPath } from "@/lib/lead-route";
 import {
   BUSINESS_TYPE_OPTIONS,
   CTA_STYLE_OPTIONS,
@@ -46,6 +48,10 @@ type LeadWorkspaceActionsProps = {
   autoGenerate?: boolean;
   autoCompose?: boolean;
   autoOpenSampleBuilder?: boolean;
+  /** Server-known last outreach (for persistent “sent” confidence on reload) */
+  initialLastOutreachChannel?: "email" | "facebook" | "text" | null;
+  initialLastOutreachStatus?: "draft" | "sending" | "sent" | "failed" | null;
+  initialLastOutreachSentAt?: string | null;
 };
 
 type TemplateResponse = {
@@ -277,6 +283,9 @@ export function LeadWorkspaceActions({
   autoGenerate = false,
   autoCompose = false,
   autoOpenSampleBuilder = false,
+  initialLastOutreachChannel = null,
+  initialLastOutreachStatus = null,
+  initialLastOutreachSentAt = null,
 }: LeadWorkspaceActionsProps) {
   const hasWebsitePresence = Boolean(String(website || "").trim());
   const [subject, setSubject] = useState("");
@@ -312,6 +321,12 @@ export function LeadWorkspaceActions({
   const [isPreparingSend, setIsPreparingSend] = useState(false);
   const [preparedPreviewUrl, setPreparedPreviewUrl] = useState("");
   const [isPreparedReady, setIsPreparedReady] = useState(false);
+  const [outreachEcho, setOutreachEcho] = useState<{
+    ok: boolean;
+    channel: "email" | "preview_email";
+    at: string;
+    error?: string;
+  } | null>(null);
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -329,6 +344,26 @@ export function LeadWorkspaceActions({
   useEffect(() => {
     if (autoOpenSampleBuilder) setSampleBuilderOpen(true);
   }, [autoOpenSampleBuilder]);
+
+  const outreachBanner = useMemo(() => {
+    if (outreachEcho) return outreachEcho;
+    if (initialLastOutreachStatus === "sent" && initialLastOutreachSentAt) {
+      return {
+        ok: true as const,
+        channel: "email" as const,
+        at: initialLastOutreachSentAt,
+      };
+    }
+    if (initialLastOutreachStatus === "failed") {
+      return {
+        ok: false as const,
+        channel: "email" as const,
+        at: new Date().toISOString(),
+        error: "Last email send failed. Check Scout / Resend or try again.",
+      };
+    }
+    return null;
+  }, [outreachEcho, initialLastOutreachStatus, initialLastOutreachSentAt]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -881,6 +916,8 @@ export function LeadWorkspaceActions({
     setIsSending(true);
     setError(null);
     setMessage(null);
+    setOutreachEcho(null);
+    const attemptAt = new Date().toISOString();
     try {
       console.info("[Action Debug] Send Email request started", { leadId });
       const res = await fetch("/api/scout/outreach/send", {
@@ -892,11 +929,17 @@ export function LeadWorkspaceActions({
           subject: subject.trim() || "quick question about your website",
           body: body.trim(),
           message_type: "short",
+          preview_url: String(preparedPreviewUrl || previewUrl || "").trim() || undefined,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       console.info("[Action Debug] Send Email response", { leadId, status: res.status, body: data });
-      if (!res.ok) throw new Error(data.error || "Could not send outreach email.");
+      if (!res.ok) {
+        const detail = data.error || "Could not send outreach email.";
+        setError(`Email failed to send: ${detail}`);
+        setOutreachEcho({ ok: false, channel: "email", at: attemptAt, error: detail });
+        return;
+      }
       const inferredStage = inferDealStageFromBodyText(body.trim());
       if (inferredStage) {
         const patchRes = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
@@ -908,10 +951,13 @@ export function LeadWorkspaceActions({
           setDealStage(inferredStage);
         }
       }
-      setMessage("Outreach email sent.");
+      setMessage("Email sent successfully.");
+      setOutreachEcho({ ok: true, channel: "email", at: new Date().toISOString() });
       console.info("[Action Debug] Send Email request succeeded", { leadId });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send outreach email.");
+      const detail = e instanceof Error ? e.message : "Could not send outreach email.";
+      setError(`Email failed to send: ${detail}`);
+      setOutreachEcho({ ok: false, channel: "email", at: attemptAt, error: detail });
       console.error("[Action Debug] Send Email request failed", {
         leadId,
         error: e instanceof Error ? e.message : "unknown",
@@ -926,6 +972,8 @@ export function LeadWorkspaceActions({
     setIsSendingPreview(true);
     setError(null);
     setMessage(null);
+    setOutreachEcho(null);
+    const attemptAt = new Date().toISOString();
     try {
       console.info("[Action Debug] Send Preview Email request started", { leadId });
       const res = await fetch("/api/scout/outreach/send-preview", {
@@ -945,12 +993,20 @@ export function LeadWorkspaceActions({
         message?: string;
       };
       console.info("[Action Debug] Send Preview Email response", { leadId, status: res.status, body: data });
-      if (!res.ok) throw new Error(data.error || "Could not send preview email.");
+      if (!res.ok) {
+        const detail = data.error || "Could not send preview email.";
+        setError(`Email failed to send: ${detail}`);
+        setOutreachEcho({ ok: false, channel: "preview_email", at: attemptAt, error: detail });
+        return;
+      }
       if (data.preview_url) setPreviewUrl(data.preview_url);
-      setMessage(data.message || "Preview sent and follow-ups scheduled");
+      setMessage(data.message || "Preview email sent successfully.");
+      setOutreachEcho({ ok: true, channel: "preview_email", at: new Date().toISOString() });
       console.info("[Action Debug] Send Preview Email request succeeded", { leadId });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not send preview email.");
+      const detail = e instanceof Error ? e.message : "Could not send preview email.";
+      setError(`Email failed to send: ${detail}`);
+      setOutreachEcho({ ok: false, channel: "preview_email", at: attemptAt, error: detail });
       console.error("[Action Debug] Send Preview Email request failed", {
         leadId,
         error: e instanceof Error ? e.message : "unknown",
@@ -1024,6 +1080,30 @@ export function LeadWorkspaceActions({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create follow-up event.");
     }
+  }
+
+  async function postSendScheduleFollowUp() {
+    const ok = await updateLead(
+      {
+        next_follow_up_at: new Date(Date.now() + 2 * 86400000).toISOString(),
+        follow_up_status: "pending",
+      },
+      "Follow-up scheduled."
+    );
+    if (!ok) return;
+    try {
+      await createLeadLinkedEvent("followup", `Follow up: ${initialBusinessName || "Lead"}`, 2);
+    } catch {
+      void 0;
+    }
+  }
+
+  async function postSendMarkReplied() {
+    await updateLead({ status: "replied", replied_at: new Date().toISOString() }, "Lead marked as replied.");
+  }
+
+  async function postSendArchive() {
+    await updateLead({ status: "archived" }, "Lead archived.");
   }
 
   async function markRepliedWithReminder() {
@@ -1251,46 +1331,80 @@ export function LeadWorkspaceActions({
     setNoteDraft("");
   }
 
+  function hasDataUrlImage(nextSample: LeadSampleRecord | null | undefined): boolean {
+    if (!nextSample) return false;
+    const imageFields = [
+      String(nextSample.primary_image_url || "").trim(),
+      ...nextSample.additional_image_urls,
+      ...nextSample.image_urls,
+      ...nextSample.gallery_image_urls,
+      ...nextSample.images.map((entry) => String(entry.src || "").trim()),
+    ];
+    return imageFields.some((value) => value.startsWith("data:image/"));
+  }
+
+  function logPreviewLinkDiagnostics(url: string, nextSample: LeadSampleRecord | null | undefined) {
+    const hasDataImage = hasDataUrlImage(nextSample);
+    const hasImageDataInQuery =
+      url.includes("hero_image=data%3Aimage") ||
+      url.includes("image_urls=data%3Aimage") ||
+      url.includes("data:image/");
+    console.info("[Lead Sample Preview] preview URL built", {
+      lead_id: leadId,
+      sample_id: String(nextSample?.id || "").trim() || null,
+      preview_url: url,
+      url_length: url.length,
+      has_query: url.includes("?"),
+      has_image_data_in_query: hasImageDataInQuery,
+      contains_data_url_image: hasDataImage,
+    });
+  }
+
   function buildPreviewUrl(overrideSample?: LeadSampleRecord | null) {
     if (typeof window === "undefined") return "";
     const activeSample = overrideSample || sample;
-    const additionalImages =
-      activeSample?.additional_image_urls?.length
-        ? activeSample.additional_image_urls
-        : activeSample?.image_urls || [];
-    const params = new URLSearchParams();
-    params.set("business", activeSample?.business_name || initialBusinessName || "Business");
-    params.set("category", activeSample?.business_type || initialCategory || "service");
-    if (activeSample?.hero_headline) params.set("headline", activeSample.hero_headline);
-    if (activeSample?.hero_subheadline) params.set("subheadline", activeSample.hero_subheadline);
-    if (activeSample?.cta_text) params.set("cta", activeSample.cta_text);
-    if (activeSample?.primary_image_url) params.set("hero_image", activeSample.primary_image_url);
-    if (activeSample?.services?.length) params.set("services", activeSample.services.join("\n"));
-    if (additionalImages.length) params.set("image_urls", additionalImages.join(","));
-    if (activeSample?.gallery_image_urls?.length) params.set("gallery_images", activeSample.gallery_image_urls.join(","));
-    if (additionalImages[0]) params.set("service_image_1", additionalImages[0]);
-    if (additionalImages[1]) params.set("service_image_2", additionalImages[1]);
-    if (additionalImages[2]) params.set("service_image_3", additionalImages[2]);
-    if (activeSample?.accent_mode) {
-      const styleMap: Record<string, string> = {
-        "clean-modern": "clean_modern",
-        "bold-premium": "bold_premium",
-        "friendly-local": "friendly_local",
-        "minimal-elegant": "minimal_elegant",
-      };
-      const mapped = styleMap[String(activeSample.accent_mode)] || String(activeSample.accent_mode || "");
-      if (mapped) params.set("style_preset", mapped);
-    }
-    if (initialEmail) params.set("email", initialEmail);
-    if (initialPhone) params.set("phone", initialPhone);
-    if (website) params.set("website", website);
-    const generated = `${window.location.origin}/preview/${encodeURIComponent(leadId)}?${params.toString()}`;
+    const sampleId = String(activeSample?.id || "").trim();
+    if (!sampleId) return "";
+    const generated = buildSamplePreviewLink(sampleId);
     setPreviewUrl(generated);
+    logPreviewLinkDiagnostics(generated, activeSample || null);
     return generated;
   }
 
+  async function ensurePersistedSampleForPreview(nextSample: LeadSampleRecord): Promise<LeadSampleRecord> {
+    console.info("[Lead Sample Preview] sample save started", {
+      lead_id: leadId,
+      sample_id: nextSample.id,
+      source: nextSample.source,
+      is_local_only: nextSample.isLocalOnly,
+    });
+    const saved = await persistSample(
+      normalizeLeadSampleRecord({
+        ...nextSample,
+        updated_at: new Date().toISOString(),
+      })
+    );
+    console.info("[Lead Sample Preview] sample saved", {
+      lead_id: leadId,
+      sample_id: saved.id,
+      storage: saved.isLocalOnly ? "local_draft" : "backend",
+      image_storage_mode: hasDataUrlImage(saved) ? "local_draft_data_url" : "url_or_storage_path",
+    });
+    return saved;
+  }
+
   async function copyPreviewUrl() {
-    const url = previewUrl || buildPreviewUrl();
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const saved = await ensurePersistedSampleForPreview(base);
+    setSampleAndRefresh(saved);
+    const url = buildPreviewUrl(saved);
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
@@ -1460,12 +1574,20 @@ export function LeadWorkspaceActions({
     return heroByRole || heroByField;
   }
 
-  function openGeneratedPreview(nextSample: LeadSampleRecord) {
-    const url = buildPreviewUrl(nextSample);
-    if (!sampleHasHeroImage(nextSample)) {
+  async function openGeneratedPreview(nextSample: LeadSampleRecord) {
+    const saved = await ensurePersistedSampleForPreview(nextSample);
+    setSampleAndRefresh(saved);
+    const url = buildPreviewUrl(saved);
+    if (!sampleHasHeroImage(saved)) {
       setMessage("Add an image to generate a strong preview.");
     }
     if (url && typeof window !== "undefined") {
+      console.info("[Lead Sample Preview] opening preview URL", {
+        lead_id: leadId,
+        sample_id: saved.id,
+        preview_url: url,
+        url_length: url.length,
+      });
       window.open(url, "_blank", "noopener,noreferrer");
     }
   }
@@ -1621,7 +1743,7 @@ export function LeadWorkspaceActions({
     setSampleAndRefresh(withImage);
     setSampleBuilderOpen(true);
     setError(null);
-    openGeneratedPreview(withImage);
+    void openGeneratedPreview(withImage);
   }
 
   function removeAdditionalImage(index: number) {
@@ -1894,7 +2016,11 @@ export function LeadWorkspaceActions({
         {sampleBuilderOpen ? (
           <div className="space-y-3">
             <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)", background: "rgba(255,255,255,0.02)" }}>
-              <p className="text-xs font-semibold">Section 1: Business Summary</p>
+              <p className="text-xs font-semibold">Sample Builder</p>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Build the sample here, then use Generate Preview to open it.
+              </p>
+              <p className="text-xs font-semibold mt-2">Section 1: Business Summary</p>
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
                 {sampleForUi.business_name || initialBusinessName} - {sampleForUi.business_type || suggestedBusinessType}
               </p>
@@ -2037,7 +2163,7 @@ export function LeadWorkspaceActions({
               </button>
               <button
                 className="admin-btn-ghost text-xs"
-                onClick={() => openGeneratedPreview(sampleForUi)}
+                onClick={() => void openGeneratedPreview(sampleForUi)}
               >
                 Generate Preview Only
               </button>
@@ -2335,6 +2461,54 @@ export function LeadWorkspaceActions({
             Generate a draft from dossier intelligence, then edit and send.
           </p>
         )}
+        {outreachBanner ? (
+          <div
+            className="rounded-lg border px-3 py-3 space-y-2 mt-2"
+            style={{
+              borderColor: outreachBanner.ok ? "rgba(34,197,94,0.4)" : "rgba(248,113,113,0.45)",
+              background: outreachBanner.ok ? "rgba(22,101,52,0.2)" : "rgba(127,29,29,0.2)",
+            }}
+          >
+            <p className="text-sm font-semibold" style={{ color: outreachBanner.ok ? "#86efac" : "#fecaca" }}>
+              {outreachBanner.ok ? "Email sent successfully" : "Email failed to send"}
+            </p>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Status: <strong>{outreachBanner.ok ? "Sent" : "Failed"}</strong>
+              {" · "}
+              Channel:{" "}
+              <strong>
+                {outreachBanner.channel === "preview_email"
+                  ? "Preview email"
+                  : initialLastOutreachChannel === "text"
+                    ? "Text"
+                    : initialLastOutreachChannel === "facebook"
+                      ? "Facebook"
+                      : "Email"}
+              </strong>
+              {" · "}
+              {outreachBanner.at ? new Date(outreachBanner.at).toLocaleString() : "—"}
+            </p>
+            {!outreachBanner.ok && outreachBanner.error ? (
+              <p className="text-xs" style={{ color: "#fecaca" }}>
+                {outreachBanner.error}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <Link href={buildLeadPath(leadId, initialBusinessName)} className="admin-btn-ghost text-xs">
+                View Lead
+              </Link>
+              <button type="button" className="admin-btn-ghost text-xs" onClick={() => void postSendScheduleFollowUp()} disabled={isUpdating}>
+                Schedule Follow-Up
+              </button>
+              <button type="button" className="admin-btn-ghost text-xs" onClick={() => void postSendMarkReplied()} disabled={isUpdating}>
+                Mark Replied
+              </button>
+              <button type="button" className="admin-btn-ghost text-xs" onClick={() => void postSendArchive()} disabled={isUpdating}>
+                Archive
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="admin-card space-y-2">

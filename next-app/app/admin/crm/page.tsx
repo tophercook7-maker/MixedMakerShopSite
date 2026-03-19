@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Building2, DollarSign, FolderKanban, ListChecks, Users } from "lucide-react";
+import { CrmAlertsPanel } from "@/components/admin/crm-alerts-panel";
 
 const crmModules = [
   {
@@ -45,6 +46,8 @@ export default function AdminCrmPage() {
           MixedMakerShop remains the primary CRM shell. Scout-Brain intelligence is integrated into this private admin gradually.
         </p>
       </section>
+
+      <CrmAlertsPanel />
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {crmModules.map(({ title, href, description, icon: Icon }) => (

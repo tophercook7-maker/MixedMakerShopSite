@@ -11,6 +11,7 @@ import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
 import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-workspace";
 import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
+import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
 
 type LeadRow = {
   id: string;
@@ -43,6 +44,9 @@ type LeadRow = {
   real_world_why_target?: string | null;
   real_world_walk_in_pitch?: string | null;
   best_time_to_visit?: string | null;
+  last_outreach_channel?: string | null;
+  last_outreach_status?: string | null;
+  last_outreach_sent_at?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -76,6 +80,9 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "real_world_why_target",
     "real_world_walk_in_pitch",
     "best_time_to_visit",
+    "last_outreach_channel",
+    "last_outreach_status",
+    "last_outreach_sent_at",
   ].join(","),
   [
     "id",
@@ -1792,33 +1799,52 @@ export default async function AdminLeadDetailPage({
             </div>
           </section>
           {resolvedLeadId ? (
-            <LeadWorkspaceActions
-              leadId={resolvedLeadId}
-              linkedOpportunityId={oppId || null}
-              initialBusinessName={displayBusinessName}
-              initialCategory={displayCategory}
-              initialCity={displayCity === "—" ? null : displayCity}
-              initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
-              initialStatus={lead?.status || null}
-              initialDealStatus={lead?.deal_status || null}
-              initialDealStage={lead?.deal_stage || "new"}
-              initialLastReplyPreview={lead?.last_reply_preview || null}
-              initialEmail={displayEmail || null}
-              initialPhone={displayPhone || null}
-              website={displayWebsite || null}
-              contactPage={displayContactPage || null}
-              facebookUrl={displayFacebook || null}
-              caseHref={caseHref}
-              initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
-              initialDoorStatus={lead?.door_status || "not_visited"}
-              initialRealWorldWhyTarget={lead?.real_world_why_target || lead?.known_context || null}
-              initialRealWorldWalkInPitch={lead?.real_world_walk_in_pitch || null}
-              initialBestTimeToVisit={lead?.best_time_to_visit || null}
-              quickFixSummary={quickFixSummary}
-              autoGenerate={generate === "1"}
-              autoCompose={compose === "1"}
-              autoOpenSampleBuilder={sample === "1"}
-            />
+            <>
+              <LeadActivityTimeline leadId={resolvedLeadId} />
+              <LeadWorkspaceActions
+                leadId={resolvedLeadId}
+                linkedOpportunityId={oppId || null}
+                initialBusinessName={displayBusinessName}
+                initialCategory={displayCategory}
+                initialCity={displayCity === "—" ? null : displayCity}
+                initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
+                initialStatus={lead?.status || null}
+                initialDealStatus={lead?.deal_status || null}
+                initialDealStage={lead?.deal_stage || "new"}
+                initialLastReplyPreview={lead?.last_reply_preview || null}
+                initialEmail={displayEmail || null}
+                initialPhone={displayPhone || null}
+                website={displayWebsite || null}
+                contactPage={displayContactPage || null}
+                facebookUrl={displayFacebook || null}
+                caseHref={caseHref}
+                initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
+                initialDoorStatus={lead?.door_status || "not_visited"}
+                initialRealWorldWhyTarget={lead?.real_world_why_target || lead?.known_context || null}
+                initialRealWorldWalkInPitch={lead?.real_world_walk_in_pitch || null}
+                initialBestTimeToVisit={lead?.best_time_to_visit || null}
+                quickFixSummary={quickFixSummary}
+                autoGenerate={generate === "1"}
+                autoCompose={compose === "1"}
+                autoOpenSampleBuilder={sample === "1"}
+                initialLastOutreachChannel={
+                  lead?.last_outreach_channel === "email" ||
+                  lead?.last_outreach_channel === "facebook" ||
+                  lead?.last_outreach_channel === "text"
+                    ? lead.last_outreach_channel
+                    : null
+                }
+                initialLastOutreachStatus={
+                  lead?.last_outreach_status === "draft" ||
+                  lead?.last_outreach_status === "sending" ||
+                  lead?.last_outreach_status === "sent" ||
+                  lead?.last_outreach_status === "failed"
+                    ? lead.last_outreach_status
+                    : null
+                }
+                initialLastOutreachSentAt={String(lead?.last_outreach_sent_at || "").trim() || null}
+              />
+            </>
           ) : (
             <section className="admin-card">
               <h3 className="text-sm font-semibold">Outreach Panel</h3>

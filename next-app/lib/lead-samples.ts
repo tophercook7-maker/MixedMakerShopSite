@@ -678,7 +678,38 @@ function titleFromBusinessType(businessType: string): string {
   if (normalized.includes("church")) return "Ways to Get Connected";
   if (normalized.includes("plumb")) return "Core Services";
   if (normalized.includes("lawn")) return "Lawn Care Services";
-  return "Services";
+  return "What We Offer";
+}
+
+function whyChooseBulletsForBusiness(businessName: string, businessType: string): string[] {
+  const t = businessType.toLowerCase();
+  const name = businessName.trim() || "our team";
+  if (t.includes("church")) {
+    return [
+      "Clear service times, directions, and ways to get involved — easy for newcomers.",
+      "Warm, trustworthy first impression that reflects your community.",
+      "Simple contact paths for questions, prayer, and volunteering.",
+    ];
+  }
+  if (t.includes("restaurant") || t.includes("coffee") || t.includes("food")) {
+    return [
+      "Mouth-watering visuals and menu highlights that drive reservations and orders.",
+      "Mobile-friendly layout so hungry customers can find you on the go.",
+      "Strong calls to action: call, order, or get directions in one tap.",
+    ];
+  }
+  if (t.includes("lawn") || t.includes("landscap")) {
+    return [
+      "Before/after style presentation that sells your craftsmanship.",
+      "Local SEO-friendly structure so neighbors find you first.",
+      "Fast quote requests — fewer back-and-forth texts.",
+    ];
+  }
+  return [
+    `${name} looks professional online — builds trust before the first call.`,
+    "Clear services, proof of work, and easy ways to reach you.",
+    "Built for phones: most customers will browse you from their device.",
+  ];
 }
 
 function sampleHours(businessType: string): string[] {
@@ -716,9 +747,16 @@ export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
     .filter((entry) => entry.role === "gallery")
     .map((entry) => entry.src)
     .filter(Boolean);
+  const extraGallery = [...sample.additional_image_urls, ...sample.image_urls, ...sample.gallery_image_urls].filter(
+    (url, i, arr) => url && arr.indexOf(url) === i
+  );
+  const mergedGallery = [...galleryImages, ...extraGallery]
+    .filter((url, i, arr) => url && arr.indexOf(url) === i)
+    .filter((url) => url !== heroImage)
+    .slice(0, 8);
   return {
     businessName: sample.business_name,
-    tagline: `${sample.business_type} website concept`,
+    tagline: `${sample.business_type} · website preview`,
     localPositioning: sample.intro_text,
     heroImageUrl: heroImage,
     heroImageAlt: `${sample.business_name} featured image`,
@@ -729,29 +767,35 @@ export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
     offeringsTitle: titleFromBusinessType(sample.business_type),
     offerings: services.map((service, idx) => ({
       name: service,
-      text: `Professional ${service.toLowerCase()} tailored for ${sample.business_name}.`,
+      text: `Clear description and strong call-to-action for ${service} — built around how ${sample.business_name} actually serves customers.`,
       image: galleryImages[idx] || sample.additional_image_urls[idx] || sample.image_urls[idx] || undefined,
     })),
+    gallerySectionTitle: "See your business visually",
+    galleryImages: mergedGallery,
+    whyChooseTitle: `Why customers choose ${sample.business_name}`,
+    whyChooseBullets: whyChooseBulletsForBusiness(sample.business_name, sample.business_type),
     aboutTitle: `About ${sample.business_name}`,
-    aboutText: sample.intro_text,
-    trustTitle: "What customers say",
+    aboutText: `${sample.intro_text} This layout is a starting point — your real site would use your photos, reviews, and exact offers.`,
+    trustTitle: "What people say",
     trustQuotes: [
       {
         quote: "Fast response, clear communication, and a professional experience from start to finish.",
         by: "Local customer",
       },
       {
-        quote: "This business is easy to work with and consistently delivers quality results.",
+        quote: "Easy to get a quote and they follow through — exactly what you want from a local business.",
         by: "Repeat client",
       },
     ],
-    locationTitle: "Location & Contact",
+    locationTitle: "Visit & hours",
     locationName: sample.business_name,
-    address: "Serving the local area",
+    address: "Serving the local area — we’ll plug in your real address on the live site.",
     phone: "(555) 555-0199",
     hours: sampleHours(sample.business_type),
-    finalTitle: "Like this direction?",
-    finalSub: "I can turn this sample into your real live website with your exact content and branding.",
-    finalCta: "Request Build",
+    contactBandTitle: "Get a quote",
+    contactBandSub: "This sample shows how simple it can be for customers to reach you. On your live site, these buttons call and email you directly.",
+    finalTitle: "Want this as your real website?",
+    finalSub: "I can turn this sample into a live site with your branding, photos, and Google-friendly pages.",
+    finalCta: "Request build",
   };
 }

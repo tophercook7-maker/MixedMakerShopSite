@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
+import { recordLeadActivity } from "@/lib/lead-activity";
 
 const DEFAULT_TIMEOUT_MS = 45000;
 
@@ -194,6 +195,22 @@ export async function POST(request: Request) {
       : { error: await sendRes.text() };
 
     if (!sendRes.ok) {
+      const failIso = new Date().toISOString();
+      await supabase
+        .from("leads")
+        .update({
+          last_outreach_status: "failed",
+          last_outreach_channel: "email",
+          last_updated_at: failIso,
+        })
+        .eq("id", leadId)
+        .eq("owner_id", ownerId);
+      await recordLeadActivity(supabase, {
+        ownerId,
+        leadId,
+        eventType: "email_failed",
+        meta: { context: "preview_email", http_status: sendRes.status, detail: sendBody },
+      });
       const responseBody = { error: "Could not send preview email.", detail: sendBody };
       console.info("[Preview Outreach API] response sent", {
         request_id: requestId,
@@ -313,6 +330,11 @@ export async function POST(request: Request) {
         outreach_sent: true,
         outreach_sent_at: nowIso,
         preview_url: previewUrl,
+        preview_sent: true,
+        email_sent: true,
+        last_outreach_channel: "email",
+        last_outreach_status: "sent",
+        last_outreach_sent_at: nowIso,
         follow_up_1: followUp1,
         follow_up_2: followUp2,
         follow_up_3: followUp3,
@@ -341,6 +363,13 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    await recordLeadActivity(supabase, {
+      ownerId,
+      leadId,
+      eventType: "preview_email_sent",
+      meta: { preview_url: previewUrl, subject },
+    });
 
     const workspaceForEvents = await resolveWorkspaceIdForOwner(ownerId);
     const followUpDates = [followUp1, followUp2, followUp3];

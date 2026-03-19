@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
+import { recordLeadActivity } from "@/lib/lead-activity";
 
 const DEFAULT_TIMEOUT_MS = 45000;
 
@@ -74,6 +75,29 @@ export async function POST(request: Request) {
   console.info("[Scout Proxy] forwarding Authorization header for outreach send");
   if (workspaceId) headers["X-Workspace-Id"] = workspaceId;
 
+  const ownerIdEarly = String(session?.user?.id || "").trim();
+  const leadIdEarly = String(payload?.lead_id || "").trim();
+
+  async function markEmailSendFailed(meta: Record<string, unknown>) {
+    if (!ownerIdEarly || !leadIdEarly) return;
+    const nowIso = new Date().toISOString();
+    await supabase
+      .from("leads")
+      .update({
+        last_outreach_status: "failed",
+        last_outreach_channel: "email",
+        last_updated_at: nowIso,
+      })
+      .eq("id", leadIdEarly)
+      .eq("owner_id", ownerIdEarly);
+    await recordLeadActivity(supabase, {
+      ownerId: ownerIdEarly,
+      leadId: leadIdEarly,
+      eventType: "email_failed",
+      meta,
+    });
+  }
+
   try {
     console.info("[Scout Proxy] next proxy request started");
     const controller = new AbortController();
@@ -92,6 +116,10 @@ export async function POST(request: Request) {
       : { error: await response.text() };
 
     if (!response.ok) {
+      await markEmailSendFailed({
+        http_status: response.status,
+        scout_error: body,
+      });
       if (response.status === 401) {
         return NextResponse.json(
           { error: "Scout authentication failed", detail: body },
@@ -153,10 +181,22 @@ export async function POST(request: Request) {
           String(payload?.contact_method || existing?.best_contact_method || existing?.contact_method || "email").trim() ||
           "email",
       };
-      if (nextStatus === "contacted") {
+      if (hasEmail) {
         Object.assign(updatePayload, {
+          last_outreach_channel: "email",
+          last_outreach_status: "sent",
+          last_outreach_sent_at: nowIso,
+          email_sent: true,
           outreach_sent: true,
           outreach_sent_at: nowIso,
+        });
+        if (previewUrl) {
+          updatePayload.preview_url = previewUrl;
+          updatePayload.preview_sent = true;
+        }
+      }
+      if (nextStatus === "contacted") {
+        Object.assign(updatePayload, {
           follow_up_1: followUp1,
           follow_up_2: followUp2,
           follow_up_3: followUp3,
@@ -181,6 +221,18 @@ export async function POST(request: Request) {
         .eq("owner_id", ownerId);
       if (!leadUpdateError) {
         leadUpdates = updatePayload;
+        if (hasEmail) {
+          await recordLeadActivity(supabase, {
+            ownerId,
+            leadId,
+            eventType: "email_sent",
+            meta: {
+              subject,
+              preview_url: previewUrl,
+              recipient_email: recipientEmail || null,
+            },
+          });
+        }
       }
     }
 
@@ -319,6 +371,11 @@ export async function POST(request: Request) {
       (error instanceof Error && /aborted/i.test(error.message));
     if (aborted) {
       console.error("[Scout Proxy] proxy request aborted");
+      await markEmailSendFailed({
+        aborted: true,
+        timeout_ms: DEFAULT_TIMEOUT_MS,
+        note: "proxy_aborted",
+      });
       return NextResponse.json(
         {
           error:
@@ -330,6 +387,10 @@ export async function POST(request: Request) {
         { status: 504 }
       );
     }
+    await markEmailSendFailed({
+      layer: "next-proxy",
+      message: error instanceof Error ? error.message : "Outreach send request failed.",
+    });
     return NextResponse.json(
       {
         error:
