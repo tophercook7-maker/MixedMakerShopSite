@@ -1745,6 +1745,7 @@ export default async function AdminLeadDetailPage({
               linkedOpportunityId={oppId || null}
               initialBusinessName={displayBusinessName}
               initialCategory={displayCategory}
+              initialCity={displayCity === "—" ? null : displayCity}
               initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
               initialStatus={lead?.status || null}
               initialDealStatus={lead?.deal_status || null}

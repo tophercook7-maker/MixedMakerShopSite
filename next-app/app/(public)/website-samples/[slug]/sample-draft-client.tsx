@@ -19,7 +19,7 @@ export type SampleDraft = {
   heroPrimaryCta: string;
   heroSecondaryCta: string;
   offeringsTitle: string;
-  offerings: Array<{ name: string; text: string }>;
+  offerings: Array<{ name: string; text: string; image?: string }>;
   aboutTitle: string;
   aboutText: string;
   trustTitle: string;
@@ -410,6 +410,14 @@ export function SampleDraftClient({ initialDraft, initialMode }: Props) {
           <div className="how-it-works-grid">
             {draft.offerings.map((item) => (
               <article key={item.name} className="how-it-works-card">
+                {item.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.image}
+                    alt={`${item.name} preview`}
+                    style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 10, marginBottom: 10 }}
+                  />
+                ) : null}
                 <h3 className="how-it-works-title">{item.name}</h3>
                 <p className="how-it-works-copy">{item.text}</p>
               </article>

@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
+  applyRandomImagesToSample,
+  autofillLeadSample,
   buildDefaultLeadSample,
   normalizeLeadSampleRecord,
+  type LeadSampleImage,
   type LeadSampleRecord,
   type LeadSampleStatus,
 } from "@/lib/lead-samples";
@@ -13,6 +16,7 @@ type LeadWorkspaceActionsProps = {
   linkedOpportunityId: string | null;
   initialBusinessName: string;
   initialCategory: string;
+  initialCity?: string | null;
   initialIssue: string;
   initialStatus: string | null;
   initialDealStatus: string | null;
@@ -77,6 +81,7 @@ export function LeadWorkspaceActions({
   linkedOpportunityId,
   initialBusinessName,
   initialCategory,
+  initialCity = null,
   initialIssue,
   initialStatus,
   initialDealStatus,
@@ -117,6 +122,9 @@ export function LeadWorkspaceActions({
   const [sampleStorageSource, setSampleStorageSource] = useState<"server" | "local" | null>(null);
   const [generatedSampleEmail, setGeneratedSampleEmail] = useState("");
   const [generatedSampleText, setGeneratedSampleText] = useState("");
+  const [pastedImageUrl, setPastedImageUrl] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isAddingImageUrl, setIsAddingImageUrl] = useState(false);
 
   const hasDraft = subject.trim().length > 0 || body.trim().length > 0;
   const showCompose = autoCompose || hasDraft;
@@ -188,6 +196,193 @@ export function LeadWorkspaceActions({
     setGeneratedSampleText(textBody);
   }
 
+  function applyAutofill(base: LeadSampleRecord, trigger: "open_builder" | "first_generate"): LeadSampleRecord {
+    const result = autofillLeadSample(base, {
+      businessName: initialBusinessName,
+      category: initialCategory,
+      city: initialCity,
+      issue: initialIssue,
+      quickFixSummary,
+      notes: savedNotes,
+      website,
+    });
+    if (process.env.NODE_ENV !== "production" && result.filledFields.length > 0) {
+      console.info("[Lead Sample Autofill]", {
+        lead_id: leadId,
+        trigger,
+        filled_fields: result.filledFields,
+        sources: result.sources,
+      });
+    }
+    return result.sample;
+  }
+
+  function setSampleAndRefresh(next: LeadSampleRecord) {
+    setSample(next);
+    buildPreviewUrl(next);
+    generateShareCopy(next);
+  }
+
+  function deriveImageFieldsFromImages(images: LeadSampleImage[]) {
+    const hero = images.find((entry) => entry.role === "hero") || images[0] || null;
+    const gallery = images.filter((entry) => entry.role === "gallery").map((entry) => entry.src);
+    return {
+      primary_image_url: hero?.src || "",
+      additional_image_urls: gallery,
+      image_urls: gallery,
+      gallery_image_urls: gallery.slice(0, 3),
+    };
+  }
+
+  function updateSampleImages(images: LeadSampleImage[]) {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    if (!images.length) {
+      const cleared = normalizeLeadSampleRecord({
+        ...base,
+        images: [],
+        primary_image_url: "",
+        additional_image_urls: [],
+        image_urls: [],
+        gallery_image_urls: [],
+      });
+      setSampleAndRefresh(cleared);
+      return;
+    }
+    const heroExists = images.some((entry) => entry.role === "hero");
+    const normalizedImages: LeadSampleImage[] = heroExists
+      ? images
+      : images.map((entry, idx) => ({
+          ...entry,
+          role: (idx === 0 ? "hero" : "gallery") as "hero" | "gallery",
+        }));
+    const fields = deriveImageFieldsFromImages(normalizedImages);
+    const next = normalizeLeadSampleRecord({
+      ...base,
+      images: normalizedImages,
+      ...fields,
+    });
+    setSampleAndRefresh(next);
+  }
+
+  function addImageToSample(src: string, source: "upload" | "url" | "stock") {
+    const base = sample || buildDefaultLeadSample({ leadId, businessName: initialBusinessName, businessType: initialCategory, note: initialIssue });
+    const existing = Array.isArray(base.images) ? base.images : [];
+    if (existing.some((entry) => entry.src === src)) return;
+    const nextImages: LeadSampleImage[] = [
+      ...existing,
+      {
+        id: crypto.randomUUID(),
+        src,
+        source,
+        role: existing.length === 0 ? "hero" : "gallery",
+      },
+    ];
+    updateSampleImages(nextImages);
+  }
+
+  async function uploadImageFile(file: File): Promise<string> {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("lead_id", leadId);
+    const res = await fetch("/api/lead-samples/upload", {
+      method: "POST",
+      body: form,
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: string; url?: string; mode?: string };
+    if (!res.ok || !data.url) {
+      throw new Error(String(data.error || "Could not upload image."));
+    }
+    return data.url;
+  }
+
+  async function handleUploadImages(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    setIsUploadingImage(true);
+    setError(null);
+    let added = 0;
+    try {
+      const files = Array.from(fileList);
+      for (const file of files) {
+        const url = await uploadImageFile(file);
+        addImageToSample(url, "upload");
+        added += 1;
+      }
+      setMessage(added > 0 ? `Added ${added} uploaded image${added > 1 ? "s" : ""}.` : null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not upload image.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
+
+  function looksLikeImageUrl(url: string): boolean {
+    const value = String(url || "").trim();
+    if (!/^https?:\/\//i.test(value)) return false;
+    return (
+      /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(value) ||
+      value.includes("images.unsplash.com") ||
+      value.includes("fbcdn.net") ||
+      value.includes("cdn") ||
+      value.includes("image")
+    );
+  }
+
+  async function canRenderImage(url: string): Promise<boolean> {
+    if (typeof window === "undefined") return true;
+    return new Promise((resolve) => {
+      const image = new Image();
+      const timer = window.setTimeout(() => resolve(false), 5000);
+      image.onload = () => {
+        window.clearTimeout(timer);
+        resolve(true);
+      };
+      image.onerror = () => {
+        window.clearTimeout(timer);
+        resolve(false);
+      };
+      image.src = url;
+    });
+  }
+
+  async function addImageFromUrl() {
+    const nextUrl = String(pastedImageUrl || "").trim();
+    if (!nextUrl) {
+      setError("Paste an image URL first.");
+      return;
+    }
+    setError(null);
+    setIsAddingImageUrl(true);
+    try {
+      const res = await fetch("/api/lead-samples/import-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: nextUrl, lead_id: leadId }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; url?: string };
+      const finalUrl = String(data.url || "").trim() || nextUrl;
+      if (!res.ok && !finalUrl) {
+        throw new Error(String(data.error || "Could not add image URL."));
+      }
+      if (!looksLikeImageUrl(finalUrl) && !(await canRenderImage(finalUrl))) {
+        throw new Error("This URL does not look like a valid image.");
+      }
+      addImageToSample(finalUrl, "url");
+      setPastedImageUrl("");
+      setMessage("Image added from URL.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not add image from URL.");
+    } finally {
+      setIsAddingImageUrl(false);
+    }
+  }
+
   async function loadLeadSample() {
     setIsSampleLoading(true);
     const fallback = readLocalSamples().find((item) => item.lead_id === leadId) || null;
@@ -237,6 +432,21 @@ export function LeadWorkspaceActions({
     void loadLeadSample();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leadId]);
+
+  useEffect(() => {
+    if (!sampleBuilderOpen || isSampleLoading) return;
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const next = applyAutofill(base, "open_builder");
+    setSampleAndRefresh(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sampleBuilderOpen, isSampleLoading]);
 
   async function generateDraft() {
     console.info("[Action Debug] Generate Email clicked", { leadId });
@@ -659,6 +869,10 @@ export function LeadWorkspaceActions({
   function buildPreviewUrl(overrideSample?: LeadSampleRecord | null) {
     if (typeof window === "undefined") return "";
     const activeSample = overrideSample || sample;
+    const additionalImages =
+      activeSample?.additional_image_urls?.length
+        ? activeSample.additional_image_urls
+        : activeSample?.image_urls || [];
     const params = new URLSearchParams();
     params.set("business", activeSample?.business_name || initialBusinessName || "Business");
     params.set("category", activeSample?.business_type || initialCategory || "service");
@@ -667,11 +881,11 @@ export function LeadWorkspaceActions({
     if (activeSample?.cta_text) params.set("cta", activeSample.cta_text);
     if (activeSample?.primary_image_url) params.set("hero_image", activeSample.primary_image_url);
     if (activeSample?.services?.length) params.set("services", activeSample.services.join("\n"));
-    if (activeSample?.image_urls?.length) params.set("image_urls", activeSample.image_urls.join(","));
+    if (additionalImages.length) params.set("image_urls", additionalImages.join(","));
     if (activeSample?.gallery_image_urls?.length) params.set("gallery_images", activeSample.gallery_image_urls.join(","));
-    if (activeSample?.image_urls?.[0]) params.set("service_image_1", activeSample.image_urls[0]);
-    if (activeSample?.image_urls?.[1]) params.set("service_image_2", activeSample.image_urls[1]);
-    if (activeSample?.image_urls?.[2]) params.set("service_image_3", activeSample.image_urls[2]);
+    if (additionalImages[0]) params.set("service_image_1", additionalImages[0]);
+    if (additionalImages[1]) params.set("service_image_2", additionalImages[1]);
+    if (additionalImages[2]) params.set("service_image_3", additionalImages[2]);
     if (activeSample?.accent_mode) {
       const styleMap: Record<string, string> = {
         "clean-modern": "clean_modern",
@@ -741,10 +955,9 @@ export function LeadWorkspaceActions({
         businessType: initialCategory,
         note: initialIssue,
       });
-    const saved = await persistSample(base);
-    setSample(saved);
-    buildPreviewUrl(saved);
-    generateShareCopy(saved);
+    const prefilled = applyAutofill(base, "first_generate");
+    const saved = await persistSample(prefilled);
+    setSampleAndRefresh(saved);
     setMessage(saved.isLocalOnly ? "Sample saved locally." : "Sample saved to backend.");
     setSampleBuilderOpen(true);
   }
@@ -759,9 +972,120 @@ export function LeadWorkspaceActions({
       business_type: base.business_type || initialCategory || "service business",
       updated_at: new Date().toISOString(),
     });
-    setSample(next);
-    buildPreviewUrl(next);
-    generateShareCopy(next);
+    setSampleAndRefresh(next);
+  }
+
+  function regenerateSampleImages() {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const { sample: withImages, poolKey } = applyRandomImagesToSample(base, initialCategory || base.business_type, {
+      force: true,
+      minAdditional: 2,
+      maxAdditional: 4,
+    });
+    setSampleAndRefresh(withImages);
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[Lead Sample Autofill]", {
+        lead_id: leadId,
+        trigger: "regenerate_images",
+        filled_fields: ["primary_image_url", "additional_image_urls"],
+        sources: {
+          primary_image_url: `image_pool:${poolKey}`,
+          additional_image_urls: `image_pool:${poolKey}`,
+        },
+      });
+    }
+    setMessage("Images regenerated.");
+    setError(null);
+  }
+
+  function useSuggestedStockImages() {
+    const base =
+      sample ||
+      buildDefaultLeadSample({
+        leadId,
+        businessName: initialBusinessName,
+        businessType: initialCategory,
+        note: initialIssue,
+      });
+    const { sample: withImages } = applyRandomImagesToSample(base, initialCategory || base.business_type, {
+      force: false,
+      minAdditional: 2,
+      maxAdditional: 4,
+    });
+    setSampleAndRefresh(withImages);
+    setMessage("Suggested stock images applied.");
+    setError(null);
+  }
+
+  function removeAdditionalImage(index: number) {
+    if (!sample) return;
+    const galleryImages = sample.images.filter((entry) => entry.role === "gallery");
+    const target = galleryImages[index];
+    if (!target) return;
+    const nextImages = sample.images.filter((entry) => entry.id !== target.id);
+    updateSampleImages(nextImages);
+  }
+
+  function replaceAdditionalImage(index: number, nextUrl: string) {
+    if (!sample) return;
+    const galleryImages = sample.images.filter((entry) => entry.role === "gallery");
+    const target = galleryImages[index];
+    if (!target) return;
+    const trimmed = String(nextUrl || "").trim();
+    const nextImages = sample.images.map((entry) =>
+      entry.id === target.id ? { ...entry, src: trimmed } : entry
+    );
+    updateSampleImages(nextImages);
+  }
+
+  function setImageAsHero(imageId: string) {
+    if (!sample) return;
+    const nextImages: LeadSampleImage[] = sample.images.map((entry) => ({
+      ...entry,
+      role: (entry.id === imageId ? "hero" : "gallery") as "hero" | "gallery",
+    }));
+    updateSampleImages(nextImages);
+  }
+
+  function setImageAsGallery(imageId: string) {
+    if (!sample) return;
+    const current = sample.images.find((entry) => entry.id === imageId);
+    if (!current) return;
+    const others = sample.images.filter((entry) => entry.id !== imageId);
+    if (current.role === "hero" && others.length === 0) {
+      setError("At least one image must remain the hero.");
+      return;
+    }
+    const nextImages: LeadSampleImage[] = sample.images.map((entry) =>
+      entry.id === imageId
+        ? { ...entry, role: "gallery" as const }
+        : current.role === "hero" && entry.id === others[0]?.id
+          ? { ...entry, role: "hero" as const }
+          : entry
+    );
+    updateSampleImages(nextImages);
+  }
+
+  function removeImage(imageId: string) {
+    if (!sample) return;
+    const target = sample.images.find((entry) => entry.id === imageId);
+    if (!target) return;
+    const nextImages = sample.images.filter((entry) => entry.id !== imageId);
+    if (!nextImages.length) {
+      updateSampleImages([]);
+      return;
+    }
+    if (target.role === "hero" && !nextImages.some((entry) => entry.role === "hero")) {
+      nextImages[0] = { ...nextImages[0], role: "hero" };
+    }
+    updateSampleImages(nextImages);
   }
 
   async function saveSampleStatus(nextStatus: LeadSampleStatus) {
@@ -831,7 +1155,7 @@ export function LeadWorkspaceActions({
         <div className="flex flex-wrap gap-2">
           {!sample ? (
             <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()} disabled={isSampleLoading}>
-              {isSampleLoading ? "Loading..." : "Build Sample"}
+              {isSampleLoading ? "Loading..." : "Generate Sample"}
             </button>
           ) : (
             <>
@@ -946,51 +1270,83 @@ export function LeadWorkspaceActions({
                 }
               />
             </label>
-            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Primary Image URL
-              <input
-                className="admin-input mt-1 h-9"
-                value={sample?.primary_image_url || ""}
-                onChange={(e) => void updateSampleField("primary_image_url", e.target.value)}
-                placeholder="https://..."
-              />
-            </label>
-            <label className="text-xs block" style={{ color: "var(--admin-muted)" }}>
-              Additional Image URLs (one per line)
-              <textarea
-                className="admin-input mt-1 min-h-[90px]"
-                value={sample?.image_urls.join("\n") || ""}
-                onChange={(e) =>
-                  void updateSampleField(
-                    "image_urls",
-                    e.target.value
-                      .split(/\n|,/g)
-                      .map((item) => item.trim())
-                      .filter(Boolean)
-                  )
-                }
-              />
-            </label>
-            {sample?.primary_image_url ? (
-              <div className="rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={sample.primary_image_url}
-                  alt={`${sample.business_name} primary`}
-                  style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }}
+            <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs font-medium" style={{ color: "var(--admin-fg)" }}>Images</p>
+              <div className="flex flex-wrap gap-2">
+                <label className="admin-btn-ghost text-xs cursor-pointer">
+                  {isUploadingImage ? "Uploading..." : "Upload Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => void handleUploadImages(e.target.files)}
+                    disabled={isUploadingImage}
+                  />
+                </label>
+                <button className="admin-btn-ghost text-xs" onClick={() => useSuggestedStockImages()}>
+                  Use Suggested Stock Images
+                </button>
+                <button className="admin-btn-ghost text-xs" onClick={() => regenerateSampleImages()}>
+                  Regenerate Stock Images
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  className="admin-input h-9"
+                  value={pastedImageUrl}
+                  onChange={(e) => setPastedImageUrl(e.target.value)}
+                  placeholder="Paste image URL (Facebook, website, etc.)"
                 />
+                <button className="admin-btn-ghost text-xs" onClick={() => void addImageFromUrl()} disabled={isAddingImageUrl}>
+                  {isAddingImageUrl ? "Adding..." : "Add Image From URL"}
+                </button>
               </div>
-            ) : null}
-            {sample?.image_urls?.length ? (
-              <div className="grid grid-cols-2 gap-2">
-                {sample.image_urls.slice(0, 4).map((imageUrl) => (
-                  <div key={imageUrl} className="rounded border p-1" style={{ borderColor: "var(--admin-border)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt="Sample preview" style={{ width: "100%", height: 90, objectFit: "cover", borderRadius: 6 }} />
-                  </div>
-                ))}
-              </div>
-            ) : null}
+              {sample?.images?.length ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {sample.images.map((image) => {
+                    const isHero = image.role === "hero";
+                    const galleryIndex = sample.images.filter((entry) => entry.role === "gallery").findIndex((entry) => entry.id === image.id);
+                    return (
+                      <div
+                        key={image.id}
+                        className="rounded border p-1"
+                        style={{ borderColor: isHero ? "var(--admin-gold)" : "var(--admin-border)" }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image.src} alt={image.label || "Sample image"} style={{ width: "100%", height: 96, objectFit: "cover", borderRadius: 6 }} />
+                        <p className="text-[11px] mt-1" style={{ color: "var(--admin-muted)" }}>
+                          {isHero ? "Hero" : "Gallery"} - {image.source}
+                        </p>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => setImageAsHero(image.id)}>
+                            Set As Hero
+                          </button>
+                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => setImageAsGallery(image.id)}>
+                            Add To Gallery
+                          </button>
+                          <button className="admin-btn-ghost text-[11px] px-2 py-1" onClick={() => removeImage(image.id)}>
+                            Remove
+                          </button>
+                        </div>
+                        {image.role === "gallery" ? (
+                          <input
+                            className="admin-input mt-1 h-8 text-[11px]"
+                            value={image.src}
+                            onChange={(e) => replaceAdditionalImage(galleryIndex, e.target.value)}
+                            placeholder="Replace URL (optional)"
+                          />
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                  Add images by upload, paste URL, or stock suggestions.
+                </p>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               <button className="admin-btn-primary text-xs" onClick={() => void createOrOpenSample()}>
                 Save Sample
