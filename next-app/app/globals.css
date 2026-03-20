@@ -1282,6 +1282,21 @@ html {
     radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.22), transparent 48%),
     linear-gradient(165deg, var(--sd-surface), var(--sd-surface-alt));
 }
+/* When all hero image URLs fail — no broken icon, fills spotlight */
+.sample-hero-fallback-solid {
+  min-height: clamp(180px, 36vw, 340px);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, color-mix(in srgb, var(--sd-primary) 35%, transparent), transparent),
+    linear-gradient(155deg, var(--sd-surface-alt), var(--sd-surface));
+}
+.sample-gallery-tile-fallback {
+  aspect-ratio: 4/3;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--sd-primary) 18%, var(--sd-surface)), var(--sd-surface-alt));
+  border: var(--sd-card-border) solid var(--sd-border);
+  border-radius: var(--sd-radius);
+  box-shadow: var(--sd-shadow);
+}
 .sample-business-name {
   margin: 0;
   font-size: clamp(18px, 2.2vw, 22px);
@@ -1357,7 +1372,7 @@ html {
 }
 .sample-service-card-placeholder {
   width: 100%;
-  height: 120px;
+  height: 160px;
   border-radius: 12px;
   margin-bottom: 12px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--sd-primary) 22%, transparent), transparent);

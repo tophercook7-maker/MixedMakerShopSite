@@ -1,4 +1,5 @@
 import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
+import { PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY } from "@/lib/sample-fallback-images";
 
 /** Permanent public portfolio samples (not CRM / lead previews). */
 export type PortfolioSampleMeta = {
@@ -52,7 +53,8 @@ function draftPressureWashing(): SampleDraft {
     businessName: "ClearView Pressure Washing",
     tagline: "Residential & commercial exterior cleaning",
     localPositioning: "Central Arkansas · Fast quotes · Licensed & insured",
-    heroImageUrl: PW[0],
+    /** Deterministic Picsum hero — resilient layer still swaps if this ever fails. */
+    heroImageUrl: PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
     heroImageAlt: "Driveway and concrete being pressure washed, clean streaks visible",
     heroHeadline: "A Cleaner Home Exterior Starts With the Right Team",
     heroSub:

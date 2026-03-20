@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import {
+  ResilientCardImage,
+  ResilientGalleryImage,
+  ResilientHeroImage,
+} from "@/components/sample/resilient-sample-images";
+import {
+  inferImageCategoryFromDraftPick,
+  type SampleImageCategory,
+} from "@/lib/sample-fallback-images";
 
 type Mode = "edit" | "presentation";
 type StylePreset = "clean-modern" | "bold-premium" | "friendly-local" | "minimal-elegant";
@@ -53,6 +62,8 @@ export type SampleDraftEmbedOptions = {
   portfolioFooter?: boolean;
   /** Replace internal “demo” helper copy with sendable portfolio tone. */
   portfolioCopy?: boolean;
+  /** Explicit image fallback category (portfolio routes). Otherwise inferred from draft copy. */
+  imageCategoryKey?: SampleImageCategory;
 };
 
 type Props = {
@@ -372,6 +383,8 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   const whyBullets = draft.whyChooseBullets ?? [];
   const secondaryHref = embedOptions?.secondaryHref ?? "/website-samples";
   const portfolioCopy = Boolean(embedOptions?.portfolioCopy);
+  const imageCategory: SampleImageCategory =
+    embedOptions?.imageCategoryKey ?? inferImageCategoryFromDraftPick(draft);
   const servicesLead = portfolioCopy
     ? "Clear service names and short benefits help visitors compare options and call faster."
     : "Service cards like these help visitors scan what you offer and pick up the phone faster.";
@@ -455,12 +468,11 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
             </div>
           </div>
             <figure className="sample-hero-spotlight" aria-label={draft.heroImageAlt ?? `${draft.businessName} featured image`}>
-              {draft.heroImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={draft.heroImageUrl} alt={draft.heroImageAlt ?? `${draft.businessName} interior`} />
-              ) : (
-                <div className="sample-hero-fallback" aria-hidden="true" />
-              )}
+              <ResilientHeroImage
+                primarySrc={draft.heroImageUrl}
+                category={imageCategory}
+                alt={draft.heroImageAlt ?? `${draft.businessName} featured image`}
+              />
               <div className="sample-hero-image-overlay" aria-hidden="true" />
             </figure>
           </div>
@@ -474,16 +486,13 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
           <div className="how-it-works-grid sample-service-grid">
             {draft.offerings.map((item) => (
               <article key={item.name} className="how-it-works-card sample-service-card">
-                {item.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.image}
-                    alt={`${item.name} preview`}
-                    className="sample-service-card-image"
-                  />
-                ) : (
-                  <div className="sample-service-card-placeholder" aria-hidden="true" />
-                )}
+                <ResilientCardImage
+                  primarySrc={item.image}
+                  category={imageCategory}
+                  alt={`${item.name} preview`}
+                  className="sample-service-card-image"
+                  placeholderClassName="sample-service-card-placeholder"
+                />
                 <h3 className="how-it-works-title">{item.name}</h3>
                 <p className="how-it-works-copy">{item.text}</p>
                 <a href={telHref} className="sample-service-card-cta">
@@ -502,8 +511,13 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
             <p className="sample-sub sample-section-lead">{galleryLead}</p>
             <div className="sample-gallery-grid">
               {galleryList.map((src, idx) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={`${src}-${idx}`} src={src} alt={`${draft.businessName} gallery ${idx + 1}`} className="sample-gallery-tile" />
+                <ResilientGalleryImage
+                  key={`${src}-${idx}`}
+                  primarySrc={src}
+                  category={imageCategory}
+                  alt={`${draft.businessName} gallery ${idx + 1}`}
+                  className="sample-gallery-tile"
+                />
               ))}
             </div>
           </div>

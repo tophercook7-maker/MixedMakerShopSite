@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
 import { buildDefaultLeadSample, leadSampleToDraft, normalizeLeadSampleRecord, type LeadSampleRecord } from "@/lib/lead-samples";
+import { inferImageCategoryFromLeadSample } from "@/lib/sample-fallback-images";
 
 const LOCAL_KEY = "crm.lead_samples";
 
@@ -70,7 +71,13 @@ export function LeadSamplePreviewClient({ sampleId }: { sampleId: string }) {
           {message}
         </div>
       ) : null}
-      <SampleDraftClient initialDraft={draft} initialMode="presentation" />
+      <SampleDraftClient
+        initialDraft={draft}
+        initialMode="presentation"
+        embedOptions={{
+          imageCategoryKey: sample ? inferImageCategoryFromLeadSample(sample) : "default-service-business",
+        }}
+      />
     </div>
   );
 }
