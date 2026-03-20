@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  SAMPLE_CATEGORY_FALLBACK_CARD,
   SAMPLE_CATEGORY_FALLBACK_HERO,
   SAMPLE_ULTIMATE_FALLBACK_HERO,
   type SampleImageCategory,
@@ -113,7 +114,7 @@ export function ResilientCardImage({
   /** Dev-only: log effective src / errors for hub thumbnails etc. */
   devContext?: ResilientCardImageDevContext;
 }) {
-  const categoryUrl = SAMPLE_CATEGORY_FALLBACK_HERO[category] ?? SAMPLE_CATEGORY_FALLBACK_HERO["default-service-business"];
+  const categoryUrl = SAMPLE_CATEGORY_FALLBACK_CARD[category] ?? SAMPLE_CATEGORY_FALLBACK_CARD["default-service-business"];
   const hasPrimary = isNonEmptyImageUrl(primarySrc);
   const [stage, setStage] = useState<CardStage>(hasPrimary ? "primary" : "category");
 

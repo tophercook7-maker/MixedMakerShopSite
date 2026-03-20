@@ -12,6 +12,12 @@ import {
   inferImageCategoryFromDraftPick,
   type SampleImageCategory,
 } from "@/lib/sample-fallback-images";
+import {
+  inferContactBandSub,
+  inferContactBandTitle,
+  inferGallerySectionLead,
+  inferServicesSectionLead,
+} from "@/lib/sample-section-copy";
 
 type Mode = "edit" | "presentation";
 type StylePreset = "clean-modern" | "bold-premium" | "friendly-local" | "minimal-elegant";
@@ -28,10 +34,12 @@ export type SampleDraft = {
   heroPrimaryCta: string;
   heroSecondaryCta: string;
   offeringsTitle: string;
-  offerings: Array<{ name: string; text: string; image?: string }>;
+  offerings: Array<{ name: string; text: string; image?: string; imageAlt?: string }>;
   /** Extra photos for a dedicated gallery band */
   gallerySectionTitle?: string;
   galleryImages?: string[];
+  /** Parallel to galleryImages — specific alt text when provided */
+  galleryImageAlts?: string[];
   whyChooseTitle?: string;
   whyChooseBullets?: string[];
   aboutTitle: string;
@@ -46,6 +54,16 @@ export type SampleDraft = {
   /** Prominent contact / quote strip above footer */
   contactBandTitle?: string;
   contactBandSub?: string;
+  /** Intro under offerings title — omit to use niche inference */
+  servicesSectionLead?: string;
+  /** Intro under gallery title */
+  gallerySectionLead?: string;
+  /** Top nav label for #services (e.g. Ministries for churches) */
+  servicesNavLabel?: string;
+  /** Church-style: link service cards to #contact instead of tel: */
+  serviceCardsLinkToContact?: boolean;
+  /** CTA label on service cards when serviceCardsLinkToContact */
+  serviceCardContactCtaLabel?: string;
   finalTitle: string;
   finalSub: string;
   finalCta: string;
@@ -265,10 +283,6 @@ function withDraftDefaults(d: SampleDraft): SampleDraft {
     galleryImages: d.galleryImages ?? [],
     whyChooseTitle: d.whyChooseTitle ?? "Why choose us",
     whyChooseBullets: d.whyChooseBullets ?? [],
-    contactBandTitle: d.contactBandTitle ?? "Get in touch",
-    contactBandSub:
-      d.contactBandSub ??
-      "Customers can call, email, or request a quote in one click on a live site.",
   };
 }
 
@@ -289,7 +303,9 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
 
   useEffect(() => {
     const body = document.body;
-    body.classList.add("sample-draft-mode");
+    if (!lockPresentation) {
+      body.classList.add("sample-draft-mode");
+    }
     if (mode === "presentation") {
       body.classList.add("sample-presentation-mode");
     } else {
@@ -297,9 +313,11 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     }
     return () => {
       body.classList.remove("sample-presentation-mode");
-      body.classList.remove("sample-draft-mode");
+      if (!lockPresentation) {
+        body.classList.remove("sample-draft-mode");
+      }
     };
-  }, [mode]);
+  }, [mode, lockPresentation]);
 
   const visualVars = useMemo(() => {
     const style = STYLE_PRESETS[stylePreset];
@@ -385,12 +403,15 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   const portfolioCopy = Boolean(embedOptions?.portfolioCopy);
   const imageCategory: SampleImageCategory =
     embedOptions?.imageCategoryKey ?? inferImageCategoryFromDraftPick(draft);
-  const servicesLead = portfolioCopy
-    ? "Clear service names and short benefits help visitors compare options and call faster."
-    : "Service cards like these help visitors scan what you offer and pick up the phone faster.";
-  const galleryLead = portfolioCopy
-    ? "Project-style photography and real jobs build confidence before the first conversation."
-    : "Real photos build trust. Your live site would feature your own shots here.";
+  const servicesLead = inferServicesSectionLead(draft, portfolioCopy);
+  const galleryLead = inferGallerySectionLead(draft, portfolioCopy);
+  const contactBandTitleResolved = inferContactBandTitle(draft, portfolioCopy);
+  const contactBandSubResolved = inferContactBandSub(draft, portfolioCopy);
+  const servicesNavLabel = draft.servicesNavLabel ?? "Services";
+  const serviceCardHref = draft.serviceCardsLinkToContact ? "#contact" : telHref;
+  const serviceCardLabel = draft.serviceCardsLinkToContact
+    ? (draft.serviceCardContactCtaLabel ?? "Learn more")
+    : draft.heroPrimaryCta;
   const exportPayload = useMemo(
     () => ({
       mode,
@@ -434,9 +455,9 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               {draft.businessName}
             </a>
             <div className="sample-site-links">
-              <a href="#services">Services</a>
+              <a href="#services">{servicesNavLabel}</a>
               {galleryList.length ? <a href="#gallery">Gallery</a> : null}
-              <a href="#why">Why us</a>
+              {whyBullets.length ? <a href="#why">Why us</a> : null}
               <a href="#about">About</a>
               <a href="#contact">Contact</a>
             </div>
@@ -489,14 +510,14 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
                 <ResilientCardImage
                   primarySrc={item.image}
                   category={imageCategory}
-                  alt={`${item.name} preview`}
+                  alt={item.imageAlt ?? `${item.name} — ${draft.businessName}`}
                   className="sample-service-card-image"
                   placeholderClassName="sample-service-card-placeholder"
                 />
                 <h3 className="how-it-works-title">{item.name}</h3>
                 <p className="how-it-works-copy">{item.text}</p>
-                <a href={telHref} className="sample-service-card-cta">
-                  {draft.heroPrimaryCta}
+                <a href={serviceCardHref} className="sample-service-card-cta">
+                  {serviceCardLabel}
                 </a>
               </article>
             ))}
@@ -515,7 +536,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
                   key={`${src}-${idx}`}
                   primarySrc={src}
                   category={imageCategory}
-                  alt={`${draft.businessName} gallery ${idx + 1}`}
+                  alt={draft.galleryImageAlts?.[idx] ?? `${draft.businessName} gallery photo ${idx + 1}`}
                   className="sample-gallery-tile"
                 />
               ))}
@@ -524,19 +545,21 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         </section>
       ) : null}
 
-      <section className="section sample-section" id="why">
-        <div className="container">
-          <h2 className="sample-h2">{draft.whyChooseTitle}</h2>
-          <div className="sample-why-grid">
-            {whyBullets.map((line, idx) => (
-              <div key={idx} className="sample-why-card">
-                <span className="sample-why-index">{idx + 1}</span>
-                <p className="sample-why-text">{line}</p>
-              </div>
-            ))}
+      {whyBullets.length ? (
+        <section className="section sample-section" id="why">
+          <div className="container">
+            <h2 className="sample-h2">{draft.whyChooseTitle}</h2>
+            <div className="sample-why-grid">
+              {whyBullets.map((line, idx) => (
+                <div key={idx} className="sample-why-card">
+                  <span className="sample-why-index">{idx + 1}</span>
+                  <p className="sample-why-text">{line}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="section sample-section" id="about">
         <div className="container">
@@ -569,8 +592,8 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         <div className="container">
           <div className="sample-contact-band-inner">
             <div>
-              <h2 className="sample-h2 sample-contact-band-title">{draft.contactBandTitle}</h2>
-              <p className="sample-sub sample-contact-band-sub">{draft.contactBandSub}</p>
+              <h2 className="sample-h2 sample-contact-band-title">{contactBandTitleResolved}</h2>
+              <p className="sample-sub sample-contact-band-sub">{contactBandSubResolved}</p>
             </div>
             <div className="btn-row sample-contact-band-actions">
               <a href={telHref} className="btn gold">
@@ -592,7 +615,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
                 {draft.phone}
               </a>
             </div>
-            <div className="card sample-info">
+            <div className="card sample-info" id="hours">
               <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {draft.hours.map((line) => (
@@ -643,9 +666,17 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     </>
   );
 
+  if (lockPresentation) {
+    return (
+      <div className="sample-standalone is-presentation" style={visualVars}>
+        {site}
+      </div>
+    );
+  }
+
   return (
     <div className={`sample-standalone ${mode === "presentation" ? "is-presentation" : "is-edit"}`} style={visualVars}>
-      {mode === "edit" && !lockPresentation ? (
+      {mode === "edit" ? (
         <div className="sample-live-builder">
           <aside className="sample-editor-dock">
             <div className="sample-editor-card">

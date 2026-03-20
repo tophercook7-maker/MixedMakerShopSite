@@ -81,12 +81,16 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
     name: "Diamond Plumbing Co.",
     desc: "Emergency-ready plumbing site with service pages, trust proof, and call-first actions.",
     category: "service",
+    imageUrl:
+      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "greenridge-lawn-care",
     name: "Greenridge Lawn Care",
     desc: "Local lawn care homepage with quick quote flow, service list, and seasonal messaging.",
     category: "service",
+    imageUrl:
+      "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80",
   },
   // Restaurant samples
   {
@@ -94,7 +98,8 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
     name: "Southern Diner Concept",
     desc: "Clean southern charm — mobile-friendly menu, tap-to-call, hours & location.",
     category: "restaurant",
-    imageUrl: "https://picsum.photos/id/292/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
   },
   // Church samples
   {
@@ -102,21 +107,24 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
     name: "Grace Fellowship Church",
     desc: "Traditional / Established — clear service times, ministries, giving.",
     category: "church",
-    imageUrl: "https://picsum.photos/id/225/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1465848059293-208e11dfea17?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "riverstone-church",
     name: "Riverstone Church",
     desc: "Modern / Contemporary — next steps, events, clean design.",
     category: "church",
-    imageUrl: "https://picsum.photos/id/26/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "oak-hill-community-church",
     name: "Oak Hill Community Church",
     desc: "Warm / Community — small-town feel, what to expect, welcoming.",
     category: "church",
-    imageUrl: "https://picsum.photos/id/1018/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1531808012724-688c1de500b4?auto=format&fit=crop&w=900&q=80",
   },
   // Redesign concepts
   {

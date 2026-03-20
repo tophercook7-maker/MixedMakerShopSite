@@ -75,7 +75,9 @@ export function LeadSamplePreviewClient({ sampleId }: { sampleId: string }) {
         initialDraft={draft}
         initialMode="presentation"
         embedOptions={{
+          lockPresentation: true,
           imageCategoryKey: sample ? inferImageCategoryFromLeadSample(sample) : "default-service-business",
+          secondaryHref: "#contact",
         }}
       />
     </div>
