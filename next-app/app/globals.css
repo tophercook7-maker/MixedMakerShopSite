@@ -1297,6 +1297,22 @@ html {
   border-radius: var(--sd-radius);
   box-shadow: var(--sd-shadow);
 }
+
+/* /website-samples hub — portfolio card thumbnails (public layout, not --sd tokens) */
+.sample-hub-card-thumb {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+.sample-hub-card-thumb-fallback {
+  width: 100%;
+  height: 160px;
+  display: block;
+  flex-shrink: 0;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--gold) 28%, transparent), color-mix(in srgb, var(--border) 55%, transparent));
+}
 .sample-business-name {
   margin: 0;
   font-size: clamp(18px, 2.2vw, 22px);

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ResilientCardImage } from "@/components/sample/resilient-sample-images";
 import { PORTFOLIO_SAMPLES } from "@/lib/portfolio-samples";
+import { imageCategoryFromPortfolioRouteSlug } from "@/lib/sample-fallback-images";
 import {
   WEBSITE_SAMPLES,
   SAMPLE_CATEGORIES,
@@ -43,11 +45,13 @@ export default function WebsiteSamplesPage() {
                   className="card sample-card"
                   style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={p.cardImageUrl}
-                    alt=""
-                    style={{ width: "100%", height: 160, objectFit: "cover", display: "block" }}
+                  <ResilientCardImage
+                    primarySrc={p.cardImageUrl}
+                    category={imageCategoryFromPortfolioRouteSlug(p.routeSlug)}
+                    alt={`${p.title} sample preview thumbnail`}
+                    className="sample-hub-card-thumb"
+                    placeholderClassName="sample-hub-card-thumb-fallback"
+                    devContext={{ hubCardTitle: p.title, routeSlug: p.routeSlug }}
                   />
                   <div style={{ padding: "16px 18px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
                     <p className="small" style={{ margin: "0 0 6px", opacity: 0.85 }}>

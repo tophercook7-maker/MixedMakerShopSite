@@ -1,5 +1,7 @@
 import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
-import { PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY } from "@/lib/sample-fallback-images";
+import {
+  PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
+} from "@/lib/sample-fallback-images";
 
 /** Permanent public portfolio samples (not CRM / lead previews). */
 export type PortfolioSampleMeta = {
@@ -359,7 +361,7 @@ const DEFINITIONS: Array<
     title: "ClearView Pressure Washing",
     category: "Pressure washing",
     description: "A clean, high-converting pressure washing website sample with strong service blocks and quote CTAs.",
-    cardImageUrl: PW[0],
+    cardImageUrl: PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
     stylePreset: "clean-modern",
     colorPreset: "blue",
     buildDraft: draftPressureWashing,

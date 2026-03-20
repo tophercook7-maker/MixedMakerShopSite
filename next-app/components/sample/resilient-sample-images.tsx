@@ -91,20 +91,29 @@ export function ResilientHeroImage({
 
 type CardStage = "primary" | "category" | "ultimate" | "none";
 
+export type ResilientCardImageDevContext = {
+  /** e.g. /website-samples hub card title */
+  hubCardTitle?: string;
+  routeSlug?: string;
+};
+
 export function ResilientCardImage({
   primarySrc,
   category,
   alt,
   className,
   placeholderClassName,
+  devContext,
 }: {
   primarySrc: string | null | undefined;
   category: SampleImageCategory;
   alt: string;
   className?: string;
   placeholderClassName?: string;
+  /** Dev-only: log effective src / errors for hub thumbnails etc. */
+  devContext?: ResilientCardImageDevContext;
 }) {
-  const categoryUrl = SAMPLE_CATEGORY_FALLBACK_HERO[category];
+  const categoryUrl = SAMPLE_CATEGORY_FALLBACK_HERO[category] ?? SAMPLE_CATEGORY_FALLBACK_HERO["default-service-business"];
   const hasPrimary = isNonEmptyImageUrl(primarySrc);
   const [stage, setStage] = useState<CardStage>(hasPrimary ? "primary" : "category");
 
@@ -121,16 +130,43 @@ export function ResilientCardImage({
           ? SAMPLE_ULTIMATE_FALLBACK_HERO
           : null;
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development" && devContext?.hubCardTitle) {
+      console.info("[SampleHubCardThumbnail]", {
+        cardTitle: devContext.hubCardTitle,
+        routeSlug: devContext.routeSlug ?? null,
+        categoryKey: category,
+        originalImageSrc: primarySrc ?? null,
+        stage,
+        effectiveSrc: src,
+        categoryFallback: categoryUrl,
+        ultimateFallback: SAMPLE_ULTIMATE_FALLBACK_HERO,
+      });
+    }
+  }, [devContext, category, primarySrc, stage, src, categoryUrl]);
+
   const onError = useCallback(() => {
     setStage((prev) => {
       if (process.env.NODE_ENV === "development") {
-        console.info("[SampleCardImage] load failed", { stage: prev, category, primarySrc });
+        const log = {
+          event: "image_error_fired",
+          cardTitle: devContext?.hubCardTitle ?? null,
+          routeSlug: devContext?.routeSlug ?? null,
+          categoryKey: category,
+          failedStage: prev,
+          originalImageSrc: primarySrc ?? null,
+        };
+        if (devContext?.hubCardTitle) {
+          console.info("[SampleHubCardThumbnail]", log);
+        } else {
+          console.info("[SampleCardImage]", log);
+        }
       }
       if (prev === "primary") return "category";
       if (prev === "category") return "ultimate";
       return "none";
     });
-  }, [category, primarySrc]);
+  }, [category, primarySrc, devContext]);
 
   if (stage === "none" || !src) {
     return <div className={placeholderClassName ?? "sample-service-card-placeholder"} aria-hidden="true" />;

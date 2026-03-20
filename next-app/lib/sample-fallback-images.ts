@@ -32,6 +32,19 @@ export const SAMPLE_ULTIMATE_FALLBACK_HERO =
 export const PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY =
   "https://picsum.photos/seed/clearview-pw-primary/1600/1000";
 
+/** Maps evergreen portfolio route slug → image fallback category (hub cards + sample pages). */
+const PORTFOLIO_ROUTE_SLUG_TO_CATEGORY: Record<string, SampleImageCategory> = {
+  "pressure-washing": "pressure-washing",
+  "auto-detailing": "auto-detailing",
+  landscaping: "landscaping",
+  plumbing: "plumbing",
+  restaurant: "restaurant",
+};
+
+export function imageCategoryFromPortfolioRouteSlug(routeSlug: string): SampleImageCategory {
+  return PORTFOLIO_ROUTE_SLUG_TO_CATEGORY[routeSlug] ?? "default-service-business";
+}
+
 type DraftPick = {
   tagline: string;
   businessName: string;
