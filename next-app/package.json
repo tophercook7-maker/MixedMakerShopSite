@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:apply-sql": "bash scripts/db-apply-sql.sh",
+    "db:migrate:crm-canonical": "bash scripts/db-apply-sql.sh supabase/migrations/20260321000000_leads_canonical_simple_crm.sql",
+    "db:push": "supabase db push"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",

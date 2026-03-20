@@ -4,22 +4,13 @@ import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { isManualOnlyMode } from "@/lib/manual-mode";
-import { findLeadDuplicate, normalizeBusinessName, normalizeEmail, normalizePhone } from "@/lib/leads-dedup";
-
-const ALLOWED_LEAD_INSERT_FIELDS = [
-  "business_name",
-  "status",
-  "email",
-  "phone",
-  "notes",
-  "owner_id",
-] as const;
-
-const OPTIONAL_FINGERPRINT_FIELDS = [
-  "normalized_business_name",
-  "normalized_email",
-  "normalized_phone",
-] as const;
+import {
+  canonicalizeLeadStatus,
+  leadHasStandaloneWebsite,
+  LEAD_FINGERPRINT_OPTIONAL_COLUMNS,
+  pickLeadInsertFields,
+} from "@/lib/crm-lead-schema";
+import { findLeadDuplicate, normalizeBusinessName, normalizeEmail, normalizeFacebookUrl, normalizePhone, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -52,29 +43,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const supabase = await createClient();
+  const business_name = String(parsed.data.business_name || "").trim();
+  const website = String(parsed.data.website || "").trim() || undefined;
+  const category = String(parsed.data.category || "").trim() || undefined;
+  const industry = String(parsed.data.industry || "").trim() || undefined;
+  const facebook_url = String(parsed.data.facebook_url || "").trim() || undefined;
+
   const normalizedInput = {
-    business_name: String(parsed.data.business_name || "").trim(),
-    status:
-      String(parsed.data.status || "new").trim().toLowerCase() === "follow_up_due"
-        ? "follow_up"
-        : String(parsed.data.status || "new").trim().toLowerCase() === "closed_won"
-          ? "won"
-          : String(parsed.data.status || "new").trim().toLowerCase() === "do_not_contact"
-            ? "not_interested"
-            : String(parsed.data.status || "new").trim().toLowerCase() === "research_later"
-              ? "archived"
-              : parsed.data.status || "new",
+    business_name,
+    status: canonicalizeLeadStatus(parsed.data.status || "new"),
     email: String(parsed.data.email || "").trim() || undefined,
     phone: String(parsed.data.phone || "").trim() || undefined,
+    website,
+    facebook_url,
+    industry: industry || category || undefined,
+    category: category || industry || undefined,
+    lead_source: parsed.data.lead_source,
     notes: parsed.data.notes,
+    has_website: leadHasStandaloneWebsite(website),
+    normalized_website: normalizeWebsiteUrl(website) || undefined,
+    normalized_facebook_url: normalizeFacebookUrl(facebook_url) || undefined,
   } as const;
-  const candidatePayload = {
+
+  const candidatePayload = pickLeadInsertFields({
+    ...parsed.data,
     ...normalizedInput,
+    owner_id: user.id,
     normalized_business_name: normalizeBusinessName(normalizedInput.business_name),
     normalized_email: normalizeEmail(normalizedInput.email || ""),
     normalized_phone: normalizePhone(normalizedInput.phone || ""),
-    owner_id: user.id,
-  };
+  });
+
   console.info("[Leads API] sanitized create payload", {
     request_id: requestId,
     payload: candidatePayload,
@@ -86,15 +85,14 @@ export async function POST(request: Request) {
     businessName: normalizedInput.business_name,
     email: normalizedInput.email || null,
     phone: normalizedInput.phone || null,
+    website: normalizedInput.website || null,
+    facebookUrl: normalizedInput.facebook_url || null,
   });
   console.info("[Leads API] dedup check", {
     request_id: requestId,
     duplicate: dedup.duplicate,
     reason: dedup.reason,
     matched_lead_id: dedup.matchedLeadId,
-    normalized_business_name: dedup.normalized_business_name,
-    normalized_email: dedup.normalized_email,
-    normalized_phone: dedup.normalized_phone,
   });
   if (dedup.duplicate && dedup.matchedLeadId) {
     const { data: existing } = await supabase
@@ -116,26 +114,24 @@ export async function POST(request: Request) {
 
   const fingerprintProbe = await supabase
     .from("leads")
-    .select("normalized_business_name,normalized_email,normalized_phone")
+    .select("normalized_business_name")
     .limit(1);
   const fingerprintFieldsAvailable = !fingerprintProbe.error;
-  const allowedInsertFields = [
-    ...ALLOWED_LEAD_INSERT_FIELDS,
-    ...(fingerprintFieldsAvailable ? OPTIONAL_FINGERPRINT_FIELDS : []),
-  ] as readonly string[];
-  const safeInsertPayload = Object.fromEntries(
-    Object.entries(candidatePayload).filter(
-      ([key, value]) =>
-        allowedInsertFields.includes(key) &&
-        value !== undefined
-    )
-  );
+  const fingerprintEntries: Record<string, unknown> = {};
+  if (fingerprintFieldsAvailable) {
+    for (const col of LEAD_FINGERPRINT_OPTIONAL_COLUMNS) {
+      const v = candidatePayload[col as keyof typeof candidatePayload];
+      if (v !== undefined) fingerprintEntries[col] = v;
+    }
+  }
+
+  const safeInsertPayload = pickLeadInsertFields({
+    ...candidatePayload,
+    ...fingerprintEntries,
+  });
+
   const droppedFields = Object.keys(candidatePayload).filter(
-    (key) =>
-      !Object.prototype.hasOwnProperty.call(
-        safeInsertPayload,
-        key
-      )
+    (key) => !Object.prototype.hasOwnProperty.call(safeInsertPayload, key)
   );
   console.info("[Leads API] safe insert payload", {
     request_id: requestId,

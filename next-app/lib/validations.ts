@@ -25,6 +25,12 @@ const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;
 const paymentStatuses = ["pending", "paid", "overdue"] as const;
 
+/** ISO-ish timestamps: empty string → undefined; JSON `null` kept (PATCH clears column). */
+const optionalTimestamp = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.union([z.string(), z.null()]).optional()
+);
+
 export const contactFormSchema = z.object({
   name: z.string().min(1, "Name required").max(200),
   email: z.string().email(),
@@ -58,6 +64,7 @@ export const leadSchema = z.object({
     .transform((v) => (v === "" ? undefined : v)),
   phone: z.string().max(50).optional().transform((v) => (v === "" ? undefined : v)),
   website: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  facebook_url: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
   industry: z.string().max(100).optional().transform((v) => (v === "" ? undefined : v)),
   category: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
   city: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
@@ -81,7 +88,7 @@ export const leadSchema = z.object({
   best_time_to_visit: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
   is_recurring_client: z.boolean().optional(),
   monthly_value: z.number().min(0).optional(),
-  subscription_started_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  subscription_started_at: optionalTimestamp,
   referred_by: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
   referral_source: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
   is_referred_client: z.boolean().optional(),
@@ -89,20 +96,21 @@ export const leadSchema = z.object({
   score_breakdown: z.record(z.unknown()).optional(),
   sequence_active: z.boolean().optional(),
   notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),
-  follow_up_date: z.string().optional().transform((v) => (v === "" ? undefined : v)),
-  last_contacted_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
-  follow_up_stage: z.number().int().min(0).max(3).optional(),
-  next_follow_up_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  follow_up_date: optionalTimestamp,
+  last_contacted_at: optionalTimestamp,
+  follow_up_stage: z.number().int().min(0).max(3).optional().nullable(),
+  next_follow_up_at: optionalTimestamp,
   follow_up_status: z.enum(["pending", "completed"]).optional(),
   last_outreach_channel: z.enum(["email", "facebook", "text"]).nullable().optional(),
   last_outreach_status: z.enum(["draft", "sending", "sent", "failed"]).optional(),
-  last_outreach_sent_at: z.string().optional().transform((v) => (v === "" ? undefined : v)),
+  last_outreach_sent_at: optionalTimestamp,
   preview_sent: z.boolean().optional(),
   email_sent: z.boolean().optional(),
   facebook_sent: z.boolean().optional(),
   text_sent: z.boolean().optional(),
   outreach_sent: z.boolean().optional(),
   preview_url: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  reply_note: z.string().max(2000).optional().transform((v) => (v === "" ? undefined : v)),
 });
 
 export const clientSchema = z.object({

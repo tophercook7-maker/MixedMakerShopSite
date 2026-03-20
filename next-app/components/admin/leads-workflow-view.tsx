@@ -10,6 +10,15 @@ import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 import { LeadForm } from "@/components/admin/lead-form";
 import { OutreachBadges } from "@/components/admin/outreach-badges";
 
+function formatLeadApiError(body: unknown, fallback: string): string {
+  if (!body || typeof body !== "object") return fallback;
+  const rec = body as Record<string, unknown>;
+  if (typeof rec.error === "string") return rec.error;
+  if (rec.error && typeof rec.error === "object") return JSON.stringify(rec.error);
+  if (typeof rec.message === "string") return rec.message;
+  return fallback;
+}
+
 const DEFAULT_SMS_TEMPLATE =
   "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
@@ -101,15 +110,7 @@ export type WorkflowLead = {
   contact_method: string;
   detected_issue_summary: string;
   detected_issues: string[];
-  status:
-    | "new"
-    | "contacted"
-    | "follow_up"
-    | "replied"
-    | "won"
-    | "no_response"
-    | "not_interested"
-    | "archived";
+  status: "new" | "contacted" | "replied" | "won" | "no_response" | "not_interested" | "archived";
   created_at: string | null;
   screenshot_urls: string[];
   annotated_screenshot_url?: string | null;
@@ -317,8 +318,8 @@ export function LeadsWorkflowView({
       .toLowerCase()
       .replace(/[\s-]+/g, "_");
     const normalizedStatus =
-      statusRaw === "follow_up_due"
-        ? "follow_up"
+      statusRaw === "follow_up_due" || statusRaw === "follow_up"
+        ? "contacted"
         : statusRaw === "closed_won"
           ? "won"
           : statusRaw === "closed_lost"
@@ -331,7 +332,6 @@ export function LeadsWorkflowView({
     const status = (
       normalizedStatus === "new" ||
       normalizedStatus === "contacted" ||
-      normalizedStatus === "follow_up" ||
       normalizedStatus === "replied" ||
       normalizedStatus === "won" ||
       normalizedStatus === "no_response" ||
@@ -633,17 +633,24 @@ export function LeadsWorkflowView({
   }
 
   async function updateLeadStatusQuick(lead: WorkflowLead, nextStatus: WorkflowLead["status"]) {
-    const mappedStatus =
-      nextStatus === "follow_up"
-        ? "follow_up"
-        : nextStatus === "won"
-          ? "won"
-          : nextStatus;
+    if (isLocalOnlyLead(lead)) {
+      setError("This lead isn’t saved to the server yet. Use Add Lead until it saves, then try again.");
+      return;
+    }
     const shouldStopFollowUps =
       nextStatus === "replied" || nextStatus === "not_interested" || nextStatus === "won";
     const patchPayload: Record<string, unknown> = {
-      status: mappedStatus,
+      status: nextStatus,
     };
+    let contactedFollowUpAt: string | null = null;
+    if (nextStatus === "contacted") {
+      const fu = new Date();
+      fu.setDate(fu.getDate() + 2);
+      contactedFollowUpAt = fu.toISOString();
+      patchPayload.next_follow_up_at = contactedFollowUpAt;
+      patchPayload.follow_up_status = "pending";
+      patchPayload.last_contacted_at = new Date().toISOString();
+    }
     if (shouldStopFollowUps) {
       patchPayload.follow_up_status = "completed";
       patchPayload.next_follow_up_at = null;
@@ -653,19 +660,22 @@ export function LeadsWorkflowView({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patchPayload),
     });
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    const body = (await res.json().catch(() => ({}))) as { error?: unknown };
     if (!res.ok) {
-      setError(body.error || "Could not update lead status.");
+      setError(formatLeadApiError(body, "Could not update lead status."));
       return;
     }
+    setError(null);
     setLeads((prev) =>
       prev.map((row) =>
         row.id === lead.id
           ? {
               ...row,
               status: nextStatus,
-              follow_up_status: shouldStopFollowUps ? "completed" : row.follow_up_status,
-              next_follow_up_at: shouldStopFollowUps ? null : row.next_follow_up_at,
+              follow_up_status: shouldStopFollowUps ? "completed" : nextStatus === "contacted" ? "pending" : row.follow_up_status,
+              next_follow_up_at: shouldStopFollowUps ? null : contactedFollowUpAt ?? row.next_follow_up_at,
+              last_contacted_at:
+                nextStatus === "contacted" ? String(patchPayload.last_contacted_at || new Date().toISOString()) : row.last_contacted_at,
             }
           : row
       )
@@ -676,12 +686,64 @@ export function LeadsWorkflowView({
           ? {
               ...row,
               status: nextStatus,
-              follow_up_status: shouldStopFollowUps ? "completed" : row.follow_up_status,
-              next_follow_up_at: shouldStopFollowUps ? null : row.next_follow_up_at,
+              follow_up_status: shouldStopFollowUps ? "completed" : nextStatus === "contacted" ? "pending" : row.follow_up_status,
+              next_follow_up_at: shouldStopFollowUps ? null : contactedFollowUpAt ?? row.next_follow_up_at,
+              last_contacted_at:
+                nextStatus === "contacted" ? String(patchPayload.last_contacted_at || new Date().toISOString()) : row.last_contacted_at,
             }
           : row
       )
     );
+  }
+
+  async function logMessageSent(lead: WorkflowLead) {
+    if (isLocalOnlyLead(lead)) {
+      setError("Save this lead to the backend before logging outreach.");
+      return;
+    }
+    const chRaw = window.prompt("Channel: facebook, email, or text", "facebook");
+    if (!chRaw) return;
+    const channel = chRaw.trim().toLowerCase();
+    if (channel !== "facebook" && channel !== "email" && channel !== "text") {
+      setError("Channel must be facebook, email, or text.");
+      return;
+    }
+    const note = window.prompt("Optional note (optional)")?.trim() || undefined;
+    const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}/log-outreach`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channel, note }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string; lead?: Record<string, unknown> };
+    if (!res.ok) {
+      setError(body.error || "Could not log outreach.");
+      return;
+    }
+    const row = body.lead || {};
+    setLeads((prev) =>
+      prev.map((rowLead) =>
+        rowLead.id === lead.id
+          ? {
+              ...rowLead,
+              status: "contacted",
+              email_sent: Boolean(row.email_sent ?? rowLead.email_sent),
+              facebook_sent: Boolean(row.facebook_sent ?? rowLead.facebook_sent),
+              text_sent: Boolean(row.text_sent ?? rowLead.text_sent),
+              last_outreach_channel:
+                row.last_outreach_channel === "email" ||
+                row.last_outreach_channel === "facebook" ||
+                row.last_outreach_channel === "text"
+                  ? row.last_outreach_channel
+                  : rowLead.last_outreach_channel,
+              last_outreach_status: "sent",
+              last_outreach_sent_at: String(row.last_outreach_sent_at || new Date().toISOString()),
+              next_follow_up_at: String(row.next_follow_up_at || rowLead.next_follow_up_at || ""),
+              follow_up_status: "pending",
+            }
+          : rowLead
+      )
+    );
+    setError(null);
   }
 
   async function scheduleFollowUps(lead: WorkflowLead) {
@@ -761,7 +823,7 @@ export function LeadsWorkflowView({
       follow_up_stage: isCompleted ? 3 : nextStage,
       follow_up_status: isCompleted ? "completed" : "pending",
       next_follow_up_at: nextFollowUpAt,
-      status: "follow_up",
+      status: "contacted",
     };
     const patchRes = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
       method: "PATCH",
@@ -778,7 +840,7 @@ export function LeadsWorkflowView({
         row.id === lead.id
           ? {
               ...row,
-              status: "follow_up",
+              status: "contacted",
               last_contacted_at: nowIso,
               follow_up_stage: isCompleted ? 3 : nextStage,
               follow_up_status: isCompleted ? "completed" : "pending",
@@ -792,7 +854,7 @@ export function LeadsWorkflowView({
         row.id === lead.id
           ? {
               ...row,
-              status: "follow_up",
+              status: "contacted",
               last_contacted_at: nowIso,
               follow_up_stage: isCompleted ? 3 : nextStage,
               follow_up_status: isCompleted ? "completed" : "pending",
@@ -816,7 +878,7 @@ export function LeadsWorkflowView({
       follow_up_stage: isCompleted ? 3 : nextStage,
       follow_up_status: isCompleted ? "completed" : "pending",
       next_follow_up_at: nextFollowUpAt,
-      status: "follow_up",
+      status: "contacted",
     };
     const patchRes = await fetch(`/api/leads/${encodeURIComponent(lead.id)}`, {
       method: "PATCH",
@@ -833,7 +895,7 @@ export function LeadsWorkflowView({
         row.id === lead.id
           ? {
               ...row,
-              status: "follow_up",
+              status: "contacted",
               last_contacted_at: nowIso,
               follow_up_stage: isCompleted ? 3 : nextStage,
               follow_up_status: isCompleted ? "completed" : "pending",
@@ -847,7 +909,7 @@ export function LeadsWorkflowView({
         row.id === lead.id
           ? {
               ...row,
-              status: "follow_up",
+              status: "contacted",
               last_contacted_at: nowIso,
               follow_up_stage: isCompleted ? 3 : nextStage,
               follow_up_status: isCompleted ? "completed" : "pending",
@@ -1134,7 +1196,7 @@ export function LeadsWorkflowView({
 
   async function markInterested(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "follow_up", "follow_up");
+    await appendLeadNoteAndStatus(lead, `Door-to-door interested ${ts}`, "contacted", "follow_up");
   }
 
   async function markDoorPlanned(lead: WorkflowLead) {
@@ -1197,9 +1259,14 @@ export function LeadsWorkflowView({
       if (segment === "all") return true;
       if (segment === "new") return s === "new";
       if (segment === "contacted") {
-        return (anyChannelSent(lead) || s === "contacted") && s !== "replied" && !isTerminal(lead);
+        return s === "contacted" && !isTerminal(lead);
       }
-      if (segment === "follow_up") return s === "follow_up" || s === "contacted";
+      if (segment === "follow_up") {
+        if (isTerminal(lead)) return false;
+        if (s !== "contacted") return false;
+        if (String(lead.follow_up_status || "pending").toLowerCase() === "completed") return false;
+        return Boolean(String(lead.next_follow_up_at || "").trim());
+      }
       if (segment === "replied") return s === "replied";
       if (segment === "closed") {
         return isTerminal(lead) || s === "won";
@@ -1284,7 +1351,7 @@ export function LeadsWorkflowView({
       const createdAt = new Date(lead.created_at || 0).getTime();
       if (isActionable) counts.actionableNow += 1;
       if (createdAt >= todayStart.getTime()) counts.newToday += 1;
-      if (s === "follow_up" || s === "contacted") counts.followUp += 1;
+      if (s === "contacted" && String(lead.next_follow_up_at || "").trim()) counts.followUp += 1;
       if (s === "replied") counts.replied += 1;
       if (s === "archived" || Boolean(lead.is_archived)) counts.archived += 1;
     }
@@ -1307,6 +1374,20 @@ export function LeadsWorkflowView({
   }, [mergedLeads]);
   return (
     <div className="space-y-6">
+      {error ? (
+        <div
+          className="admin-card flex flex-wrap items-center justify-between gap-3"
+          style={{ borderColor: "rgba(252, 165, 165, 0.45)", background: "rgba(127, 29, 29, 0.2)" }}
+          role="alert"
+        >
+          <p className="text-sm flex-1 min-w-[200px]" style={{ color: "#fecaca" }}>
+            {error}
+          </p>
+          <button type="button" className="admin-btn-ghost text-xs shrink-0" onClick={() => setError(null)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <div className="admin-card">
           <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Total Stored Leads</h2>
@@ -1460,8 +1541,8 @@ export function LeadsWorkflowView({
               ["up_next", "Up next"],
               ["new", "New"],
               ["contacted", "Contacted"],
-              ["follow_up", "Follow Up"],
-              ["replied", "Replied"],
+              ["follow_up", "Follow-up due"],
+              ["replied", "Replies waiting"],
               ["closed", "Closed"],
               ["all", "All"],
             ].map(([id, label]) => (
@@ -1753,8 +1834,11 @@ export function LeadsWorkflowView({
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "contacted")}>
                     Mark Contacted
                   </button>
-                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
-                    Follow Up
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void logMessageSent(lead)}>
+                    Log message sent
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "replied")}>
+                    Mark replied
                   </button>
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void scheduleFollowUps(lead)}>
                     Schedule Follow-Ups
@@ -2150,8 +2234,11 @@ export function LeadsWorkflowView({
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "contacted")}>
                           Mark Contacted
                         </button>
-                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "follow_up")}>
-                          Follow Up
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void logMessageSent(lead)}>
+                          Log message sent
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "replied")}>
+                          Mark replied
                         </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void scheduleFollowUps(lead)}>
                           Schedule Follow-Ups
@@ -2428,12 +2515,6 @@ export function LeadsWorkflowView({
           onClose={() => setAdding(false)}
           onSave={(payload) => createLead(payload as Record<string, unknown>)}
         />
-      ) : null}
-
-      {error ? (
-        <p className="text-sm" style={{ color: "#fca5a5" }}>
-          {error}
-        </p>
       ) : null}
     </div>
   );

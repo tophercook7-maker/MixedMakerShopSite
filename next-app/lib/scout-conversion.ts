@@ -23,15 +23,18 @@ export type ConversionResult = {
   excluded_reason: string | null;
 };
 
-const PRIORITY_CATEGORY_KEYWORDS = [
+export const PRIORITY_CATEGORY_KEYWORDS = [
   "pressure wash",
   "pressure washing",
   "car detailing",
+  "auto detail",
   "detailing",
   "landscap",
   "roof",
+  "roofing",
   "hvac",
   "plumb",
+  "plumbing",
 ];
 
 const VISUAL_CATEGORY_KEYWORDS = [
@@ -162,5 +165,71 @@ export function scoreScoutLead(input: ConversionInput): ConversionResult {
     excluded,
     excluded_reason,
   };
+}
+
+function isFacebookHost(host: string): boolean {
+  const h = host.toLowerCase();
+  return h.includes("facebook.") || h.endsWith("fb.com") || h.includes("fb.com");
+}
+
+/**
+ * Scout intake: no standalone website OR Facebook-only presence, plus phone/email,
+ * and (for now) a priority local-service category.
+ */
+export function evaluateScoutIntakeTarget(input: {
+  category?: string | null;
+  website?: string | null;
+  facebookUrl?: string | null;
+  phone?: string | null;
+  email?: string | null;
+}): {
+  ok: boolean;
+  skipReason: string | null;
+  intakeReason: string | null;
+  prioritized_category: boolean;
+} {
+  const category = normalizeText(input.category);
+  const prioritized_category = hasAny(category, PRIORITY_CATEGORY_KEYWORDS);
+  const has_phone = Boolean(String(input.phone || "").trim());
+  const has_email = Boolean(String(input.email || "").trim());
+  if (!has_phone && !has_email) {
+    return { ok: false, skipReason: "missing_contact", intakeReason: null, prioritized_category };
+  }
+  if (!prioritized_category) {
+    return { ok: false, skipReason: "non_priority_category", intakeReason: null, prioritized_category };
+  }
+
+  const fbRaw = String(input.facebookUrl || "").trim();
+  const webRaw = String(input.website || "").trim().toLowerCase();
+  let websiteIsOnlyFacebook = false;
+  if (webRaw) {
+    try {
+      const u = new URL(webRaw.startsWith("http") ? webRaw : `https://${webRaw}`);
+      websiteIsOnlyFacebook = isFacebookHost(u.hostname);
+    } catch {
+      websiteIsOnlyFacebook = webRaw.includes("facebook.") || webRaw.includes("fb.com");
+    }
+  }
+
+  const hasStandaloneWebsite = Boolean(webRaw) && !websiteIsOnlyFacebook;
+  if (hasStandaloneWebsite) {
+    return {
+      ok: false,
+      skipReason: "has_standalone_website",
+      intakeReason: null,
+      prioritized_category,
+    };
+  }
+
+  let intakeReason: string | null = null;
+  if (!webRaw && !fbRaw) {
+    intakeReason = "No website found";
+  } else if (websiteIsOnlyFacebook || fbRaw) {
+    intakeReason = fbRaw && !webRaw ? "Facebook only" : "Facebook only / no real site";
+  } else {
+    intakeReason = "No website found";
+  }
+
+  return { ok: true, skipReason: null, intakeReason, prioritized_category };
 }
 

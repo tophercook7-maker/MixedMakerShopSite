@@ -1,0 +1,19 @@
+# Supabase CLI — run commands from the `next-app` directory.
+# https://supabase.com/docs/guides/cli
+#
+# Link once:  supabase link --project-ref <your-project-ref>
+# Push all pending migrations to the linked remote:
+#   supabase db push
+#
+# Or apply a single file without the full CLI stack — use npm run db:apply-sql (see package.json).
+
+project_id = "mixedmakershop-admin"
+
+[api]
+enabled = true
+
+[db]
+# Local supabase start ports; cloud DB uses `supabase link` + db push.
+port = 54322
+shadow_port = 54320
+major_version = 17

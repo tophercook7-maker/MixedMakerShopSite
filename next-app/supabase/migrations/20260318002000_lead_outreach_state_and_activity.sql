@@ -49,17 +49,44 @@ create index if not exists idx_leads_last_outreach_status
 create index if not exists idx_leads_outreach_flags
   on public.leads(owner_id, email_sent, facebook_sent, text_sent);
 
--- Backfill from legacy outreach_sent
-update public.leads
-set
-  email_sent = true,
-  last_outreach_channel = coalesce(last_outreach_channel, 'email'),
-  last_outreach_status = case
-    when last_outreach_status = 'draft' then 'sent'
-    else last_outreach_status
-  end,
-  last_outreach_sent_at = coalesce(last_outreach_sent_at, outreach_sent_at, last_contacted_at)
-where outreach_sent is true
-  and email_sent is false;
+-- Backfill from legacy outreach_sent (skip if older DB never had outreach_sent / outreach_sent_at)
+do $guard$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'leads' and column_name = 'outreach_sent'
+  ) and exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'leads' and column_name = 'outreach_sent_at'
+  ) then
+    update public.leads
+    set
+      email_sent = true,
+      last_outreach_channel = coalesce(last_outreach_channel, 'email'),
+      last_outreach_status = case
+        when last_outreach_status = 'draft' then 'sent'
+        else last_outreach_status
+      end,
+      last_outreach_sent_at = coalesce(last_outreach_sent_at, outreach_sent_at, last_contacted_at)
+    where outreach_sent is true
+      and email_sent is false;
+  elsif exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'leads' and column_name = 'outreach_sent'
+  ) then
+    update public.leads
+    set
+      email_sent = true,
+      last_outreach_channel = coalesce(last_outreach_channel, 'email'),
+      last_outreach_status = case
+        when last_outreach_status = 'draft' then 'sent'
+        else last_outreach_status
+      end,
+      last_outreach_sent_at = coalesce(last_outreach_sent_at, last_contacted_at)
+    where outreach_sent is true
+      and email_sent is false;
+  end if;
+end
+$guard$;
 
 -- Activity log table: see migration 20260319003000_lead_activities_canonical.sql

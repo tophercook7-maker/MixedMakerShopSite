@@ -5,6 +5,16 @@ import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 
+function workflowLeadStatus(lead: { status?: string | null }): string {
+  const s = String(lead.status || "").trim().toLowerCase();
+  if (s === "follow_up_due" || s === "follow_up") return "contacted";
+  if (s === "closed_won") return "won";
+  if (s === "closed_lost") return "no_response";
+  if (s === "do_not_contact") return "not_interested";
+  if (s === "research_later" || s === "closed") return "archived";
+  return s;
+}
+
 type LeadRow = {
   id: string;
   business_name?: string | null;
@@ -18,6 +28,7 @@ type LeadRow = {
   created_at?: string | null;
   follow_up_date?: string | null;
   next_follow_up_at?: string | null;
+  follow_up_status?: string | null;
   is_hot_lead?: boolean | null;
   last_reply_at?: string | null;
   last_reply_preview?: string | null;
@@ -320,7 +331,7 @@ export default async function DailyCommandCenterPage({
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,follow_up_status,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .gte("created_at", cutoff24h)
@@ -338,7 +349,7 @@ export default async function DailyCommandCenterPage({
             res = (await supabase
               .from("leads")
               .select(
-                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,recommended_next_action"
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,follow_up_status,recommended_next_action"
               )
               .eq("owner_id", ownerId)
               .gte("created_at", cutoff24h)
@@ -355,7 +366,7 @@ export default async function DailyCommandCenterPage({
           let res = (await supabase
             .from("leads")
             .select(
-              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
+              "id,business_name,website,email,industry,best_contact_method,linked_opportunity_id,opportunity_score,conversion_score,score_breakdown,status,created_at,follow_up_date,next_follow_up_at,follow_up_status,is_hot_lead,last_reply_at,last_reply_preview,recommended_next_action,deal_status,deal_value,closed_at,outreach_sent_at,is_recurring_client,monthly_value,subscription_started_at,referred_by,referral_source,is_referred_client"
             )
             .eq("owner_id", ownerId)
             .order("created_at", { ascending: false })
@@ -371,7 +382,7 @@ export default async function DailyCommandCenterPage({
             res = (await supabase
               .from("leads")
               .select(
-                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,recommended_next_action"
+                "id,business_name,website,email,linked_opportunity_id,opportunity_score,status,created_at,follow_up_date,next_follow_up_at,follow_up_status,recommended_next_action"
               )
               .eq("owner_id", ownerId)
               .order("created_at", { ascending: false })
@@ -787,6 +798,20 @@ export default async function DailyCommandCenterPage({
   const bestFollowUpDayLabel = bestFollowUpDay ? weekday[bestFollowUpDay.day] : "Tue/Thu (default)";
   const hasEnoughTimingData = replyMessageRows.length >= 10 && followUpSentRows.length >= 10;
 
+  const nowMs = Date.now();
+  const wfNew = allLeads.filter((l) => workflowLeadStatus(l) === "new").length;
+  const wfContacted = allLeads.filter((l) => workflowLeadStatus(l) === "contacted").length;
+  const wfReplies = allLeads.filter((l) => workflowLeadStatus(l) === "replied").length;
+  const wfNoResponse = allLeads.filter((l) => workflowLeadStatus(l) === "no_response").length;
+  const wfWon = allLeads.filter((l) => workflowLeadStatus(l) === "won").length;
+  const wfFollowUpsDue = allLeads.filter((l) => {
+    if (workflowLeadStatus(l) !== "contacted") return false;
+    const fu = String(l.next_follow_up_at || "").trim();
+    if (!fu) return false;
+    if (String(l.follow_up_status || "").trim().toLowerCase() === "completed") return false;
+    return new Date(fu).getTime() <= nowMs;
+  }).length;
+
   return (
     <div className="space-y-4">
       {(fromLogin || bootstrapIssues.length > 0 || minimalMode) && (
@@ -826,6 +851,41 @@ export default async function DailyCommandCenterPage({
           </div>
         </section>
       )}
+
+      <section className="admin-card">
+        <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
+          Prospecting pipeline
+        </h2>
+        <p className="text-xs mt-1 mb-3" style={{ color: "var(--admin-muted)" }}>
+          Counts from <code>public.leads</code> (canonical statuses). Use <a href="/admin/leads">Leads</a> for the work queue.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 text-sm">
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>New</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfNew}</p>
+          </div>
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>Contacted</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfContacted}</p>
+          </div>
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>Follow-ups due</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfFollowUpsDue}</p>
+          </div>
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>Replies waiting</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfReplies}</p>
+          </div>
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>Won</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfWon}</p>
+          </div>
+          <div className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p style={{ color: "var(--admin-muted)" }}>No response</p>
+            <p className="text-xl font-bold" style={{ color: "var(--admin-gold)" }}>{wfNoResponse}</p>
+          </div>
+        </div>
+      </section>
 
       <section className="admin-card">
         <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>

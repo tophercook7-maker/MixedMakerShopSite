@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type LeadActivityEventType =
   | "lead_created"
+  | "message_sent"
+  | "lead_status_changed"
   | "preview_generated"
   | "preview_updated"
   | "email_drafted"

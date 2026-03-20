@@ -1,5 +1,6 @@
-import { findLeadDuplicate } from "@/lib/leads-dedup";
-import { scoreScoutLead } from "@/lib/scout-conversion";
+import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
+import { evaluateScoutIntakeTarget, scoreScoutLead } from "@/lib/scout-conversion";
 
 type SupabaseLike = {
   from: (table: string) => any;
@@ -107,7 +108,24 @@ export async function upsertLeadFromOpportunity(
   if (oppOwner && oppOwner !== ownerId) {
     return { leadId: null, created: false, skipped: true, reason: "owner_mismatch", error: null };
   }
-  if (!email && !phone && !website) return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
+  if (!email && !phone) return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
+
+  const intake = evaluateScoutIntakeTarget({
+    category: String(opp.category || opp.industry || "").trim() || null,
+    website,
+    facebookUrl: null,
+    phone,
+    email,
+  });
+  if (!intake.ok) {
+    return {
+      leadId: null,
+      created: false,
+      skipped: true,
+      reason: intake.skipReason || "skipped_intake",
+      error: null,
+    };
+  }
 
   const conversion = scoreScoutLead({
     business_name: businessName,
@@ -125,15 +143,12 @@ export async function upsertLeadFromOpportunity(
   if (!conversion.has_phone && !conversion.has_email) {
     return { leadId: null, created: false, skipped: true, reason: "missing_contact_path", error: null };
   }
-  if (conversion.lead_score < 60) {
-    return { leadId: null, created: false, skipped: true, reason: "low_conversion_score", error: null };
-  }
 
   const existing = await supabase
     .from("leads")
     .select("id")
     .eq("owner_id", ownerId)
-    .or(`id.eq.${oppId},linked_opportunity_id.eq.${oppId}`)
+    .eq("linked_opportunity_id", oppId)
     .limit(1);
   if (existing.error) {
     return {
@@ -153,13 +168,14 @@ export async function upsertLeadFromOpportunity(
     businessName,
     email,
     phone,
+    website,
+    facebookUrl: null,
   });
   if (dedup.duplicate && dedup.matchedLeadId) {
     return { leadId: dedup.matchedLeadId, created: false, skipped: true, reason: "duplicate", error: null };
   }
 
-  const payload: Record<string, unknown> = {
-    id: oppId,
+  const payload = pickLeadInsertFields({
     owner_id: ownerId,
     workspace_id: workspaceId,
     linked_opportunity_id: oppId,
@@ -167,17 +183,22 @@ export async function upsertLeadFromOpportunity(
     website: website || null,
     phone: phone || null,
     email: email || null,
+    category: String(opp.category || opp.industry || "").trim() || null,
     industry: String(opp.industry || opp.category || "").trim() || null,
     address: String(opp.address || "").trim() || null,
     why_this_lead_is_here: conversion.why_this_lead,
     visual_business: conversion.visual_business,
+    scout_intake_reason: intake.intakeReason,
+    has_website: leadHasStandaloneWebsite(website),
+    normalized_website: normalizeWebsiteUrl(website) || null,
     conversion_score: conversion.lead_score,
     opportunity_score: conversion.lead_score,
+    lead_source: "opportunity-sync",
     status: "new",
-    notes: "Auto-created from opportunity sync.",
-  };
+    notes: `Auto-sync. Scout: ${intake.intakeReason || "ok"}. ${conversion.why_this_lead}`,
+  });
   const createdAt = String(opp.created_at || "").trim();
-  if (createdAt) payload.created_at = createdAt;
+  if (createdAt) (payload as Record<string, unknown>).created_at = createdAt;
 
   const inserted = await supabase.from("leads").insert(payload).select("id").limit(1);
   const insertedId = String((inserted.data || [])[0]?.id || "").trim();

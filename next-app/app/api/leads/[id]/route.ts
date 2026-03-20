@@ -2,24 +2,18 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
+import { canonicalizeLeadStatus, leadHasStandaloneWebsite, pickLeadPatchFields } from "@/lib/crm-lead-schema";
+import { recordLeadActivity } from "@/lib/lead-activity";
+import { normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 
-function normalizeLeadStatus(status: unknown): string {
-  const normalized = String(status || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, "_");
-  if (!normalized) return "new";
-  if (normalized === "follow_up_due") return "follow_up";
-  if (normalized === "closed_won") return "won";
-  if (normalized === "closed_lost") return "no_response";
-  if (normalized === "do_not_contact") return "not_interested";
-  if (normalized === "research_later") return "archived";
-  return normalized;
+async function leadIdFromParams(params: Promise<{ id: string }> | { id: string }): Promise<string> {
+  const resolved = await Promise.resolve(params);
+  return String(resolved?.id || "").trim();
 }
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const requestId = crypto.randomUUID();
   console.info("[Lead API] request received", { request_id: requestId, method: "GET" });
@@ -32,8 +26,7 @@ export async function GET(
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = await params;
-  const leadId = String(id || "").trim();
+  const leadId = await leadIdFromParams(params);
   if (!leadId) {
     console.info("[Lead API] response sent", {
       request_id: requestId,
@@ -118,7 +111,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const requestId = crypto.randomUUID();
   console.info("[Lead API] request received", { request_id: requestId, method: "PATCH" });
@@ -131,7 +124,10 @@ export async function PATCH(
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = await params;
+  const id = await leadIdFromParams(params);
+  if (!id) {
+    return NextResponse.json({ error: "Lead id is required." }, { status: 400 });
+  }
   const body = await request.json();
   console.info("[Lead API] payload", { request_id: requestId, lead_id: id, payload: body });
   const parsed = leadSchema.partial().safeParse(body);
@@ -146,10 +142,25 @@ export async function PATCH(
   }
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
-  const payload = { ...parsed.data, last_updated_at: new Date().toISOString() } as Record<string, unknown>;
-  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
-    payload.status = normalizeLeadStatus(payload.status);
+  const rawPayload = { ...parsed.data, last_updated_at: new Date().toISOString() } as Record<string, unknown>;
+  if (Object.prototype.hasOwnProperty.call(rawPayload, "status")) {
+    rawPayload.status = canonicalizeLeadStatus(rawPayload.status);
   }
+  if (Object.prototype.hasOwnProperty.call(rawPayload, "website") || Object.prototype.hasOwnProperty.call(rawPayload, "facebook_url")) {
+    if (Object.prototype.hasOwnProperty.call(rawPayload, "website")) {
+      const w = String(rawPayload.website || "").trim() || undefined;
+      rawPayload.has_website = leadHasStandaloneWebsite(w);
+      rawPayload.normalized_website = normalizeWebsiteUrl(w) || null;
+    }
+    if (Object.prototype.hasOwnProperty.call(rawPayload, "facebook_url")) {
+      const f = String(rawPayload.facebook_url || "").trim() || undefined;
+      rawPayload.normalized_facebook_url = normalizeFacebookUrl(f) || null;
+    }
+  }
+  const payload = pickLeadPatchFields(rawPayload);
+  const { data: beforeRow } = await supabase.from("leads").select("status").eq("id", id).eq("owner_id", ownerId).maybeSingle();
+  const prevStatus = String((beforeRow as { status?: string } | null)?.status || "");
+
   const { data, error } = await supabase
     .from("leads")
     .update(payload)
@@ -181,6 +192,21 @@ export async function PATCH(
     });
     return NextResponse.json(responseBody, { status: 404 });
   }
+
+  if (Object.prototype.hasOwnProperty.call(payload, "status")) {
+    const nextStatus = String((data as { status?: string }).status || "");
+    if (nextStatus && nextStatus !== prevStatus) {
+      void recordLeadActivity(supabase, {
+        ownerId,
+        leadId: id,
+        eventType: nextStatus === "replied" ? "reply_received" : "lead_status_changed",
+        message:
+          nextStatus === "replied" ? "Lead marked as replied" : `Status: ${prevStatus || "unknown"} → ${nextStatus}`,
+        meta: { from: prevStatus, to: nextStatus },
+      });
+    }
+  }
+
   console.info("[Lead API] response sent", {
     request_id: requestId,
     status: 200,
@@ -191,7 +217,7 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const requestId = crypto.randomUUID();
   console.info("[Lead API] request received", { request_id: requestId, method: "DELETE" });
@@ -204,7 +230,10 @@ export async function DELETE(
     });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id } = await params;
+  const id = await leadIdFromParams(params);
+  if (!id) {
+    return NextResponse.json({ error: "Lead id is required." }, { status: 400 });
+  }
   const supabase = await createClient();
   const ownerId = String(user.id || "").trim();
   const { data, error } = await supabase

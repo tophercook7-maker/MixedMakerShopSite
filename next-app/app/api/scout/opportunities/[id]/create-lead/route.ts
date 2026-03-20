@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
-import { findLeadDuplicate } from "@/lib/leads-dedup";
-import { scoreScoutLead } from "@/lib/scout-conversion";
+import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
+import { evaluateScoutIntakeTarget, scoreScoutLead } from "@/lib/scout-conversion";
+import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 
 type OpportunityRow = {
   id: string;
@@ -251,6 +252,34 @@ export async function POST(
   ]
     .map((v) => String(v || "").trim())
     .filter(Boolean);
+  const websiteRaw = String(opp.website || "").trim() || null;
+  const facebookRaw = String(caseRow?.facebook_url || caseRow?.facebook || "").trim() || null;
+  const phoneRaw = String(caseRow?.phone_from_site || "").trim() || null;
+  const emailRaw = String(caseRow?.email || "").trim() || null;
+
+  const intake = evaluateScoutIntakeTarget({
+    category: opp.category,
+    website: websiteRaw,
+    facebookUrl: facebookRaw,
+    phone: phoneRaw,
+    email: emailRaw,
+  });
+  if (!intake.ok) {
+    return NextResponse.json({
+      ok: true,
+      created: false,
+      reason: intake.skipReason || "skipped",
+      message:
+        intake.skipReason === "non_priority_category"
+          ? "Lead skipped: category not in priority list (pressure washing, detailing, landscaping, plumbing, HVAC, roofing)."
+          : intake.skipReason === "has_standalone_website"
+            ? "Lead skipped: already has a standalone website."
+            : intake.skipReason === "missing_contact"
+              ? "Lead skipped: needs phone or email."
+              : "Lead skipped by scout intake rules.",
+    });
+  }
+
   const conversion = scoreScoutLead({
     business_name: opp.business_name,
     category: opp.category,
@@ -280,15 +309,6 @@ export async function POST(
       message: "Lead skipped: requires phone or email.",
     });
   }
-  if (conversion.lead_score < 60) {
-    return NextResponse.json({
-      ok: true,
-      created: false,
-      reason: "low_conversion_score",
-      lead_score: conversion.lead_score,
-      message: "Lead skipped: score below conversion threshold.",
-    });
-  }
   const reason = String(opp.opportunity_reason || "").trim();
   const assessment = buildLeadAssessment({
     website: String(opp.website || "").trim() || null,
@@ -303,18 +323,26 @@ export async function POST(
     lead_status: "new",
   });
 
-  const insertPayload = {
-    id: opp.id,
+  const businessName = String(opp.business_name || "").trim() || "Unknown business";
+  const website = websiteRaw;
+  const facebook_url = facebookRaw || undefined;
+  const insertPayload = pickLeadInsertFields({
     owner_id: ownerId,
     workspace_id: workspaceId,
     linked_opportunity_id: opp.id,
-    business_name: String(opp.business_name || "").trim() || "Unknown business",
+    business_name: businessName,
     contact_name: null,
-    email: String(caseRow?.email || "").trim() || null,
-    phone: String(caseRow?.phone_from_site || "").trim() || null,
-    website: String(opp.website || "").trim() || null,
+    email: emailRaw || null,
+    phone: phoneRaw || null,
+    website,
+    facebook_url: facebook_url || null,
+    has_website: leadHasStandaloneWebsite(website || undefined),
+    normalized_website: normalizeWebsiteUrl(website) || null,
+    normalized_facebook_url: normalizeFacebookUrl(facebook_url) || null,
+    category: String(opp.category || "").trim() || null,
     industry: String(opp.category || "").trim() || null,
-    lead_source: "scout-high-conversion",
+    lead_source: "scout-simple-intake",
+    scout_intake_reason: intake.intakeReason,
     address: String(opp.address || "").trim() || null,
     best_contact_method: assessment.best_contact_method || "none",
     opportunity_score: conversion.lead_score,
@@ -323,17 +351,19 @@ export async function POST(
     visual_business: conversion.visual_business,
     auto_intake: true,
     status: "new",
-    notes: `Created from Top Opportunities. Why this lead is here: ${conversion.why_this_lead}. Problem: ${
-      assessment.primary_problem
-    }. Opportunity reason: ${reason || assessment.primary_problem}.`,
-  };
+    notes: `Scout: ${intake.intakeReason || "Target"}. ${conversion.why_this_lead}. Problem: ${assessment.primary_problem}. Opportunity reason: ${
+      reason || assessment.primary_problem
+    }.`,
+  });
 
   const dedup = await findLeadDuplicate({
     supabase,
     ownerId,
-    businessName: insertPayload.business_name,
-    email: insertPayload.email || null,
-    phone: insertPayload.phone || null,
+    businessName,
+    email: emailRaw || null,
+    phone: phoneRaw || null,
+    website,
+    facebookUrl: facebook_url || null,
   });
   if (dedup.duplicate && dedup.matchedLeadId) {
     return NextResponse.json({
@@ -342,7 +372,7 @@ export async function POST(
       reason: "duplicate_existing_lead",
       lead_id: dedup.matchedLeadId,
       case_id: existingCaseId,
-      business_name: insertPayload.business_name,
+      business_name: businessName,
       message: "Lead already exists.",
       duplicate_reason: dedup.reason,
     });
@@ -350,8 +380,8 @@ export async function POST(
 
   console.info("[Action Debug] lead insert attempted", {
     opportunityId,
-    businessName: insertPayload.business_name,
-    workspaceId: insertPayload.workspace_id,
+    businessName,
+    workspaceId,
   });
   const { data: insertedRows, error: insertError } = await supabase
     .from("leads")
@@ -364,7 +394,8 @@ export async function POST(
       const { data: conflictRows } = await supabase
         .from("leads")
         .select("id,business_name")
-        .eq("id", String(opp.id || ""))
+        .eq("owner_id", ownerId)
+        .eq("linked_opportunity_id", opportunityId)
         .limit(1);
       const conflict = (conflictRows || [])[0] as { id?: string | null; business_name?: string | null } | undefined;
       if (conflict?.id) {
@@ -385,7 +416,7 @@ export async function POST(
             reason: "duplicate_conflict",
             lead_id: String(conflict.id || ""),
             case_id: String(caseRow?.id || "").trim() || null,
-            business_name: String(conflict.business_name || insertPayload.business_name || ""),
+            business_name: String(conflict.business_name || businessName || ""),
             message: "Lead already exists.",
           },
           { status: 200 }
@@ -428,7 +459,7 @@ export async function POST(
     reason: "created",
     lead_id: String(inserted.id),
     case_id: String(caseRow?.id || "").trim() || null,
-    business_name: String(inserted.business_name || insertPayload.business_name || ""),
+    business_name: String(inserted.business_name || businessName || ""),
     message: "Lead created from top opportunity.",
   };
   console.info("[Action Debug] create-lead response sent", {

@@ -54,7 +54,7 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
   if (!normalized) return "new";
-  if (normalized === "follow_up_due") return "follow_up";
+  if (normalized === "follow_up_due" || normalized === "follow_up") return "contacted";
   if (normalized === "closed_won") return "won";
   if (normalized === "closed_lost") return "no_response";
   if (normalized === "do_not_contact") return "not_interested";
@@ -62,7 +62,6 @@ function normalizeStatus(value: string | null | undefined): WorkflowLead["status
   if (
     normalized === "new" ||
     normalized === "contacted" ||
-    normalized === "follow_up" ||
     normalized === "replied" ||
     normalized === "won" ||
     normalized === "no_response" ||
@@ -245,6 +244,7 @@ export default async function AdminLeadsPage({
   let rows: LeadRow[] = [];
   try {
     const selectVariants = [
+      "*",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at",
