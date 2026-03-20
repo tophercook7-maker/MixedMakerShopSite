@@ -173,10 +173,10 @@ export function HomeProjectForm() {
           </label>
           <select className="form-select" id="project-budget" name="budget">
             <option value="">Select...</option>
-            <option value="Under $500">Under $500</option>
-            <option value="$500–$1,500">$500–$1,500</option>
-            <option value="$1,500–$3,000">$1,500–$3,000</option>
-            <option value="$3,000+">$3,000+</option>
+            <option value="Under $1,000">Under $1,000</option>
+            <option value="$1,000–$2,500">$1,000–$2,500</option>
+            <option value="$2,500–$5,000">$2,500–$5,000</option>
+            <option value="$5,000+">$5,000+</option>
             <option value="Not sure yet">Not sure yet</option>
           </select>
         </div>

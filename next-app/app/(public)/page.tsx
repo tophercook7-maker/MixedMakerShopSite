@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "MixedMakerShop Studio | Building, Creating, Experimenting",
   description:
-    "MixedMakerShop is Topher Cook's creative studio for building projects, experiments, and digital ideas. Need a website? Visit the dedicated web design page.",
+    "MixedMakerShop is Topher Cook's creative studio. For local business websites: starter setups from $400, full business setups from $900 — see Topher Web Design.",
 };
 
 export default function HomePage() {
@@ -89,8 +89,9 @@ export default function HomePage() {
             <h2 style={{ margin: "0 0 10px" }}>Work Directly With Topher</h2>
             <p className="subhead" style={{ margin: "0 0 14px" }}>
               MixedMakerShop is the umbrella studio. Topher Web Design is the dedicated client-service side for
-              businesses that need modern websites. If you need a cleaner online presence that drives more trust and
-              inquiries, head to the web design page.
+              businesses that need modern websites. Starter setups from $400, full business setups from $900 — no
+              agency games. If you need a cleaner online presence that drives more trust and calls, head to the web
+              design page.
             </p>
             <div className="btn-row">
               <Link className="btn gold" href="/web-design">

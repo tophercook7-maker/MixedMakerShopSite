@@ -45,7 +45,7 @@ export default function WebDesignHotSpringsPage() {
 
           <div className="btn-row" style={{ marginTop: 22 }}>
             <Link href="/contact" className="btn gold">
-              Get My Free Website Draft
+              Get My Free Mockup
             </Link>
             <Link href="/web-design" className="btn ghost">
               Web Design Services

@@ -227,8 +227,8 @@ function calendarTypeColor(type: string | null | undefined): string {
 
 function estimateBeginnerDealValue(lead: LeadRow): number {
   const score = Number(lead.opportunity_score || 0);
-  // Beginner-friendly pricing: basic $150-$300, standard $300-$500.
-  return score >= 75 ? 400 : 225;
+  // Beginner-friendly defaults: starter setup $400, business setup $900.
+  return score >= 75 ? 900 : 400;
 }
 
 function conversionPriorityScore(input: {
@@ -1425,7 +1425,7 @@ export default async function DailyCommandCenterPage({
               <p className="text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>conversion rate</p>
               <p className="text-2xl font-semibold mt-1">{conversionRate.toFixed(1)}%</p>
               <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-                Uses beginner pricing defaults when won deals have no value: basic $150-$300, standard $300-$500.
+                Uses beginner pricing defaults when won deals have no value: starter setup $400, business setup $900.
               </p>
             </div>
             <div className="rounded-lg border px-3 py-3 col-span-2" style={{ borderColor: "var(--admin-border)" }}>

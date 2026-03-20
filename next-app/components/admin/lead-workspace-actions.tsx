@@ -127,7 +127,7 @@ const QUICK_REPLIES: QuickReplyTemplate[] = [
     id: "price",
     label: "💰 Pricing Question",
     message:
-      "Good question — it depends a bit on what you want, but most small business sites I do are in the $300–$500 range.\n\nI can keep it simple and focused on getting you more calls.\n\nWant me to break down what you'd get?",
+      "Good question — I keep it simple.\n\nStarter setups are $400 (clean one-page site, mobile-friendly, click-to-call, contact form, basic Google setup).\n\nBusiness setups are $900 when you want 3–5 pages, service pages, stronger CTAs, Google profile optimization, and review setup.\n\nCustom work is quoted by project.\n\nWant me to break down what you'd get?",
   },
   {
     id: "facebook",
@@ -178,7 +178,7 @@ const CLOSING_REPLIES: ClosingReplyTemplate[] = [
     stage: "pricing",
     nextAction: "Confirm scope and align on budget.",
     message:
-      "I keep it simple — most sites like that are in the $300–$500 range depending on what you need.\n\nMain goal is just to help you get more calls and make it easy for customers to reach you.\n\nWant me to walk you through it real quick?",
+      "I keep it simple — starter setups are $400 and full business setups are $900, depending on how many pages and extras you need.\n\nMain goal is to help you get more calls and make it easy for customers to reach you.\n\nWant me to walk you through it real quick?",
   },
   {
     id: "closing",
@@ -269,8 +269,8 @@ function beginnerPricingSuggestion(category: string): { label: string; midpoint:
     normalized.includes("service") ||
     normalized.includes("clinic");
   return isStandard
-    ? { label: "Standard site ($300-$500)", midpoint: 400 }
-    : { label: "Basic website ($150-$300)", midpoint: 225 };
+    ? { label: "Business setup ($900)", midpoint: 900 }
+    : { label: "Starter setup ($400)", midpoint: 400 };
 }
 
 function sanitizeOutreachBody(body: string, opts: { hasWebsite: boolean; hasScreenshot: boolean }): string {
@@ -2055,9 +2055,11 @@ export function LeadWorkspaceActions({
     if (normalized.includes("best way to reach you") || normalized.includes("text or call")) return "won";
     if (normalized.includes("i just need a couple details") || normalized.includes("start putting it together")) return "closing";
     if (
-      normalized.includes("$300") ||
-      normalized.includes("$500") ||
+      normalized.includes("$400") ||
+      normalized.includes("$900") ||
       normalized.includes("most sites like that") ||
+      normalized.includes("starter setup") ||
+      normalized.includes("business setup") ||
       normalized.includes("pricing")
     ) {
       return "pricing";

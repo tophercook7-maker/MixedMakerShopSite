@@ -1367,7 +1367,7 @@ export default async function AdminLeadDetailPage({
               <p><span style={{ color: "var(--admin-muted)" }}>Contact readiness:</span> {contactReadiness}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Suggested channel:</span> {suggestedChannel}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Estimated value:</span> {valueInfo.estimated_value} ({valueInfo.estimated_price_range})</p>
-              <p><span style={{ color: "var(--admin-muted)" }}>Beginner pricing lane:</span> {Number(displayScore || 0) >= 75 ? "Standard site ($300-$500)" : "Basic website ($150-$300)"}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Beginner pricing lane:</span> {Number(displayScore || 0) >= 75 ? "Business setup ($900)" : "Starter setup ($400)"}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Deal status:</span> {String(lead?.deal_status || "none").replace(/_/g, " ")}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Deal stage:</span> {String(lead?.deal_stage || "new").replace(/_/g, " ")}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Deal value:</span> {lead?.deal_value ? `$${Number(lead.deal_value).toFixed(0)}` : "Not set yet"}</p>

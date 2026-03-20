@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Topher Web Design | Arkansas Small Business Websites",
   description:
-    "Work directly with Topher Cook for clean, modern small-business websites built to improve trust, calls, and conversions.",
+    "Local business websites built for calls and trust — mobile-friendly, click-to-call, forms, Google cleanup, review setup. Starter setups from $400, full business setups from $900, custom builds on quote.",
 };
 
 export default function WebDesignPage() {
@@ -12,14 +12,17 @@ export default function WebDesignPage() {
       <section className="hero">
         <div className="container">
           <div style={{ maxWidth: 860 }}>
-            <div className="kicker"><span className="dot" /> Topher Web Design</div>
-            <h1 className="h1">Topher Web Design</h1>
+            <div className="kicker">
+              <span className="dot" /> Topher Web Design
+            </div>
+            <h1 className="h1">Build a Website That Actually Brings You Calls</h1>
             <p className="subhead">
-              Websites for small businesses that need more trust, more calls, and a cleaner online presence.
+              Most local businesses don&apos;t have a traffic problem — they have a setup problem. If your website is
+              outdated, hard to use on a phone, or confusing to customers, you&apos;re losing work. I fix that.
             </p>
             <p className="hero-microproof">
-              Work directly with Topher Cook from start to finish. No agency layers, no confusing process, just a
-              clean modern site built to help your business look legit and make it easier for customers to contact you.
+              No overcomplicated systems. No agency pricing. Just a clean setup focused on trust, clarity, and getting
+              your phone to ring.
             </p>
             <div className="btn-row">
               <Link href="/contact" className="btn gold">
@@ -33,75 +36,72 @@ export default function WebDesignPage() {
         </div>
       </section>
 
-      <section className="section" id="why-work-with-topher">
+      <section className="section" id="what-i-do">
         <div className="container">
-          <h2 className="section-heading">Why work with Topher?</h2>
-          <p className="transformations-subhead" style={{ margin: "0 0 28px" }}>
-            I build websites for small businesses that want something clear, modern, and easy for customers to use.
-            You work directly with me from start to finish, so things stay simple, communication stays clear, and your
-            site gets built around what your business actually needs.
+          <h2 className="section-heading">What I Do</h2>
+          <p className="transformations-subhead" style={{ margin: "0 0 22px" }}>
+            I help local businesses get more calls by fixing the online side of things.
           </p>
-          <div className="trust-points-grid" style={{ marginBottom: 0 }}>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">Direct communication from start to finish</h3>
-              <p className="how-it-works-copy">No handoffs, no layers, no confusion.</p>
-            </div>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">Clean, modern design without the fluff</h3>
-              <p className="how-it-works-copy">Every section has a purpose and supports your goal.</p>
-            </div>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">Built for real businesses, not just looks</h3>
-              <p className="how-it-works-copy">Designed to improve trust and make contacting you easier.</p>
-            </div>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">Simple process and fast momentum</h3>
-              <p className="how-it-works-copy">You get clarity quickly and steady progress without complexity.</p>
-            </div>
-          </div>
+          <ul className="small" style={{ margin: "0 0 0 20px", maxWidth: 640, color: "var(--muted)", lineHeight: 1.65 }}>
+            <li>Clean, mobile-friendly websites</li>
+            <li>Click-to-call buttons</li>
+            <li>Simple quote/contact forms</li>
+            <li>Google profile cleanup</li>
+            <li>Review setup to help get more 5-star reviews</li>
+          </ul>
         </div>
       </section>
 
-      <section className="section" id="services">
+      <section className="section" id="how-it-works">
         <div className="container">
-          <h2 className="section-heading">What I can build for you</h2>
-          <p className="transformations-subhead" style={{ margin: "0 0 22px" }}>
-            Whether you need a simple business site, a redesign, or a focused landing page, I can help you create a
-            site that looks better and makes it easier for customers to trust and contact you.
+          <h2 className="section-heading">How It Works</h2>
+          <div className="how-it-works-grid">
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">1. You tell me about your business</h3>
+              <p className="how-it-works-copy">What you do, who you serve, and how people usually try to reach you.</p>
+            </div>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">2. I build your setup</h3>
+              <p className="how-it-works-copy">Clean structure, mobile-friendly flow, click-to-call, forms, and trust-ready basics.</p>
+            </div>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">3. You review it</h3>
+              <p className="how-it-works-copy">We adjust copy and layout until it matches how you want to show up online.</p>
+            </div>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">4. You start getting more calls</h3>
+              <p className="how-it-works-copy">A simpler path from finding you to contacting you — without a bloated build.</p>
+            </div>
+          </div>
+          <p className="small" style={{ marginTop: 20, color: "var(--muted)" }}>
+            Most projects are done in 5–7 days.
           </p>
-          <div className="grid-3">
-            <div className="card">
-              <h3>Small Business Websites</h3>
-              <p className="small">Clear service pages and contact flow for local businesses that need trust fast.</p>
+        </div>
+      </section>
+
+      <section className="section" id="why-work-with-me">
+        <div className="container">
+          <h2 className="section-heading">Why Work With Me</h2>
+          <div className="trust-points-grid" style={{ marginBottom: 0 }}>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">Local</h3>
+              <p className="how-it-works-copy">Hot Springs–based, working with businesses here and online.</p>
             </div>
-            <div className="card">
-              <h3>Website Redesigns</h3>
-              <p className="small">Refresh outdated sites with cleaner structure, stronger copy, and better UX.</p>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">Simple</h3>
+              <p className="how-it-works-copy">Straightforward process, plain language, no fluff.</p>
             </div>
-            <div className="card">
-              <h3>Landing Pages</h3>
-              <p className="small">Focused one-page builds for offers, campaigns, and lead generation.</p>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">Affordable</h3>
+              <p className="how-it-works-copy">Fair pricing without the agency markup.</p>
             </div>
-            <div className="card">
-              <h3>Restaurant website design</h3>
-              <p className="small">Menu-forward pages that help diners quickly decide and contact or visit.</p>
-              <Link href="/restaurant-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
-                Learn more
-              </Link>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">Fast turnaround</h3>
+              <p className="how-it-works-copy">Momentum matters — most builds ship in about a week.</p>
             </div>
-            <div className="card">
-              <h3>Church websites</h3>
-              <p className="small">Welcoming layouts with clear service times, ministries, and next steps.</p>
-              <Link href="/church-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
-                Learn more
-              </Link>
-            </div>
-            <div className="card">
-              <h3>Coffee shop websites</h3>
-              <p className="small">Menu-first sites that make ordering, visiting, and local discovery easier.</p>
-              <Link href="/coffee-shop-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
-                Learn more
-              </Link>
+            <div className="how-it-works-card">
+              <h3 className="how-it-works-title">Focused on real results</h3>
+              <p className="how-it-works-copy">Calls, trust, and a setup that actually works on phones.</p>
             </div>
           </div>
         </div>
@@ -110,62 +110,121 @@ export default function WebDesignPage() {
       <section className="section" id="pricing">
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>Simple Pricing</h2>
-            <p className="subhead" style={{ margin: "0 0 14px" }}>
-              Every project is different, but these ranges help set expectations. Contact me and I&apos;ll point you in
-              the right direction.
+            <h2 className="section-heading" style={{ margin: "0 0 10px" }}>
+              Simple, Straightforward Pricing
+            </h2>
+            <p className="subhead" style={{ margin: "0 0 20px" }}>
+              Most local businesses don&apos;t need something complicated — they just need a setup that actually brings in
+              calls.
             </p>
             <div className="price-grid">
               <div className="price-card">
-                <div className="tag">STARTER SITE</div>
-                <div className="price">From $300</div>
-                <p className="small">
-                  A simple, clean website for businesses that need a professional online presence fast.
+                <div className="tag">STARTER SETUP</div>
+                <h3 className="how-it-works-title" style={{ marginTop: 12, marginBottom: 8 }}>
+                  Starter Setup — $400
+                </h3>
+                <p className="small" style={{ margin: "0 0 10px" }}>
+                  Perfect for getting online fast and making it easy for customers to reach you.
+                </p>
+                <ul className="small">
+                  <li>1-page clean website</li>
+                  <li>Mobile-friendly design</li>
+                  <li>Click-to-call button</li>
+                  <li>Contact / quote form</li>
+                  <li>Basic Google setup</li>
+                  <li>Simple, clear layout</li>
+                </ul>
+                <p className="small" style={{ marginTop: 14, fontWeight: 700, color: "var(--text)" }}>
+                  Best for: small businesses that just need something that works
                 </p>
               </div>
               <div className="price-card">
-                <div className="tag">BUSINESS SITE</div>
-                <div className="price">From $500</div>
-                <p className="small">
-                  A more complete website with multiple sections, stronger messaging, and a polished presentation.
+                <div className="tag">BUSINESS SETUP</div>
+                <h3 className="how-it-works-title" style={{ marginTop: 12, marginBottom: 8 }}>
+                  Business Setup — $900
+                </h3>
+                <p className="small" style={{ margin: "0 0 10px" }}>
+                  For businesses ready to look more professional and bring in more consistent work.
+                </p>
+                <ul className="small">
+                  <li>3–5 page website</li>
+                  <li>Service pages</li>
+                  <li>Strong call-to-action setup</li>
+                  <li>Google profile optimization</li>
+                  <li>Review system setup</li>
+                  <li>Better structure for conversions</li>
+                </ul>
+                <p className="small" style={{ marginTop: 14, fontWeight: 700, color: "var(--text)" }}>
+                  Best for: businesses that want more calls and better results
                 </p>
               </div>
               <div className="price-card">
-                <div className="tag">CUSTOM BUILD</div>
-                <div className="price">Custom Quote</div>
-                <p className="small">For businesses that need something more tailored, niche, or feature-specific.</p>
+                <div className="tag">CUSTOM BUILDS</div>
+                <h3 className="how-it-works-title" style={{ marginTop: 12, marginBottom: 8 }}>
+                  Custom Builds
+                </h3>
+                <p className="small" style={{ margin: "0 0 10px" }}>
+                  For businesses that need something more specific or advanced.
+                </p>
+                <ul className="small">
+                  <li>Custom features</li>
+                  <li>Advanced layouts</li>
+                  <li>Specialized functionality</li>
+                </ul>
+                <p className="small" style={{ marginTop: 14, fontWeight: 700, color: "var(--text)" }}>
+                  Price depends on the project
+                </p>
               </div>
             </div>
-            <div className="btn-row" style={{ marginTop: 16 }}>
+            <div
+              className="card"
+              style={{
+                marginTop: 24,
+                padding: "20px 18px",
+                border: "1px solid var(--border)",
+                borderRadius: 16,
+                background: "rgba(255,255,255,0.02)",
+              }}
+            >
+              <h3 style={{ margin: "0 0 8px", fontSize: "1.15rem", fontWeight: 800 }}>Not sure what you need?</h3>
+              <p className="small" style={{ margin: "0 0 16px", color: "var(--muted)" }}>
+                I&apos;ll take a quick look at your business and tell you exactly what I&apos;d do — no pressure.
+              </p>
               <Link href="/contact" className="btn gold">
-                Ask About Pricing
+                Get My Free Mockup
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section" id="how-it-works">
+      <section className="section" id="niches">
         <div className="container">
-          <h2 className="section-heading">How it works</h2>
-          <div className="how-it-works-grid">
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">1. Tell me what you need</h3>
-              <p className="how-it-works-copy">
-                Share your business, your goals, and what kind of site you want.
-              </p>
+          <h2 className="section-heading">Help by industry</h2>
+          <p className="transformations-subhead" style={{ margin: "0 0 22px" }}>
+            Same focus on calls and trust — tailored examples for common local categories.
+          </p>
+          <div className="grid-3">
+            <div className="card">
+              <h3>Restaurant website design</h3>
+              <p className="small">Menu-forward pages that help diners decide fast.</p>
+              <Link href="/restaurant-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
+                Learn more
+              </Link>
             </div>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">2. I mock up the direction</h3>
-              <p className="how-it-works-copy">
-                I put together a clean direction so you can see where the site is going before we refine it.
-              </p>
+            <div className="card">
+              <h3>Church websites</h3>
+              <p className="small">Clear service times, ministries, and next steps.</p>
+              <Link href="/church-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
+                Learn more
+              </Link>
             </div>
-            <div className="how-it-works-card">
-              <h3 className="how-it-works-title">3. We refine and launch</h3>
-              <p className="how-it-works-copy">
-                We make it better, tighten the details, and get your website ready to go live.
-              </p>
+            <div className="card">
+              <h3>Coffee shop websites</h3>
+              <p className="small">Menu-first flow for locals searching on their phones.</p>
+              <Link href="/coffee-shop-websites-hot-springs" className="btn ghost" style={{ alignSelf: "flex-start" }}>
+                Learn more
+              </Link>
             </div>
           </div>
         </div>
@@ -175,7 +234,7 @@ export default function WebDesignPage() {
         <div className="container">
           <h2 className="section-heading">Sample Work</h2>
           <p className="transformations-subhead" style={{ margin: "0 0 24px" }}>
-            A few examples of the kinds of websites I can build for small businesses.
+            Examples of clean, conversion-minded layouts for local businesses.
           </p>
           <div className="grid-2">
             <div className="card">
@@ -230,10 +289,9 @@ export default function WebDesignPage() {
       <section className="section" id="final-cta">
         <div className="container">
           <div className="panel">
-            <h2 style={{ margin: "0 0 10px" }}>Need a better website?</h2>
+            <h2 style={{ margin: "0 0 10px" }}>Want Me to Take a Look at Your Business?</h2>
             <p className="subhead" style={{ margin: "0 0 14px" }}>
-              If your business needs a cleaner online presence, I can help you create something modern, clear, and
-              easier for customers to trust.
+              I&apos;ll show you exactly what I&apos;d fix — no pressure.
             </p>
             <div className="btn-row">
               <Link href="/contact" className="btn gold">

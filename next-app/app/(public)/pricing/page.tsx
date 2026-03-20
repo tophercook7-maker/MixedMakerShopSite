@@ -2,7 +2,8 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Pricing | MixedMakerShop",
-  description: "Transparent pricing for web design and ongoing hosting/support.",
+  description:
+    "Starter setups from $400, full business setups from $900, custom builds on quote, plus hosting and support.",
 };
 
 export default function PricingPage() {
@@ -12,30 +13,32 @@ export default function PricingPage() {
         <div className="panel">
           <h1 style={{ margin: "0 0 10px" }}>Pricing</h1>
           <p className="subhead" style={{ margin: "0 0 28px" }}>
-            Clear pricing for web design builds and ongoing hosting/support.
+            Straightforward web design builds for local businesses, plus optional hosting and support.
           </p>
           <div className="price-grid">
             <div className="price-card">
-              <div className="tag">STARTER WEBSITE</div>
-              <div className="price">$300-$500</div>
+              <div className="tag">STARTER SETUP</div>
+              <div className="price">$400</div>
               <p className="small">
-                Best for a clean starter site with clear messaging and contact-focused layout.
+                One-page site, mobile-friendly, click-to-call, contact form, and basic Google setup — built to bring in
+                calls.
               </p>
               <div className="actions">
                 <Link href="/contact" className="mini gold">
-                  Start a Project
+                  Get My Free Mockup
                 </Link>
               </div>
             </div>
             <div className="price-card">
-              <div className="tag">STANDARD WEBSITE</div>
-              <div className="price">$600-$900</div>
+              <div className="tag">BUSINESS SETUP</div>
+              <div className="price">$900</div>
               <p className="small">
-                Best for a stronger multi-section website designed for trust and conversion.
+                3–5 pages, service pages, stronger CTAs, Google profile optimization, and review setup — more trust,
+                more consistency.
               </p>
               <div className="actions">
                 <Link href="/contact" className="mini gold">
-                  Start a Project
+                  Get My Free Mockup
                 </Link>
               </div>
             </div>
@@ -50,9 +53,16 @@ export default function PricingPage() {
               </div>
             </div>
           </div>
+          <p className="small" style={{ marginTop: 20, color: "var(--muted)" }}>
+            Custom builds are quoted by project —{" "}
+            <Link href="/web-design" style={{ color: "var(--gold)", fontWeight: 700 }}>
+              see web design packages
+            </Link>
+            .
+          </p>
           <div style={{ marginTop: 28 }}>
             <Link href="/contact" className="btn gold">
-              Get My Free Website Draft
+              Get My Free Mockup
             </Link>
           </div>
         </div>

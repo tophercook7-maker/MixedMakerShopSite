@@ -36,7 +36,7 @@ export default function CoffeeShopWebsitesPage() {
           </div>
           <div className="btn-row" style={{ marginTop: 22 }}>
             <Link href="/contact" className="btn gold">
-              Get My Free Website Draft
+              Get My Free Mockup
             </Link>
             <Link href="/website-samples" className="btn ghost">
               View Website Samples
