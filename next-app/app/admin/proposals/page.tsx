@@ -7,14 +7,15 @@ export const revalidate = 0;
 
 type ProposalRow = {
   id: string;
-  lead_id: string;
+  lead_id: string | null;
   proposal_link: string | null;
   proposal_amount: number | null;
-  proposal_status: string;
+  proposal_status: string | null;
   proposal_sent_at: string | null;
-  proposal_follow_up_at: string | null;
+  proposal_follow_up_at?: string | null;
   notes: string | null;
-  updated_at: string;
+  created_at?: string | null;
+  updated_at?: string | null;
   leads: { business_name: string | null } | null;
 };
 
@@ -51,7 +52,12 @@ export default async function AdminProposalsPage() {
       .eq("owner_id", ownerId)
       .order("updated_at", { ascending: false });
     if (error) throw error;
-    rows = (data || []) as ProposalRow[];
+    const rawRows = data ?? [];
+    const normalizedRows: ProposalRow[] = rawRows.map(({ leads, ...rest }) => ({
+      ...rest,
+      leads: Array.isArray(leads) ? leads[0] ?? null : leads ?? null,
+    }));
+    rows = normalizedRows;
   } catch (e) {
     console.error("[Proposals Page] load failed", e);
     return (
@@ -102,7 +108,7 @@ export default async function AdminProposalsPage() {
                       {name}
                     </Link>
                     <p className="text-xs mt-0.5" style={{ color: "var(--admin-muted)" }}>
-                      {STATUS_LABEL[p.proposal_status] || p.proposal_status}
+                      {(p.proposal_status && STATUS_LABEL[p.proposal_status]) || p.proposal_status || "—"}
                     </p>
                   </div>
                   {p.proposal_amount != null && (

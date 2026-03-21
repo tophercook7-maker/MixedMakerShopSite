@@ -18,12 +18,13 @@ export async function syncOpportunitiesToScoutResults(
   ownerId: string,
   leads: ScoutLead[]
 ): Promise<{ upserted: number; error: string | null }> {
-  const normalized = leads.map((l) => normalizeScoutLeadToResultRow(l, ownerId)).filter(Boolean) as ReturnType<
-    typeof normalizeScoutLeadToResultRow
-  >[];
+  type NormalizedRow = NonNullable<ReturnType<typeof normalizeScoutLeadToResultRow>>;
+  const normalized: NormalizedRow[] = leads
+    .map((l) => normalizeScoutLeadToResultRow(l, ownerId))
+    .filter((n): n is NormalizedRow => n != null);
   if (normalized.length === 0) return { upserted: 0, error: null };
 
-  const keys = [...new Set(normalized.map((n) => n.dedupe_key))];
+  const keys = Array.from(new Set(normalized.map((n) => n.dedupe_key)));
   const { data: existingRows, error: selErr } = await supabase
     .from("scout_results")
     .select("id,dedupe_key,skipped,added_to_leads,linked_lead_id,scout_notes,discovered_at")

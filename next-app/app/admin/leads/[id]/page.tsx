@@ -48,6 +48,7 @@ type LeadRow = {
   last_outreach_channel?: string | null;
   last_outreach_status?: string | null;
   last_outreach_sent_at?: string | null;
+  next_follow_up_at?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -84,6 +85,7 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "last_outreach_channel",
     "last_outreach_status",
     "last_outreach_sent_at",
+    "next_follow_up_at",
   ].join(","),
   [
     "id",

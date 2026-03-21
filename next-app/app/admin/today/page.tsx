@@ -41,7 +41,7 @@ export default async function TodayCommandPage() {
   for (const sel of selectVariants) {
     const { data, error } = await supabase.from("leads").select(sel).eq("owner_id", ownerId).order("created_at", { ascending: false }).limit(800);
     if (!error) {
-      rows = (data || []) as LeadRowForWorkflow[];
+      rows = (data || []) as unknown as LeadRowForWorkflow[];
       break;
     }
     if (!isMissingColumnError(String(error.message))) console.error("[Today] leads query", error);

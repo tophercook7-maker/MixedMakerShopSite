@@ -20,7 +20,7 @@ import {
   sourceTypeLabel,
 } from "@/lib/scout/scout-result-ui";
 
-type Tri = "all" | "yes" | "no" | "unknown";
+type WebsiteFilterValue = "all" | "none" | "has" | "unknown";
 
 type PresetTab = "best" | "all";
 
@@ -101,7 +101,7 @@ export function ScoutLitePanel({
 }: Props) {
   const [presetTab, setPresetTab] = useState<PresetTab>("best");
   const [sourceTab, setSourceTab] = useState<"all" | "google" | "facebook">("all");
-  const [websiteFilter, setWebsiteFilter] = useState<Tri>("all");
+  const [websiteFilter, setWebsiteFilter] = useState<WebsiteFilterValue>("all");
   const [phoneFilter, setPhoneFilter] = useState<"all" | "has" | "none">("all");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -138,7 +138,7 @@ export function ScoutLitePanel({
       const c = String(r.category || "").trim();
       if (c) s.add(c);
     }
-    return [...s].sort((a, b) => a.localeCompare(b));
+    return Array.from(s).sort((a, b) => a.localeCompare(b));
   }, [rows]);
 
   const filtered = useMemo(() => {
@@ -317,7 +317,7 @@ export function ScoutLitePanel({
             className="rounded-lg border px-2 py-1.5 text-sm"
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
             value={websiteFilter}
-            onChange={(e) => setWebsiteFilter(e.target.value as Tri)}
+            onChange={(e) => setWebsiteFilter(e.target.value as WebsiteFilterValue)}
           >
             <option value="all">All</option>
             <option value="none">No website</option>
