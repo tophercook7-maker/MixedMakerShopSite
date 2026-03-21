@@ -10,10 +10,22 @@ export type SectionCopyDraftPick = {
   heroHeadline: string;
 };
 
+function haystack(draft: SectionCopyDraftPick): string {
+  return `${draft.offeringsTitle} ${draft.tagline} ${draft.businessName} ${draft.heroHeadline}`.toLowerCase();
+}
+
 export function inferContactBandTitle(draft: SectionCopyDraftPick, portfolioCopy: boolean): string {
   if (draft.contactBandTitle) return draft.contactBandTitle;
   if (portfolioCopy) return "Get in touch";
   const hay = `${draft.tagline} ${draft.businessName} ${draft.offeringsTitle}`.toLowerCase();
+  if (
+    hay.includes("pressure") ||
+    hay.includes("power wash") ||
+    hay.includes("soft wash") ||
+    (hay.includes("wash") && hay.includes("exterior"))
+  ) {
+    return "Get a free estimate";
+  }
   if (hay.includes("church") || hay.includes("worship") || hay.includes("fellowship")) {
     return "Questions before your first visit?";
   }
@@ -30,6 +42,14 @@ export function inferContactBandSub(draft: SectionCopyDraftPick, portfolioCopy: 
     return "Customers can call, email, or request a quote in one click on a live site.";
   }
   const hay = `${draft.tagline} ${draft.businessName} ${draft.offeringsTitle}`.toLowerCase();
+  if (
+    hay.includes("pressure") ||
+    hay.includes("power wash") ||
+    hay.includes("soft wash") ||
+    (hay.includes("wash") && hay.includes("exterior"))
+  ) {
+    return "Send photos of the areas to wash — we will confirm scope and reply with pricing and the next open dates.";
+  }
   if (hay.includes("church") || hay.includes("worship") || hay.includes("fellowship")) {
     return "Call the office for directions, kids check-in, or accessibility questions — we are glad to help you feel at home.";
   }
@@ -56,7 +76,16 @@ export function inferServicesSectionLead(draft: SectionCopyDraftPick, portfolioC
   if (portfolioCopy) {
     return "Clear service names and short benefits help visitors compare options and call faster.";
   }
-  const hay = `${draft.offeringsTitle} ${draft.tagline} ${draft.businessName} ${draft.heroHeadline}`.toLowerCase();
+  const hay = haystack(draft);
+  if (
+    hay.includes("pressure") ||
+    hay.includes("power wash") ||
+    hay.includes("soft wash") ||
+    (hay.includes("siding") && hay.includes("wash")) ||
+    (hay.includes("wash") && (hay.includes("driveway") || hay.includes("concrete") || hay.includes("deck")))
+  ) {
+    return "Flatwork, siding, and outdoor surfaces — each job gets the right pressure and detergents so stains lift without damage.";
+  }
   if (
     hay.includes("church") ||
     hay.includes("worship") ||
@@ -99,7 +128,15 @@ export function inferGallerySectionLead(draft: SectionCopyDraftPick, portfolioCo
   if (portfolioCopy) {
     return "Project-style photography and real jobs build confidence before the first conversation.";
   }
-  const hay = `${draft.offeringsTitle} ${draft.tagline} ${draft.businessName}`.toLowerCase();
+  const hay = haystack(draft);
+  if (
+    hay.includes("pressure") ||
+    hay.includes("power wash") ||
+    hay.includes("soft wash") ||
+    (hay.includes("wash") && hay.includes("exterior"))
+  ) {
+    return "Finished driveways, bright siding, and clean decks — real jobs that show what a professional wash can do.";
+  }
   if (
     hay.includes("church") ||
     hay.includes("worship") ||

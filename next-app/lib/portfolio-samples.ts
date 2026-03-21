@@ -1,7 +1,5 @@
 import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
-import {
-  PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
-} from "@/lib/sample-fallback-images";
+import { PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY } from "@/lib/sample-fallback-images";
 
 /** Permanent public portfolio samples (not CRM / lead previews). */
 export type PortfolioSampleMeta = {
@@ -15,12 +13,15 @@ export type PortfolioSampleMeta = {
   colorPreset: "blue" | "green" | "dark" | "warm-neutral" | "bold-accent";
 };
 
-const PW = [
-  "https://images.unsplash.com/photo-1597002973461-1b79a8e3d67f?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
-];
+/** Niche-matched pressure washing: active washing, flatwork, siding, outdoor living — not generic interiors. */
+const PW_DRIVEWAY =
+  "https://images.unsplash.com/photo-1718152521364-b9655b8a7926?auto=format&fit=crop&w=900&q=80";
+const PW_HOUSE =
+  "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=900&q=80";
+const PW_DECK =
+  "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=900&q=80";
+const PW_GALLERY_EXTRA =
+  "https://images.unsplash.com/photo-1718152521147-817b3a991291?auto=format&fit=crop&w=900&q=80";
 
 const DETAIL = [
   "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=1400&q=80",
@@ -30,17 +31,17 @@ const DETAIL = [
 ];
 
 const LAWN = [
-  "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1492724441997-5dc865305da7?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1458245201577-fc8a130b8829?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1605117882932-f9e32b03fea9?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1400&q=80",
 ];
 
 const HVAC = [
   "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=1400&q=80",
   "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=1400&q=80",
   "https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=1400&q=80",
-  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1705444509014-fed54b6191bf?auto=format&fit=crop&w=1400&q=80",
 ];
 
 const FOOD = [
@@ -55,44 +56,56 @@ function draftPressureWashing(): SampleDraft {
     businessName: "ClearView Pressure Washing",
     tagline: "Residential & commercial exterior cleaning",
     localPositioning: "Central Arkansas · Fast quotes · Licensed & insured",
-    /** Deterministic Picsum hero — resilient layer still swaps if this ever fails. */
     heroImageUrl: PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
-    heroImageAlt: "Driveway and concrete being pressure washed, clean streaks visible",
-    heroHeadline: "A Cleaner Home Exterior Starts With the Right Team",
+    heroImageAlt: "Crew member pressure washing pavement — water and clean streaks on concrete",
+    heroHeadline: "Exteriors That Look Maintained — Driveways, Siding, Decks",
     heroSub:
-      "Driveways, siding, decks, and patios — washed carefully so your property looks sharp and stays protected. Request a fast quote and get on the schedule.",
+      "Concrete, brick, vinyl, wood, and composite — we match pressure and detergents to the surface so grime comes off and your property stays protected. Same-day quotes on most jobs.",
     heroPrimaryCta: "Request a Quote",
     heroSecondaryCta: "View Services",
     offeringsTitle: "What We Wash",
+    servicesSectionLead:
+      "Flatwork, vertical siding, and outdoor living spaces — each gets the right method so you get a deep clean without etched concrete or stripped paint.",
     offerings: [
       {
-        name: "Driveway Cleaning",
-        text: "Lift oil spots, mildew, and grime from concrete and pavers so your entrance looks fresh again.",
-        image: PW[1],
+        name: "Driveway & Walkway Cleaning",
+        text: "Oil drips, tire marks, algae, and pollen — lifted from concrete and pavers so your approach looks sharp.",
+        image: PW_DRIVEWAY,
+        imageAlt: "Pressure washing equipment cleaning a concrete street or driveway surface",
       },
       {
-        name: "House Washing",
-        text: "Soft washing options for siding, brick, and stucco — bright curb appeal without harsh damage.",
-        image: PW[2],
+        name: "House & Siding Wash",
+        text: "Soft-wash safe for vinyl, brick, and stucco — mildew and dull haze gone, curb appeal back.",
+        image: PW_HOUSE,
+        imageAlt: "Modern home exterior with clean siding and bright curb appeal after washing",
       },
       {
-        name: "Deck & Patio Cleaning",
-        text: "Wood and composite surfaces cleaned and prepped so outdoor spaces are ready to enjoy.",
-        image: PW[3],
+        name: "Deck, Patio & Pool Deck",
+        text: "Wood restoration prep or composite refresh — algae and gray film removed so outdoor spaces are ready to use.",
+        image: PW_DECK,
+        imageAlt: "Outdoor patio and pool deck area attached to a contemporary home",
       },
     ],
     gallerySectionTitle: "Results you can see",
-    galleryImages: PW,
-    whyChooseTitle: "Why homeowners call us first",
+    gallerySectionLead:
+      "Active washing shots and finished exteriors — the kind of proof neighbors notice when they walk or drive by.",
+    galleryImages: [PW_DRIVEWAY, PW_HOUSE, PW_DECK, PW_GALLERY_EXTRA],
+    galleryImageAlts: [
+      "Flatwork and pavement cleaning in progress with visible rinse pattern",
+      "Residential facade after soft washing — siding and trim look crisp",
+      "Backyard deck and patio zone ready for entertaining",
+      "Commercial or residential exterior cleaning crew finishing a wash",
+    ],
+    whyChooseTitle: "Why property owners hire ClearView",
     whyChooseBullets: [
-      "Fast quotes with clear scope — no mystery pricing.",
-      "Reliable local service: we show up when we say we will.",
-      "Careful techniques matched to your siding and surfaces.",
-      "Fully insured team focused on respect for your property.",
+      "Surface-specific methods — we do not blast everything on high pressure.",
+      "Written scopes: you know what is included before we start.",
+      "Insured crew, on-time arrivals, and respect for plants and paint.",
+      "Local team that answers the phone and follows up after the job.",
     ],
     aboutTitle: "Built for busy property owners",
     aboutText:
-      "ClearView focuses on one thing: making your exterior look its best without the hassle. Whether you are prepping to sell, recovering after pollen season, or maintaining a storefront, we keep communication simple and the outcome consistent.",
+      "ClearView focuses on exterior washing done right the first time. From pollen season in Hot Springs to storefront sidewalks in Little Rock, we keep scheduling simple and results consistent — no bait-and-switch pricing.",
     trustTitle: "What customers say",
     trustQuotes: [
       { quote: "Quote came the same day and the driveway looked brand new after.", by: "Rachel M., homeowner" },
@@ -104,10 +117,12 @@ function draftPressureWashing(): SampleDraft {
     phone: "(501) 555-0142",
     hours: ["Mon–Sat: 7:00 AM – 6:00 PM", "Sunday: Closed", "Emergency commercial: call anytime"],
     contactBandTitle: "Get a free estimate",
-    contactBandSub: "Tell us what needs washing — we will reply with pricing and available dates.",
-    finalTitle: "Ready for a cleaner exterior?",
-    finalSub: "Call or request a quote today. Most residential quotes returned within one business day.",
-    finalCta: "Call Now",
+    contactBandSub:
+      "Text or call with photos and square footage — we will confirm scope and email a quote, usually within one business day.",
+    finalTitle: "Book your wash window",
+    finalSub:
+      "Spring pollen, fall mildew, or pre-listing curb appeal — tell us your timeline and we will fit you in.",
+    finalCta: "Call ClearView",
   };
 }
 

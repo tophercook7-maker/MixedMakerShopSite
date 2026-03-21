@@ -225,7 +225,7 @@ function getShowcaseCopy(type: ShowcaseType, businessName: string): SampleDraft 
         "Congregation-facing platform and cross at the front of the sanctuary",
         "Midweek small group meeting around a table for Bible discussion",
       ],
-      whyChooseTitle: "What to expect at Grace",
+      whyChooseTitle: "What to expect on a first visit",
       whyChooseBullets: [
         "Welcoming first-time guests — greeters at the door and clear signage to kids areas",
         "Biblical teaching that connects Sunday to everyday life",

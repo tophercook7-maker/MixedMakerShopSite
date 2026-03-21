@@ -8,6 +8,7 @@ import { imageCategoryFromPortfolioRouteSlug } from "@/lib/sample-fallback-image
 import {
   WEBSITE_SAMPLES,
   SAMPLE_CATEGORIES,
+  hubImageCategoryForWebsiteSample,
   type WebsiteSample,
   type SampleCategory,
 } from "@/lib/website-samples";
@@ -147,19 +148,36 @@ export default function WebsiteSamplesPage() {
 
 function SampleCard({ sample }: { sample: WebsiteSample }) {
   const href = sample.externalHref ?? `/website-samples/${sample.slug}`;
+  const category = hubImageCategoryForWebsiteSample(sample);
   return (
-    <Link
-      href={href}
+    <article
       className="card sample-card"
-      style={{ textDecoration: "none" }}
+      style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}
     >
-      <p className="small" style={{ margin: "0 0 4px", opacity: 0.85 }}>
-        {SAMPLE_CATEGORIES.find((c) => c.id === sample.category)?.label ?? "Sample"}
-      </p>
-      <h3 style={{ margin: "0 0 6px" }}>{sample.name}</h3>
-      <span className="small" style={{ display: "block" }}>
-        {sample.desc}
-      </span>
-    </Link>
+      <Link href={href} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", flex: 1 }}>
+        {sample.imageUrl ? (
+          <ResilientCardImage
+            primarySrc={sample.imageUrl}
+            category={category}
+            alt={`${sample.name} sample preview`}
+            className="sample-hub-card-thumb"
+            placeholderClassName="sample-hub-card-thumb-fallback"
+            devContext={{ hubCardTitle: sample.name, routeSlug: sample.slug }}
+          />
+        ) : null}
+        <div style={{ padding: "16px 18px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
+          <p className="small" style={{ margin: "0 0 6px", opacity: 0.85 }}>
+            {SAMPLE_CATEGORIES.find((c) => c.id === sample.category)?.label ?? "Sample"}
+          </p>
+          <h3 style={{ margin: "0 0 8px", fontSize: "1.12rem" }}>{sample.name}</h3>
+          <p className="small" style={{ margin: 0, flex: 1, lineHeight: 1.45 }}>
+            {sample.desc}
+          </p>
+          <span className="btn gold" style={{ marginTop: 14, alignSelf: "flex-start", display: "inline-block" }}>
+            Open preview
+          </span>
+        </div>
+      </Link>
+    </article>
   );
 }

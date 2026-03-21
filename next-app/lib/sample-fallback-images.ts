@@ -18,8 +18,10 @@ export type SampleImageCategory =
 
 /** Category hero when primary src fails or is empty. */
 export const SAMPLE_CATEGORY_FALLBACK_HERO: Record<SampleImageCategory, string> = {
-  "pressure-washing": "https://picsum.photos/seed/mm-fb-pw-hero/1600/1000",
-  "auto-detailing": "https://picsum.photos/seed/mm-fb-ad-hero/1600/1000",
+  "pressure-washing":
+    "https://images.unsplash.com/photo-1718152470408-cfeebeb6b9fc?auto=format&fit=crop&w=1600&q=80",
+  "auto-detailing":
+    "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=1600&q=80",
   landscaping:
     "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1600&q=80",
   /** On-theme plumbing imagery (not generic Picsum) for believable service samples */
@@ -31,7 +33,8 @@ export const SAMPLE_CATEGORY_FALLBACK_HERO: Record<SampleImageCategory, string> 
     "https://images.unsplash.com/photo-1465848059293-208e11dfea17?auto=format&fit=crop&w=1600&q=80",
   coffee:
     "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1600&q=80",
-  "default-service-business": "https://picsum.photos/seed/mm-fb-def-hero/1600/1000",
+  "default-service-business":
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80",
 };
 
 /**
@@ -39,8 +42,10 @@ export const SAMPLE_CATEGORY_FALLBACK_HERO: Record<SampleImageCategory, string> 
  * Keeps card thumbnails on-story when primary URLs fail (plumbing was especially obvious with Picsum).
  */
 export const SAMPLE_CATEGORY_FALLBACK_CARD: Record<SampleImageCategory, string> = {
-  "pressure-washing": "https://picsum.photos/seed/mm-fb-pw-card/900/560",
-  "auto-detailing": "https://picsum.photos/seed/mm-fb-ad-card/900/560",
+  "pressure-washing":
+    "https://images.unsplash.com/photo-1718152521364-b9655b8a7926?auto=format&fit=crop&w=900&q=80",
+  "auto-detailing":
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
   landscaping:
     "https://images.unsplash.com/photo-1458245201577-fc8a130b8829?auto=format&fit=crop&w=900&q=80",
   plumbing:
@@ -51,16 +56,17 @@ export const SAMPLE_CATEGORY_FALLBACK_CARD: Record<SampleImageCategory, string> 
     "https://images.unsplash.com/photo-1531808012724-688c1de500b4?auto=format&fit=crop&w=900&q=80",
   coffee:
     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
-  "default-service-business": "https://picsum.photos/seed/mm-fb-def-card/900/560",
+  "default-service-business":
+    "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80",
 };
 
 /** Last-resort URL before gradient-only (different seed from category fallbacks). */
 export const SAMPLE_ULTIMATE_FALLBACK_HERO =
   "https://picsum.photos/seed/mm-hero-ultimate-v2/1600/1000";
 
-/** Recommended primary hero for portfolio pressure washing (high availability). */
+/** Recommended primary hero for portfolio pressure washing (niche-matched, CDN-stable). */
 export const PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY =
-  "https://picsum.photos/seed/clearview-pw-primary/1600/1000";
+  "https://images.unsplash.com/photo-1718152470408-cfeebeb6b9fc?auto=format&fit=crop&w=1600&q=80";
 
 /** Maps evergreen portfolio route slug → image fallback category (hub cards + sample pages). */
 const PORTFOLIO_ROUTE_SLUG_TO_CATEGORY: Record<string, SampleImageCategory> = {
@@ -86,6 +92,9 @@ export function inferImageCategoryFromDraftPick(p: DraftPick): SampleImageCatego
   const hay = `${p.tagline} ${p.businessName} ${p.heroHeadline} ${p.offeringsTitle}`.toLowerCase();
   if (
     hay.includes("pressure") ||
+    hay.includes("soft wash") ||
+    hay.includes("power wash") ||
+    (hay.includes("siding") && hay.includes("wash")) ||
     (hay.includes("wash") && (hay.includes("exterior") || hay.includes("driveway") || hay.includes("deck")))
   ) {
     return "pressure-washing";

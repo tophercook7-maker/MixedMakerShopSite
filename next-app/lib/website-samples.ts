@@ -3,6 +3,8 @@
  * Categories: Coffee Shops, Restaurants, Churches, Redesign, Tools
  */
 
+import type { SampleImageCategory } from "@/lib/sample-fallback-images";
+
 export type SampleCategory = "coffee" | "restaurant" | "church" | "service" | "redesign" | "tool";
 
 export type WebsiteSample = {
@@ -29,51 +31,58 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "bean-bliss",
     name: "Bean Bliss",
-    desc: "Cozy modern build with hero, menu, about, and visit.",
+    desc: "Warm neighborhood bar with hero, menu favorites, gallery, and visit block — ready to swap in your photos.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1015/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "bean-bliss-boho",
     name: "Bean Bliss Boho",
-    desc: "Earthy, laid-back boho styling with warm tones and cozy sections.",
+    desc: "Earthy boho palette with bakery-forward imagery, trust quotes, and soft CTAs that feel boutique, not corporate.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1060/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "noir-roast",
     name: "Noir Roast",
-    desc: "Upscale, minimal editorial style. Typography-forward layout.",
+    desc: "Editorial minimal layout: strong headline, restrained color, and menu cards that read upscale on mobile.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1061/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "noir-roast-rustic",
     name: "Noir Roast Rustic",
-    desc: "Cabin roastery look with wood tones, pine accents, and cozy sections.",
+    desc: "Cabin-roastery mood with wood-toned hero, cozy sections, and pickup-friendly primary actions.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1018/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "sunrise-cafe",
     name: "Sunrise Café",
-    desc: "Playful retro vibes with pure CSS.",
+    desc: "Retro-playful energy: bold type, gallery of the bar, and hours that are impossible to miss.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1066/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "sunrise-cafe-modern",
     name: "Sunrise Café Modern",
-    desc: "Neon-forward modern concept with glass effects and nightlife energy.",
+    desc: "Night-out cafe concept — glassy surfaces, contrast, and order-first CTAs for a younger crowd.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1050/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=900&q=80",
   },
   {
     slug: "route-66-coffee",
     name: "Route 66 Coffee",
-    desc: "Vintage diner concept with bold type, checkerboard energy, and shake bar sections.",
+    desc: "Diner-meets-espresso-bar: vintage personality with practical tap-to-call and menu scan layout.",
     category: "coffee",
-    imageUrl: "https://picsum.photos/id/1040/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
   },
   // Service business samples
   {
@@ -87,16 +96,16 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "greenridge-lawn-care",
     name: "Greenridge Lawn Care",
-    desc: "Local lawn care homepage with quick quote flow, service list, and seasonal messaging.",
+    desc: "Route-based lawn care: mowing, seasonal cleanups, and fertilization blocks with neighbor-trust tone.",
     category: "service",
     imageUrl:
-      "https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1458245201577-fc8a130b8829?auto=format&fit=crop&w=900&q=80",
   },
   // Restaurant samples
   {
     slug: "southern-diner-concept",
     name: "Southern Diner Concept",
-    desc: "Clean southern charm — mobile-friendly menu, tap-to-call, hours & location.",
+    desc: "Southern kitchen story: breakfast-through-dinner cards, dining-room gallery, reserve and takeout CTAs.",
     category: "restaurant",
     imageUrl:
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
@@ -105,7 +114,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "grace-fellowship-church",
     name: "Grace Fellowship Church",
-    desc: "Traditional / Established — clear service times, ministries, giving.",
+    desc: "Established church flow: sanctuary hero, ministries as services, gallery, and plan-your-visit CTAs.",
     category: "church",
     imageUrl:
       "https://images.unsplash.com/photo-1465848059293-208e11dfea17?auto=format&fit=crop&w=900&q=80",
@@ -113,7 +122,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "riverstone-church",
     name: "Riverstone Church",
-    desc: "Modern / Contemporary — next steps, events, clean design.",
+    desc: "Contemporary worship presentation with bright imagery, student ministry card, and clear next steps.",
     category: "church",
     imageUrl:
       "https://images.unsplash.com/photo-1519491050282-cf00c82424b4?auto=format&fit=crop&w=900&q=80",
@@ -121,7 +130,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "oak-hill-community-church",
     name: "Oak Hill Community Church",
-    desc: "Warm / Community — small-town feel, what to expect, welcoming.",
+    desc: "Small-town warmth: community gallery, midweek groups, and contact-first ministry cards.",
     category: "church",
     imageUrl:
       "https://images.unsplash.com/photo-1531808012724-688c1de500b4?auto=format&fit=crop&w=900&q=80",
@@ -130,21 +139,35 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "restaurant-redesign-demo",
     name: "Restaurant Redesign Demo",
-    desc: "Before/after homepage makeover: mobile-first, faster, menu-focused.",
+    desc: "How we tighten menus, speed, and mobile UX — plus links to live restaurant samples you can send.",
     category: "redesign",
-    imageUrl: "https://picsum.photos/id/292/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
     externalHref: "/restaurant-website-redesign",
   },
   // Tools
   {
     slug: "website-teardown-tool",
     name: "Website Teardown Tool",
-    desc: "Free website check — I'll review your site and reply by email with improvements.",
+    desc: "Free website check: submit your URL and get a concise review with actionable fixes.",
     category: "tool",
-    imageUrl: "https://picsum.photos/id/119/1200/700",
+    imageUrl:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80",
     externalHref: "/free-website-check",
   },
 ];
+
+/** Resilient hub thumbnails: maps each sample row to a fallback image category. */
+export function hubImageCategoryForWebsiteSample(sample: WebsiteSample): SampleImageCategory {
+  if (sample.category === "coffee") return "coffee";
+  if (sample.category === "restaurant" || sample.category === "redesign") return "restaurant";
+  if (sample.category === "church") return "church";
+  if (sample.category === "tool") return "default-service-business";
+  const key = `${sample.slug} ${sample.name}`.toLowerCase();
+  if (key.includes("plumb")) return "plumbing";
+  if (key.includes("lawn")) return "landscaping";
+  return "landscaping";
+}
 
 export function getSampleBySlug(slug: string): WebsiteSample | undefined {
   return WEBSITE_SAMPLES.find((s) => s.slug === slug);

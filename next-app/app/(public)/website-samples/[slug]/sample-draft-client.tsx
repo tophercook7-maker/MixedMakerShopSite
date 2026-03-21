@@ -427,7 +427,15 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   };
 
   const ctaSuggestions = useMemo(() => {
-    const hay = `${draft.offeringsTitle} ${draft.tagline}`.toLowerCase();
+    const hay = `${draft.offeringsTitle} ${draft.tagline} ${draft.businessName} ${draft.heroHeadline}`.toLowerCase();
+    if (
+      hay.includes("pressure") ||
+      hay.includes("power wash") ||
+      hay.includes("soft wash") ||
+      (hay.includes("wash") && hay.includes("exterior"))
+    ) {
+      return ["Request a Quote", "Call Now", "Get a Free Estimate", "View Services"];
+    }
     if (hay.includes("coffee")) {
       return ["Order Ahead", "Skip the Line", "Visit Us Today", "See Today's Specials"];
     }
