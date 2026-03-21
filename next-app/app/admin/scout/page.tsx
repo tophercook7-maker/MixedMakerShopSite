@@ -1,5 +1,6 @@
 import { getScoutSummary, getTopOpportunities } from "@/lib/scout/server";
 import { ScoutConsole } from "@/components/admin/scout-console";
+import { ScoutWebsiteFocusBanner } from "@/components/admin/scout-website-focus-banner";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,11 +24,14 @@ export default async function AdminScoutPage() {
     };
   }
   return (
-    <ScoutConsole
-      integrationReady={summaryResult.configured}
-      initialSummary={summaryResult.data}
-      initialTopLeads={topResult.data?.leads ?? []}
-      initialError={summaryResult.error || topResult.error}
-    />
+    <>
+      <ScoutWebsiteFocusBanner />
+      <ScoutConsole
+        integrationReady={summaryResult.configured}
+        initialSummary={summaryResult.data}
+        initialTopLeads={topResult.data?.leads ?? []}
+        initialError={summaryResult.error || topResult.error}
+      />
+    </>
   );
 }

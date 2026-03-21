@@ -7,6 +7,7 @@ import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
+import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 import { LeadForm } from "@/components/admin/lead-form";
 import { OutreachBadges } from "@/components/admin/outreach-badges";
 
@@ -25,9 +26,9 @@ const DEFAULT_SMS_TEMPLATE =
 type FollowUpStatus = "pending" | "completed";
 
 const FOLLOW_UP_TEMPLATES: Record<number, string> = {
-  1: "Hey, just wanted to follow up real quick — did you get a chance to check out that sample I sent?\n\nNo rush, just wanted to make sure it didn’t get buried 👍",
-  2: "Hey, just circling back — even something simple like that sample can help you get more calls and make things easier for customers to reach you.\n\nIf you want, I can build it out pretty quickly.",
-  3: "Hey, I’ll leave you alone after this 😄\n\nIf you ever want a site like that sample set up, just let me know — I can get it done quick.\n\nEither way, wishing you the best 👍",
+  1: "Hey, just wanted to follow up real quick — were you still interested in getting help with your website?\n\nIf so, I'd be happy to put together a clean and affordable option for your business.",
+  2: "Hey, just checking back in — are you still looking to improve your website or get one set up for your business?\n\nIf that's still on your radar, I can help with something clean, simple, and affordable.",
+  3: "Hey, I'll leave you alone after this — if you ever want a simple site that makes it easy for customers to reach you, just reply anytime.\n\nEither way, wishing you the best.",
 };
 
 function followUpDelayDaysForStage(stage: number): number {
@@ -110,7 +111,7 @@ export type WorkflowLead = {
   contact_method: string;
   detected_issue_summary: string;
   detected_issues: string[];
-  status: "new" | "contacted" | "replied" | "won" | "no_response" | "not_interested" | "archived";
+  status: "new" | "contacted" | "replied" | "qualified" | "proposal_sent" | "won" | "lost";
   created_at: string | null;
   screenshot_urls: string[];
   annotated_screenshot_url?: string | null;
@@ -119,6 +120,7 @@ export type WorkflowLead = {
   is_hot_lead?: boolean | null;
   last_reply_at?: string | null;
   last_reply_preview?: string | null;
+  unread_reply_count?: number | null;
   last_contacted_at?: string | null;
   follow_up_stage?: number;
   next_follow_up_at?: string | null;
@@ -313,33 +315,7 @@ export function LeadsWorkflowView({
   ): WorkflowLead {
     const source = options?.source || "server";
     const now = new Date().toISOString();
-    const statusRaw = String(payload.status || "new")
-      .trim()
-      .toLowerCase()
-      .replace(/[\s-]+/g, "_");
-    const normalizedStatus =
-      statusRaw === "follow_up_due" || statusRaw === "follow_up"
-        ? "contacted"
-        : statusRaw === "closed_won"
-          ? "won"
-          : statusRaw === "closed_lost"
-            ? "no_response"
-            : statusRaw === "do_not_contact"
-              ? "not_interested"
-              : statusRaw === "research_later"
-                ? "archived"
-                : statusRaw;
-    const status = (
-      normalizedStatus === "new" ||
-      normalizedStatus === "contacted" ||
-      normalizedStatus === "replied" ||
-      normalizedStatus === "won" ||
-      normalizedStatus === "no_response" ||
-      normalizedStatus === "not_interested" ||
-      normalizedStatus === "archived"
-        ? normalizedStatus
-        : "new"
-    ) as WorkflowLead["status"];
+    const status = normalizeWorkflowLeadStatus(String(payload.status || "new")) as WorkflowLead["status"];
     const email = String(payload.email || "").trim();
     const phone = String(payload.phone || payload.phone_from_site || "").trim();
     const contactPage = String(payload.contact_page || "").trim();
@@ -638,7 +614,7 @@ export function LeadsWorkflowView({
       return;
     }
     const shouldStopFollowUps =
-      nextStatus === "replied" || nextStatus === "not_interested" || nextStatus === "won";
+      nextStatus === "replied" || nextStatus === "lost" || nextStatus === "won";
     const patchPayload: Record<string, unknown> = {
       status: nextStatus,
     };
@@ -1211,7 +1187,7 @@ export function LeadsWorkflowView({
 
   async function markDoorLost(lead: WorkflowLead) {
     const ts = new Date().toISOString();
-    await appendLeadNoteAndStatus(lead, `Door-to-door lost ${ts}`, "no_response", "closed_lost");
+    await appendLeadNoteAndStatus(lead, `Door-to-door lost ${ts}`, "lost", "closed_lost");
   }
 
   async function addDoorNote(lead: WorkflowLead) {
@@ -1252,7 +1228,7 @@ export function LeadsWorkflowView({
     }
     function isTerminal(lead: WorkflowLead) {
       const s = lead.status;
-      return s === "won" || s === "no_response" || s === "not_interested" || s === "archived";
+      return s === "won" || s === "lost";
     }
     const bySegment = mergedLeads.filter((lead) => {
       const s = lead.status;
@@ -1269,7 +1245,7 @@ export function LeadsWorkflowView({
       }
       if (segment === "replied") return s === "replied";
       if (segment === "closed") {
-        return isTerminal(lead) || s === "won";
+        return s === "won" || s === "lost";
       }
       // up_next — needs action: new, no outbound yet, failed send, or overdue follow-up
       if (s === "replied" || isTerminal(lead)) return false;
@@ -1337,7 +1313,7 @@ export function LeadsWorkflowView({
       newToday: 0,
       followUp: 0,
       replied: 0,
-      archived: 0,
+      lost: 0,
     };
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -1347,13 +1323,13 @@ export function LeadsWorkflowView({
         s === "new" ||
         lead.last_outreach_status === "failed" ||
         !(lead.email_sent || lead.facebook_sent || lead.text_sent);
-      const isActionable = needs && !["replied", "won", "no_response", "not_interested", "archived"].includes(s);
+      const isActionable = needs && !["replied", "won", "lost"].includes(s);
       const createdAt = new Date(lead.created_at || 0).getTime();
       if (isActionable) counts.actionableNow += 1;
       if (createdAt >= todayStart.getTime()) counts.newToday += 1;
       if (s === "contacted" && String(lead.next_follow_up_at || "").trim()) counts.followUp += 1;
       if (s === "replied") counts.replied += 1;
-      if (s === "archived" || Boolean(lead.is_archived)) counts.archived += 1;
+      if (s === "lost" || Boolean(lead.is_archived)) counts.lost += 1;
     }
     return counts;
   }, [mergedLeads]);
@@ -1362,7 +1338,7 @@ export function LeadsWorkflowView({
     return [...mergedLeads]
       .filter((lead) => {
         const status = String(lead.status || "").toLowerCase();
-        if (status === "replied" || status === "not_interested" || status === "won") return false;
+        if (status === "replied" || status === "lost" || status === "won") return false;
         if (String(lead.follow_up_status || "pending").toLowerCase() !== "pending") return false;
         return Boolean(String(lead.next_follow_up_at || "").trim());
       })
@@ -1410,8 +1386,8 @@ export function LeadsWorkflowView({
           <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.replied}</p>
         </div>
         <div className="admin-card">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Archived</h2>
-          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.archived}</p>
+          <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>Lost</h2>
+          <p className="text-2xl font-bold mt-1" style={{ color: "var(--admin-gold)" }}>{queueCounts.lost}</p>
         </div>
       </section>
 
@@ -1543,7 +1519,7 @@ export function LeadsWorkflowView({
               ["contacted", "Contacted"],
               ["follow_up", "Follow-up due"],
               ["replied", "Replies waiting"],
-              ["closed", "Closed"],
+              ["closed", "Won / Lost"],
               ["all", "All"],
             ].map(([id, label]) => (
               <button
@@ -1562,11 +1538,8 @@ export function LeadsWorkflowView({
                 <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("contacted")}>
                   Bulk Contacted
                 </button>
-                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("no_response")}>
-                  Bulk No Response
-                </button>
-                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("archived")}>
-                  Bulk Archive
+                <button type="button" className="admin-btn-ghost" onClick={() => void bulkUpdateStatus("lost")}>
+                  Bulk Mark Lost
                 </button>
                 <button type="button" className="admin-btn-danger" onClick={() => void bulkDeleteSelected()}>
                   Bulk Delete
@@ -1840,20 +1813,20 @@ export function LeadsWorkflowView({
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "replied")}>
                     Mark replied
                   </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "qualified")}>
+                    Qualified
+                  </button>
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "proposal_sent")}>
+                    Proposal sent
+                  </button>
                   <button type="button" className="admin-btn-ghost text-xs" onClick={() => void scheduleFollowUps(lead)}>
                     Schedule Follow-Ups
                   </button>
-                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
-                    No Response
-                  </button>
-                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "not_interested")}>
-                    Not Interested
+                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "lost")}>
+                    Mark lost
                   </button>
                   <button type="button" className="admin-btn-primary text-xs" onClick={() => void updateLeadStatusQuick(lead, "won")}>
                     Won
-                  </button>
-                  <button type="button" className="admin-btn-ghost text-xs" onClick={() => void updateLeadStatusQuick(lead, "archived")}>
-                    Archive
                   </button>
                   <button type="button" className="admin-btn-danger text-xs" onClick={() => void deleteLeadQuick(lead)}>
                     Delete
@@ -2240,20 +2213,20 @@ export function LeadsWorkflowView({
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "replied")}>
                           Mark replied
                         </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "qualified")}>
+                          Qualified
+                        </button>
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "proposal_sent")}>
+                          Proposal sent
+                        </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void scheduleFollowUps(lead)}>
                           Schedule Follow-Ups
                         </button>
-                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "no_response")}>
-                          No Response
-                        </button>
-                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "not_interested")}>
-                          Not Interested
+                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "lost")}>
+                          Mark lost
                         </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "won")}>
                           Won
-                        </button>
-                        <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void updateLeadStatusQuick(lead, "archived")}>
-                          Archive
                         </button>
                         <button type="button" className="text-[var(--admin-gold)] hover:underline text-xs" onClick={() => void deleteLeadQuick(lead)}>
                           Delete

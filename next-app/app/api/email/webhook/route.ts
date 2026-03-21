@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { logCrmAutomationEvent } from "@/lib/crm/automation-log";
 
 const DEFAULT_TIMEOUT_MS = 12000;
 
@@ -403,6 +404,15 @@ export async function POST(request: Request) {
 
         const replyPreview = buildReplyPreview(body);
         if (matchedLeadId) {
+          let nextUnread = 1;
+          const { data: unreadRow } = await adminSb
+            .from("leads")
+            .select("unread_reply_count")
+            .eq("id", matchedLeadId)
+            .eq("owner_id", matchedOwnerId)
+            .maybeSingle();
+          nextUnread = (Number((unreadRow as { unread_reply_count?: number } | null)?.unread_reply_count) || 0) + 1;
+
           const fullPatch = {
             status: "replied",
             is_hot_lead: true,
@@ -419,6 +429,7 @@ export async function POST(request: Request) {
             follow_up_2: null,
             follow_up_3: null,
             sequence_active: false,
+            unread_reply_count: nextUnread,
           };
           const updateFull = await adminSb
             .from("leads")
@@ -432,10 +443,21 @@ export async function POST(request: Request) {
                 status: "replied",
                 last_contacted_at: receivedAt || nowIso,
                 next_follow_up_at: null,
+                unread_reply_count: nextUnread,
               })
               .eq("id", matchedLeadId)
               .eq("owner_id", matchedOwnerId);
           }
+          await logCrmAutomationEvent(adminSb, {
+            owner_id: matchedOwnerId,
+            lead_id: matchedLeadId,
+            event_type: "inbound_reply_matched",
+            payload: {
+              match_strategy: matchStrategy,
+              provider_message_id: messageId || null,
+              preview: replyPreview.slice(0, 160),
+            },
+          });
         }
 
         counters.replies_matched += 1;

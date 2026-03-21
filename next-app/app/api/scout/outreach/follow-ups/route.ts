@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { isManualOnlyMode, isManualTriggerRequest } from "@/lib/manual-mode";
+import { logCrmAutomationEvent } from "@/lib/crm/automation-log";
 
 type LeadRow = {
   id: string;
@@ -20,6 +21,7 @@ type LeadRow = {
   follow_up_3_sent?: boolean | null;
   follow_up_count?: number | null;
   sequence_active?: boolean | null;
+  automation_paused?: boolean | null;
 };
 
 type FollowUpStage = 1 | 2 | 3;
@@ -37,10 +39,13 @@ function isStoppedStatus(status: string) {
   const s = status.toLowerCase().trim();
   return (
     s === "replied" ||
+    s === "won" ||
+    s === "lost" ||
+    s === "qualified" ||
+    s === "proposal_sent" ||
     s === "closed" ||
     s === "closed_won" ||
     s === "closed_lost" ||
-    s === "no_response" ||
     s === "do_not_contact"
   );
 }
@@ -66,12 +71,12 @@ function pickDueStage(lead: LeadRow, now: Date): FollowUpStage | null {
 
 function followUpCopy(stage: FollowUpStage) {
   if (stage === 1) {
-    return "Just following up in case my last message got buried.";
+    return "Hey, just wanted to follow up real quick — were you still interested in getting help with your website?\n\nIf so, I'd be happy to put together a clean and affordable option for your business.";
   }
   if (stage === 2) {
-    return "I can make a quick example site for your business if you want to see what's possible.";
+    return "Hey, just checking back in — are you still looking to improve your website or get one set up for your business?\n\nIf that's still on your radar, I can help with something clean, simple, and affordable.";
   }
-  return "Just checking one last time - happy to help if improving your site is something you're considering.";
+  return "Hey — one last quick check on your website. If you want a simple, affordable path forward, I'm happy to help.";
 }
 
 function buildFollowUpEmail(lead: LeadRow, stage: FollowUpStage) {
@@ -143,7 +148,7 @@ async function runFollowUps() {
   const { data, error } = await supabase
     .from("leads")
     .select(
-      "id,owner_id,workspace_id,linked_opportunity_id,business_name,email,industry,status,preview_url,follow_up_1,follow_up_2,follow_up_3,follow_up_1_sent,follow_up_2_sent,follow_up_3_sent,follow_up_count,sequence_active"
+      "id,owner_id,workspace_id,linked_opportunity_id,business_name,email,industry,status,preview_url,follow_up_1,follow_up_2,follow_up_3,follow_up_1_sent,follow_up_2_sent,follow_up_3_sent,follow_up_count,sequence_active,automation_paused"
     )
     .eq("outreach_sent", true)
     .eq("sequence_active", true)
@@ -168,6 +173,10 @@ async function runFollowUps() {
     const status = String(lead.status || "").trim();
     const to = String(lead.email || "").trim();
     if (!to) continue;
+    if (lead.automation_paused) {
+      stopped += 1;
+      continue;
+    }
     if (isStoppedStatus(status)) {
       stopped += 1;
       continue;
@@ -190,7 +199,7 @@ async function runFollowUps() {
 
     const patch: Record<string, unknown> = {
       last_contacted_at: now.toISOString(),
-      status: "follow_up_due",
+      status: "contacted",
       follow_up_count: Number(lead.follow_up_count || 0) + 1,
     };
     if (stage === 1) {
@@ -205,7 +214,7 @@ async function runFollowUps() {
       patch.follow_up_3_sent = true;
       patch.next_follow_up_at = null;
       patch.sequence_active = false;
-      patch.status = "no_response";
+      patch.status = "contacted";
       sentByStage.follow_up_3 += 1;
     }
 
@@ -248,6 +257,12 @@ async function runFollowUps() {
       is_blocking: false,
       notes: `Automated follow-up ${stage} sent.`,
       source: "automation",
+    });
+    await logCrmAutomationEvent(supabase, {
+      owner_id: lead.owner_id,
+      lead_id: lead.id,
+      event_type: "follow_up_sent",
+      payload: { stage, message_kind: `follow_up_${stage}` },
     });
     sent += 1;
   }

@@ -82,7 +82,7 @@ export async function GET() {
     }
 
     if (Number.isFinite(nextFu) && nextFu <= new Date(end).getTime() && nextFu >= new Date(start).getTime() - 7 * 86400000) {
-      if (nextFu <= now + 86400000 && status !== "replied" && status !== "won" && status !== "not_interested" && status !== "archived") {
+      if (nextFu <= now + 86400000 && status !== "replied" && status !== "won" && status !== "lost") {
         alerts.push({
           id: `fu-${id}`,
           kind: "follow_up_due",

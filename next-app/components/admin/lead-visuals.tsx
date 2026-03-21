@@ -5,8 +5,18 @@ export function leadStatusClass(status: string | null | undefined): string {
   if (normalized === "new") return "admin-badge-lead-new";
   if (normalized === "contacted" || normalized === "follow_up_due" || normalized === "follow_up") return "admin-badge-lead-contacted";
   if (normalized === "replied") return "admin-badge-lead-replied";
-  if (normalized === "research_later" || normalized === "no_response" || normalized === "not_interested") return "admin-badge-lead-research";
-  if (normalized === "closed" || normalized === "closed_won" || normalized === "closed_lost" || normalized === "won" || normalized === "archived") return "admin-badge-lead-closed";
+  if (normalized === "qualified" || normalized === "proposal_sent") return "admin-badge-lead-contacted";
+  if (
+    normalized === "research_later" ||
+    normalized === "no_response" ||
+    normalized === "not_interested" ||
+    normalized === "lost"
+  ) {
+    return "admin-badge-lead-research";
+  }
+  if (normalized === "closed" || normalized === "closed_won" || normalized === "closed_lost" || normalized === "won" || normalized === "archived") {
+    return "admin-badge-lead-closed";
+  }
   return "admin-badge-lead-new";
 }
 

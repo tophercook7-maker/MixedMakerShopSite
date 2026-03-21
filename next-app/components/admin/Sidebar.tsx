@@ -1,19 +1,36 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Building, CalendarDays, Crosshair, FolderKanban, LayoutDashboard, Send, Settings, StickyNote, Users } from "lucide-react";
+import {
+  CalendarDays,
+  Crosshair,
+  FileText,
+  MessageSquare,
+  Send,
+  Settings,
+  StickyNote,
+  Sun,
+  Users,
+} from "lucide-react";
 
 const links = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/crm", label: "CRM", icon: Building },
+  { href: "/admin/today", label: "Today", icon: Sun },
   { href: "/admin/leads", label: "Leads", icon: Users },
-  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/admin/cases", label: "Cases", icon: FolderKanban },
-  { href: "/admin/outreach", label: "Outreach", icon: Send },
+  { href: "/admin/conversations", label: "Conversations", icon: MessageSquare },
   { href: "/admin/scout", label: "Scout", icon: Crosshair },
+  { href: "/admin/outreach", label: "Outreach", icon: Send },
+  { href: "/admin/proposals", label: "Proposals", icon: FileText },
+  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/admin/notes", label: "Notes", icon: StickyNote },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
+
+function linkActive(pathname: string, href: string): boolean {
+  if (href === "/admin/today") {
+    return pathname === "/admin/today" || pathname === "/admin";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -21,8 +38,8 @@ export default function Sidebar() {
   return (
     <>
       <div className="admin-brand-wrap">
-        <span className="admin-brand">MixedMaker Admin</span>
-        <span className="admin-brand-tagline">Command Center</span>
+        <span className="admin-brand">MixedMaker CRM</span>
+        <span className="admin-brand-tagline">Web design sales</span>
       </div>
       <nav>
         {links.map(({ href, label, icon: Icon }) => (
@@ -32,13 +49,25 @@ export default function Sidebar() {
             onClick={() => {
               console.info("[Admin Click] sidebar link fired", { label, href });
             }}
-            data-active={pathname === href || (href !== "/admin" && pathname.startsWith(href))}
+            data-active={linkActive(pathname, href)}
           >
             <Icon className="admin-nav-icon h-4 w-4 shrink-0" />
             {label}
           </a>
         ))}
       </nav>
+      <div className="mt-6 px-3 text-[11px] leading-relaxed" style={{ color: "var(--admin-muted)" }}>
+        <p className="mb-2">More tools</p>
+        <a href="/admin/cases" className="block py-1 hover:text-[var(--admin-gold)]">
+          Cases
+        </a>
+        <a href="/admin/clients" className="block py-1 hover:text-[var(--admin-gold)]">
+          Clients
+        </a>
+        <a href="/admin/crm" className="block py-1 hover:text-[var(--admin-gold)]">
+          Legacy CRM
+        </a>
+      </div>
     </>
   );
 }

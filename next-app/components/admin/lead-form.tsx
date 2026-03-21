@@ -7,13 +7,11 @@ import type { Lead } from "@/lib/db-types";
 const STATUSES = [
   "new",
   "contacted",
-  "follow_up_due",
   "replied",
-  "closed",
-  "closed_won",
-  "closed_lost",
-  "research_later",
-  "do_not_contact",
+  "qualified",
+  "proposal_sent",
+  "won",
+  "lost",
 ] as const;
 const DOOR_STATUSES = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const MESSAGE_TYPES = ["short_email", "long_email", "follow_up"] as const;

@@ -7,10 +7,10 @@ export const CANONICAL_LEAD_STATUSES = [
   "new",
   "contacted",
   "replied",
-  "no_response",
-  "not_interested",
+  "qualified",
+  "proposal_sent",
   "won",
-  "archived",
+  "lost",
 ] as const;
 
 export type CanonicalLeadStatus = (typeof CANONICAL_LEAD_STATUSES)[number];
@@ -34,13 +34,14 @@ const LEGACY_STATUS_MAP: Record<string, CanonicalLeadStatus> = {
   follow_up_due: "contacted",
   follow_up: "contacted",
   closed_won: "won",
-  closed_lost: "no_response",
-  closed: "archived",
-  do_not_contact: "not_interested",
-  research_later: "archived",
-  interested: "replied",
-  proposal_sent: "contacted",
-  lost: "no_response",
+  closed_lost: "lost",
+  closed: "lost",
+  do_not_contact: "lost",
+  research_later: "lost",
+  no_response: "lost",
+  not_interested: "lost",
+  archived: "lost",
+  interested: "qualified",
 };
 
 /** Normalize any legacy/client status string to a DB-safe canonical status. */
@@ -128,6 +129,10 @@ export const LEAD_INSERT_COLUMN_WHITELIST = [
   "is_referred_client",
   "is_hot_lead",
   "recommended_next_action",
+  "primary_contact_name",
+  "lead_tags",
+  "unread_reply_count",
+  "automation_paused",
   "last_reply_at",
   "last_reply_preview",
   "last_outreach_channel",
