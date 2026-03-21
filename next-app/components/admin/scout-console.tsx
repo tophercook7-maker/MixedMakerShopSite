@@ -10,6 +10,8 @@ import { buildLeadPath } from "@/lib/lead-route";
 import { isManualOnlyModeClient } from "@/lib/manual-mode";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 import { scoreScoutLead } from "@/lib/scout-conversion";
+import { ScoutLitePanel } from "@/components/admin/scout-lite-panel";
+import { rankScoreForSort } from "@/lib/scout/scout-lite";
 
 type Props = {
   integrationReady: boolean;
@@ -536,13 +538,23 @@ export function ScoutConsole({
         return !score.excluded && contactable && score.lead_score >= 60;
       })
       .sort((a, b) => {
-      const targeted = targetedPriorityScore(b) - targetedPriorityScore(a);
-      if (targeted !== 0) return targeted;
-      const delta = conversionFocusScore(b) - conversionFocusScore(a);
-      if (delta !== 0) return delta;
-      return Number(b.opportunity_score ?? b.score ?? 0) - Number(a.opportunity_score ?? a.score ?? 0);
-    });
+        const targeted = targetedPriorityScore(b) - targetedPriorityScore(a);
+        if (targeted !== 0) return targeted;
+        const delta = conversionFocusScore(b) - conversionFocusScore(a);
+        if (delta !== 0) return delta;
+        return Number(b.opportunity_score ?? b.score ?? 0) - Number(a.opportunity_score ?? a.score ?? 0);
+      });
   }, [initialTopLeads]);
+
+  const scoutLiteFeedLeads = useMemo(() => {
+    return [...initialTopLeads].sort((a, b) => rankScoreForSort(b) - rankScoreForSort(a));
+  }, [initialTopLeads]);
+
+  const addLeadFromScoutLite = async (opportunityId: string) => {
+    const created = await createLeadFromOpportunity(opportunityId);
+    if (!created?.leadId) return null;
+    return { created: created.created, businessName: created.businessName };
+  };
 
   return (
     <div className="space-y-6">
@@ -556,7 +568,7 @@ export function ScoutConsole({
               </h1>
             </div>
             <p style={{ color: "var(--admin-muted)" }}>
-              MixedMakerShop admin shell + Scout-Brain engine. Run Scout jobs from here and monitor progress live.
+              Find businesses with Scout, scan the list quickly, and save the ones you want. Run a search above, then use Add lead — you don’t need to open a full profile first.
             </p>
           </div>
           <button
@@ -1206,205 +1218,128 @@ export function ScoutConsole({
       )}
 
       {integrationReady && (
-        <section className="admin-card">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Top Opportunities (Targeted)
-            </h2>
-            <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2">
+        <section className="admin-card space-y-4">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Link href="/admin/leads" className="admin-btn-ghost inline-flex items-center gap-2 text-sm">
               <ExternalLink className="h-4 w-4" />
-              Open Leads
+              Businesses you saved
             </Link>
           </div>
-          {initialTopLeads.length === 0 ? (
-            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-              No opportunities returned yet. Run Scout to refresh opportunities.
+          <ScoutLitePanel
+            leads={scoutLiteFeedLeads}
+            creatingLeadForOppId={creatingLeadForOppId}
+            onAddLead={addLeadFromScoutLite}
+            onToast={setScoutToast}
+            openExternal={openExternal}
+          />
+          <details className="rounded-lg border pt-2 pb-3 px-3" style={{ borderColor: "var(--admin-border)" }}>
+            <summary className="text-xs cursor-pointer font-medium" style={{ color: "var(--admin-muted)" }}>
+              Advanced table (high-score, email/phone only)
+            </summary>
+            <p className="text-xs mt-2 mb-3" style={{ color: "var(--admin-muted)" }}>
+              Same data as before, for power users. Day-to-day scanning uses the compact cards above.
             </p>
-          ) : (
-            <div className="admin-table-wrap overflow-x-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Business</th>
-                    <th>Category</th>
-                    <th>City</th>
-                    <th>Score</th>
-                    <th>Why This Lead</th>
-                    <th>Lead Bucket</th>
-                    <th>Opportunity Reason</th>
-                    <th>Best Contact</th>
-                    <th>Next Action</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prioritizedTopLeads.slice(0, 10).map((lead, idx) => (
-                    <tr key={`${lead.slug ?? lead.business_name ?? "lead"}-${idx}`}>
-                      <td>{lead.business_name ?? "Unknown"}</td>
-                      <td>{lead.category ?? "—"}</td>
-                      <td>{lead.city ?? "—"}</td>
-                      <td>{conversionFocusScore(lead)}</td>
-                      <td>{scoutWhyLead(lead)}</td>
-                      <td>
-                        <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score ?? lead.score} />
-                      </td>
-                      <td>
-                        <div className="space-y-2">
-                          <div>
-                            {String(lead.opportunity_reason || "").trim() ||
-                              (Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
-                                ? lead.opportunity_signals.slice(0, 3).join(", ")
-                                : "Contact info is hard to find")}
+            {initialTopLeads.length === 0 ? (
+              <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+                No opportunities yet. Run Scout to load results.
+              </p>
+            ) : (
+              <div className="admin-table-wrap overflow-x-auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Business</th>
+                      <th>Category</th>
+                      <th>City</th>
+                      <th>Score</th>
+                      <th>Why this lead</th>
+                      <th>Bucket</th>
+                      <th>Reason</th>
+                      <th>Contact</th>
+                      <th>Next</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prioritizedTopLeads.slice(0, 10).map((lead, idx) => (
+                      <tr key={`${lead.slug ?? lead.business_name ?? "lead"}-${idx}`}>
+                        <td>{lead.business_name ?? "Unknown"}</td>
+                        <td>{lead.category ?? "—"}</td>
+                        <td>{lead.city ?? "—"}</td>
+                        <td>{conversionFocusScore(lead)}</td>
+                        <td>{scoutWhyLead(lead)}</td>
+                        <td>
+                          <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score ?? lead.score} />
+                        </td>
+                        <td>
+                          <div className="space-y-2 max-w-xs">
+                            <div className="text-xs">
+                              {String(lead.opportunity_reason || "").trim() ||
+                                (Array.isArray(lead.opportunity_signals) && lead.opportunity_signals.length
+                                  ? lead.opportunity_signals.slice(0, 3).join(", ")
+                                  : "—")}
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {targetedBadges(lead).map((badge) => (
+                                <span
+                                  key={`${lead.id || lead.slug || lead.business_name}-${badge}`}
+                                  className="admin-priority-badge admin-priority-badge-high text-[10px]"
+                                >
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-1">
-                            {targetedBadges(lead).map((badge) => (
-                              <span key={`${lead.id || lead.slug || lead.business_name}-${badge}`} className="admin-priority-badge admin-priority-badge-high">
-                                {badge}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </td>
-                      <td>{lead.best_contact_method ?? "—"}</td>
-                      <td>{lead.recommended_next_action ?? "Send First Touch"}</td>
-                      <td>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <button
-                            type="button"
-                            className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              console.info("[Action Debug] Open Lead clicked", { opportunityId: String(lead.id || lead.slug || "") });
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Could not open lead: missing opportunity id.");
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead request started", { opportunityId });
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) {
-                                console.error("[Action Debug] Create Lead failed", { opportunityId });
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead succeeded", { opportunityId, leadId: created.leadId });
-                              setScoutToast(created.created ? "Lead added" : "Already in CRM");
-                              await navigateLeadWithGuard(created.leadId, created.businessName);
-                            }}
-                          >
-                            Open in CRM
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-btn-primary text-xs"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Missing opportunity id.");
-                                return;
-                              }
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) return;
-                              setScoutToast(created.created ? "Lead added" : "Already in CRM");
-                            }}
-                          >
-                            Add to CRM
-                          </button>
-                          {lead.website ? (
+                        </td>
+                        <td>{lead.best_contact_method ?? "—"}</td>
+                        <td>{lead.recommended_next_action ?? "—"}</td>
+                        <td>
+                          <div className="flex flex-col gap-1 text-xs">
                             <button
                               type="button"
-                              className="admin-btn-ghost text-xs"
-                              onClick={() => {
-                                console.info("[Action Debug] Open Website clicked", { website: lead.website });
-                                openExternal(String(lead.website || ""));
+                              className="admin-btn-primary text-xs"
+                              disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
+                              onClick={async () => {
+                                const opportunityId = String(lead.id || lead.slug || "").trim();
+                                if (!opportunityId) {
+                                  setPageError("Missing opportunity id.");
+                                  return;
+                                }
+                                const created = await createLeadFromOpportunity(opportunityId);
+                                if (!created?.leadId) return;
+                                setScoutToast(created.created ? "Saved to your leads" : "Already in your leads");
                               }}
                             >
-                              Open Website
+                              Add lead
                             </button>
-                          ) : (
-                            <span className="admin-btn-ghost text-xs opacity-60 cursor-not-allowed">No website found</span>
-                          )}
-                          <button
-                            type="button"
-                            className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              console.info("[Action Debug] Generate Email clicked", { opportunityId: String(lead.id || lead.slug || "") });
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Could not generate email: missing opportunity id.");
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead request started", { opportunityId });
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) {
-                                console.error("[Action Debug] Generate Email failed before navigation", { opportunityId });
-                                return;
-                              }
-                              console.info("[Action Debug] Generate Email request succeeded", { opportunityId, leadId: created.leadId });
-                              await navigateLeadWithGuard(created.leadId, created.businessName, "generate=1");
-                            }}
-                          >
-                            Generate Email
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              console.info("[Action Debug] Send Email clicked", { opportunityId: String(lead.id || lead.slug || "") });
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Could not open compose email: missing opportunity id.");
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead request started", { opportunityId });
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) {
-                                console.error("[Action Debug] Send Email failed before navigation", { opportunityId });
-                                return;
-                              }
-                              console.info("[Action Debug] Send Email request succeeded", { opportunityId, leadId: created.leadId });
-                              await navigateLeadWithGuard(created.leadId, created.businessName, "compose=1");
-                            }}
-                          >
-                            Send Email
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              console.info("[Action Debug] Open Case clicked", { opportunityId: String(lead.id || lead.slug || "") });
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Could not open case: missing opportunity id.");
-                                return;
-                              }
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.caseId) {
-                                setPageError("No case yet");
-                                console.warn("[Action Debug] Open Case failed: no case", { opportunityId });
-                                return;
-                              }
-                              console.info("[Action Debug] Open Case succeeded", { opportunityId, caseId: created.caseId });
-                              hardNavigate(`/admin/cases/${encodeURIComponent(created.caseId)}`);
-                            }}
-                          >
-                            Open Case
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className="mt-4">
-            <Link href="/admin/outreach" className="admin-btn-ghost inline-flex items-center gap-2">
+                            <button
+                              type="button"
+                              className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                              disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
+                              onClick={async () => {
+                                const opportunityId = String(lead.id || lead.slug || "").trim();
+                                if (!opportunityId) return;
+                                const created = await createLeadFromOpportunity(opportunityId);
+                                if (!created?.leadId) return;
+                                setScoutToast(created.created ? "Saved — opening workspace" : "Opening workspace");
+                                await navigateLeadWithGuard(created.leadId, created.businessName);
+                              }}
+                            >
+                              Open workspace
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </details>
+          <div className="pt-2">
+            <Link href="/admin/outreach" className="admin-btn-ghost inline-flex items-center gap-2 text-sm">
               <RefreshCw className="h-4 w-4" />
-              Next: Wire Outreach Queue
+              Outreach queue
             </Link>
           </div>
         </section>

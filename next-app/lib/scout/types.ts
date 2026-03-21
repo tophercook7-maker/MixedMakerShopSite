@@ -32,6 +32,12 @@ export type ScoutLead = {
   close_probability?: string | null;
   opportunity_signals?: string[];
   slug?: string | null;
+  /** When backend sends explicit discovery source: google | facebook | manual | mixed */
+  source_type?: string | null;
+  source_url?: string | null;
+  facebook_url?: string | null;
+  phone?: string | null;
+  raw_source_payload?: Record<string, unknown> | null;
 };
 
 export type TopOpportunitiesResponse = {

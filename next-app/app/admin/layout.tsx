@@ -27,11 +27,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <div className="admin-quick-actions">
                 <Link href="/admin/leads?add=1">
                   <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-                  Add Lead
+                  Add business
                 </Link>
                 <Link href="/admin/scout">
                   <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-                  Scout Console
+                  Find businesses
                 </Link>
                 <Link href="/admin/outreach">
                   <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />

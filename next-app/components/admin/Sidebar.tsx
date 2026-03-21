@@ -16,9 +16,9 @@ import {
 
 const links = [
   { href: "/admin/today", label: "Today", icon: Sun },
-  { href: "/admin/leads", label: "Leads", icon: Users },
+  { href: "/admin/leads", label: "Leads", icon: Users, title: "Businesses you saved" },
   { href: "/admin/conversations", label: "Conversations", icon: MessageSquare },
-  { href: "/admin/scout", label: "Scout", icon: Crosshair },
+  { href: "/admin/scout", label: "Find businesses", icon: Crosshair, title: "Scout — discover local businesses" },
   { href: "/admin/outreach", label: "Outreach", icon: Send },
   { href: "/admin/proposals", label: "Proposals", icon: FileText },
   { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
@@ -43,10 +43,11 @@ export default function Sidebar() {
         <span className="admin-brand-tagline">Web design sales</span>
       </div>
       <nav>
-        {links.map(({ href, label, icon: Icon }) => (
+        {links.map(({ href, label, icon: Icon, title }) => (
           <a
             key={href}
             href={href}
+            title={title}
             onClick={() => {
               console.info("[Admin Click] sidebar link fired", { label, href });
             }}

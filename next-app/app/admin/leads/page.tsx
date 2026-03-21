@@ -11,10 +11,11 @@ export const revalidate = 0;
 export default async function AdminLeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; detail?: string; add?: string; view?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string; add?: string; view?: string; density?: string }>;
 }) {
-  const { error, detail, add, view } = await searchParams;
+  const { error, detail, add, view, density } = await searchParams;
   const classicWorkflow = String(view || "").toLowerCase() === "workflow";
+  const cardDensity = String(density || "").toLowerCase() === "detailed" ? "detailed" : "compact";
   const supabase = await createClient();
   const {
     data: { user },
@@ -116,15 +117,20 @@ export default async function AdminLeadsPage({
   const renderedLeadsCount = workflowLeads.length;
   const emptyStateReason =
     workflowLeads.length === 0
-      ? "You haven’t saved any businesses yet. Try Scout, or use Quick add from the sidebar while you browse."
+      ? "You have not saved any businesses yet."
       : "";
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
-          Leads
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
+            Leads
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
+            Businesses you saved — follow up here after you add them from Find businesses.
+          </p>
+        </div>
         <div className="flex flex-wrap gap-2 items-center">
           <BackfillLeadsButton />
           {classicWorkflow ? (
@@ -162,7 +168,12 @@ export default async function AdminLeadsPage({
           initialAddOpen={String(add || "") === "1"}
         />
       ) : (
-        <LeadsCardBrowser initialLeads={workflowLeads} emptyStateReason={emptyStateReason} initialAddOpen={String(add || "") === "1"} />
+        <LeadsCardBrowser
+          initialLeads={workflowLeads}
+          emptyStateReason={emptyStateReason}
+          initialAddOpen={String(add || "") === "1"}
+          initialDensity={cardDensity}
+        />
       )}
     </div>
   );

@@ -98,6 +98,9 @@ export default async function TodayCommandPage() {
 
   const proposalFollowUps = leads.filter((l) => l.status === "proposal_sent").slice(0, 6);
 
+  const todayQuiet =
+    firstOutreach.length === 0 && followUpToday.length === 0 && unreadish.length === 0;
+
   const pipelineOrder = ["new", "contacted", "replied", "qualified", "proposal_sent", "won", "lost"] as const;
   const pipelineCounts = Object.fromEntries(pipelineOrder.map((s) => [s, leads.filter((l) => l.status === s).length])) as Record<
     (typeof pipelineOrder)[number],
@@ -128,6 +131,21 @@ export default async function TodayCommandPage() {
           </Link>
         ))}
       </section>
+
+      {todayQuiet ? (
+        <section className="admin-card space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
+          <p className="font-medium" style={{ color: "var(--admin-fg)" }}>
+            Nothing urgent right now.
+          </p>
+          <p>
+            Add a few businesses to get started — open{" "}
+            <Link href="/admin/scout" className="text-[var(--admin-gold)] underline">
+              Find businesses
+            </Link>{" "}
+            (Scout) and save a handful of leads.
+          </p>
+        </section>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <div className="space-y-6">

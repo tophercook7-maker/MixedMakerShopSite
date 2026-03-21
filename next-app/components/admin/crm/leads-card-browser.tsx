@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { buildLeadPath } from "@/lib/lead-route";
-import { leadStatusClass, prettyLeadStatus, getLeadPriorityBadges } from "@/components/admin/lead-visuals";
+import { leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { LeadForm } from "@/components/admin/lead-form";
 import { CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
+import { patchLeadApi } from "@/lib/crm/patch-lead-client";
+import { addBusinessDaysIso } from "@/lib/crm/business-days";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -25,16 +28,63 @@ function fmtShort(iso: string | null | undefined): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function websitePlain(lead: WorkflowLead): string {
+  const ws = String(lead.website_status || "").toLowerCase();
+  if (ws === "no_website") return "No website";
+  if (ws === "live" || String(lead.website || "").trim()) return "Website";
+  return "Unknown";
+}
+
+function phonePlain(lead: WorkflowLead): string {
+  return String(lead.phone_from_site || "").trim() ? "Phone" : "No phone";
+}
+
+function opportunityLine(lead: WorkflowLead): string {
+  const w = String(lead.why_this_lead_is_here || "").trim();
+  const pick = w || String(lead.detected_issue_summary || "").trim();
+  if (!pick || pick === "No website audit data yet") return "—";
+  return pick.length > 88 ? `${pick.slice(0, 85)}…` : pick;
+}
+
+async function logAutomation(leadId: string, event_type: string, payload: Record<string, unknown> = {}) {
+  await fetch("/api/crm/automation-log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lead_id: leadId, event_type, payload }),
+  }).catch(() => {});
+}
+
+async function createReplyReminder(leadId: string, businessLabel: string) {
+  const start = new Date();
+  const end = new Date(start.getTime() + 30 * 60 * 1000);
+  await fetch("/api/calendar/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: `Reply: ${businessLabel}`,
+      event_type: "reminder",
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      notes: "They replied — follow up from your CRM.",
+      is_blocking: false,
+      lead_id: leadId,
+    }),
+  }).catch(() => {});
+}
+
 export function LeadsCardBrowser({
   initialLeads,
   emptyStateReason,
   initialAddOpen = false,
+  initialDensity = "compact",
 }: {
   initialLeads: WorkflowLead[];
   emptyStateReason: string;
   initialAddOpen?: boolean;
+  initialDensity?: "compact" | "detailed";
 }) {
-  const [leads] = useState<WorkflowLead[]>(initialLeads);
+  const router = useRouter();
+  const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [search, setSearch] = useState("");
   const [stageTab, setStageTab] = useState<(typeof STAGE_TABS)[number]["id"]>("all");
   const [sortKey, setSortKey] = useState<SortKey>("created");
@@ -42,6 +92,9 @@ export function LeadsCardBrowser({
   const [replyOnly, setReplyOnly] = useState(false);
   const [selected, setSelected] = useState<WorkflowLead | null>(null);
   const [adding, setAdding] = useState(initialAddOpen);
+  const [density, setDensity] = useState<"compact" | "detailed">(initialDensity);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -49,8 +102,7 @@ export function LeadsCardBrowser({
       .filter((l) => {
         if (stageTab !== "all" && l.status !== stageTab) return false;
         if (hotOnly && !l.is_hot_lead) return false;
-        if (replyOnly && !(Number(l.unread_reply_count) > 0) && !String(l.last_reply_preview || "").trim())
-          return false;
+        if (replyOnly && !(Number(l.unread_reply_count) > 0) && !String(l.last_reply_preview || "").trim()) return false;
         if (!q) return true;
         const hay = [
           l.business_name,
@@ -78,8 +130,44 @@ export function LeadsCardBrowser({
       });
   }, [leads, search, stageTab, sortKey, hotOnly, replyOnly]);
 
+  const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
+    setBusyId(leadId);
+    const r = await patchLeadApi(leadId, patch);
+    setBusyId(null);
+    if (!r.ok) {
+      setToast(r.error);
+      return;
+    }
+    setToast(okMsg);
+    if (log) void logAutomation(leadId, log, {});
+    setLeads((prev) =>
+      prev.map((l) => {
+        if (l.id !== leadId) return l;
+        const next = { ...l } as WorkflowLead;
+        if (typeof patch.status === "string") next.status = patch.status as WorkflowLead["status"];
+        if ("next_follow_up_at" in patch) next.next_follow_up_at = String(patch.next_follow_up_at || "") || null;
+        if (patch.automation_paused === true) (next as { automation_paused?: boolean }).automation_paused = true;
+        return next;
+      })
+    );
+    router.refresh();
+  };
+
   return (
     <div className="space-y-4">
+      {toast ? (
+        <div
+          role="status"
+          className="rounded-lg border px-3 py-2 text-sm"
+          style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}
+        >
+          {toast}
+          <button type="button" className="ml-2 underline text-xs" onClick={() => setToast(null)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
       <div className="admin-card flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-[200px]">
           <label className="text-xs font-semibold block mb-1" style={{ color: "var(--admin-muted)" }}>
@@ -98,6 +186,7 @@ export function LeadsCardBrowser({
             Sort
           </label>
           <select
+            aria-label="Sort leads"
             className="rounded-lg border px-3 py-2 text-sm"
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
             value={sortKey}
@@ -109,6 +198,27 @@ export function LeadsCardBrowser({
             <option value="business">Business A–Z</option>
           </select>
         </div>
+        <div
+          className="inline-flex rounded-lg border p-0.5 gap-0.5"
+          style={{ borderColor: "var(--admin-border)" }}
+          role="group"
+          aria-label="Card density"
+        >
+          <button
+            type="button"
+            className={density === "compact" ? "admin-btn-primary text-xs px-2 py-1.5 rounded-md" : "admin-btn-ghost text-xs px-2 py-1.5 rounded-md"}
+            onClick={() => setDensity("compact")}
+          >
+            Compact
+          </button>
+          <button
+            type="button"
+            className={density === "detailed" ? "admin-btn-primary text-xs px-2 py-1.5 rounded-md" : "admin-btn-ghost text-xs px-2 py-1.5 rounded-md"}
+            onClick={() => setDensity("detailed")}
+          >
+            Detailed
+          </button>
+        </div>
         <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: "var(--admin-fg)" }}>
           <input type="checkbox" checked={hotOnly} onChange={(e) => setHotOnly(e.target.checked)} />
           Hot only
@@ -118,9 +228,13 @@ export function LeadsCardBrowser({
           Has reply preview
         </label>
         <button type="button" className="admin-btn-primary text-sm" onClick={() => setAdding(true)}>
-          Add Lead
+          Add business
         </button>
       </div>
+
+      <p className="text-xs -mt-2" style={{ color: "var(--admin-muted)" }}>
+        Businesses you saved from Scout or quick add. Use compact view to move fast; open a card for the full workspace.
+      </p>
 
       <div className="flex flex-wrap gap-2">
         {STAGE_TABS.map((t) => (
@@ -156,55 +270,156 @@ export function LeadsCardBrowser({
       ) : null}
 
       {filtered.length === 0 ? (
-        <section className="admin-card">
-          <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+        <section className="admin-card space-y-2">
+          <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
             {emptyStateReason || "No leads match filters."}
           </p>
+          {emptyStateReason ? (
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+              Go to <Link href="/admin/scout" className="text-[var(--admin-gold)] underline">Find businesses</Link> and add a few leads to get started.
+            </p>
+          ) : null}
         </section>
+      ) : density === "compact" ? (
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 list-none p-0 m-0">
+          {filtered.map((lead) => {
+            const busy = busyId === lead.id;
+            const unreadN = Number(lead.unread_reply_count || 0);
+            return (
+              <li
+                key={lead.id}
+                className="rounded-lg border p-3 flex flex-col gap-2"
+                style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.12)" }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <button
+                    type="button"
+                    className="text-left font-semibold text-sm leading-tight hover:underline"
+                    style={{ color: "var(--admin-fg)" }}
+                    onClick={() => setSelected(lead)}
+                  >
+                    {lead.business_name}
+                  </button>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
+                    {prettyLeadStatus(lead.status)}
+                  </span>
+                </div>
+                <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+                  {lead.city || "—"} · {websitePlain(lead)} · {phonePlain(lead)}
+                </p>
+                <p className="text-xs line-clamp-2" style={{ color: "var(--admin-fg)" }}>
+                  {opportunityLine(lead)}
+                </p>
+                {unreadN > 0 ? (
+                  <p className="text-[11px] font-medium text-rose-200">
+                    {unreadN} unread {unreadN === 1 ? "reply" : "replies"}
+                  </p>
+                ) : null}
+                <div className="flex flex-wrap gap-2 mt-auto pt-1">
+                  <Link
+                    href={buildLeadPath(lead.id, lead.business_name)}
+                    className="admin-btn-primary text-xs px-2 py-1.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Open
+                  </Link>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={() => {
+                      const next =
+                        lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
+                          ? undefined
+                          : addBusinessDaysIso(new Date(), 3);
+                      const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
+                      if (next) patch.next_follow_up_at = next;
+                      void patchLead(lead.id, patch, next ? "Marked contacted — follow-up scheduled." : "Marked contacted.", "mark_contacted");
+                    }}
+                  >
+                    Contacted
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusyId(lead.id);
+                      const r = await patchLeadApi(lead.id, {
+                        status: "replied",
+                        is_hot_lead: true,
+                        automation_paused: true,
+                        sequence_active: false,
+                        replied_at: new Date().toISOString(),
+                      });
+                      setBusyId(null);
+                      if (!r.ok) {
+                        setToast(r.error);
+                        return;
+                      }
+                      void createReplyReminder(lead.id, lead.business_name || "Lead");
+                      void logAutomation(lead.id, "mark_replied", {});
+                      setToast("Marked as replied.");
+                      router.refresh();
+                    }}
+                  >
+                    Replied
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={() => {
+                      void patchLead(
+                        lead.id,
+                        { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
+                        "Follow-up scheduled.",
+                        "schedule_follow_up"
+                      );
+                    }}
+                  >
+                    Follow up
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((lead) => {
-            const badges = getLeadPriorityBadges({
-              isHotLead: lead.is_hot_lead,
-              bucket: lead.lead_bucket || null,
-              score: lead.conversion_score,
-              email: lead.email,
-              phone: lead.phone_from_site,
-            });
-            const unread = Boolean(String(lead.last_reply_preview || "").trim() && lead.status === "replied");
+            const busy = busyId === lead.id;
+            const unreadN = Number(lead.unread_reply_count || 0);
             return (
-              <button
+              <div
                 key={lead.id}
-                type="button"
-                className="admin-card text-left w-full hover:ring-1 hover:ring-[var(--admin-gold)] transition"
-                onClick={() => setSelected(lead)}
+                className="admin-card text-left w-full"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
+                  <button
+                    type="button"
+                    className="text-left"
+                    onClick={() => setSelected(lead)}
+                  >
                     <p className="font-semibold text-base" style={{ color: "var(--admin-fg)" }}>
                       {lead.business_name}
                     </p>
                     <p className="text-xs mt-0.5" style={{ color: "var(--admin-muted)" }}>
-                      {lead.known_owner_name || "—"} · {lead.city || "—"}
+                      {lead.city || "—"}
                       {lead.category ? ` · ${lead.category}` : ""}
                     </p>
-                  </div>
-                  {unread ? (
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-rose-500/25 text-rose-200">
-                      Reply
-                    </span>
-                  ) : null}
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full ${leadStatusClass(lead.status)}`}>
+                  </button>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
                     {prettyLeadStatus(lead.status)}
                   </span>
-                  {badges.map((b) => (
-                    <span key={b.key} className={`text-[11px] px-2 py-0.5 rounded-full ${b.className}`}>
-                      {b.label}
-                    </span>
-                  ))}
                 </div>
+                <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+                  {websitePlain(lead)} · {phonePlain(lead)}
+                  {unreadN > 0 ? ` · ${unreadN} unread` : ""}
+                </p>
+                <p className="text-xs mt-2 line-clamp-3" style={{ color: "var(--admin-fg)" }}>
+                  {opportunityLine(lead)}
+                </p>
                 <dl className="mt-3 space-y-1 text-xs" style={{ color: "var(--admin-muted)" }}>
                   <div className="flex justify-between gap-2">
                     <dt>Email</dt>
@@ -221,12 +436,8 @@ export function LeadsCardBrowser({
                   <div className="flex justify-between gap-2">
                     <dt>Website</dt>
                     <dd className="text-right truncate max-w-[60%]" style={{ color: "var(--admin-fg)" }}>
-                      {lead.website || "None"}
+                      {lead.website || "—"}
                     </dd>
-                  </div>
-                  <div className="flex justify-between gap-2">
-                    <dt>Opportunity score</dt>
-                    <dd style={{ color: "var(--admin-fg)" }}>{lead.conversion_score ?? "—"}</dd>
                   </div>
                   <div className="flex justify-between gap-2">
                     <dt>Next follow-up</dt>
@@ -238,12 +449,69 @@ export function LeadsCardBrowser({
                     “{lead.last_reply_preview}”
                   </p>
                 ) : null}
-                <div className="mt-3 flex gap-2">
-                  <Link href={buildLeadPath(lead.id)} className="admin-btn-primary text-xs" onClick={(e) => e.stopPropagation()}>
-                    Open workspace
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href={buildLeadPath(lead.id, lead.business_name)} className="admin-btn-primary text-xs">
+                    Open
                   </Link>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={() => {
+                      const next =
+                        lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
+                          ? undefined
+                          : addBusinessDaysIso(new Date(), 3);
+                      const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
+                      if (next) patch.next_follow_up_at = next;
+                      void patchLead(lead.id, patch, next ? "Marked contacted." : "Marked contacted.", "mark_contacted");
+                    }}
+                  >
+                    Contacted
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusyId(lead.id);
+                      const r = await patchLeadApi(lead.id, {
+                        status: "replied",
+                        is_hot_lead: true,
+                        automation_paused: true,
+                        sequence_active: false,
+                        replied_at: new Date().toISOString(),
+                      });
+                      setBusyId(null);
+                      if (!r.ok) {
+                        setToast(r.error);
+                        return;
+                      }
+                      void createReplyReminder(lead.id, lead.business_name || "Lead");
+                      void logAutomation(lead.id, "mark_replied", {});
+                      setToast("Marked as replied.");
+                      router.refresh();
+                    }}
+                  >
+                    Replied
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                    disabled={busy}
+                    onClick={() => {
+                      void patchLead(
+                        lead.id,
+                        { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
+                        "Follow-up scheduled.",
+                        "schedule_follow_up"
+                      );
+                    }}
+                  >
+                    Follow up
+                  </button>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
@@ -270,13 +538,19 @@ export function LeadsCardBrowser({
               </button>
             </div>
             <p className="text-xs mb-4" style={{ color: "var(--admin-muted)" }}>
-              Full profile, website review, and thread live on the lead workspace.
+              Scores, full notes, and outreach tools are on the workspace page.
             </p>
             <dl className="space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
               <div>
                 <dt className="text-xs uppercase tracking-wide">Status</dt>
                 <dd className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${leadStatusClass(selected.status)}`}>
                   {prettyLeadStatus(selected.status)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-wide">Why they’re here</dt>
+                <dd style={{ color: "var(--admin-fg)" }} className="mt-1">
+                  {opportunityLine(selected)}
                 </dd>
               </div>
               <div>
@@ -305,11 +579,11 @@ export function LeadsCardBrowser({
               </div>
             </dl>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Link href={buildLeadPath(selected.id)} className="admin-btn-primary text-sm">
-                Open full workspace
+              <Link href={buildLeadPath(selected.id, selected.business_name)} className="admin-btn-primary text-sm">
+                Open workspace
               </Link>
               <Link href={`/admin/conversations?leadId=${encodeURIComponent(selected.id)}`} className="admin-btn-ghost text-sm">
-                View conversation
+                Conversation
               </Link>
             </div>
           </div>
