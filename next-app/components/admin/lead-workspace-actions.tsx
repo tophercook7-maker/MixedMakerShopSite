@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { addBusinessDaysIso } from "@/lib/crm/business-days";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
   BUSINESS_TYPE_OPTIONS,
@@ -322,6 +323,7 @@ export function LeadWorkspaceActions({
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -357,6 +359,13 @@ export function LeadWorkspaceActions({
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string | null>(null);
   const lastSavedDraftFingerprintRef = useRef<string>("");
   const sampleLatestRef = useRef<LeadSampleRecord | null>(null);
+
+  useEffect(() => {
+    if (!message) return;
+    setToastMessage(message);
+    const t = setTimeout(() => setToastMessage(null), 4000);
+    return () => clearTimeout(t);
+  }, [message]);
   const skipAutosaveUntilRef = useRef(0);
   sampleLatestRef.current = sample;
 
@@ -1135,14 +1144,23 @@ export function LeadWorkspaceActions({
   }
 
   async function markContactedWithFollowUp() {
-    const ok = await updateLead({ status: "contacted" }, "Lead marked contacted.");
+    const next = addBusinessDaysIso(new Date(), 3);
+    const ok = await updateLead(
+      { status: "contacted", next_follow_up_at: next, automation_paused: false },
+      "Marked contacted — follow-up date set."
+    );
     if (!ok) return;
     try {
       await createLeadLinkedEvent("followup", `Follow up: ${initialBusinessName || "Lead"}`, 1);
-      setMessage("Lead marked contacted and follow-up scheduled.");
+      setMessage("Marked contacted and calendar reminder added.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create follow-up event.");
     }
+    void fetch("/api/crm/automation-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead_id: leadId, event_type: "mark_contacted", payload: {} }),
+    }).catch(() => {});
   }
 
   async function postSendScheduleFollowUp() {
@@ -1166,7 +1184,10 @@ export function LeadWorkspaceActions({
   }
 
   async function postSendArchive() {
-    await updateLead({ status: "archived" }, "Lead archived.");
+    await updateLead(
+      { status: "lost", automation_paused: true, sequence_active: false },
+      "Closed and follow-ups paused."
+    );
   }
 
   async function markRepliedWithReminder() {
@@ -1213,7 +1234,8 @@ export function LeadWorkspaceActions({
           deal_stage: "won",
           deal_value: Number.isFinite(parsed) && parsed > 0 ? parsed : pricing.midpoint,
           closed_at: nowIso,
-          status: "closed_won",
+          status: "won",
+          automation_paused: true,
           sequence_active: false,
           is_recurring_client: wantsRecurring,
           monthly_value:
@@ -1233,7 +1255,14 @@ export function LeadWorkspaceActions({
     }
     if (nextStatus === "lost") {
       const ok = await updateLead(
-        { deal_status: "lost", deal_stage: "new", closed_at: nowIso, status: "closed_lost", sequence_active: false },
+        {
+          deal_status: "lost",
+          deal_stage: "new",
+          closed_at: nowIso,
+          status: "lost",
+          automation_paused: true,
+          sequence_active: false,
+        },
         "Deal marked lost."
       );
       if (ok) setDealStage("new");
@@ -1250,11 +1279,11 @@ export function LeadWorkspaceActions({
   async function updateDoorStatus(nextDoorStatus: "not_visited" | "planned" | "visited" | "follow_up" | "closed_won" | "closed_lost") {
     const statusPatch: Record<string, unknown> =
       nextDoorStatus === "closed_won"
-        ? { status: "closed_won" }
+        ? { status: "won", automation_paused: true, sequence_active: false }
         : nextDoorStatus === "closed_lost"
-          ? { status: "closed_lost" }
+          ? { status: "lost", automation_paused: true, sequence_active: false }
           : nextDoorStatus === "follow_up"
-            ? { status: "follow_up_due" }
+            ? { status: "contacted" }
             : {};
     const ok = await updateLead(
       { door_status: nextDoorStatus, ...statusPatch },
@@ -2523,9 +2552,6 @@ export function LeadWorkspaceActions({
                   <button className="admin-btn-primary text-xs" onClick={() => void sendEmail()} disabled={isSending}>
                     {isSending ? "Sending..." : "Send Email"}
                   </button>
-                  <button className="admin-btn-ghost text-xs" onClick={() => void markContactedWithFollowUp()} disabled={isUpdating}>
-                    Mark Contacted
-                  </button>
                 </div>
                 {sampleStorageSource === "local" ? (
                   <p className="text-[11px]" style={{ color: "#fbbf24" }}>
@@ -2554,7 +2580,10 @@ export function LeadWorkspaceActions({
       </div>
 
       <div className="admin-card space-y-3">
-        <h3 className="text-sm font-semibold">Outreach Panel</h3>
+        <h3 className="text-sm font-semibold">Email &amp; messages</h3>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Draft, send, and track outreach from here.
+        </p>
         <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_180px_auto]">
           <label className="text-xs" style={{ color: "var(--admin-muted)" }}>
             Quick Replies
@@ -2796,43 +2825,53 @@ export function LeadWorkspaceActions({
         </button>
       </div>
 
-      <div className="admin-card space-y-2">
-        <h3 className="text-sm font-semibold">Quick Actions</h3>
-        <div className="flex flex-wrap gap-2">
+      <details className="admin-card space-y-2">
+        <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
+          More options
+        </summary>
+        <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+          Extra actions if you need them — the main buttons are at the top of this lead.
+        </p>
+        <div className="flex flex-wrap gap-2 mt-2">
           <button
             className="admin-btn-ghost text-xs"
             onClick={() => void markContactedWithFollowUp()}
             disabled={isUpdating}
           >
-            Mark Contacted
+            Mark contacted (with reminder)
           </button>
           <button
             className="admin-btn-ghost text-xs"
-            onClick={() => void updateLead({ status: "follow_up_due" }, "Follow-up scheduled.")}
+            onClick={() =>
+              void updateLead(
+                { status: "contacted", next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
+                "Follow-up scheduled."
+              )
+            }
             disabled={isUpdating}
           >
-            Schedule Follow Up
+            Schedule follow-up (3 business days)
           </button>
           <button
             className="admin-btn-ghost text-xs"
             onClick={() => void markRepliedWithReminder()}
             disabled={isUpdating}
           >
-            Mark Replied
+            Mark replied + calendar reminder
           </button>
           <button
             className="admin-btn-ghost text-xs"
             onClick={() => void scheduleClientCall()}
             disabled={isUpdating}
           >
-            Schedule Call
+            Schedule call
           </button>
           <button
-            className="admin-btn-danger text-xs"
-            onClick={() => void updateLead({ status: "do_not_contact" }, "Lead marked do not contact.")}
+            className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+            onClick={() => void postSendArchive()}
             disabled={isUpdating}
           >
-            Do Not Contact
+            Close file (same as Mark closed)
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -2841,52 +2880,52 @@ export function LeadWorkspaceActions({
             onClick={() => void updateDoorStatus("planned")}
             disabled={isUpdating}
           >
-            Mark Planned
+            Visit planned
           </button>
           <button
             className="admin-btn-ghost text-xs"
             onClick={() => void updateDoorStatus("visited")}
             disabled={isUpdating}
           >
-            Mark Visited
+            Visited
           </button>
           <button
             className="admin-btn-ghost text-xs"
             onClick={() => void updateDoorStatus("follow_up")}
             disabled={isUpdating}
           >
-            Mark Follow Up
+            Door follow-up
           </button>
           <button
-            className="admin-btn-primary text-xs"
+            className="admin-btn-ghost text-xs"
             onClick={() => void updateDoorStatus("closed_won")}
             disabled={isUpdating}
           >
-            Mark Won
+            Door → won
           </button>
           <button
-            className="admin-btn-danger text-xs"
+            className="admin-btn-ghost text-xs"
             onClick={() => void updateDoorStatus("closed_lost")}
             disabled={isUpdating}
           >
-            Mark Lost
+            Door → closed
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
           <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("interested")} disabled={isUpdating}>
-            Mark Interested
+            Mark interested
           </button>
           <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("proposal_sent")} disabled={isUpdating}>
-            Proposal Sent
+            Proposal sent
           </button>
-          <button className="admin-btn-primary text-xs" onClick={() => void updateDealStatus("won")} disabled={isUpdating}>
-            Mark Won
+          <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("won")} disabled={isUpdating}>
+            Mark won (with deal details)
           </button>
-          <button className="admin-btn-danger text-xs" onClick={() => void updateDealStatus("lost")} disabled={isUpdating}>
-            Mark Lost
+          <button className="admin-btn-ghost text-xs" onClick={() => void updateDealStatus("lost")} disabled={isUpdating}>
+            Mark lost (with deal details)
           </button>
           <button className="admin-btn-ghost text-xs" onClick={() => void markReferredClient()} disabled={isUpdating}>
-            Mark Referred Client
+            Referred client
           </button>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -2946,7 +2985,7 @@ export function LeadWorkspaceActions({
             </>
           ) : null}
         </div>
-      </div>
+      </details>
 
       <div className="admin-card space-y-2">
         <h3 className="text-sm font-semibold">Notes</h3>
@@ -2968,12 +3007,7 @@ export function LeadWorkspaceActions({
         ) : null}
       </div>
 
-      {message ? (
-        <p className="text-xs" style={{ color: "#86efac" }}>
-          {message}
-        </p>
-      ) : null}
-      {message === "Preview sent and follow-ups scheduled" ? (
+      {toastMessage ? (
         <div
           role="status"
           aria-live="polite"
@@ -2990,9 +3024,10 @@ export function LeadWorkspaceActions({
             fontSize: 12,
             fontWeight: 600,
             boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+            maxWidth: 320,
           }}
         >
-          Preview sent and follow-ups scheduled
+          {toastMessage}
         </div>
       ) : null}
       {error ? (

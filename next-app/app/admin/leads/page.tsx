@@ -116,7 +116,7 @@ export default async function AdminLeadsPage({
   const renderedLeadsCount = workflowLeads.length;
   const emptyStateReason =
     workflowLeads.length === 0
-      ? "No real leads yet. Run Scout or seed leads."
+      ? "You haven’t saved any businesses yet. Try Scout, or use Quick add from the sidebar while you browse."
       : "";
 
   return (
@@ -146,14 +146,14 @@ export default async function AdminLeadsPage({
           </p>
         </section>
       ) : null}
-      <section className="admin-card">
-        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-          Leads list source of truth: <strong>public.leads</strong>
+      <details className="admin-card">
+        <summary className="text-xs cursor-pointer" style={{ color: "var(--admin-muted)" }}>
+          Technical counts (optional)
+        </summary>
+        <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+          Saved leads: {totalLeadsCount} · Rows shown: {renderedLeadsCount} · Scout opportunities: {totalOpportunitiesCount}
         </p>
-        <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-          DB reality - db_leads_count: {totalLeadsCount} | db_opportunities_count: {totalOpportunitiesCount} | rendered_leads_count: {renderedLeadsCount}
-        </p>
-      </section>
+      </details>
 
       {classicWorkflow ? (
         <LeadsWorkflowView

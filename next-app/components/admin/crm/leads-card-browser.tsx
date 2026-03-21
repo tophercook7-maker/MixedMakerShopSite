@@ -104,7 +104,7 @@ export function LeadsCardBrowser({
             onChange={(e) => setSortKey(e.target.value as SortKey)}
           >
             <option value="created">Newest</option>
-            <option value="score">Score</option>
+            <option value="score">Opportunity score</option>
             <option value="follow_up">Follow-up date</option>
             <option value="business">Business A–Z</option>
           </select>
@@ -225,7 +225,7 @@ export function LeadsCardBrowser({
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
-                    <dt>Score</dt>
+                    <dt>Opportunity score</dt>
                     <dd style={{ color: "var(--admin-fg)" }}>{lead.conversion_score ?? "—"}</dd>
                   </div>
                   <div className="flex justify-between gap-2">
@@ -274,7 +274,7 @@ export function LeadsCardBrowser({
             </p>
             <dl className="space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
               <div>
-                <dt className="text-xs uppercase tracking-wide">Stage</dt>
+                <dt className="text-xs uppercase tracking-wide">Status</dt>
                 <dd className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${leadStatusClass(selected.status)}`}>
                   {prettyLeadStatus(selected.status)}
                 </dd>

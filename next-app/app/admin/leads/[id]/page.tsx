@@ -12,6 +12,7 @@ import { ensureLeadFromOpportunityToken } from "@/lib/opportunity-lead-sync";
 import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-workspace";
 import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
+import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
 
 type LeadRow = {
   id: string;
@@ -307,29 +308,6 @@ function missingOpportunitySignalsColumn(message: string): boolean {
 function missingOpportunityWebsiteStatusColumn(message: string): boolean {
   const text = String(message || "").toLowerCase();
   return text.includes("opportunities.website_status") || text.includes("column website_status");
-}
-
-function deriveCloseProbability(score: number | null | undefined, category: string | null | undefined, issues: string[]) {
-  const s = Number(score ?? 0);
-  const cat = String(category || "").toLowerCase();
-  const highCat = [
-    "dentist",
-    "chiropractor",
-    "restaurant",
-    "cafe",
-    "gym",
-    "salon",
-    "auto repair",
-    "plumber",
-    "contractor",
-  ].some((k) => cat.includes(k));
-  const hasCaptureIssue = issues.some((i) => {
-    const t = String(i || "").toLowerCase();
-    return t.includes("booking") || t.includes("ordering") || t.includes("contact");
-  });
-  if (s >= 85 || (s >= 70 && highCat && hasCaptureIssue)) return "high";
-  if (s >= 60 || highCat) return "medium";
-  return "low";
 }
 
 function fmtDate(v: string | null | undefined) {
@@ -1131,9 +1109,6 @@ export default async function AdminLeadDetailPage({
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
   const displayCity = String(opp?.city || "").trim() || "—";
   const displayAddress = String(opp?.address || "").trim() || "—";
-  const closeProbability =
-    String(opp?.close_probability || "").toLowerCase() ||
-    deriveCloseProbability(opp?.opportunity_score ?? lead?.opportunity_score, opp?.category || lead?.industry, issueList);
   const displayCreatedAt = lead?.created_at || caseRow?.created_at || null;
   const resolvedLeadId = String(lead?.id || "").trim();
   const leadPath = resolvedLeadId
@@ -1268,10 +1243,10 @@ export default async function AdminLeadDetailPage({
           </p>
         </section>
       ) : null}
-      <section className="admin-card">
-        <p className="text-xs font-semibold tracking-wide" style={{ color: "var(--admin-muted)" }}>
-          Detail Loader Diagnostics
-        </p>
+      <details className="admin-card">
+        <summary className="text-xs cursor-pointer" style={{ color: "var(--admin-muted)" }}>
+          Technical details (support only)
+        </summary>
         <div className="mt-2 grid gap-2 text-xs" style={{ color: "var(--admin-muted)" }}>
           <p>lead_exists_by_id: {leadExistsById ? "true" : "false"}</p>
           <p>owner_id_on_row: {leadOwnerOnRow || "null"}</p>
@@ -1280,69 +1255,87 @@ export default async function AdminLeadDetailPage({
           <p>owner_workspace_filter_blocked_row: {ownerWorkspaceFilterBlockedRow ? "true" : "false"}</p>
           <p>detail_failure_reason: {detailFailureReason || "none"}</p>
         </div>
-      </section>
-      <section className="admin-card">
+      </details>
+      <section className="admin-card space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="space-y-2 min-w-0 flex-1">
             <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
               {displayBusinessName}
             </h1>
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-              {displayCategory} · {displayCity} · Score {displayScore || "—"} · {displayLeadBucket} · Status {displayStatus.replace(/_/g, " ")}
+              {displayCategory} · {displayCity}
+              {displayAddress && displayAddress !== "—" ? ` · ${displayAddress}` : ""}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Status
+              </span>
               <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
-              {getLeadPriorityBadges({
-                isHotLead: Boolean(lead?.is_hot_lead),
-                bucket: displayLeadBucket,
-                score: displayScore,
-                email: displayEmail,
-                phone: displayPhone,
-              }).map((badge) => (
-                <span key={badge.key} className={`admin-priority-badge ${badge.className}`}>
-                  {badge.label}
-                </span>
-              ))}
+              <span className="text-xs ml-2" style={{ color: "var(--admin-muted)" }}>
+                Opportunity score: <strong style={{ color: "var(--admin-fg)" }}>{displayScore ?? "—"}</strong>
+              </span>
             </div>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Opportunity reason: {String(opp?.opportunity_reason || topIssues[0]?.issue || "Contact info is hard to find").trim()}
+            <p className="text-sm" style={{ color: "var(--admin-fg)" }}>
+              {displayWebsite ? (
+                <>
+                  Website:{" "}
+                  <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline break-all">
+                    {displayWebsite}
+                  </a>
+                </>
+              ) : (
+                <span className="text-amber-200/90">No website found — often a strong opportunity for a new site.</span>
+              )}
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Website: {displayWebsite ? (
-                <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-                  {displayWebsite}
-                </a>
-              ) : "—"}
+            <p className="text-sm">
+              <span style={{ color: "var(--admin-muted)" }}>Best next move: </span>
+              <span style={{ color: "var(--admin-fg)" }}>{nextAction}</span>
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Website status: {displayWebsiteStatus}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Address: {displayAddress}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Close probability: {closeProbability}
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Created {fmtDate(displayCreatedAt)}
+            {getLeadPriorityBadges({
+              isHotLead: Boolean(lead?.is_hot_lead),
+              bucket: displayLeadBucket,
+              score: displayScore,
+              email: displayEmail,
+              phone: displayPhone,
+            }).map((badge) => (
+              <span key={badge.key} className={`admin-priority-badge ${badge.className}`}>
+                {badge.label}
+              </span>
+            ))}
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Added {fmtDate(displayCreatedAt)}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/admin/leads" className="admin-btn-ghost">
-              Back to Leads
+          <div className="flex flex-col items-stretch gap-2 shrink-0">
+            <Link href="/admin/leads" className="admin-btn-ghost text-sm text-center">
+              ← All businesses
             </Link>
-            <Link href={caseHref || "/admin/cases"} className="admin-btn-ghost">
-              Open Case
-            </Link>
+            {caseHref ? (
+              <Link href={caseHref} className="admin-btn-ghost text-sm text-center">
+                Open case file
+              </Link>
+            ) : null}
           </div>
         </div>
+        {resolvedLeadId ? (
+          <LeadPrimaryActions
+            leadId={resolvedLeadId}
+            businessName={displayBusinessName}
+            initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+          />
+        ) : null}
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <section className="admin-card">
+          <details className="admin-card">
+            <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
+              More detail about this opportunity (optional)
+            </summary>
+            <div className="mt-3 space-y-4">
+          <section>
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Lead Assessment
+              Lead assessment
             </h2>
             <div className="grid gap-2 md:grid-cols-2 text-sm">
               <div>
@@ -1359,9 +1352,9 @@ export default async function AdminLeadDetailPage({
             </p>
           </section>
 
-          <section className="admin-card">
+          <section>
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Lead Usefulness Summary
+              At a glance
             </h2>
             <div className="space-y-2 text-sm">
               <p><span style={{ color: "var(--admin-muted)" }}>Contact readiness:</span> {contactReadiness}</p>
@@ -1381,9 +1374,11 @@ export default async function AdminLeadDetailPage({
               <p><span style={{ color: "var(--admin-muted)" }}>Expected close probability:</span> {expectedCloseProbability}%</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Worth now vs later:</span> {hasEmailPath || hasContactAvailable ? "Worth working now" : doorToDoorCandidate ? "Save for selective in-person outreach" : "Save for later / low priority"}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Why this still matters:</span> {doorToDoorCandidate ? "Active local business with a real website gap and no online contact path." : assessment.why_this_lead_is_here}</p>
-              <p><span style={{ color: "var(--admin-muted)" }}>Recommended next action:</span> {nextAction}</p>
+              <p><span style={{ color: "var(--admin-muted)" }}>Best next move:</span> {nextAction}</p>
             </div>
           </section>
+            </div>
+          </details>
 
           <LeadPitchPanel
             emailPitch={pitches.email_pitch}
@@ -1461,7 +1456,7 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Website Preview
+              Website preview
             </h2>
             <div className="text-sm mb-3 flex flex-wrap items-center gap-2" style={{ color: "var(--admin-muted)" }}>
               {displayWebsite ? (
@@ -1475,7 +1470,7 @@ export default async function AdminLeadDetailPage({
             </div>
             {!desktopScreenshotUrl && !mobileScreenshotUrl && !contactScreenshotUrl && fallbackScreenshotUrls.length === 0 ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No screenshots available.
+                No website preview saved yet.
               </p>
             ) : (
               <div className="space-y-3">
@@ -1539,7 +1534,7 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Website Issues
+              Problems I noticed
             </h2>
             {topIssues.length === 0 ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
@@ -1573,11 +1568,11 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Website Audit
+              Website check
             </h2>
             {!websiteAudit ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No structured website audit captured yet.
+                No website check saved yet.
               </p>
             ) : (
               <div className="space-y-3 text-sm">
@@ -1632,7 +1627,7 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Activity Summary
+              Business activity
             </h2>
             {activitySummary.length === 0 ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
@@ -1649,7 +1644,7 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Contact Methods
+              How to reach them
             </h2>
             <div className="grid gap-2 md:grid-cols-3 text-sm">
               <div>
@@ -1706,13 +1701,13 @@ export default async function AdminLeadDetailPage({
               </div>
             </div>
             {!hasContactPath ? (
-              <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
-                No direct contact info found yet
+              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+                No contact info found yet — check their site or social links below.
               </p>
             ) : null}
             {hasContactPath && !hasEmailPath ? (
-              <p className="text-xs mt-2" style={{ color: "#fca5a5" }}>
-                No email found yet. This lead is marked Research Later.
+              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+                No email yet; you can still use their contact form or phone.
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -1751,11 +1746,11 @@ export default async function AdminLeadDetailPage({
 
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Timeline
+              What has happened so far
             </h2>
             {(messageRows || []).length === 0 ? (
               <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No conversation messages recorded yet.
+                No messages yet.
               </p>
             ) : (
               <ul className="space-y-2">
@@ -1780,17 +1775,16 @@ export default async function AdminLeadDetailPage({
         <div className="space-y-6">
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              What to do next
+              Suggested steps
             </h2>
             <ol className="list-decimal pl-5 text-sm space-y-1" style={{ color: "var(--admin-muted)" }}>
-              <li>Review screenshot</li>
-              <li>Check issue summary</li>
-              <li>Use best pitch angle</li>
-              <li>Click Generate Email</li>
-              <li>Click Send Email</li>
+              <li>Glance at their site (or note they don’t have one)</li>
+              <li>Skim what stands out below</li>
+              <li>Generate a short email when you’re ready</li>
+              <li>Send it from this page</li>
             </ol>
             <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-              Recommended action: {assessment.recommended_next_action}
+              Best next move: {assessment.recommended_next_action}
             </p>
             <div className="mt-3">
               <Link href={recommendedActionHref} className="admin-btn-primary text-sm">

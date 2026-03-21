@@ -272,7 +272,14 @@ export function ScoutConsole({
   const [customPresetName, setCustomPresetName] = useState("");
   const [customPresets, setCustomPresets] = useState<ScanPreset[]>([]);
   const [creatingLeadForOppId, setCreatingLeadForOppId] = useState<string | null>(null);
+  const [scoutToast, setScoutToast] = useState<string | null>(null);
   const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+
+  useEffect(() => {
+    if (!scoutToast) return;
+    const t = setTimeout(() => setScoutToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [scoutToast]);
 
   const activeScanSettings = scout.scanSettings;
   const intake = scout.persistenceDebug?.intake;
@@ -426,6 +433,7 @@ export function ScoutConsole({
         lead_id?: string;
         business_name?: string;
         case_id?: string | null;
+        created?: boolean;
       };
       console.info("[Admin Click] Create Lead response", { status: res.status, body });
       if (!res.ok || !body.lead_id) {
@@ -438,6 +446,7 @@ export function ScoutConsole({
         leadId: String(body.lead_id || ""),
         businessName: String(body.business_name || "Lead"),
         caseId: String(body.case_id || "").trim() || null,
+        created: body.created !== false,
       };
     } catch (error) {
       setPageError(error instanceof Error ? `API error: ${error.message}` : "API error");
@@ -1262,7 +1271,7 @@ export function ScoutConsole({
                         <div className="flex flex-wrap gap-2 text-xs">
                           <button
                             type="button"
-                            className="admin-btn-primary text-xs"
+                            className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
                             disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
                             onClick={async () => {
                               console.info("[Action Debug] Open Lead clicked", { opportunityId: String(lead.id || lead.slug || "") });
@@ -1278,10 +1287,28 @@ export function ScoutConsole({
                                 return;
                               }
                               console.info("[Action Debug] Create Lead succeeded", { opportunityId, leadId: created.leadId });
+                              setScoutToast(created.created ? "Lead added" : "Already in CRM");
                               await navigateLeadWithGuard(created.leadId, created.businessName);
                             }}
                           >
-                            Create Lead + Open
+                            Open in CRM
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn-primary text-xs"
+                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
+                            onClick={async () => {
+                              const opportunityId = String(lead.id || lead.slug || "").trim();
+                              if (!opportunityId) {
+                                setPageError("Missing opportunity id.");
+                                return;
+                              }
+                              const created = await createLeadFromOpportunity(opportunityId);
+                              if (!created?.leadId) return;
+                              setScoutToast(created.created ? "Lead added" : "Already in CRM");
+                            }}
+                          >
+                            Add to CRM
                           </button>
                           {lead.website ? (
                             <button
@@ -1366,29 +1393,6 @@ export function ScoutConsole({
                           >
                             Open Case
                           </button>
-                          <button
-                            type="button"
-                            className="admin-btn-ghost text-xs"
-                            disabled={creatingLeadForOppId === String(lead.id || lead.slug || "")}
-                            onClick={async () => {
-                              console.info("[Action Debug] Create Lead clicked", { opportunityId: String(lead.id || lead.slug || "") });
-                              const opportunityId = String(lead.id || lead.slug || "").trim();
-                              if (!opportunityId) {
-                                setPageError("Could not create lead: missing opportunity id.");
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead request started", { opportunityId });
-                              const created = await createLeadFromOpportunity(opportunityId);
-                              if (!created?.leadId) {
-                                console.error("[Action Debug] Create Lead failed", { opportunityId });
-                                return;
-                              }
-                              console.info("[Action Debug] Create Lead request succeeded", { opportunityId, leadId: created.leadId });
-                              if (typeof window !== "undefined") window.location.reload();
-                            }}
-                          >
-                            Create Lead
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1405,6 +1409,19 @@ export function ScoutConsole({
           </div>
         </section>
       )}
+      {scoutToast ? (
+        <div
+          className="fixed bottom-4 right-4 z-[80] rounded-lg border px-4 py-3 text-sm shadow-lg max-w-xs"
+          style={{
+            background: "rgba(22, 101, 52, 0.95)",
+            borderColor: "rgba(34, 197, 94, 0.5)",
+            color: "#dcfce7",
+          }}
+          role="status"
+        >
+          {scoutToast}
+        </div>
+      ) : null}
     </div>
   );
 }

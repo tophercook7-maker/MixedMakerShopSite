@@ -111,16 +111,16 @@ export default async function TodayCommandPage() {
           Today
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
-          Web design sales — do the next right action.
+          Start here — a simple checklist for your web design sales day.
         </p>
       </div>
 
       <section className="admin-stats-grid">
         {[
-          { label: "New Leads", value: newLeads, href: "/admin/leads" },
-          { label: "Replies Waiting", value: repliesWaiting, href: "/admin/conversations" },
-          { label: "Follow-Ups Due", value: followUpsDue, href: "/admin/outreach" },
-          { label: "Won This Month", value: wonThisMonth, href: "/admin/leads" },
+          { label: "New businesses to contact", value: newLeads, href: "/admin/leads" },
+          { label: "Replies waiting on you", value: repliesWaiting, href: "/admin/conversations" },
+          { label: "Follow-ups to send", value: followUpsDue, href: "/admin/outreach" },
+          { label: "Hot opportunities (won this month)", value: wonThisMonth, href: "/admin/leads" },
         ].map((card) => (
           <Link key={card.label} href={card.href} className="admin-stat-card block no-underline">
             <div className="admin-stat-label">{card.label}</div>
@@ -133,11 +133,14 @@ export default async function TodayCommandPage() {
         <div className="space-y-6">
           <section className="admin-card space-y-4">
             <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Action Queue
+              What to do next
             </h2>
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+              These are the most important businesses to act on today.
+            </p>
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
-                First outreach
+                New — say hello first
               </h3>
               <ul className="space-y-2">
                 {firstOutreach.slice(0, 8).map((l) => (
@@ -152,14 +155,14 @@ export default async function TodayCommandPage() {
                 ))}
                 {firstOutreach.length === 0 ? (
                   <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                    Nothing queued — nice work.
+                    Nothing urgent here. Add a few businesses from Scout or the quick-add bookmark when you’re ready.
                   </p>
                 ) : null}
               </ul>
             </div>
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
-                Follow-ups today
+                Follow-ups due today
               </h3>
               <ul className="space-y-2">
                 {followUpToday.slice(0, 8).map((l) => (
@@ -172,14 +175,14 @@ export default async function TodayCommandPage() {
                 ))}
                 {followUpToday.length === 0 ? (
                   <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                    No follow-ups due today.
+                    You’re caught up on dated follow-ups.
                   </p>
                 ) : null}
               </ul>
             </div>
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
-                Leads with replies
+                They replied — your turn
               </h3>
               <ul className="space-y-2">
                 {unreadish.slice(0, 8).map((l) => (
@@ -194,7 +197,7 @@ export default async function TodayCommandPage() {
                 ))}
                 {unreadish.length === 0 ? (
                   <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                    No reply previews on file.
+                    Nothing urgent right now.
                   </p>
                 ) : null}
               </ul>
@@ -203,8 +206,11 @@ export default async function TodayCommandPage() {
 
           <section className="admin-card space-y-3">
             <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Pipeline Snapshot
+              Where everyone sits
             </h2>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              A quick count by status — no need to memorize it.
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               {pipelineOrder.map((s) => (
                 <div key={s} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--admin-border)" }}>
@@ -223,7 +229,7 @@ export default async function TodayCommandPage() {
         <aside className="space-y-4">
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Hot Leads
+              Hot opportunities
             </h2>
             <ul className="space-y-2 text-sm">
               {hot.map((l) => (
@@ -233,12 +239,16 @@ export default async function TodayCommandPage() {
                   </Link>
                 </li>
               ))}
-              {hot.length === 0 ? <li style={{ color: "var(--admin-muted)" }}>—</li> : null}
+              {hot.length === 0 ? (
+                <li style={{ color: "var(--admin-muted)" }} className="text-xs">
+                  None flagged hot yet.
+                </li>
+              ) : null}
             </ul>
           </section>
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Recent Replies
+              Recent replies
             </h2>
             <ul className="space-y-2 text-xs">
               {recentReplies.map((l) => (
@@ -255,7 +265,7 @@ export default async function TodayCommandPage() {
           </section>
           <section className="admin-card space-y-2">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Drafts Ready
+              Draft messages
             </h2>
             <p className="text-2xl font-bold" style={{ color: "var(--admin-gold)" }}>
               {draftCount}
@@ -266,7 +276,7 @@ export default async function TodayCommandPage() {
           </section>
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Proposal follow-ups
+              Proposals waiting
             </h2>
             <ul className="space-y-2 text-sm">
               {proposalFollowUps.map((l) => (

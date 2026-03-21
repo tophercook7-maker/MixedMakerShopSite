@@ -130,7 +130,7 @@ export function ConversationsWorkspace({
                     </span>
                     {l.conversion_score != null && (
                       <span className="text-[10px]" style={{ color: "var(--admin-muted)" }}>
-                        Score {l.conversion_score}
+                        Opportunity {l.conversion_score}
                       </span>
                     )}
                   </div>
@@ -178,7 +178,7 @@ export function ConversationsWorkspace({
                     </span>
                     {selected.conversion_score != null && (
                       <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                        Score: {selected.conversion_score}
+                        Opportunity score: {selected.conversion_score}
                       </span>
                     )}
                     {selected.website ? (
@@ -205,12 +205,12 @@ export function ConversationsWorkspace({
                     {selected.next_follow_up_at ? fmtTime(selected.next_follow_up_at) : "—"}
                   </div>
                   <div>
-                    Automation:{" "}
+                    Follow-up status:{" "}
                     {selected.automation_paused
-                      ? "Paused"
+                      ? "Follow-ups paused"
                       : selected.sequence_active
-                        ? "Sequence on"
-                        : "Idle"}
+                        ? "Follow-ups running"
+                        : "No automatic follow-ups"}
                   </div>
                 </div>
               </div>
@@ -277,7 +277,7 @@ export function ConversationsWorkspace({
 
               <div className="rounded-lg border p-3" style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.15)" }}>
                 <p className="text-xs font-semibold mb-1" style={{ color: "var(--admin-muted)" }}>
-                  Suggested next step
+                  Best next move
                 </p>
                 <p className="text-sm" style={{ color: "var(--admin-fg)" }}>
                   {suggested}

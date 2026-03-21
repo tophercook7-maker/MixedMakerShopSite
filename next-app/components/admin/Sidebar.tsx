@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import {
+  BookmarkPlus,
   CalendarDays,
   Crosshair,
   FileText,
@@ -58,6 +59,13 @@ export default function Sidebar() {
       </nav>
       <div className="mt-6 px-3 text-[11px] leading-relaxed" style={{ color: "var(--admin-muted)" }}>
         <p className="mb-2">More tools</p>
+        <a
+          href="/admin/tools/quick-add"
+          className="flex items-center gap-1.5 py-1 hover:text-[var(--admin-gold)]"
+        >
+          <BookmarkPlus className="h-3.5 w-3.5 shrink-0" />
+          Quick add (bookmark)
+        </a>
         <a href="/admin/cases" className="block py-1 hover:text-[var(--admin-gold)]">
           Cases
         </a>

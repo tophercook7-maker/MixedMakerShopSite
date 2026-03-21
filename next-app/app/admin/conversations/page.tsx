@@ -115,7 +115,7 @@ export default async function AdminConversationsPage() {
           Conversations
         </h1>
         <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-          Pipeline context and email thread together. Inbound replies are highlighted.
+          Your email and reply history in one place. New replies are easy to spot.
         </p>
       </section>
       <ConversationsWorkspace leads={leads} messages={messages} />
