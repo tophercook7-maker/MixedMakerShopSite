@@ -4,6 +4,7 @@ import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 import { evaluateScoutIntakeTarget, scoreScoutLead } from "@/lib/scout-conversion";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { markScoutResultLinked, markScoutResultLinkedByOpportunity } from "@/lib/scout/scout-results-service";
 
 type OpportunityRow = {
   id: string;
@@ -43,15 +44,19 @@ function missingOpportunitySignalsColumn(message: string): boolean {
   return text.includes("opportunities.opportunity_signals") || text.includes("column opportunity_signals");
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const opportunityId = String(params.id || "").trim();
   const requestId = crypto.randomUUID();
   const requestPayload = await request
     .json()
     .catch((): Record<string, unknown> => ({}));
+  const scoutResultId = String(requestPayload.scout_result_id || "").trim() || null;
+
+  const linkScoutRow = async (leadId: string) => {
+    await markScoutResultLinked(supabase, ownerId, scoutResultId, leadId);
+    if (!scoutResultId) await markScoutResultLinkedByOpportunity(supabase, ownerId, opportunityId, leadId);
+  };
   console.info("[Action Debug] create-lead API request received", {
     request_id: requestId,
     method: "POST",
@@ -108,6 +113,7 @@ export async function POST(
       opportunityId,
       existingLeadId: String(existingLead.id || ""),
     });
+    await linkScoutRow(String(existingLead.id));
     console.info("[Action Debug] create-lead response sent", {
       request_id: requestId,
       status: 200,
@@ -366,6 +372,7 @@ export async function POST(
     facebookUrl: facebook_url || null,
   });
   if (dedup.duplicate && dedup.matchedLeadId) {
+    await linkScoutRow(dedup.matchedLeadId);
     return NextResponse.json({
       ok: true,
       created: false,
@@ -409,6 +416,7 @@ export async function POST(
             lead_id: String(conflict.id || ""),
           },
         });
+        await linkScoutRow(String(conflict.id || ""));
         return NextResponse.json(
           {
             ok: true,
@@ -452,6 +460,8 @@ export async function POST(
     opportunityId,
     leadId: String(inserted.id || ""),
   });
+
+  await linkScoutRow(String(inserted.id || ""));
 
   const responseBody = {
     ok: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Crosshair, ExternalLink, RefreshCw } from "lucide-react";
 import type { ScoutLead, ScoutScanSettings, ScoutSummary } from "@/lib/scout/types";
 import { useGlobalScoutJob } from "@/components/admin/scout-job-provider";
@@ -11,7 +11,7 @@ import { isManualOnlyModeClient } from "@/lib/manual-mode";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 import { scoreScoutLead } from "@/lib/scout-conversion";
 import { ScoutLitePanel } from "@/components/admin/scout-lite-panel";
-import { rankScoreForSort } from "@/lib/scout/scout-lite";
+import type { ScoutResultListItem, ScoutResultsCounts } from "@/lib/scout/scout-results-types";
 
 type Props = {
   integrationReady: boolean;
@@ -172,6 +172,18 @@ type ScanPreset = {
 
 const BUILT_IN_PRESETS: ScanPreset[] = [
   {
+    id: "best-web-design-targets",
+    name: "Best web design targets",
+    settings: {
+      scope: "single_city",
+      single_city: "Hot Springs",
+      region: null,
+      categories: ["plumber", "roofer", "HVAC", "electrician", "landscaping", "cleaning service", "auto repair"],
+      issue_filters: ["No Website", "Facebook Only Presence", "Weak / Outdated Website", "No Contact Info"],
+      depth: "normal",
+    },
+  },
+  {
     id: "easy-wins",
     name: "Easy Win",
     settings: {
@@ -275,6 +287,12 @@ export function ScoutConsole({
   const [customPresets, setCustomPresets] = useState<ScanPreset[]>([]);
   const [creatingLeadForOppId, setCreatingLeadForOppId] = useState<string | null>(null);
   const [scoutToast, setScoutToast] = useState<string | null>(null);
+  const [persistedRows, setPersistedRows] = useState<ScoutResultListItem[]>([]);
+  const [persistedCounts, setPersistedCounts] = useState<ScoutResultsCounts | null>(null);
+  const [persistedLoading, setPersistedLoading] = useState(false);
+  const [showSkippedPersisted, setShowSkippedPersisted] = useState(false);
+  const [includeSavedPersisted, setIncludeSavedPersisted] = useState(false);
+  const lastBrainSyncSig = useRef<string>("");
   const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
   useEffect(() => {
@@ -414,20 +432,81 @@ export function ScoutConsole({
     scout.clearScoutState();
   };
 
-  const createLeadFromOpportunity = async (opportunityId: string) => {
+  const fetchPersistedResults = useCallback(async () => {
+    setPersistedLoading(true);
+    try {
+      const q = new URLSearchParams();
+      if (showSkippedPersisted) q.set("include_skipped", "1");
+      if (includeSavedPersisted) q.set("include_saved", "1");
+      const res = await fetch(`/api/scout/results?${q.toString()}`);
+      const data = (await res.json().catch(() => ({}))) as {
+        results?: ScoutResultListItem[];
+        counts?: ScoutResultsCounts;
+        error?: string;
+      };
+      if (!res.ok) {
+        setPageError(String(data.error || "Could not load discovery list."));
+        return;
+      }
+      setPersistedRows(Array.isArray(data.results) ? data.results : []);
+      setPersistedCounts(data.counts ?? null);
+    } finally {
+      setPersistedLoading(false);
+    }
+  }, [showSkippedPersisted, includeSavedPersisted]);
+
+  const brainSignature = useMemo(
+    () =>
+      [...initialTopLeads]
+        .map((l) => String(l.id || l.slug || ""))
+        .sort()
+        .join("|"),
+    [initialTopLeads]
+  );
+
+  useEffect(() => {
+    if (!integrationReady) return;
+    let cancelled = false;
+    (async () => {
+      const sig = brainSignature;
+      if (sig !== lastBrainSyncSig.current) {
+        lastBrainSyncSig.current = sig;
+        if (initialTopLeads.length > 0) {
+          const syncRes = await fetch("/api/scout/results", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ opportunities: initialTopLeads }),
+          });
+          if (!syncRes.ok && !cancelled) {
+            const j = (await syncRes.json().catch(() => ({}))) as { error?: string };
+            setPageError(String(j.error || "Could not save discovery results."));
+          }
+        }
+      }
+      if (!cancelled) await fetchPersistedResults();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [integrationReady, brainSignature, initialTopLeads, fetchPersistedResults]);
+
+  const createLeadFromOpportunity = async (opportunityId: string, scoutResultId?: string | null) => {
     const oppId = String(opportunityId || "").trim();
     if (!oppId) return null;
     setPageError(null);
-    setCreatingLeadForOppId(oppId);
+    const busyKey = String(scoutResultId || "").trim() || oppId;
+    setCreatingLeadForOppId(busyKey);
     try {
+      const payload = scoutResultId ? { scout_result_id: scoutResultId } : {};
       console.info("[Admin Click] Create Lead request", {
         route: `/api/scout/opportunities/${encodeURIComponent(oppId)}/create-lead`,
         method: "POST",
-        payload: {},
+        payload,
       });
       const res = await fetch(`/api/scout/opportunities/${encodeURIComponent(oppId)}/create-lead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
@@ -444,6 +523,7 @@ export function ScoutConsole({
         else setPageError(body.error || body.reason || "No data returned");
         return null;
       }
+      await fetchPersistedResults();
       return {
         leadId: String(body.lead_id || ""),
         businessName: String(body.business_name || "Lead"),
@@ -546,12 +626,8 @@ export function ScoutConsole({
       });
   }, [initialTopLeads]);
 
-  const scoutLiteFeedLeads = useMemo(() => {
-    return [...initialTopLeads].sort((a, b) => rankScoreForSort(b) - rankScoreForSort(a));
-  }, [initialTopLeads]);
-
-  const addLeadFromScoutLite = async (opportunityId: string) => {
-    const created = await createLeadFromOpportunity(opportunityId);
+  const addLeadFromDiscovery = async (scoutResultId: string, opportunityId: string) => {
+    const created = await createLeadFromOpportunity(opportunityId, scoutResultId);
     if (!created?.leadId) return null;
     return { created: created.created, businessName: created.businessName };
   };
@@ -1226,9 +1302,17 @@ export function ScoutConsole({
             </Link>
           </div>
           <ScoutLitePanel
-            leads={scoutLiteFeedLeads}
-            creatingLeadForOppId={creatingLeadForOppId}
-            onAddLead={addLeadFromScoutLite}
+            rows={persistedRows}
+            counts={persistedCounts}
+            loading={persistedLoading}
+            brainHadOpportunities={initialTopLeads.length > 0}
+            creatingLeadKey={creatingLeadForOppId}
+            showSkipped={showSkippedPersisted}
+            onShowSkippedChange={setShowSkippedPersisted}
+            includeSaved={includeSavedPersisted}
+            onIncludeSavedChange={setIncludeSavedPersisted}
+            onRefresh={fetchPersistedResults}
+            onAddLead={addLeadFromDiscovery}
             onToast={setScoutToast}
             openExternal={openExternal}
           />
