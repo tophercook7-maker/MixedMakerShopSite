@@ -1,0 +1,151 @@
+/**
+ * Server-side client for Scout Brain POST /api/enrich-lead.
+ * Base: SCOUT_BRAIN_API_BASE_URL → `${base}/api/enrich-lead`
+ * Auth: SCOUT_ENRICH_API_KEY (or legacy SCOUT_BRAIN_API_KEY) → X-Scout-Enrich-Key
+ */
+
+export const SCOUT_BRAIN_ENRICH_PATH = "/api/enrich-lead";
+
+export type ScoutBrainEnrichInput = {
+  business_name: string;
+  city?: string | null;
+  state?: string | null;
+  source_url?: string | null;
+  facebook_url?: string | null;
+  source_type: "extension" | "facebook" | "google" | "manual" | "unknown" | "mixed";
+};
+
+export type ScoutBrainEnrichedLead = {
+  business_name?: string | null;
+  source_type?: string | null;
+  source_url?: string | null;
+  facebook_url?: string | null;
+  website?: string | null;
+  normalized_website?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  email_source?: string | null;
+  contact_page?: string | null;
+  city?: string | null;
+  state?: string | null;
+  category?: string | null;
+  tags?: string[] | null;
+  score?: number | null;
+  why_this_lead_is_here?: string | null;
+  best_contact_method?: string | null;
+  best_next_move?: string | null;
+  pitch_angle?: string | null;
+  source_confidence?: number | null;
+  match_confidence?: number | null;
+  raw_signals?: Record<string, unknown> | null;
+  place_id?: string | null;
+};
+
+export type ScoutBrainEnrichResponse = {
+  ok?: boolean;
+  error?: string | null;
+  enriched_lead?: ScoutBrainEnrichedLead | null;
+};
+
+export function getScoutBrainEnrichBaseUrl(): string | null {
+  const raw = process.env.SCOUT_BRAIN_API_BASE_URL?.trim();
+  if (!raw) {
+    return null;
+  }
+  return raw.replace(/\/+$/, "");
+}
+
+/** Server log when enrichment would call Brain but URL is missing (once per process is noisy; call sites log on demand). */
+export function logScoutBrainEnrichConfigMissing(context: string): void {
+  console.info(
+    `[crm-enrichment] ${context}: SCOUT_BRAIN_API_BASE_URL is not set — Scout Brain enrichment skipped; using local HTML fallback if available.`
+  );
+}
+
+export function scoutBrainEnrichEndpointUrl(): string | null {
+  const base = getScoutBrainEnrichBaseUrl();
+  if (!base) return null;
+  return `${base}${SCOUT_BRAIN_ENRICH_PATH}`;
+}
+
+const DEFAULT_TIMEOUT_MS = 11_000;
+
+function scoutEnrichApiKey(): string {
+  return (
+    process.env.SCOUT_ENRICH_API_KEY?.trim() ||
+    process.env.SCOUT_BRAIN_API_KEY?.trim() ||
+    ""
+  );
+}
+
+/**
+ * Calls Scout Brain enrichment. Structured failure (no throw) on errors.
+ */
+export async function fetchScoutBrainEnrichLead(
+  input: ScoutBrainEnrichInput,
+  options?: { timeoutMs?: number }
+): Promise<{ ok: true; data: ScoutBrainEnrichResponse } | { ok: false; error: string }> {
+  const url = scoutBrainEnrichEndpointUrl();
+  if (!url) {
+    return { ok: false, error: "SCOUT_BRAIN_API_BASE_URL is not configured" };
+  }
+
+  const timeoutMs = Math.min(12_000, Math.max(8_000, options?.timeoutMs ?? DEFAULT_TIMEOUT_MS));
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  const apiKey = scoutEnrichApiKey();
+  if (apiKey) {
+    headers["X-Scout-Enrich-Key"] = apiKey;
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        business_name: input.business_name || "",
+        city: input.city || "",
+        state: input.state || "",
+        source_url: input.source_url || "",
+        facebook_url: input.facebook_url || "",
+        source_type: input.source_type || "unknown",
+      }),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+
+    const text = await res.text();
+    let json: ScoutBrainEnrichResponse;
+    try {
+      json = JSON.parse(text) as ScoutBrainEnrichResponse;
+    } catch {
+      return { ok: false, error: `Invalid JSON from Scout Brain (${res.status})` };
+    }
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: json.error || `Scout Brain HTTP ${res.status}`,
+      };
+    }
+
+    if (!json.ok) {
+      return { ok: false, error: json.error || "Scout Brain returned ok: false" };
+    }
+
+    return { ok: true, data: json };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("abort") || msg === "The operation was aborted.") {
+      return { ok: false, error: "Scout Brain request timed out" };
+    }
+    return { ok: false, error: msg };
+  } finally {
+    clearTimeout(timer);
+  }
+}

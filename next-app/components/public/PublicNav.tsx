@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 export function PublicNav() {
+  const [logoFailed, setLogoFailed] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
@@ -20,7 +22,19 @@ export function PublicNav() {
     <header className="nav">
       <div className="nav-inner">
         <Link href="/" className="brand">
-          <div className="logo">M³</div>
+          {logoFailed ? (
+            <div className="logo">M³</div>
+          ) : (
+            <Image
+              src="/images/m3-logo.png"
+              alt="MixedMakerShop"
+              width={60}
+              height={60}
+              className="rounded-xl shadow-[0_0_15px_rgba(255,140,0,0.6)] shrink-0 object-cover"
+              priority
+              onError={() => setLogoFailed(true)}
+            />
+          )}
           <div className="brand-title">
             <div className="name">MIXEDMAKERSHOP</div>
             <div className="sub">

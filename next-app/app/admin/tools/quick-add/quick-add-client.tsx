@@ -40,7 +40,7 @@ export function QuickAddClient() {
       "fetch(api,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},",
       "body:JSON.stringify({website:u,name:t,source:'bookmarklet'})})",
       ".then(function(r){return r.json().then(function(j){",
-      "if(j&&j.ok)alert(j.message||(j.created?'Saved to Leads.':'Saved to Leads (already in your list).'));",
+      "if(j&&j.ok)alert(j.message!=null&&j.message!==''?j.message:(j.created?'Saved to Leads.':'Saved to Leads (already in your list).'));",
       "else alert('Could not add lead');});})",
       ".catch(function(){alert('Could not add lead');});",
       "})();",
@@ -81,7 +81,7 @@ export function QuickAddClient() {
         setResult({
           ok: true,
           text: String(
-            data.message ||
+            data.message ??
               (data.created ? "Saved to Leads." : "Saved to Leads (already in your list).")
           ),
           leadId: leadId || undefined,

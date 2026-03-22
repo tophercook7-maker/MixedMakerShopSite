@@ -9,6 +9,10 @@ import {
 } from "@/lib/crm-lead-schema";
 import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 import { logCrmAutomationEvent } from "@/lib/crm/automation-log";
+import {
+  runCrmLeadEnrichmentAfterSave,
+  type CrmEnrichmentRunResult,
+} from "@/lib/crm/run-crm-lead-enrichment";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
   extensionCaptureLabelFromUrl,
@@ -172,6 +176,32 @@ function shouldRaiseScore(existing: number | null | undefined, next: number): bo
   return next > cur;
 }
 
+function quickAddEnrichMessage(created: boolean, enrich: CrmEnrichmentRunResult): string {
+  const dup = "Saved to Leads (this business was already in your list).";
+  const dupPrefix = "Saved to Leads (already listed).";
+
+  if (enrich.message === "Enrichment unavailable right now.") {
+    return created
+      ? "Saved to Leads. Enrichment unavailable right now."
+      : `${dup} Enrichment unavailable right now.`;
+  }
+
+  if (created) {
+    if (enrich.enriched) return "Saved to Leads and enriched.";
+    if (enrich.message === "No new contact info found") {
+      return "Saved to Leads. No extra contact info found yet.";
+    }
+    return "Saved to Leads.";
+  }
+  if (enrich.enriched) {
+    return `${dupPrefix} Extra contact info was added.`;
+  }
+  if (enrich.message === "No new contact info found") {
+    return `${dup} No extra contact info found yet.`;
+  }
+  return dup;
+}
+
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -320,13 +350,27 @@ export async function POST(request: Request) {
       }
     }
 
+    let enrichDup: CrmEnrichmentRunResult = {
+      enriched: false,
+      updatedFields: [],
+      message: "",
+      source: "skipped",
+    };
+    try {
+      enrichDup = await runCrmLeadEnrichmentAfterSave(supabase, ownerId, leadId);
+    } catch (e) {
+      console.warn("[quick-add] enrich after duplicate skipped", e);
+    }
+
     return NextResponse.json({
       ok: true,
       leadId,
       created: false,
       destination: "leads",
       leadPath: buildLeadPath(leadId, businessName),
-      message: "Saved to Leads (this business was already in your list).",
+      enriched: enrichDup.enriched,
+      updatedFields: enrichDup.updatedFields,
+      message: quickAddEnrichMessage(false, enrichDup),
     });
   }
 
@@ -404,12 +448,26 @@ export async function POST(request: Request) {
     },
   });
 
+  let enrichNew: CrmEnrichmentRunResult = {
+    enriched: false,
+    updatedFields: [],
+    message: "",
+    source: "skipped",
+  };
+  try {
+    enrichNew = await runCrmLeadEnrichmentAfterSave(supabase, ownerId, leadId);
+  } catch (e) {
+    console.warn("[quick-add] enrich after insert skipped", e);
+  }
+
   return NextResponse.json({
     ok: true,
     leadId,
     created: true,
     destination: "leads",
     leadPath: buildLeadPath(leadId, businessName),
-    message: "Saved to Leads.",
+    enriched: enrichNew.enriched,
+    updatedFields: enrichNew.updatedFields,
+    message: quickAddEnrichMessage(true, enrichNew),
   });
 }

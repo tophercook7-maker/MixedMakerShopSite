@@ -12,6 +12,8 @@ export type LeadContactFirstProps = {
   previewLeadId?: string | null;
   /** When false, hide entire section if there is no contact data at all */
   showWhenEmpty?: boolean;
+  /** Secondary actions (e.g. manual enrich) */
+  headerActions?: ReactNode;
 };
 
 function Row({
@@ -43,6 +45,7 @@ export function LeadContactFirst({
   contactPage,
   previewLeadId,
   showWhenEmpty = true,
+  headerActions,
 }: LeadContactFirstProps) {
   const hasEmail = Boolean(String(email || "").trim());
   const hasFb = Boolean(String(facebookUrl || "").trim());
@@ -57,9 +60,12 @@ export function LeadContactFirst({
 
   return (
     <section className="admin-card space-y-3 border-2" style={{ borderColor: "rgba(212, 175, 55, 0.35)" }}>
-      <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-        Contact first
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+          Contact first
+        </h2>
+        {headerActions}
+      </div>
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.12)" }}>
         <Row label="Email">
           {hasEmail ? (

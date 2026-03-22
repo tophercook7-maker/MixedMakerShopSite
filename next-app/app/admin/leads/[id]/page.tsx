@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
 import { LeadContactFirst } from "@/components/admin/lead-contact-first";
+import { LeadEnrichNow } from "@/components/admin/lead-enrich-now";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
@@ -52,6 +53,13 @@ type LeadRow = {
   last_outreach_status?: string | null;
   last_outreach_sent_at?: string | null;
   next_follow_up_at?: string | null;
+  facebook_url?: string | null;
+  contact_page?: string | null;
+  city?: string | null;
+  state?: string | null;
+  category?: string | null;
+  source_url?: string | null;
+  source_label?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -89,6 +97,13 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "last_outreach_status",
     "last_outreach_sent_at",
     "next_follow_up_at",
+    "facebook_url",
+    "contact_page",
+    "city",
+    "state",
+    "category",
+    "source_url",
+    "source_label",
   ].join(","),
   [
     "id",
@@ -1076,7 +1091,7 @@ export default async function AdminLeadDetailPage({
     "Unknown business";
   const displayCategory =
     String(opp?.category || "").trim() ||
-    String(lead?.industry || "").trim() ||
+    String(lead?.category || lead?.industry || "").trim() ||
     "—";
   const displayScore = Number(
     opp?.opportunity_score ??
@@ -1088,16 +1103,28 @@ export default async function AdminLeadDetailPage({
     String(lead?.website || "").trim();
   const displayEmail = String(lead?.email || caseRow?.email || "").trim();
   const displayEmailSource = displayEmail ? (signalEmailSource || "unknown") : "unknown";
-  const displayPhone = String(caseRow?.phone_from_site || lead?.phone || "").trim();
-  const displayContactPage = String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim();
-  const displayFacebook = String(caseRow?.facebook_url || caseRow?.facebook || "").trim();
+  const displayPhone = String(lead?.phone || caseRow?.phone_from_site || "").trim();
+  const displayContactPage = String(
+    lead?.contact_page || caseRow?.contact_page || caseRow?.contact_form_url || ""
+  ).trim();
+  const displayFacebook = String(
+    lead?.facebook_url || caseRow?.facebook_url || caseRow?.facebook || ""
+  ).trim();
   const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
   const hasContactPath = Boolean(displayEmail || displayPhone || displayContactPage || displayFacebook);
   const hasEmailPath = Boolean(displayEmail);
   const hasContactAvailable = Boolean(displayContactPage || displayFacebook);
   const displayStatus = String(lead?.status || caseRow?.status || "new");
   const displayWebsiteStatus = String(opp?.website_status || "").trim() || "unknown";
-  const displayCity = String(opp?.city || "").trim() || "—";
+  const displayCity = (() => {
+    const fromOpp = String(opp?.city || "").trim();
+    if (fromOpp) return fromOpp;
+    const c = String(lead?.city || "").trim();
+    const s = String(lead?.state || "").trim();
+    if (c && s) return `${c}, ${s}`;
+    if (c || s) return c || s;
+    return "—";
+  })();
   const displayAddress = String(opp?.address || "").trim() || "—";
   const displayCreatedAt = lead?.created_at || caseRow?.created_at || null;
   const resolvedLeadId = String(lead?.id || "").trim();
@@ -1294,6 +1321,7 @@ Want me to show you a quick idea?`;
         website={displayWebsite || null}
         contactPage={displayContactPage || null}
         previewLeadId={resolvedLeadId || null}
+        headerActions={resolvedLeadId ? <LeadEnrichNow leadId={resolvedLeadId} /> : null}
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
