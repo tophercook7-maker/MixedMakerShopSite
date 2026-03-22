@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView } from "@/components/admin/leads-workflow-view";
 import { LeadsCardBrowser } from "@/components/admin/crm/leads-card-browser";
+import { CapturedLeadsSection } from "@/components/admin/crm/captured-leads-section";
+import { computeCapturedLeads } from "@/lib/crm/captured-leads";
 import { isMissingColumnError, toWorkflowLead, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +76,7 @@ export default async function AdminLeadsPage({
   try {
     const selectVariants = [
       "*",
-      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,lead_source,source_url,source_label",
+      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,lead_source,source_url,source_label,lead_tags",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
@@ -106,16 +108,17 @@ export default async function AdminLeadsPage({
         .filter(([id]) => Boolean(id))
     ).values()
   );
-  let workflowLeads = dedupedRows.map(toWorkflowLead);
-  const renderedLeadsCountBeforeGuard = workflowLeads.length;
-  if (renderedLeadsCountBeforeGuard > totalLeadsCount) {
+  let rowsForUi = dedupedRows;
+  if (totalLeadsCount > 0 && rowsForUi.length > totalLeadsCount) {
     console.error("[Leads Page] rendered rows exceeded db leads count; trimming to db count", {
       owner_id: ownerId,
       db_leads_count: totalLeadsCount,
-      rendered_leads_count: renderedLeadsCountBeforeGuard,
+      rendered_leads_count: rowsForUi.length,
     });
-    workflowLeads = workflowLeads.slice(0, totalLeadsCount);
+    rowsForUi = rowsForUi.slice(0, totalLeadsCount);
   }
+  const capturedLeads = computeCapturedLeads(rowsForUi, 6);
+  let workflowLeads = rowsForUi.map(toWorkflowLead);
   const renderedLeadsCount = workflowLeads.length;
   const emptyStateReason =
     workflowLeads.length === 0
@@ -159,6 +162,8 @@ export default async function AdminLeadsPage({
           </p>
         </section>
       ) : null}
+
+      <CapturedLeadsSection items={capturedLeads} />
 
       {classicWorkflow ? (
         <LeadsWorkflowView
