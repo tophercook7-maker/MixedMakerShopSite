@@ -20,9 +20,16 @@ export type LeadAssessment = {
   lead_type: LeadType;
   close_probability: CloseProbability;
   best_contact_method: BestContactMethod | null;
+  /** Short label for logic / tables */
   primary_problem: string;
-  why_it_matters: string;
+  /** Single plain sentence: the whole situation in one line (replaces stacked “why / problem / reason”). */
+  situation_headline: string;
+  /** Same as situation_headline; kept for callers that still use this name. */
   why_this_lead_is_here: string;
+  /** 2–3 outcome-focused lines for “Why it matters”. */
+  matters_bullets: string[];
+  /** First bullet or fallback for legacy single-string consumers. */
+  why_it_matters: string;
   best_pitch_angle: string;
   recommended_next_action: RecommendedNextAction;
 };
@@ -44,6 +51,8 @@ type BuildLeadAssessmentInput = {
   new_photos_detected?: boolean | null;
   listing_recently_updated?: boolean | null;
   lead_status?: string | null;
+  /** True if email, phone, contact page, or Facebook is available */
+  has_contact_path?: boolean | null;
 };
 
 function hasAny(texts: string[], patterns: string[]) {
@@ -71,6 +80,14 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
   const leadStatus = String(input.lead_status || "").trim().toLowerCase();
   const issueTexts = [summary, ...issues].filter(Boolean);
   const leadBucket = scoreToLeadBucket(score);
+  const hasContactPath =
+    input.has_contact_path === true ||
+    Boolean(
+      String(input.email || "").trim() ||
+        String(input.phone || "").trim() ||
+        String(input.contact_page || "").trim() ||
+        String(input.facebook_url || "").trim()
+    );
 
   const noWebsite = !website || hasAny(issueTexts, ["no website", "without website"]);
   const brokenWebsite =
@@ -110,55 +127,73 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
   else if (activeBusiness || score >= 80) closeProbability = "high";
   else if (score < 60) closeProbability = "low";
 
-  let bestPitchAngle = "Your business has strong reviews but the website may be holding you back.";
-  if (noWebsite) bestPitchAngle = "Looks like you may not currently have a website.";
-  else if (brokenWebsite) bestPitchAngle = "I noticed your site may not be loading correctly.";
-  else if (insecureHttp) bestPitchAngle = "Your website appears to use insecure HTTP instead of HTTPS.";
-  else if (missingContactPage) bestPitchAngle = "Your contact page appears to be missing, which can cost leads.";
-  else if (mobileIssue) bestPitchAngle = "Your mobile layout could make it harder for customers to contact you.";
-  else if (slowSite) bestPitchAngle = "Your homepage loads slowly, which can reduce calls and form submissions.";
+  const facebookOnlyPresence = !website && Boolean(String(input.facebook_url || "").trim());
 
-  let primaryProblem = "Contact info is hard to find";
-  if (noWebsite) primaryProblem = "No website found";
-  else if (brokenWebsite) primaryProblem = "Website does not load";
-  else if (insecureHttp) primaryProblem = "Website uses insecure HTTP";
-  else if (missingContactPage) primaryProblem = "Contact page missing";
-  else if (mobileIssue) primaryProblem = "Mobile layout difficult to use";
-  else if (slowSite) primaryProblem = "Homepage loads slowly";
-  else if (hasAny(issueTexts, ["no clear call-to-action", "missing call-to-action", "cta missing"])) {
-    primaryProblem = "No clear call-to-action";
-  } else if (summary) {
-    primaryProblem = summary;
-  } else if (issues.length) {
-    primaryProblem = issues[0];
-  }
+  let situationHeadline = "Online presence needs work.";
+  if (facebookOnlyPresence) situationHeadline = "Facebook-only business.";
+  else if (noWebsite) situationHeadline = "No website. Strong opportunity.";
+  else if (brokenWebsite) situationHeadline = "Their site is down — they are losing leads.";
+  else if (insecureHttp) situationHeadline = "Still on insecure HTTP — trust takes a hit.";
+  else if (missingContactPage) situationHeadline = "Hard to reach — contact path is buried or missing.";
+  else if (mobileIssue || slowSite || outdatedDesign) situationHeadline = "Has a weak website.";
 
-  let whyItMatters = "Visitors may leave before taking action.";
-  if (noWebsite || missingContactPage) {
-    whyItMatters = "Customers may have trouble contacting the business.";
+  let bestPitchAngle = "Tighten their site so more visitors call or book.";
+  if (facebookOnlyPresence) {
+    bestPitchAngle = "Move them to their own site so Google and new customers take them seriously.";
+  } else if (noWebsite) {
+    bestPitchAngle =
+      "They need a simple site — you help them get more customers fast.";
   } else if (brokenWebsite) {
-    whyItMatters = "A broken site can stop new customers from reaching out.";
+    bestPitchAngle = "Their site is down — fixing it turns the phone back on.";
   } else if (insecureHttp) {
-    whyItMatters = "Insecure pages reduce trust and can lower conversions.";
-  } else if (mobileIssue) {
-    whyItMatters = "Visitors on phones may leave before finding contact info.";
-  } else if (slowSite) {
-    whyItMatters = "Slow pages can reduce calls, form submissions, and bookings.";
-  } else if (activeBusiness) {
-    whyItMatters = "Active business with good reviews but weak website.";
-  }
-
-  let whyThisLeadIsHere = "Clear website improvement opportunity for outreach.";
-  if (noWebsite) whyThisLeadIsHere = "No website found for active local business.";
-  else if (activeBusiness && (mobileIssue || slowSite || outdatedDesign)) {
-    whyThisLeadIsHere = "Business has strong reviews but weak website.";
+    bestPitchAngle = "HTTPS is a quick trust fix — pitch security plus a cleaner, faster page.";
   } else if (missingContactPage) {
-    whyThisLeadIsHere = "Contact page missing on service business website.";
-  } else if (brokenWebsite) {
-    whyThisLeadIsHere = "Website appears broken and likely losing leads.";
-  } else if (insecureHttp) {
-    whyThisLeadIsHere = "Website is still on HTTP and needs trust/security fixes.";
+    bestPitchAngle = "Put contact front and center — one clear path from Google to a call or form.";
+  } else if (mobileIssue) {
+    bestPitchAngle = "Mobile-first cleanup: bigger tap targets, obvious Call Now — more completions.";
+  } else if (slowSite) {
+    bestPitchAngle = "Speed wins: lighter pages, faster loads — more calls and form fills.";
   }
+
+  let primaryProblem = "Contact path unclear";
+  if (noWebsite) primaryProblem = "No website";
+  else if (brokenWebsite) primaryProblem = "Website does not load";
+  else if (insecureHttp) primaryProblem = "Insecure HTTP";
+  else if (missingContactPage) primaryProblem = "Contact page missing";
+  else if (mobileIssue) primaryProblem = "Mobile layout issues";
+  else if (slowSite) primaryProblem = "Slow homepage";
+  else if (hasAny(issueTexts, ["no clear call-to-action", "missing call-to-action", "cta missing"])) {
+    primaryProblem = "Weak or missing CTA";
+  } else if (summary) {
+    primaryProblem = summary.length > 48 ? `${summary.slice(0, 45)}…` : summary;
+  } else if (issues.length) {
+    primaryProblem = issues[0].length > 48 ? `${issues[0].slice(0, 45)}…` : issues[0];
+  }
+
+  const mattersBullets: string[] = [];
+  if (facebookOnlyPresence) {
+    mattersBullets.push("They lose customers who never leave Facebook to look them up.");
+    mattersBullets.push("Hard to look like a real business without their own site.");
+  } else if (noWebsite) {
+    mattersBullets.push("They lose customers who search online first.");
+    mattersBullets.push("Hard to find or contact them on the open web.");
+    mattersBullets.push("Low trust without a website.");
+  }
+  if (!facebookOnlyPresence && !noWebsite && !hasContactPath && mattersBullets.length < 3) {
+    mattersBullets.push("Hard to find or contact online.");
+  }
+  if (!facebookOnlyPresence && !noWebsite && (mobileIssue || slowSite || outdatedDesign)) {
+    if (mattersBullets.length < 3) {
+      mattersBullets.push("Visitors leave before they call or book.");
+    }
+  }
+  if (!facebookOnlyPresence && !noWebsite && brokenWebsite && mattersBullets.length < 3) {
+    mattersBullets.push("New business stops cold when the site does not load.");
+  }
+  if (mattersBullets.length === 0) {
+    mattersBullets.push("A clearer site turns more visitors into calls.");
+  }
+  const mattersTrimmed = mattersBullets.slice(0, 3);
 
   let recommendedNextAction: RecommendedNextAction = "Review Website";
   if (leadType === "Low Priority") recommendedNextAction = "Skip For Now";
@@ -172,8 +207,10 @@ export function buildLeadAssessment(input: BuildLeadAssessmentInput): LeadAssess
     close_probability: closeProbability,
     best_contact_method: bestContactMethod,
     primary_problem: primaryProblem,
-    why_it_matters: whyItMatters,
-    why_this_lead_is_here: whyThisLeadIsHere,
+    situation_headline: situationHeadline,
+    why_this_lead_is_here: situationHeadline,
+    matters_bullets: mattersTrimmed,
+    why_it_matters: mattersTrimmed[0] || "",
     best_pitch_angle: bestPitchAngle,
     recommended_next_action: recommendedNextAction,
   };

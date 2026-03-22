@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
+import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
@@ -13,6 +14,7 @@ import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-
 import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
+import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 
 type LeadRow = {
   id: string;
@@ -322,7 +324,7 @@ function fmtDate(v: string | null | undefined) {
 function fmtBool(v: boolean | null | undefined) {
   if (v === true) return "Yes";
   if (v === false) return "No";
-  return "—";
+  return "";
 }
 
 function slugTokenToBusinessNameQuery(token: string): string {
@@ -443,37 +445,16 @@ function expectedCloseProbabilityNumber(
   return Math.max(20, Math.min(55, s));
 }
 
-function generateLeadPitches(input: {
-  businessName: string;
-  category: string;
-  issue: string;
-  contactType: "email" | "contact" | "door_to_door" | "skip";
-}): { email_pitch: string; text_pitch: string; door_pitch: string } {
-  const business = input.businessName || "your business";
-  const category = input.category || "business";
-  const issue = input.issue || "a website issue";
-  const contactHint =
-    input.contactType === "email"
-      ? "I can send a quick before/after concept by email."
-      : input.contactType === "contact"
-        ? "I can send a quick idea through your contact form."
-        : "I can show a quick local example in person.";
-  return {
-    email_pitch: `Hi ${business}, I noticed ${issue} on your ${category} web presence. ${contactHint} Would you like a quick example tailored for your business?`,
-    text_pitch: `Hi ${business}, Topher here. I noticed ${issue} on your website and can show a quick improvement idea that helps customers reach you faster. Want me to send it?`,
-    door_pitch: `Hi, I am Topher with Topher's Web Design. I help local ${category} businesses fix issues like ${issue}. I put together a quick idea for ${business} to help get more customer actions.`,
-  };
-}
-
 export default async function AdminLeadDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ generate?: string; compose?: string; sample?: string }>;
+  searchParams: Promise<{ generate?: string; compose?: string; sample?: string; focus?: string }>;
 }) {
   const { id } = await params;
-  const { generate, compose, sample } = await searchParams;
+  const { generate, compose, sample, focus } = await searchParams;
+  const focusOutreach = String(focus || "").toLowerCase() === "outreach";
   const supabase = await createClient();
   const {
     data: { user },
@@ -489,8 +470,14 @@ export default async function AdminLeadDetailPage({
     );
   }
   const targetId = String(id || "").trim();
-  const redirectQuery =
-    sample === "1" ? "sample=1" : generate === "1" ? "generate=1" : compose === "1" ? "compose=1" : undefined;
+  const redirectQuery = (() => {
+    const q: string[] = [];
+    if (sample === "1") q.push("sample=1");
+    else if (generate === "1") q.push("generate=1");
+    else if (compose === "1") q.push("compose=1");
+    if (focusOutreach) q.push("focus=outreach");
+    return q.length ? q.join("&") : undefined;
+  })();
   if (!targetId) {
     return (
       <section className="admin-card">
@@ -1145,6 +1132,7 @@ export default async function AdminLeadDetailPage({
     new_photos_detected: caseRow?.new_photos_detected ?? null,
     listing_recently_updated: caseRow?.listing_recently_updated ?? null,
     lead_status: displayStatus,
+    has_contact_path: hasContactPath,
   });
   const displayLeadBucket = canonicalLeadBucket(assessment.lead_bucket, displayScore);
   const recommendedActionHref =
@@ -1217,12 +1205,40 @@ export default async function AdminLeadDetailPage({
     (String(assessment.close_probability || "").toLowerCase() as "low" | "medium" | "high") || null,
     displayScore
   );
-  const pitches = generateLeadPitches({
-    businessName: displayBusinessName,
-    category: displayCategory,
-    issue: String(opp?.opportunity_reason || topIssues[0]?.issue || "website issues").trim(),
-    contactType: outreachChannel,
-  });
+  const hasStandaloneSite =
+    Boolean(String(displayWebsite || "").trim()) && leadHasStandaloneWebsite(displayWebsite);
+  const facebookOnlyForOffer =
+    !hasStandaloneSite &&
+    (Boolean(displayFacebook) ||
+      String(displayWebsite || "").toLowerCase().includes("facebook.com") ||
+      String(displayWebsite || "").toLowerCase().includes("fb.com"));
+  let primaryOfferLine = "Offer a tighter, clearer site.";
+  if (facebookOnlyForOffer) primaryOfferLine = "Help them get off Facebook and onto a real site.";
+  else if (!hasStandaloneSite) primaryOfferLine = "Offer a simple website.";
+  else if (assessment.situation_headline === "Has a weak website.") primaryOfferLine = "Offer a quick redesign.";
+
+  const shortEmailPitch = hasStandaloneSite
+    ? `Hey — I took a quick look at your site and see a few easy wins.
+I help local businesses get more calls with simple, cleaner sites.
+Want me to show you a quick example?`
+    : `Hey — I noticed you don't have a website.
+I help businesses get more calls with simple sites.
+Want me to show you a quick example?`;
+  const shortTextPitch = `Hey this is Topher — I help businesses get more calls with simple websites.
+Want me to show you a quick idea?`;
+  const shortDoorPitch = `Hi, I'm Topher — I help local businesses get found online. Got two minutes for a quick idea?`;
+
+  const hasWebsitePreviewContent =
+    Boolean(displayWebsite) ||
+    Boolean(desktopScreenshotUrl) ||
+    Boolean(mobileScreenshotUrl) ||
+    Boolean(contactScreenshotUrl) ||
+    fallbackScreenshotUrls.length > 0;
+  const showGoogleReviewCount =
+    caseRow?.google_review_count != null && String(caseRow.google_review_count).trim() !== "";
+  const showGoogleRating =
+    caseRow?.google_rating != null && String(caseRow.google_rating).trim() !== "";
+  const showEmailSource = Boolean(displayEmail) && displayEmailSource !== "unknown";
 
   return (
     <div className="space-y-6">
@@ -1245,96 +1261,120 @@ export default async function AdminLeadDetailPage({
           </p>
         </section>
       ) : null}
-      <details className="admin-card">
-        <summary className="text-xs cursor-pointer" style={{ color: "var(--admin-muted)" }}>
-          Technical details (support only)
-        </summary>
-        <div className="mt-2 grid gap-2 text-xs" style={{ color: "var(--admin-muted)" }}>
-          <p>lead_exists_by_id: {leadExistsById ? "true" : "false"}</p>
-          <p>owner_id_on_row: {leadOwnerOnRow || "null"}</p>
-          <p>current_user_id: {ownerId || "null"}</p>
-          <p>workspace_id_on_row: {leadWorkspaceOnRow || "null"}</p>
-          <p>owner_workspace_filter_blocked_row: {ownerWorkspaceFilterBlockedRow ? "true" : "false"}</p>
-          <p>detail_failure_reason: {detailFailureReason || "none"}</p>
-        </div>
-      </details>
-      <section className="admin-card space-y-4">
+      <section className="admin-card space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2 min-w-0 flex-1">
+          <div className="space-y-3 min-w-0 flex-1">
             <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
               {displayBusinessName}
             </h1>
-            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-              {displayCategory} · {displayCity}
-              {displayAddress && displayAddress !== "—" ? ` · ${displayAddress}` : ""}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Status
-              </span>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
-              <span className="text-xs ml-2" style={{ color: "var(--admin-muted)" }}>
-                Opportunity score: <strong style={{ color: "var(--admin-fg)" }}>{displayScore ?? "—"}</strong>
-              </span>
+              {displayScore != null && String(displayScore).trim() !== "" ? (
+                <span style={{ color: "var(--admin-muted)" }}>
+                  Score <strong style={{ color: "var(--admin-fg)" }}>{displayScore}</strong>
+                </span>
+              ) : null}
             </div>
-            <p className="text-sm" style={{ color: "var(--admin-fg)" }}>
-              {displayWebsite ? (
-                <>
-                  Website:{" "}
-                  <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline break-all">
-                    {displayWebsite}
-                  </a>
-                </>
-              ) : (
-                <span className="text-amber-200/90">No website found — often a strong opportunity for a new site.</span>
-              )}
-            </p>
-            <p className="text-sm">
-              <span style={{ color: "var(--admin-muted)" }}>Best next move: </span>
-              <span style={{ color: "var(--admin-fg)" }}>{nextAction}</span>
-            </p>
-            {getLeadPriorityBadges({
-              isHotLead: Boolean(lead?.is_hot_lead),
-              bucket: displayLeadBucket,
-              score: displayScore,
-              email: displayEmail,
-              phone: displayPhone,
-            }).map((badge) => (
-              <span key={badge.key} className={`admin-priority-badge ${badge.className}`}>
-                {badge.label}
-              </span>
-            ))}
-            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Added {fmtDate(displayCreatedAt)}
+            <p className="text-base font-medium leading-snug" style={{ color: "var(--admin-fg)" }}>
+              {assessment.situation_headline}
             </p>
           </div>
-          <div className="flex flex-col items-stretch gap-2 shrink-0">
-            <Link href="/admin/leads" className="admin-btn-ghost text-sm text-center">
-              ← All businesses
-            </Link>
-            {caseHref ? (
-              <Link href={caseHref} className="admin-btn-ghost text-sm text-center">
-                Open case file
-              </Link>
-            ) : null}
-          </div>
+          <Link href="/admin/leads" className="admin-btn-ghost text-sm shrink-0 self-start">
+            All businesses
+          </Link>
         </div>
-        {resolvedLeadId ? (
-          <LeadPrimaryActions
-            leadId={resolvedLeadId}
-            businessName={displayBusinessName}
-            initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
-          />
-        ) : null}
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
+          {assessment.matters_bullets.filter(Boolean).length > 0 ? (
+          <section className="admin-card space-y-3">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Why this matters
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-sm" style={{ color: "var(--admin-fg)" }}>
+              {assessment.matters_bullets.filter(Boolean).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+          ) : null}
+
+          <section className="admin-card space-y-3">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              What to do
+            </h2>
+            <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
+              {primaryOfferLine}
+            </p>
+            {resolvedLeadId ? (
+              <LeadPrimaryActions
+                leadId={resolvedLeadId}
+                businessName={displayBusinessName}
+                initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+              />
+            ) : null}
+          </section>
+
+          <LeadPitchPanel
+            emailPitch={shortEmailPitch}
+            textPitch={shortTextPitch}
+            doorPitch={shortDoorPitch}
+            showDoor={false}
+          />
+
           <details className="admin-card">
             <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
-              More detail about this opportunity (optional)
+              More details (optional)
             </summary>
             <div className="mt-3 space-y-4">
+            <details className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--admin-border)" }}>
+              <summary className="cursor-pointer" style={{ color: "var(--admin-muted)" }}>
+                Technical (support)
+              </summary>
+              <div className="mt-2 grid gap-1 font-mono" style={{ color: "var(--admin-muted)" }}>
+                <p>lead_exists_by_id: {leadExistsById ? "true" : "false"}</p>
+                <p>owner_id_on_row: {leadOwnerOnRow || "null"}</p>
+                <p>current_user_id: {ownerId || "null"}</p>
+                <p>workspace_id_on_row: {leadWorkspaceOnRow || "null"}</p>
+                <p>owner_workspace_filter_blocked_row: {ownerWorkspaceFilterBlockedRow ? "true" : "false"}</p>
+                <p>detail_failure_reason: {detailFailureReason || "none"}</p>
+              </div>
+            </details>
+
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+              {displayCategory} · {displayCity}
+              {displayAddress && displayAddress !== "—" ? ` · ${displayAddress}` : ""}
+            </p>
+            {displayWebsite ? (
+              <p className="text-sm">
+                <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline break-all">
+                  {displayWebsite}
+                </a>
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              {getLeadPriorityBadges({
+                isHotLead: Boolean(lead?.is_hot_lead),
+                bucket: displayLeadBucket,
+                score: displayScore,
+                email: displayEmail,
+                phone: displayPhone,
+              }).map((badge) => (
+                <span key={badge.key} className={`admin-priority-badge ${badge.className}`}>
+                  {badge.label}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Added {fmtDate(displayCreatedAt)}
+            </p>
+            {caseHref ? (
+              <Link href={caseHref} className="admin-btn-ghost text-sm inline-block">
+                Open case file
+              </Link>
+            ) : null}
+
           <section>
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               Lead assessment
@@ -1349,9 +1389,6 @@ export default async function AdminLeadDetailPage({
               <div><span style={{ color: "var(--admin-muted)" }}>Best Contact Method:</span> {assessment.best_contact_method || "none"}</div>
               <div><span style={{ color: "var(--admin-muted)" }}>Recommended Next Action:</span> {assessment.recommended_next_action}</div>
             </div>
-            <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
-              <span style={{ color: "var(--admin-fg)" }}>Best Pitch Angle:</span> {assessment.best_pitch_angle}
-            </p>
           </section>
 
           <section>
@@ -1375,87 +1412,49 @@ export default async function AdminLeadDetailPage({
               <p><span style={{ color: "var(--admin-muted)" }}>Referrals generated by this client:</span> {referralsGeneratedCount}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Expected close probability:</span> {expectedCloseProbability}%</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Worth now vs later:</span> {hasEmailPath || hasContactAvailable ? "Worth working now" : doorToDoorCandidate ? "Save for selective in-person outreach" : "Save for later / low priority"}</p>
-              <p><span style={{ color: "var(--admin-muted)" }}>Why this still matters:</span> {doorToDoorCandidate ? "Active local business with a real website gap and no online contact path." : assessment.why_this_lead_is_here}</p>
               <p><span style={{ color: "var(--admin-muted)" }}>Best next move:</span> {nextAction}</p>
-            </div>
-          </section>
-            </div>
-          </details>
-
-          <LeadPitchPanel
-            emailPitch={pitches.email_pitch}
-            textPitch={pitches.text_pitch}
-            doorPitch={pitches.door_pitch}
-          />
-
-          <section className="admin-card">
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              What’s Really Going On
-            </h2>
-            <div className="space-y-3 text-sm">
-              <div>
-                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Top issues</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  {(quickFixCurrentIssues.length ? quickFixCurrentIssues : ["Contact info is hard to find"]).slice(0, 3).map((issue, idx) => (
-                    <li key={`${issue}-${idx}`}>{issue}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>Why it matters</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  {[
-                    "Customers may have trouble contacting the business quickly.",
-                    "Mobile visitors may leave before taking action.",
-                    "A weaker web presence can reduce trust and conversions.",
-                  ].map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              </div>
-              <p style={{ color: "var(--admin-muted)" }}>
-                <span style={{ color: "var(--admin-fg)" }}>Best pitch angle:</span> {assessment.best_pitch_angle}
-              </p>
-              <p style={{ color: "var(--admin-muted)" }}>
-                <span style={{ color: "var(--admin-fg)" }}>Recommended next action:</span> {assessment.recommended_next_action}
+              <p className="text-sm pt-2 border-t" style={{ borderColor: "var(--admin-border)" }}>
+                <span style={{ color: "var(--admin-muted)" }}>Angle: </span>
+                {assessment.best_pitch_angle}
               </p>
             </div>
           </section>
 
+          {(quickFixCurrentIssues.length > 0 || quickFixImprovements.length > 0) ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Quick Fix Preview
+              Quick win ideas
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>
-                  Current Issues
+                  Current issues
                 </p>
-                {quickFixCurrentIssues.length ? (
+                {quickFixCurrentIssues.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1 text-sm">
                     {quickFixCurrentIssues.map((issue, idx) => (
                       <li key={`${issue}-${idx}`}>{issue}</li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-                    Contact info is hard to find.
-                  </p>
-                )}
+                ) : null}
               </div>
               <div>
                 <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>
-                  Suggested Fixes
+                  Suggested fixes
                 </p>
-                <ul className="list-disc pl-5 space-y-1 text-sm">
-                  {quickFixImprovements.map((item, idx) => (
-                    <li key={`${item}-${idx}`}>{item}</li>
-                  ))}
-                </ul>
+                {quickFixImprovements.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    {quickFixImprovements.map((item, idx) => (
+                      <li key={`${item}-${idx}`}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </div>
           </section>
+          ) : null}
 
+          {hasWebsitePreviewContent ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               Website preview
@@ -1465,16 +1464,10 @@ export default async function AdminLeadDetailPage({
                 <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
                   {displayWebsite}
                 </a>
-              ) : (
-                <span>No website captured</span>
-              )}
+              ) : null}
               <span className="admin-badge admin-badge-progress">{preferredContact}</span>
             </div>
-            {!desktopScreenshotUrl && !mobileScreenshotUrl && !contactScreenshotUrl && fallbackScreenshotUrls.length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No website preview saved yet.
-              </p>
-            ) : (
+            {!desktopScreenshotUrl && !mobileScreenshotUrl && !contactScreenshotUrl && fallbackScreenshotUrls.length === 0 ? null : (
               <div className="space-y-3">
                 <div className="grid gap-3 md:grid-cols-3">
                   {desktopScreenshotUrl ? (
@@ -1533,71 +1526,34 @@ export default async function AdminLeadDetailPage({
               </div>
             )}
           </section>
+          ) : null}
 
-          <section className="admin-card">
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Problems I noticed
-            </h2>
-            {topIssues.length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                Contact info is hard to find.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                  Issues detected:
-                </p>
-                <ul className="list-disc pl-5 space-y-1 text-sm">
-                  {topIssues.map((entry, idx) => (
-                    <li key={`${entry.category}-${entry.issue}-${idx}`}>
-                      <span className="font-medium">{entry.category}:</span> {entry.issue}
-                    </li>
-                  ))}
-                </ul>
-                <details className="text-sm">
-                  <summary className="cursor-pointer text-[var(--admin-gold)]">Expand issue details</summary>
-                  <ul className="list-disc pl-5 pt-2 space-y-1">
-                    {structuredIssues.slice(3).map((entry, idx) => (
-                      <li key={`${entry.category}-${entry.issue}-${idx}`}>
-                        <span className="font-medium">{entry.category}:</span> {entry.issue}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </div>
-            )}
-          </section>
-
+          {websiteAudit ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               Website check
             </h2>
-            {!websiteAudit ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No website check saved yet.
-              </p>
-            ) : (
               <div className="space-y-3 text-sm">
                 <div className="grid gap-2 md:grid-cols-3">
                   <div>
                     <span style={{ color: "var(--admin-muted)" }}>Mobile score: </span>
                     {Number.isFinite(Number(websiteAudit.mobile_score))
                       ? Number(websiteAudit.mobile_score)
-                      : "—"}
+                      : ""}
                   </div>
                   <div>
                     <span style={{ color: "var(--admin-muted)" }}>Load time: </span>
                     {Number.isFinite(Number(websiteAudit.load_time))
                       ? `${Number(websiteAudit.load_time).toFixed(2)}s`
-                      : "—"}
+                      : ""}
                   </div>
                   <div>
                     <span style={{ color: "var(--admin-muted)" }}>Broken internal links: </span>
-                    {auditChecks?.broken_links_count ?? auditChecks?.broken_internal_links_count ?? "—"}
+                    {auditChecks?.broken_links_count ?? auditChecks?.broken_internal_links_count ?? ""}
                   </div>
                 </div>
                 <ul className="grid gap-1 md:grid-cols-2 text-xs" style={{ color: "var(--admin-muted)" }}>
-                  <li>Large images &gt;300KB: {auditChecks?.large_images_over_300kb ?? "—"}</li>
+                  <li>Large images &gt;300KB: {auditChecks?.large_images_over_300kb ?? ""}</li>
                   <li>Missing meta description: {fmtBool(auditChecks?.missing_meta_description)}</li>
                   <li>Missing H1: {fmtBool(auditChecks?.missing_h1)}</li>
                   <li>CTA present: {fmtBool(auditChecks?.cta_present)}</li>
@@ -1605,12 +1561,12 @@ export default async function AdminLeadDetailPage({
                   <li>Missing viewport meta: {fmtBool(auditChecks?.missing_viewport_meta)}</li>
                   <li>Small text/crowded buttons: {fmtBool(auditChecks?.small_text_or_crowded_buttons)}</li>
                   <li>Contact page present: {fmtBool(auditChecks?.contact_page_present)}</li>
-                  <li>Contact click depth: {auditChecks?.contact_click_depth ?? "—"}</li>
+                  <li>Contact click depth: {auditChecks?.contact_click_depth ?? ""}</li>
                 </ul>
                 {websiteAuditIssues.length > 0 ? (
                   <div>
                     <p className="text-xs mb-1" style={{ color: "var(--admin-muted)" }}>
-                      Audit issues:
+                      Audit issues
                     </p>
                     <ul className="list-disc pl-5 space-y-1">
                       {websiteAuditIssues.map((issue, idx) => (
@@ -1618,114 +1574,95 @@ export default async function AdminLeadDetailPage({
                       ))}
                     </ul>
                   </div>
-                ) : (
-                  <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                    No audit issues captured.
-                  </p>
-                )}
+                ) : null}
               </div>
-            )}
           </section>
+          ) : null}
 
+          {activitySummary.length > 0 ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               Business activity
             </h2>
-            {activitySummary.length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No recent Google Business activity signals captured yet.
-              </p>
-            ) : (
               <ul className="list-disc pl-5 space-y-1 text-sm">
                 {activitySummary.map((item, idx) => (
                   <li key={`${item}-${idx}`}>{item}</li>
                 ))}
               </ul>
-            )}
           </section>
+          ) : null}
 
+          {hasContactPath ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
               How to reach them
             </h2>
             <div className="grid gap-2 md:grid-cols-3 text-sm">
+              {displayEmail ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Email: </span>
-                {displayEmail ? (
                   <a href={`mailto:${displayEmail}`} className="text-[var(--admin-gold)] hover:underline">
                     {displayEmail}
                   </a>
-                ) : (
-                  "—"
-                )}
               </div>
+              ) : null}
+              {showEmailSource ? (
               <div>
-                <span style={{ color: "var(--admin-muted)" }}>Email Source: </span>
+                <span style={{ color: "var(--admin-muted)" }}>Email source: </span>
                 {displayEmailSource}
               </div>
+              ) : null}
+              {displayPhone ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Phone: </span>
-                {displayPhone ? (
                   <a href={`tel:${displayPhone}`} className="text-[var(--admin-gold)] hover:underline">
                     {displayPhone}
                   </a>
-                ) : (
-                  "—"
-                )}
               </div>
+              ) : null}
+              {displayContactPage ? (
               <div>
-                <span style={{ color: "var(--admin-muted)" }}>Contact Page: </span>
-                {displayContactPage ? (
+                <span style={{ color: "var(--admin-muted)" }}>Contact page: </span>
                   <a href={displayContactPage} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
                     Open
                   </a>
-                ) : (
-                  "—"
-                )}
               </div>
+              ) : null}
+              {displayFacebook ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Facebook: </span>
-                {displayFacebook ? (
                   <a href={displayFacebook} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
                     Open
                   </a>
-                ) : (
-                  "—"
-                )}
               </div>
+              ) : null}
+              {showGoogleReviewCount ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Google reviews: </span>
-                {caseRow?.google_review_count ?? "—"}
+                {caseRow?.google_review_count}
               </div>
+              ) : null}
+              {showGoogleRating ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Google rating: </span>
-                {caseRow?.google_rating ?? "—"}
+                {caseRow?.google_rating}
               </div>
+              ) : null}
             </div>
-            {!hasContactPath ? (
-              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-                No contact info found yet — check their site or social links below.
-              </p>
-            ) : null}
-            {hasContactPath && !hasEmailPath ? (
-              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-                No email yet; you can still use their contact form or phone.
-              </p>
-            ) : null}
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {resolvedLeadId ? (
-                <Link href={`/preview/${encodeURIComponent(resolvedLeadId)}`} target="_blank" className="admin-btn-primary">
-                  Generate Client Site Draft
+                <Link href={`/preview/${encodeURIComponent(resolvedLeadId)}`} target="_blank" className="admin-btn-ghost">
+                  Client site draft
                 </Link>
               ) : null}
               {displayEmail ? (
-                <a href={`mailto:${displayEmail}`} className="admin-btn-primary">
+                <a href={`mailto:${displayEmail}`} className="admin-btn-ghost">
                   Email
                 </a>
               ) : null}
               {displayContactPage ? (
                 <a href={displayContactPage} target="_blank" rel="noreferrer" className="admin-btn-ghost">
-                  Contact Form/Page
+                  Contact form
                 </a>
               ) : null}
               {displayPhone ? (
@@ -1745,58 +1682,50 @@ export default async function AdminLeadDetailPage({
               ) : null}
             </div>
           </section>
+          ) : null}
 
+          {(messageRows || []).length > 0 ? (
           <section className="admin-card">
             <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              What has happened so far
+              Message history
             </h2>
-            {(messageRows || []).length === 0 ? (
-              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-                No messages yet.
-              </p>
-            ) : (
               <ul className="space-y-2">
                 {(messageRows || []).map((item) => (
                   <li key={String(item.id || "")} className="text-sm border rounded-md p-2" style={{ borderColor: "var(--admin-border)" }}>
                     <div className="flex flex-wrap items-center gap-2 text-xs" style={{ color: "var(--admin-muted)" }}>
                       <span>{String(item.direction || "message")}</span>
-                      <span>{String(item.delivery_status || "—")}</span>
+                      <span>{String(item.delivery_status || "")}</span>
                       <span>{fmtDate(String(item.received_at || item.sent_at || item.created_at || ""))}</span>
                     </div>
-                    <div className="font-medium mt-1">{String(item.subject || "(no subject)")}</div>
+                    <div className="font-medium mt-1">{String(item.subject || "")}</div>
                     <div className="text-xs mt-1 whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
-                      {String(item.body || "").slice(0, 500) || "(empty body)"}
+                      {String(item.body || "").slice(0, 500)}
                     </div>
                   </li>
                 ))}
               </ul>
-            )}
           </section>
+          ) : null}
+
+          {resolvedLeadId ? (
+            <div className="admin-card">
+              <LeadActivityTimeline leadId={resolvedLeadId} />
+            </div>
+          ) : null}
+
+          <div className="pt-2">
+            <Link href={recommendedActionHref} className="admin-btn-ghost text-sm">
+              {assessment.recommended_next_action}
+            </Link>
+          </div>
+
+            </div>
+          </details>
         </div>
 
         <div className="space-y-6">
-          <section className="admin-card">
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              Suggested steps
-            </h2>
-            <ol className="list-decimal pl-5 text-sm space-y-1" style={{ color: "var(--admin-muted)" }}>
-              <li>Glance at their site (or note they don’t have one)</li>
-              <li>Skim what stands out below</li>
-              <li>Generate a short email when you’re ready</li>
-              <li>Send it from this page</li>
-            </ol>
-            <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-              Best next move: {assessment.recommended_next_action}
-            </p>
-            <div className="mt-3">
-              <Link href={recommendedActionHref} className="admin-btn-primary text-sm">
-                {assessment.recommended_next_action}
-              </Link>
-            </div>
-          </section>
           {resolvedLeadId ? (
-            <>
-              <LeadActivityTimeline leadId={resolvedLeadId} />
+            <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
               <LeadWorkspaceActions
                 leadId={resolvedLeadId}
                 linkedOpportunityId={oppId || null}
@@ -1840,7 +1769,7 @@ export default async function AdminLeadDetailPage({
                 }
                 initialLastOutreachSentAt={String(lead?.last_outreach_sent_at || "").trim() || null}
               />
-            </>
+            </LeadWorkspaceScrollAnchor>
           ) : (
             <section className="admin-card">
               <h3 className="text-sm font-semibold">Outreach Panel</h3>

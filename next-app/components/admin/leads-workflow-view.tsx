@@ -1699,13 +1699,11 @@ export function LeadsWorkflowView({
                     <span className="font-semibold">Estimated value:</span> {lead.estimated_value || "low"} ({lead.estimated_price_range || "$"}) · Close {lead.expected_close_probability ?? "—"}%
                   </p>
                   <p>
-                    <span className="font-semibold">What is wrong:</span> {lead.primary_problem || lead.detected_issue_summary || "Contact info is hard to find"}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Why it matters:</span> {lead.why_it_matters || "Visitors may leave before taking action."}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Why this lead is here:</span> {lead.why_this_lead_is_here || "Clear website improvement opportunity."}
+                    <span className="font-semibold">Situation:</span>{" "}
+                    {lead.why_this_lead_is_here ||
+                      lead.detected_issue_summary ||
+                      lead.primary_problem ||
+                      "Worth a closer look online."}
                   </p>
                   <p>
                     <span className="font-semibold">Business profile:</span> {lead.category || "—"} · {lead.city || "—"} · {lead.address || "—"}
@@ -1773,9 +1771,11 @@ export function LeadsWorkflowView({
                   <p>
                     <span className="font-semibold">Email:</span> {lead.email || "—"}
                   </p>
-                  <p>
-                    <span className="font-semibold">Email source:</span> {lead.email_source || "unknown"}
-                  </p>
+                  {lead.email && lead.email_source && String(lead.email_source).toLowerCase() !== "unknown" ? (
+                    <p>
+                      <span className="font-semibold">Email source:</span> {lead.email_source}
+                    </p>
+                  ) : null}
                   {!lead.email && !lead.contact_page && !lead.facebook_url && !lead.phone_from_site ? (
                     <p style={{ color: "#fca5a5" }}>No Contact Path</p>
                   ) : null}
@@ -2084,9 +2084,8 @@ export function LeadsWorkflowView({
                   <th>Score</th>
                   <th>Conversion</th>
                   <th>Lead Bucket</th>
-                  <th>Opportunity Reason</th>
-                  <th>Why It Matters</th>
-                  <th>What To Say</th>
+                  <th>Situation</th>
+                  <th>What to say</th>
                   <th>Address</th>
                   <th>Notes</th>
                   <th>Door Status</th>
@@ -2134,14 +2133,14 @@ export function LeadsWorkflowView({
                     <td>
                       <LeadBucketBadge bucket={lead.lead_bucket} score={lead.opportunity_score} />
                     </td>
-                    <td>
-                      {lead.primary_problem || lead.detected_issue_summary || "Contact info is hard to find"}
+                    <td className="max-w-[220px]">
+                      {lead.why_this_lead_is_here ||
+                        lead.detected_issue_summary ||
+                        lead.primary_problem ||
+                        "—"}
                     </td>
-                    <td>
-                      {lead.why_it_matters || "Visitors may leave before taking action."}
-                    </td>
-                    <td>
-                      {lead.best_pitch_angle || "Quick website improvements can help increase leads."}
+                    <td className="max-w-[200px]">
+                      {lead.best_pitch_angle || "Tighten their site so more visitors call or book."}
                     </td>
                     <td>
                       {lead.address ? (
@@ -2165,9 +2164,17 @@ export function LeadsWorkflowView({
                     <td>{lead.contact_page || "—"}</td>
                     <td>{lead.facebook_url || "—"}</td>
                     <td>{lead.email || "No Email Found"}</td>
-                    <td>{lead.email_source || "No Email Found"}</td>
-                    <td>{lead.google_review_count ?? "—"}</td>
-                    <td>{lead.google_rating ?? "—"}</td>
+                    <td>
+                      {lead.email &&
+                      lead.email_source &&
+                      String(lead.email_source).toLowerCase() !== "unknown"
+                        ? lead.email_source
+                        : "—"}
+                    </td>
+                    <td>{lead.google_review_count != null && String(lead.google_review_count).trim() !== "" ? lead.google_review_count : "—"}</td>
+                    <td>
+                      {lead.google_rating != null && String(lead.google_rating).trim() !== "" ? lead.google_rating : "—"}
+                    </td>
                     <td>
                       <span className={`admin-priority-badge ${doorScoreClass(lead.door_score)}`}>
                         {Number(lead.door_score || 0)}

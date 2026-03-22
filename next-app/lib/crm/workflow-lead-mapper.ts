@@ -49,6 +49,8 @@ export type LeadRowForWorkflow = {
   lead_source?: string | null;
   source_url?: string | null;
   source_label?: string | null;
+  /** CRM tags from `leads.lead_tags` (e.g. `no_website_opportunity`). */
+  lead_tags?: string[] | null;
 };
 
 export function isMissingColumnError(message: string): boolean {

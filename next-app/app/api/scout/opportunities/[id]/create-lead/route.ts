@@ -328,6 +328,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     contact_page: String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim() || null,
     facebook_url: String(caseRow?.facebook_url || caseRow?.facebook || "").trim() || null,
     lead_status: "new",
+    has_contact_path: Boolean(
+      String(caseRow?.email || "").trim() ||
+        String(caseRow?.phone_from_site || "").trim() ||
+        String(caseRow?.contact_page || caseRow?.contact_form_url || "").trim() ||
+        String(caseRow?.facebook_url || caseRow?.facebook || "").trim()
+    ),
   });
 
   const businessName = String(opp.business_name || "").trim() || "Unknown business";
@@ -495,7 +501,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     lead_id: String(inserted.id),
     case_id: String(caseRow?.id || "").trim() || null,
     business_name: String(inserted.business_name || businessName || ""),
-    message: "Lead created from top opportunity.",
+    message: "Lead saved.",
   };
   console.info("[Action Debug] create-lead response sent", {
     request_id: requestId,

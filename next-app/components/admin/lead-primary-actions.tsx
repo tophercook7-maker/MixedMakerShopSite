@@ -43,24 +43,6 @@ async function logAutomation(leadId: string, event_type: string, payload: Record
   }).catch(() => {});
 }
 
-async function createReplyReminder(leadId: string, businessLabel: string) {
-  const start = new Date();
-  const end = new Date(start.getTime() + 30 * 60 * 1000);
-  await fetch("/api/calendar/events", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      title: `Reply: ${businessLabel}`,
-      event_type: "reminder",
-      start_time: start.toISOString(),
-      end_time: end.toISOString(),
-      notes: "They replied — follow up from your CRM.",
-      is_blocking: false,
-      lead_id: leadId,
-    }),
-  }).catch(() => {});
-}
-
 export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt }: Props) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -92,15 +74,11 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
 
   return (
     <div className="space-y-3">
-      <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-        Your usual flow: contact them → follow up → win the job or close the file.
-      </p>
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           className="admin-btn-primary text-sm"
           disabled={busy}
-          title="Marks that you reached out. Sets a follow-up date if none is set yet."
           onClick={async () => {
             setBusy(true);
             setErr(null);
@@ -119,38 +97,11 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
               setErr(r.error);
               return;
             }
-            setToast(next ? "Marked contacted — follow-up date set." : "Marked contacted.");
+            setToast(next ? "Contact logged — follow-up set." : "Contact logged.");
             void logAutomation(leadId, "mark_contacted", { scheduled_follow_up: Boolean(next) });
           }}
         >
-          Mark contacted
-        </button>
-        <button
-          type="button"
-          className="admin-btn-primary text-sm"
-          disabled={busy}
-          title="They replied. Follow-ups pause so nothing sends while you respond."
-          onClick={async () => {
-            setBusy(true);
-            setErr(null);
-            const r = await patchLeadApi(leadId, {
-              status: "replied",
-              is_hot_lead: true,
-              automation_paused: true,
-              sequence_active: false,
-              replied_at: new Date().toISOString(),
-            });
-            setBusy(false);
-            if (!r.ok) {
-              setErr(r.error);
-              return;
-            }
-            void createReplyReminder(leadId, businessName || "Lead");
-            void logAutomation(leadId, "mark_replied", {});
-            setToast("Marked as replied — we added a reminder on your calendar.");
-          }}
-        >
-          Mark replied
+          Contact
         </button>
         <button
           type="button"
@@ -158,37 +109,21 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
           disabled={busy}
           onClick={() => setShowSchedule((s) => !s)}
         >
-          Schedule follow-up
-        </button>
-        <button
-          type="button"
-          className="admin-btn-primary text-sm"
-          disabled={busy}
-          title="Job won — follow-ups stop."
-          onClick={() =>
-            void run(
-              "Marked as won. Nice work!",
-              { status: "won", automation_paused: true, sequence_active: false },
-              "mark_won"
-            )
-          }
-        >
-          Mark won
+          Follow up
         </button>
         <button
           type="button"
           className="admin-btn-ghost text-sm border border-[var(--admin-border)]"
           disabled={busy}
-          title="Not a fit or they asked to stop — closes the lead and pauses follow-ups."
           onClick={() =>
             void run(
-              "Closed. Follow-ups are paused.",
+              "Closed.",
               { status: "lost", automation_paused: true, sequence_active: false },
               "mark_closed"
             )
           }
         >
-          Mark closed
+          Close
         </button>
       </div>
 
@@ -198,7 +133,7 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
           style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.15)" }}
         >
           <label className="flex flex-col gap-1 text-xs" style={{ color: "var(--admin-muted)" }}>
-            Remind me on
+            Remind me
             <input
               type="datetime-local"
               className="admin-input h-9 text-sm"
@@ -212,15 +147,19 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
             disabled={busy}
             onClick={async () => {
               const iso = scheduleValue ? new Date(scheduleValue).toISOString() : addBusinessDaysIso(new Date(), 3);
-              await run("Follow-up scheduled.", {
-                next_follow_up_at: iso,
-                follow_up_status: "pending",
-                status: "contacted",
-              }, "schedule_follow_up");
+              await run(
+                "Follow-up set.",
+                {
+                  next_follow_up_at: iso,
+                  follow_up_status: "pending",
+                  status: "contacted",
+                },
+                "schedule_follow_up"
+              );
               setShowSchedule(false);
             }}
           >
-            Save date
+            Save
           </button>
         </div>
       ) : null}

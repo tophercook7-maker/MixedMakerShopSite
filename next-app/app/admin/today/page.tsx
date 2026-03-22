@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { toWorkflowLead, isMissingColumnError, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 import { CRM_STAGE_LABELS } from "@/lib/crm/stages";
 import { prettyLeadStatus } from "@/components/admin/lead-visuals";
+import { computeWorkTodayLeads } from "@/lib/crm/work-today-leads";
+import { TodayWorkspace } from "@/components/admin/today-workspace";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -35,7 +37,8 @@ export default async function TodayCommandPage() {
 
   let rows: LeadRowForWorkflow[] = [];
   const selectVariants = [
-    "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead",
+    "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags",
+    "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count",
     "id,business_name,status,email,phone,website,city,category,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview",
   ];
   for (const sel of selectVariants) {
@@ -48,6 +51,7 @@ export default async function TodayCommandPage() {
   }
 
   const leads = rows.map(toWorkflowLead);
+  const workTodayLeads = computeWorkTodayLeads(rows, now, 10);
 
   const newLeads = leads.filter((l) => l.status === "new").length;
   const repliesWaiting = leads.filter((l) => l.status === "replied").length;
@@ -108,16 +112,7 @@ export default async function TodayCommandPage() {
   >;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
-          Today
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
-          Start here — a simple checklist for your web design sales day.
-        </p>
-      </div>
-
+    <TodayWorkspace workTodayLeads={workTodayLeads}>
       <section className="admin-stats-grid">
         {[
           { label: "New businesses to contact", value: newLeads, href: "/admin/leads" },
@@ -309,6 +304,6 @@ export default async function TodayCommandPage() {
           </section>
         </aside>
       </div>
-    </div>
+    </TodayWorkspace>
   );
 }
