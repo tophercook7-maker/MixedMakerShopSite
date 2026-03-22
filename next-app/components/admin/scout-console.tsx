@@ -438,12 +438,13 @@ export function ScoutConsole({
     scout.clearScoutState();
   };
 
-  const fetchPersistedResults = useCallback(async () => {
+  /** Load full saved scout_results once; list filters are client-side only (no refetch on filter toggle). */
+  const loadPersistedResults = useCallback(async () => {
     setPersistedLoading(true);
     try {
       const q = new URLSearchParams();
-      if (showSkippedPersisted) q.set("include_skipped", "1");
-      if (includeSavedPersisted) q.set("include_saved", "1");
+      q.set("include_skipped", "1");
+      q.set("include_saved", "1");
       const res = await fetch(`/api/scout/results?${q.toString()}`);
       const data = (await res.json().catch(() => ({}))) as {
         results?: ScoutResultListItem[];
@@ -474,7 +475,7 @@ export function ScoutConsole({
     } finally {
       setPersistedLoading(false);
     }
-  }, [showSkippedPersisted, includeSavedPersisted]);
+  }, []);
 
   const brainSignature = useMemo(
     () =>
@@ -514,12 +515,12 @@ export function ScoutConsole({
           }
         }
       }
-      if (!cancelled) await fetchPersistedResults();
+      if (!cancelled) await loadPersistedResults();
     })();
     return () => {
       cancelled = true;
     };
-  }, [integrationReady, brainSignature, initialTopLeads, fetchPersistedResults]);
+  }, [integrationReady, brainSignature, initialTopLeads, loadPersistedResults]);
 
   const createLeadFromOpportunity = async (opportunityId: string, scoutResultId?: string | null) => {
     const oppId = String(opportunityId || "").trim();
@@ -554,7 +555,7 @@ export function ScoutConsole({
         else setPageError(body.error || body.reason || "No data returned");
         return null;
       }
-      await fetchPersistedResults();
+      await loadPersistedResults();
       return {
         leadId: String(body.lead_id || ""),
         businessName: String(body.business_name || "Lead"),
@@ -1373,7 +1374,7 @@ export function ScoutConsole({
             onShowSkippedChange={setShowSkippedPersisted}
             includeSaved={includeSavedPersisted}
             onIncludeSavedChange={setIncludeSavedPersisted}
-            onRefresh={fetchPersistedResults}
+            onRefresh={loadPersistedResults}
             onAddLead={addLeadFromDiscovery}
             onToast={setScoutToast}
             openExternal={openExternal}

@@ -39,6 +39,19 @@ export function compactOpportunityLineFromRow(row: ScoutResultListItem): string 
   return "Worth a look";
 }
 
+/** One-line contact signals for compact cards: Facebook → phone → website (email not stored on scout_results). */
+export function compactContactScanLine(row: ScoutResultListItem): string {
+  const fb = row.has_facebook || String(row.facebook_url || "").trim() ? "Has Facebook" : "No Facebook";
+  const ph = row.has_phone ? "Has phone" : "No phone";
+  const web =
+    row.has_website === false
+      ? "No website"
+      : row.has_website === true
+        ? "Has website"
+        : labelWebsiteFromRow(row);
+  return `${fb} · ${ph} · ${web}`;
+}
+
 export function openSourceHrefFromRow(row: ScoutResultListItem): string | null {
   const u = String(row.source_url || "").trim();
   if (u) return u;

@@ -12,10 +12,8 @@ import {
 } from "@/lib/scout/scout-results-normalize";
 import type { ScoutResultListItem, ScoutResultsCounts } from "@/lib/scout/scout-results-types";
 import {
+  compactContactScanLine,
   compactOpportunityLineFromRow,
-  labelFacebookFromRow,
-  labelPhoneFromRow,
-  labelWebsiteFromRow,
   openSourceHrefFromRow,
   sourceTypeLabel,
 } from "@/lib/scout/scout-result-ui";
@@ -143,6 +141,8 @@ export function ScoutLitePanel({
 
   const filtered = useMemo(() => {
     let base = [...rows];
+    if (!showSkipped) base = base.filter((r) => !r.skipped);
+    if (!includeSaved) base = base.filter((r) => !r.added_to_leads);
     if (presetTab === "best") {
       base = base.filter((r) => matchesBestWebDesignPreset(r));
       base.sort(
@@ -189,6 +189,8 @@ export function ScoutLitePanel({
     cityFilter,
     noWebsiteOnly,
     facebookOnly,
+    showSkipped,
+    includeSaved,
   ]);
 
   const setSkippedServer = useCallback(
@@ -307,6 +309,11 @@ export function ScoutLitePanel({
           <input type="checkbox" checked={includeSaved} onChange={(e) => onIncludeSavedChange(e.target.checked)} />
           Show saved
         </label>
+      </div>
+
+      <div className="rounded-lg border px-3 py-2 text-xs space-y-1" style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}>
+        <p>Filters only narrow the businesses already found.</p>
+        <p>Run a new scan only when you want fresh results (buttons above).</p>
       </div>
 
       <div className="admin-card flex flex-wrap gap-3 items-end">
@@ -430,9 +437,11 @@ export function ScoutLitePanel({
                     <Info className="h-4 w-4" style={{ color: "var(--admin-muted)" }} />
                   </button>
                 </div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
-                  {sourceTypeLabel(row.source_type)} · {labelWebsiteFromRow(row)} · {labelFacebookFromRow(row)} ·{" "}
-                  {labelPhoneFromRow(row)}
+                <p className="text-[11px] font-medium" style={{ color: "var(--admin-fg)" }}>
+                  {compactContactScanLine(row)}
+                </p>
+                <p className="text-[10px] uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
+                  {sourceTypeLabel(row.source_type)}
                 </p>
                 <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
                   {[row.city || "—", row.category || "—"].filter(Boolean).join(" · ")}

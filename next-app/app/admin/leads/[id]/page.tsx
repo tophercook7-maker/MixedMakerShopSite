@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
+import { LeadContactFirst } from "@/components/admin/lead-contact-first";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
@@ -1285,21 +1286,18 @@ Want me to show you a quick idea?`;
         </div>
       </section>
 
+      <LeadContactFirst
+        email={displayEmail || null}
+        emailSource={showEmailSource ? displayEmailSource : null}
+        facebookUrl={displayFacebook || null}
+        phone={displayPhone || null}
+        website={displayWebsite || null}
+        contactPage={displayContactPage || null}
+        previewLeadId={resolvedLeadId || null}
+      />
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          {assessment.matters_bullets.filter(Boolean).length > 0 ? (
-          <section className="admin-card space-y-3">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Why this matters
-            </h2>
-            <ul className="list-disc pl-5 space-y-1 text-sm" style={{ color: "var(--admin-fg)" }}>
-              {assessment.matters_bullets.filter(Boolean).map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </section>
-          ) : null}
-
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
               What to do
@@ -1322,6 +1320,19 @@ Want me to show you a quick idea?`;
             doorPitch={shortDoorPitch}
             showDoor={false}
           />
+
+          {assessment.matters_bullets.filter(Boolean).length > 0 ? (
+          <section className="admin-card space-y-3">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Why this matters
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-sm" style={{ color: "var(--admin-fg)" }}>
+              {assessment.matters_bullets.filter(Boolean).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+          ) : null}
 
           <details className="admin-card">
             <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
@@ -1346,13 +1357,6 @@ Want me to show you a quick idea?`;
               {displayCategory} · {displayCity}
               {displayAddress && displayAddress !== "—" ? ` · ${displayAddress}` : ""}
             </p>
-            {displayWebsite ? (
-              <p className="text-sm">
-                <a href={displayWebsite} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline break-all">
-                  {displayWebsite}
-                </a>
-              </p>
-            ) : null}
             <div className="flex flex-wrap gap-2">
               {getLeadPriorityBadges({
                 isHotLead: Boolean(lead?.is_hot_lead),
@@ -1592,50 +1596,12 @@ Want me to show you a quick idea?`;
           </section>
           ) : null}
 
-          {hasContactPath ? (
-          <section className="admin-card">
-            <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-              How to reach them
+          {(showGoogleReviewCount || showGoogleRating || displayInstagram) ? (
+          <section className="admin-card space-y-2 text-sm">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Reviews & social
             </h2>
-            <div className="grid gap-2 md:grid-cols-3 text-sm">
-              {displayEmail ? (
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Email: </span>
-                  <a href={`mailto:${displayEmail}`} className="text-[var(--admin-gold)] hover:underline">
-                    {displayEmail}
-                  </a>
-              </div>
-              ) : null}
-              {showEmailSource ? (
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Email source: </span>
-                {displayEmailSource}
-              </div>
-              ) : null}
-              {displayPhone ? (
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Phone: </span>
-                  <a href={`tel:${displayPhone}`} className="text-[var(--admin-gold)] hover:underline">
-                    {displayPhone}
-                  </a>
-              </div>
-              ) : null}
-              {displayContactPage ? (
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Contact page: </span>
-                  <a href={displayContactPage} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-                    Open
-                  </a>
-              </div>
-              ) : null}
-              {displayFacebook ? (
-              <div>
-                <span style={{ color: "var(--admin-muted)" }}>Facebook: </span>
-                  <a href={displayFacebook} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
-                    Open
-                  </a>
-              </div>
-              ) : null}
+            <div className="grid gap-2 md:grid-cols-2 text-sm">
               {showGoogleReviewCount ? (
               <div>
                 <span style={{ color: "var(--admin-muted)" }}>Google reviews: </span>
@@ -1648,37 +1614,13 @@ Want me to show you a quick idea?`;
                 {caseRow?.google_rating}
               </div>
               ) : null}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs">
-              {resolvedLeadId ? (
-                <Link href={`/preview/${encodeURIComponent(resolvedLeadId)}`} target="_blank" className="admin-btn-ghost">
-                  Client site draft
-                </Link>
-              ) : null}
-              {displayEmail ? (
-                <a href={`mailto:${displayEmail}`} className="admin-btn-ghost">
-                  Email
-                </a>
-              ) : null}
-              {displayContactPage ? (
-                <a href={displayContactPage} target="_blank" rel="noreferrer" className="admin-btn-ghost">
-                  Contact form
-                </a>
-              ) : null}
-              {displayPhone ? (
-                <a href={`tel:${displayPhone}`} className="admin-btn-ghost">
-                  Call
-                </a>
-              ) : null}
-              {displayFacebook ? (
-                <a href={displayFacebook} target="_blank" rel="noreferrer" className="admin-btn-ghost">
-                  Facebook
-                </a>
-              ) : null}
               {displayInstagram ? (
-                <a href={displayInstagram} target="_blank" rel="noreferrer" className="admin-btn-ghost">
-                  Instagram
+              <div className="md:col-span-2">
+                <span style={{ color: "var(--admin-muted)" }}>Instagram: </span>
+                <a href={displayInstagram} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
+                  Open
                 </a>
+              </div>
               ) : null}
             </div>
           </section>

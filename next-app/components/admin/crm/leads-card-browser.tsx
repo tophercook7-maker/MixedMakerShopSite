@@ -40,12 +40,25 @@ function fmtShort(iso: string | null | undefined): string {
 function websitePlain(lead: WorkflowLead): string {
   const ws = String(lead.website_status || "").toLowerCase();
   if (ws === "no_website") return "No website";
-  if (ws === "live" || String(lead.website || "").trim()) return "Website";
-  return "Unknown";
+  if (ws === "live" || String(lead.website || "").trim()) return "Has website";
+  return "Website unclear";
 }
 
 function phonePlain(lead: WorkflowLead): string {
-  return String(lead.phone_from_site || "").trim() ? "Phone" : "No phone";
+  return String(lead.phone_from_site || "").trim() ? "Has phone" : "No phone";
+}
+
+function emailPlain(lead: WorkflowLead): string {
+  return String(lead.email || "").trim() ? "Has email" : "No email";
+}
+
+function facebookPlain(lead: WorkflowLead): string {
+  return String(lead.facebook_url || "").trim() ? "Has Facebook" : "No Facebook";
+}
+
+/** Scan-friendly order: email → Facebook → phone → website */
+function contactSignalsLine(lead: WorkflowLead): string {
+  return `${emailPlain(lead)} · ${facebookPlain(lead)} · ${phonePlain(lead)} · ${websitePlain(lead)}`;
 }
 
 function opportunityLine(lead: WorkflowLead): string {
@@ -375,7 +388,10 @@ export function LeadsCardBrowser({
                   </span>
                 </div>
                 <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
-                  {lead.city || "—"} · {websitePlain(lead)} · {phonePlain(lead)}
+                  {lead.city || "—"}
+                </p>
+                <p className="text-[10px] font-medium leading-snug" style={{ color: "var(--admin-fg)" }}>
+                  {contactSignalsLine(lead)}
                 </p>
                 <p className="text-[10px] leading-snug opacity-80" style={{ color: "var(--admin-muted)" }}>
                   {formatLeadSourceBadge(lead)}
@@ -490,8 +506,8 @@ export function LeadsCardBrowser({
                     {prettyLeadStatus(lead.status)}
                   </span>
                 </div>
-                <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-                  {websitePlain(lead)} · {phonePlain(lead)}
+                <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--admin-fg)" }}>
+                  {contactSignalsLine(lead)}
                   {unreadN > 0 ? ` · ${unreadN} unread` : ""}
                 </p>
                 <p className="text-[11px] mt-1" style={{ color: "var(--admin-muted)" }}>
@@ -505,6 +521,18 @@ export function LeadsCardBrowser({
                     <dt>Email</dt>
                     <dd className="text-right truncate max-w-[60%]" style={{ color: "var(--admin-fg)" }}>
                       {lead.email || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Facebook</dt>
+                    <dd className="text-right truncate max-w-[60%]" style={{ color: "var(--admin-fg)" }}>
+                      {lead.facebook_url ? (
+                        <a href={lead.facebook_url} target="_blank" rel="noreferrer" className="text-[var(--admin-gold)] hover:underline">
+                          Open
+                        </a>
+                      ) : (
+                        "—"
+                      )}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-2">
