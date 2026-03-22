@@ -65,6 +65,8 @@ export type WorkflowLead = {
   workspace_id?: string | null;
   related_case_id?: string | null;
   lead_source?: string | null;
+  source_url?: string | null;
+  source_label?: string | null;
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
@@ -513,7 +515,7 @@ export function LeadsWorkflowView({
       category: String(lead.category || "").trim() || undefined,
       city: String(lead.city || "").trim() || undefined,
       address: String(lead.address || "").trim() || undefined,
-      lead_source: String(lead.lead_source || "manual_local").trim() || "manual_local",
+      lead_source: String(lead.lead_source || "manual").trim() || "manual",
       status: lead.status || "new",
       notes: Array.isArray(lead.notes) && lead.notes.length > 0 ? String(lead.notes[lead.notes.length - 1] || "").trim() : undefined,
       follow_up_date: undefined,

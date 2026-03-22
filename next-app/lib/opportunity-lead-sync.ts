@@ -193,7 +193,9 @@ export async function upsertLeadFromOpportunity(
     normalized_website: normalizeWebsiteUrl(website) || null,
     conversion_score: conversion.lead_score,
     opportunity_score: conversion.lead_score,
-    lead_source: "opportunity-sync",
+    source: "scout_mixed",
+    lead_source: "scout_mixed",
+    source_label: "Synced from Scout opportunity",
     status: "new",
     notes: `Auto-sync. Scout: ${intake.intakeReason || "ok"}. ${conversion.why_this_lead}`,
   });

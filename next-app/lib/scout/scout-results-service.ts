@@ -2,6 +2,16 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ScoutLead } from "@/lib/scout/types";
 import { normalizeScoutLeadToResultRow } from "@/lib/scout/scout-results-normalize";
 import type { ScoutResultListItem, ScoutResultsCounts } from "@/lib/scout/scout-results-types";
+import {
+  isScoutResultsTableMissingError,
+  SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+} from "@/lib/scout/scout-results-table-messages";
+
+export {
+  isScoutResultsTableMissingError,
+  SCOUT_RESULTS_TABLE_MISSING_HINT,
+  SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+} from "@/lib/scout/scout-results-table-messages";
 
 type ExistingMerge = {
   id?: string;
@@ -17,7 +27,7 @@ export async function syncOpportunitiesToScoutResults(
   supabase: SupabaseClient,
   ownerId: string,
   leads: ScoutLead[]
-): Promise<{ upserted: number; error: string | null }> {
+): Promise<{ upserted: number; error: string | null; tableMissing?: boolean }> {
   type NormalizedRow = NonNullable<ReturnType<typeof normalizeScoutLeadToResultRow>>;
   const normalized: NormalizedRow[] = leads
     .map((l) => normalizeScoutLeadToResultRow(l, ownerId))
@@ -31,7 +41,12 @@ export async function syncOpportunitiesToScoutResults(
     .eq("owner_id", ownerId)
     .in("dedupe_key", keys);
 
-  if (selErr) return { upserted: 0, error: selErr.message };
+  if (selErr) {
+    if (isScoutResultsTableMissingError(selErr.message)) {
+      return { upserted: 0, error: SCOUT_RESULTS_TABLE_MISSING_MESSAGE, tableMissing: true };
+    }
+    return { upserted: 0, error: selErr.message };
+  }
 
   const existingByKey = new Map<string, ExistingMerge>();
   for (const row of existingRows || []) {
@@ -59,7 +74,12 @@ export async function syncOpportunitiesToScoutResults(
     onConflict: "owner_id,dedupe_key",
   });
 
-  if (upErr) return { upserted: 0, error: upErr.message };
+  if (upErr) {
+    if (isScoutResultsTableMissingError(upErr.message)) {
+      return { upserted: 0, error: SCOUT_RESULTS_TABLE_MISSING_MESSAGE, tableMissing: true };
+    }
+    return { upserted: 0, error: upErr.message };
+  }
   return { upserted: payload.length, error: null };
 }
 
@@ -136,7 +156,7 @@ export async function fetchScoutResultsForOwner(
     category?: string;
     limit?: number;
   }
-): Promise<{ rows: ScoutResultListItem[]; error: string | null }> {
+): Promise<{ rows: ScoutResultListItem[]; error: string | null; tableMissing?: boolean }> {
   let q = supabase
     .from("scout_results")
     .select(
@@ -170,7 +190,12 @@ export async function fetchScoutResultsForOwner(
   if (cityQ) q = q.ilike("city", `%${cityQ}%`);
 
   const { data, error } = await q;
-  if (error) return { rows: [], error: error.message };
+  if (error) {
+    if (isScoutResultsTableMissingError(error.message)) {
+      return { rows: [], error: SCOUT_RESULTS_TABLE_MISSING_MESSAGE, tableMissing: true };
+    }
+    return { rows: [], error: error.message };
+  }
   const rows = (data || []).map((r) => rowToListItem(r as Record<string, unknown>));
   return { rows, error: null };
 }

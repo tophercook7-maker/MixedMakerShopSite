@@ -113,7 +113,7 @@ export function LeadsTable({
       category: String(payload.category || "") || null,
       city: String(payload.city || "") || null,
       industry: String(payload.industry || "") || null,
-      lead_source: String(payload.lead_source || "manual_local") || null,
+      lead_source: String(payload.lead_source || "manual") || null,
       status: (String(payload.status || "new") as Lead["status"]) || "new",
       notes: String(payload.notes || "") || null,
       follow_up_date: String(payload.follow_up_date || "") || null,

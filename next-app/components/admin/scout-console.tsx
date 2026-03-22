@@ -12,6 +12,11 @@ import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
 import { scoreScoutLead } from "@/lib/scout-conversion";
 import { ScoutLitePanel } from "@/components/admin/scout-lite-panel";
 import type { ScoutResultListItem, ScoutResultsCounts } from "@/lib/scout/scout-results-types";
+import {
+  isScoutResultsTableMissingError,
+  SCOUT_RESULTS_TABLE_MISSING_HINT,
+  SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+} from "@/lib/scout/scout-results-table-messages";
 
 type Props = {
   integrationReady: boolean;
@@ -290,6 +295,7 @@ export function ScoutConsole({
   const [persistedRows, setPersistedRows] = useState<ScoutResultListItem[]>([]);
   const [persistedCounts, setPersistedCounts] = useState<ScoutResultsCounts | null>(null);
   const [persistedLoading, setPersistedLoading] = useState(false);
+  const [scoutResultsUnavailable, setScoutResultsUnavailable] = useState(false);
   const [showSkippedPersisted, setShowSkippedPersisted] = useState(false);
   const [includeSavedPersisted, setIncludeSavedPersisted] = useState(false);
   const lastBrainSyncSig = useRef<string>("");
@@ -443,9 +449,24 @@ export function ScoutConsole({
         results?: ScoutResultListItem[];
         counts?: ScoutResultsCounts;
         error?: string;
+        scoutResultsUnavailable?: boolean;
       };
+      if (data.scoutResultsUnavailable) {
+        setScoutResultsUnavailable(true);
+        setPersistedRows([]);
+        setPersistedCounts(null);
+        return;
+      }
+      setScoutResultsUnavailable(false);
       if (!res.ok) {
-        setPageError(String(data.error || "Could not load discovery list."));
+        const errMsg = String(data.error || "");
+        if (isScoutResultsTableMissingError(errMsg)) {
+          setScoutResultsUnavailable(true);
+          setPersistedRows([]);
+          setPersistedCounts(null);
+          return;
+        }
+        setPageError(errMsg || "Could not load discovery list.");
         return;
       }
       setPersistedRows(Array.isArray(data.results) ? data.results : []);
@@ -477,9 +498,19 @@ export function ScoutConsole({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ opportunities: initialTopLeads }),
           });
-          if (!syncRes.ok && !cancelled) {
-            const j = (await syncRes.json().catch(() => ({}))) as { error?: string };
-            setPageError(String(j.error || "Could not save discovery results."));
+          const syncJson = (await syncRes.json().catch(() => ({}))) as {
+            error?: string;
+            scoutResultsUnavailable?: boolean;
+          };
+          if (!cancelled && syncJson.scoutResultsUnavailable) {
+            setScoutResultsUnavailable(true);
+          } else if (!syncRes.ok && !cancelled) {
+            const errMsg = String(syncJson.error || "");
+            if (isScoutResultsTableMissingError(errMsg)) {
+              setScoutResultsUnavailable(true);
+            } else {
+              setPageError(errMsg || "Could not save discovery results.");
+            }
           }
         }
       }
@@ -591,6 +622,7 @@ export function ScoutConsole({
   const visibleError = useMemo(() => {
     const raw = String(pageError || scout.jobError || "").trim();
     if (!raw) return null;
+    if (raw === SCOUT_RESULTS_TABLE_MISSING_MESSAGE || isScoutResultsTableMissingError(raw)) return null;
     const isStaleAuthBanner =
       raw.includes("No authenticated session found in admin proxy") &&
       (Boolean(initialSummary) || initialTopLeads.length > 0);
@@ -634,6 +666,36 @@ export function ScoutConsole({
 
   return (
     <div className="space-y-6">
+      {scoutResultsUnavailable ? (
+        <section
+          className="admin-card"
+          style={{
+            borderColor: "rgba(251, 191, 36, 0.45)",
+            background: "rgba(120, 53, 15, 0.18)",
+          }}
+        >
+          <h2 className="text-lg font-semibold mb-2" style={{ color: "#fde68a" }}>
+            Scout list isn&apos;t available yet
+          </h2>
+          <p className="text-sm" style={{ color: "#fef3c7" }}>
+            {SCOUT_RESULTS_TABLE_MISSING_MESSAGE}
+          </p>
+          <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
+            {SCOUT_RESULTS_TABLE_MISSING_HINT}
+          </p>
+          <p className="text-sm mt-3 font-medium" style={{ color: "#fde68a" }}>
+            Quick Add saves directly to Leads — use{" "}
+            <Link href="/admin/tools/quick-add" className="underline text-[var(--admin-gold)]">
+              Quick Add
+            </Link>{" "}
+            or{" "}
+            <Link href="/admin/leads" className="underline text-[var(--admin-gold)]">
+              open Leads
+            </Link>{" "}
+            to see businesses you captured.
+          </p>
+        </section>
+      ) : null}
       <section className="admin-card">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

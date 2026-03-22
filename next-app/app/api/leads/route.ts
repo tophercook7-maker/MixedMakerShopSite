@@ -49,6 +49,7 @@ export async function POST(request: Request) {
   const industry = String(parsed.data.industry || "").trim() || undefined;
   const facebook_url = String(parsed.data.facebook_url || "").trim() || undefined;
 
+  const captureChannel = String(parsed.data.source || parsed.data.lead_source || "").trim() || "manual";
   const normalizedInput = {
     business_name,
     status: canonicalizeLeadStatus(parsed.data.status || "new"),
@@ -58,7 +59,10 @@ export async function POST(request: Request) {
     facebook_url,
     industry: industry || category || undefined,
     category: category || industry || undefined,
-    lead_source: parsed.data.lead_source,
+    source: captureChannel,
+    lead_source: captureChannel,
+    source_url: parsed.data.source_url,
+    source_label: parsed.data.source_label,
     notes: parsed.data.notes,
     has_website: leadHasStandaloneWebsite(website),
     normalized_website: normalizeWebsiteUrl(website) || undefined,

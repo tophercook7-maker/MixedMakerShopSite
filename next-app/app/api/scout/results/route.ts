@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { ScoutLead } from "@/lib/scout/types";
-import { fetchScoutResultsCounts, fetchScoutResultsForOwner, syncOpportunitiesToScoutResults } from "@/lib/scout/scout-results-service";
+import {
+  fetchScoutResultsCounts,
+  fetchScoutResultsForOwner,
+  isScoutResultsTableMissingError,
+  SCOUT_RESULTS_TABLE_MISSING_HINT,
+  SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+  syncOpportunitiesToScoutResults,
+} from "@/lib/scout/scout-results-service";
 import type { ScoutResultsSyncBody } from "@/lib/scout/scout-results-types";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +31,7 @@ export async function GET(request: Request) {
   const category = url.searchParams.get("category") || undefined;
   const with_counts = url.searchParams.get("counts") !== "0";
 
-  const { rows, error } = await fetchScoutResultsForOwner(supabase, ownerId, {
+  const { rows, error, tableMissing } = await fetchScoutResultsForOwner(supabase, ownerId, {
     include_skipped,
     include_saved,
     source_type: source_type === "all" ? undefined : source_type,
@@ -35,7 +42,28 @@ export async function GET(request: Request) {
     limit: 500,
   });
 
-  if (error) return NextResponse.json({ error }, { status: 500 });
+  if (tableMissing) {
+    return NextResponse.json({
+      results: [],
+      counts: null,
+      scoutResultsUnavailable: true,
+      message: SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+      hint: SCOUT_RESULTS_TABLE_MISSING_HINT,
+    });
+  }
+
+  if (error) {
+    if (isScoutResultsTableMissingError(error)) {
+      return NextResponse.json({
+        results: [],
+        counts: null,
+        scoutResultsUnavailable: true,
+        message: SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+        hint: SCOUT_RESULTS_TABLE_MISSING_HINT,
+      });
+    }
+    return NextResponse.json({ error }, { status: 500 });
+  }
 
   let counts = null;
   if (with_counts) {
@@ -59,8 +87,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Expected opportunities or leads array." }, { status: 400 });
   }
 
-  const { upserted, error } = await syncOpportunitiesToScoutResults(supabase, ownerId, leads);
-  if (error) return NextResponse.json({ error }, { status: 500 });
+  const { upserted, error, tableMissing } = await syncOpportunitiesToScoutResults(supabase, ownerId, leads);
+  if (tableMissing) {
+    return NextResponse.json({
+      ok: false,
+      upserted: 0,
+      scoutResultsUnavailable: true,
+      message: SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+      hint: SCOUT_RESULTS_TABLE_MISSING_HINT,
+    });
+  }
+  if (error) {
+    if (isScoutResultsTableMissingError(error)) {
+      return NextResponse.json({
+        ok: false,
+        upserted: 0,
+        scoutResultsUnavailable: true,
+        message: SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
+        hint: SCOUT_RESULTS_TABLE_MISSING_HINT,
+      });
+    }
+    return NextResponse.json({ error }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, upserted });
 }

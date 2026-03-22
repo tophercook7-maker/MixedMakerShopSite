@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { buildLeadPath } from "@/lib/lead-route";
 
 function getAppOrigin(): string {
   if (typeof window !== "undefined" && window.location?.origin) return window.location.origin;
@@ -14,7 +16,12 @@ export function QuickAddClient() {
   const [website, setWebsite] = useState("");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [result, setResult] = useState<{
+    ok: boolean;
+    text: string;
+    leadId?: string;
+    leadPath?: string;
+  } | null>(null);
 
   useEffect(() => {
     const w = searchParams.get("website");
@@ -33,7 +40,7 @@ export function QuickAddClient() {
       "fetch(api,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},",
       "body:JSON.stringify({website:u,name:t,source:'bookmarklet'})})",
       ".then(function(r){return r.json().then(function(j){",
-      "if(j&&j.ok)alert(j.created?'Lead added':'Lead already exists');",
+      "if(j&&j.ok)alert(j.message||(j.created?'Saved to Leads.':'Saved to Leads (already in your list).'));",
       "else alert('Could not add lead');});})",
       ".catch(function(){alert('Could not add lead');});",
       "})();",
@@ -64,12 +71,21 @@ export function QuickAddClient() {
         ok?: boolean;
         created?: boolean;
         message?: string;
+        leadId?: string;
+        destination?: string;
         error?: string;
       };
       if (data.ok) {
+        const leadId = String(data.leadId || "").trim();
+        const leadPath = leadId ? buildLeadPath(leadId, name.trim()) : undefined;
         setResult({
           ok: true,
-          text: data.created ? "Lead added to your list." : "Already in your CRM — you’re all set.",
+          text: String(
+            data.message ||
+              (data.created ? "Saved to Leads." : "Saved to Leads (already in your list).")
+          ),
+          leadId: leadId || undefined,
+          leadPath,
         });
       } else {
         setResult({ ok: false, text: String(data.error || "Something went wrong. Try again.") });
@@ -88,11 +104,11 @@ export function QuickAddClient() {
           Add businesses to your CRM from any website
         </h1>
         <p className="text-sm mt-3 leading-relaxed" style={{ color: "var(--admin-muted)" }}>
-          When you find a business website you want to follow up with, use the bookmark below. It saves that business to your
-          CRM from the page you’re on.
+          When you find a business you want to follow up with, use the bookmark below. It saves that business to your{" "}
+          <strong style={{ color: "var(--admin-fg)" }}>Leads</strong> list (not the Scout discovery queue).
         </p>
         <p className="text-sm mt-2 leading-relaxed" style={{ color: "var(--admin-muted)" }}>
-          You do not need to open the CRM first. This is the fastest way to build your lead list.
+          You do not need to open the admin first. Open <Link href="/admin/leads">Leads</Link> anytime to see what you saved.
         </p>
       </div>
 
@@ -133,7 +149,7 @@ export function QuickAddClient() {
           3. You’ll see a quick confirmation
         </h2>
         <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-          “Lead added” or “Lead already exists” — then you can keep browsing.
+          You’ll see “Saved to Leads” (or that it was already in your list) — then you can keep browsing.
         </p>
       </section>
 
@@ -164,12 +180,17 @@ export function QuickAddClient() {
           <textarea className="admin-input mt-1 w-full min-h-[72px]" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </label>
         <button type="button" className="admin-btn-primary" disabled={busy} onClick={() => void submit()}>
-          {busy ? "Saving…" : "Save to CRM"}
+          {busy ? "Saving…" : "Save to Leads"}
         </button>
         {result ? (
-          <p className={`text-sm ${result.ok ? "text-green-200" : "text-red-200"}`} role="status">
-            {result.text}
-          </p>
+          <div className={`text-sm space-y-2 ${result.ok ? "text-green-200" : "text-red-200"}`} role="status">
+            <p>{result.text}</p>
+            {result.ok && result.leadPath ? (
+              <Link href={result.leadPath} className="inline-block admin-btn-ghost text-xs no-underline border border-[var(--admin-border)]">
+                Open lead
+              </Link>
+            ) : null}
+          </div>
         ) : null}
         <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
           API endpoint (for reference): <code className="break-all">{apiUrl}</code>

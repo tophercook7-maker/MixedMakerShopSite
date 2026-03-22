@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "MixedMaker Lead Capture",
+  "version": "1.0",
+  "description": "Capture leads from any page",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["https://mixedmakershop.com/*"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

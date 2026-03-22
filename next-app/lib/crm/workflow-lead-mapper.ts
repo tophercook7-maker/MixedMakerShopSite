@@ -44,6 +44,11 @@ export type LeadRowForWorkflow = {
   primary_contact_name?: string | null;
   has_website?: boolean | null;
   unread_reply_count?: number | null;
+  /** DB column: canonical capture channel (extension, quick_add, …). */
+  source?: string | null;
+  lead_source?: string | null;
+  source_url?: string | null;
+  source_label?: string | null;
 };
 
 export function isMissingColumnError(message: string): boolean {
@@ -77,7 +82,9 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     isLocalOnly: false,
     workspace_id: String(row.workspace_id || "").trim() || null,
     related_case_id: null,
-    lead_source: null,
+    lead_source: String(row.source || row.lead_source || "").trim() || null,
+    source_url: String(row.source_url || "").trim() || null,
+    source_label: String(row.source_label || "").trim() || null,
     opportunity_id: null,
     business_name: businessName,
     category: String(row.category || row.industry || "").trim() || null,

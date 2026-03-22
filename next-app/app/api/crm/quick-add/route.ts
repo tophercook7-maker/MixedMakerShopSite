@@ -6,8 +6,13 @@ import {
   leadHasStandaloneWebsite,
   pickLeadInsertFields,
 } from "@/lib/crm-lead-schema";
-import { findLeadDuplicate, normalizeBusinessName, normalizeWebsiteUrl } from "@/lib/leads-dedup";
+import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 import { logCrmAutomationEvent } from "@/lib/crm/automation-log";
+import { buildLeadPath } from "@/lib/lead-route";
+import {
+  extensionCaptureLabelFromUrl,
+  normalizeQuickAddRequestSource,
+} from "@/lib/crm/lead-source";
 
 function trimStr(v: unknown): string {
   return String(v ?? "").trim();
@@ -43,13 +48,25 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const websiteRaw = trimStr(body.website);
   const nameRaw = trimStr(body.name);
-  const sourceRaw = trimStr(body.source) || "bookmarklet";
+  const source = normalizeQuickAddRequestSource(trimStr(body.source) || "quick_add");
   const notesExtra = trimStr(body.notes);
 
   const hasValidSite = websiteRaw && isLikelyValidHttpUrl(websiteRaw) && leadHasStandaloneWebsite(websiteRaw);
   const websiteNormalized = hasValidSite
     ? (websiteRaw.startsWith("http") ? websiteRaw : `https://${websiteRaw}`)
     : "";
+
+  const captureUrlRaw = trimStr(body.source_url) || websiteRaw;
+  const source_url = captureUrlRaw || null;
+
+  const isFacebook =
+    source === "extension" &&
+    (source_url?.includes("facebook.com") || source_url?.includes("fb.com"));
+
+  let source_label = trimStr(body.source_label) || null;
+  if (!source_label && source === "extension") {
+    source_label = extensionCaptureLabelFromUrl(source_url);
+  }
 
   const businessName =
     nameRaw ||
@@ -68,31 +85,58 @@ export async function POST(request: Request) {
   });
 
   if (dedup.duplicate && dedup.matchedLeadId) {
+    const leadId = dedup.matchedLeadId;
     return NextResponse.json({
       ok: true,
-      leadId: dedup.matchedLeadId,
+      leadId,
       created: false,
-      message: "Lead already exists.",
+      destination: "leads",
+      leadPath: buildLeadPath(leadId, businessName),
+      message: "Saved to Leads (this business was already in your list).",
     });
   }
 
-  const scoreStrong = !hasValidSite ? 80 : 55;
-  const baseNotes = `Captured via quick add (${sourceRaw}).`;
-  const notesCombined = [baseNotes, notesExtra].filter(Boolean).join("\n\n");
+  let scoreStrong = !hasValidSite ? 80 : 55;
+  if (isFacebook) scoreStrong = Math.max(scoreStrong, 88);
+
+  const baseNotes = `Captured via quick add (${source}).`;
+  const facebookAutoNote = isFacebook
+    ? "Auto: Facebook page capture — prioritized as a web design lead (no standalone site)."
+    : "";
+  const notesCombined = [baseNotes, facebookAutoNote, notesExtra].filter(Boolean).join("\n\n");
 
   const tags: string[] = [];
   if (!hasValidSite) tags.push("no_website_opportunity");
+  if (isFacebook) tags.push("facebook_capture");
+
+  const fbPageUrl =
+    isFacebook && source_url && isLikelyValidHttpUrl(source_url)
+      ? source_url.startsWith("http")
+        ? source_url
+        : `https://${source_url}`
+      : isFacebook && source_url
+        ? source_url
+        : null;
+  const normalizedFacebook = fbPageUrl ? normalizeFacebookUrl(fbPageUrl) : "";
 
   const insertPayload = pickLeadInsertFields({
     owner_id: ownerId,
     business_name: businessName,
     website: websiteNormalized || null,
+    facebook_url: fbPageUrl,
+    normalized_facebook_url: normalizedFacebook || null,
     has_website: hasValidSite,
     normalized_website: normalizeWebsiteUrl(websiteNormalized) || null,
     status: canonicalizeLeadStatus("new"),
-    lead_source: sourceRaw,
+    source,
+    lead_source: source,
+    source_url,
+    source_label,
     conversion_score: scoreStrong,
     opportunity_score: scoreStrong,
+    why_this_lead_is_here: isFacebook
+      ? "Facebook-only or Facebook-first presence — strong candidate for a proper website."
+      : null,
     notes: notesCombined,
     lead_tags: tags,
     primary_contact_name: null,
@@ -138,13 +182,15 @@ export async function POST(request: Request) {
     owner_id: ownerId,
     lead_id: leadId,
     event_type: "quick_add_lead",
-    payload: { source: sourceRaw, has_website: hasValidSite },
+    payload: { source, has_website: hasValidSite, is_facebook_capture: isFacebook },
   });
 
   return NextResponse.json({
     ok: true,
     leadId,
     created: true,
-    message: "Lead added.",
+    destination: "leads",
+    leadPath: buildLeadPath(leadId, businessName),
+    message: "Saved to Leads.",
   });
 }

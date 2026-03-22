@@ -79,8 +79,8 @@ export function BackfillLeadsButton() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button type="button" className="admin-btn-ghost text-xs" disabled={running} onClick={() => void runBackfill()}>
-        {running ? "Backfilling..." : "Backfill Leads From Opportunities"}
+      <button type="button" className="admin-btn-ghost text-sm" disabled={running} onClick={() => void runBackfill()}>
+        {running ? "Importing…" : "Import leads from opportunities"}
       </button>
       {result ? (
         <div className="text-xs space-y-1" style={{ color: "var(--admin-muted)" }}>

@@ -5,6 +5,7 @@ import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/
 import { evaluateScoutIntakeTarget, scoreScoutLead } from "@/lib/scout-conversion";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import { markScoutResultLinked, markScoutResultLinkedByOpportunity } from "@/lib/scout/scout-results-service";
+import { mapScoutSourceTypeToLeadSource } from "@/lib/crm/lead-source";
 
 type OpportunityRow = {
   id: string;
@@ -332,6 +333,27 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const businessName = String(opp.business_name || "").trim() || "Unknown business";
   const website = websiteRaw;
   const facebook_url = facebookRaw || undefined;
+
+  let resolvedScoutLeadSource = "scout_mixed";
+  let resolvedSourceUrl: string | null = null;
+  let resolvedSourceLabel = "Added from Scout";
+  if (scoutResultId) {
+    const { data: srRow, error: srErr } = await supabase
+      .from("scout_results")
+      .select("source_type,source_url")
+      .eq("id", scoutResultId)
+      .eq("owner_id", ownerId)
+      .maybeSingle();
+    const row = !srErr ? (srRow as { source_type?: string | null; source_url?: string | null } | null) : null;
+    if (row) {
+      resolvedScoutLeadSource = mapScoutSourceTypeToLeadSource(row.source_type);
+      resolvedSourceUrl = String(row.source_url || "").trim() || null;
+      if (resolvedScoutLeadSource === "scout_google") resolvedSourceLabel = "Added from Scout (Google)";
+      else if (resolvedScoutLeadSource === "scout_facebook") resolvedSourceLabel = "Added from Scout (Facebook)";
+      else resolvedSourceLabel = "Added from Scout";
+    }
+  }
+
   const insertPayload = pickLeadInsertFields({
     owner_id: ownerId,
     workspace_id: workspaceId,
@@ -347,7 +369,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     normalized_facebook_url: normalizeFacebookUrl(facebook_url) || null,
     category: String(opp.category || "").trim() || null,
     industry: String(opp.category || "").trim() || null,
-    lead_source: "scout-simple-intake",
+    source: resolvedScoutLeadSource,
+    lead_source: resolvedScoutLeadSource,
+    source_url: resolvedSourceUrl,
+    source_label: resolvedSourceLabel,
     scout_intake_reason: intake.intakeReason,
     address: String(opp.address || "").trim() || null,
     best_contact_method: assessment.best_contact_method || "none",

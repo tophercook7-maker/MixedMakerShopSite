@@ -37,7 +37,10 @@ export type Lead = {
   address?: string | null;
   place_id?: string | null;
   industry: string | null;
+  source?: string | null;
   lead_source: string | null;
+  source_url?: string | null;
+  source_label?: string | null;
   workspace_id?: string | null;
   linked_opportunity_id?: string | null;
   best_contact_method?: string | null;

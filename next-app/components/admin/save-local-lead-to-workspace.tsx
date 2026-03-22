@@ -35,7 +35,7 @@ function toCreatePayload(lead: LocalWorkflowLead): Record<string, unknown> {
     category: String(lead.category || "").trim() || undefined,
     city: String(lead.city || "").trim() || undefined,
     address: String(lead.address || "").trim() || undefined,
-    lead_source: String(lead.lead_source || "manual_local").trim() || "manual_local",
+    lead_source: String(lead.lead_source || "manual").trim() || "manual",
     status: String(lead.status || "new").trim().toLowerCase() || "new",
     notes: noteValue || undefined,
     is_manual: true,

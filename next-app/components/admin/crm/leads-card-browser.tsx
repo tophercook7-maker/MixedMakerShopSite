@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
@@ -10,6 +10,15 @@ import { LeadForm } from "@/components/admin/lead-form";
 import { CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
 import { patchLeadApi } from "@/lib/crm/patch-lead-client";
 import { addBusinessDaysIso } from "@/lib/crm/business-days";
+import {
+  formatLeadSourceBadge,
+  formatLeadSourceLine,
+  leadMatchesSourceFilter,
+  normalizeLeadSourceValue,
+  resolvedCaptureSource,
+  SOURCE_FILTER_OPTIONS,
+  type SourceFilterTab,
+} from "@/lib/crm/lead-source";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -77,11 +86,14 @@ export function LeadsCardBrowser({
   emptyStateReason,
   initialAddOpen = false,
   initialDensity = "compact",
+  initialHighlightLeadId = null,
 }: {
   initialLeads: WorkflowLead[];
   emptyStateReason: string;
   initialAddOpen?: boolean;
   initialDensity?: "compact" | "detailed";
+  /** From `?highlight=` after extension save — brief pulse + scroll. */
+  initialHighlightLeadId?: string | null;
 }) {
   const router = useRouter();
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
@@ -95,12 +107,35 @@ export function LeadsCardBrowser({
   const [density, setDensity] = useState<"compact" | "detailed">(initialDensity);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [sourceTab, setSourceTab] = useState<SourceFilterTab>("all");
+  const [pulseLeadId, setPulseLeadId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = String(initialHighlightLeadId || "").trim();
+    if (!id) return;
+    setPulseLeadId(id);
+    const scrollT = window.setTimeout(() => {
+      document.getElementById(`lead-card-${id}`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 120);
+    const url = typeof window !== "undefined" ? new URL(window.location.href) : null;
+    if (url?.searchParams.has("highlight")) {
+      url.searchParams.delete("highlight");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    const clearT = window.setTimeout(() => setPulseLeadId(null), 5500);
+    return () => {
+      window.clearTimeout(scrollT);
+      window.clearTimeout(clearT);
+    };
+  }, [initialHighlightLeadId]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const sortKeyEffective = sourceTab === "extension" ? "created" : sortKey;
     return [...leads]
       .filter((l) => {
         if (stageTab !== "all" && l.status !== stageTab) return false;
+        if (!leadMatchesSourceFilter(l, sourceTab)) return false;
         if (hotOnly && !l.is_hot_lead) return false;
         if (replyOnly && !(Number(l.unread_reply_count) > 0) && !String(l.last_reply_preview || "").trim()) return false;
         if (!q) return true;
@@ -113,22 +148,25 @@ export function LeadsCardBrowser({
           l.city,
           l.category,
           l.last_reply_preview,
+          formatLeadSourceLine(l),
+          l.lead_source,
+          l.source,
         ]
           .map((v) => String(v || "").toLowerCase())
           .join(" ");
         return hay.includes(q);
       })
       .sort((a, b) => {
-        if (sortKey === "score") return Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
-        if (sortKey === "business") return a.business_name.localeCompare(b.business_name);
-        if (sortKey === "follow_up") {
+        if (sortKeyEffective === "score") return Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
+        if (sortKeyEffective === "business") return a.business_name.localeCompare(b.business_name);
+        if (sortKeyEffective === "follow_up") {
           const at = a.next_follow_up_at ? new Date(a.next_follow_up_at).getTime() : Infinity;
           const bt = b.next_follow_up_at ? new Date(b.next_follow_up_at).getTime() : Infinity;
           return at - bt;
         }
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
-  }, [leads, search, stageTab, sortKey, hotOnly, replyOnly]);
+  }, [leads, search, stageTab, sourceTab, sortKey, hotOnly, replyOnly]);
 
   const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
     setBusyId(leadId);
@@ -227,14 +265,38 @@ export function LeadsCardBrowser({
           <input type="checkbox" checked={replyOnly} onChange={(e) => setReplyOnly(e.target.checked)} />
           Has reply preview
         </label>
+        <div className="w-full min-w-[200px]">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0 mb-1">
+            <span className="text-xs font-semibold" style={{ color: "var(--admin-muted)" }}>
+              Source
+            </span>
+            <button
+              type="button"
+              className="text-xs underline decoration-[var(--admin-gold)]/70 underline-offset-2"
+              style={{ color: "var(--admin-gold)" }}
+              onClick={() => setSourceTab("extension")}
+            >
+              Extension captures
+            </button>
+          </div>
+          <select
+            aria-label="Filter by lead source"
+            className="w-full max-w-xs rounded-lg border px-3 py-2 text-sm"
+            style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
+            value={sourceTab}
+            onChange={(e) => setSourceTab(e.target.value as SourceFilterTab)}
+          >
+            {SOURCE_FILTER_OPTIONS.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <button type="button" className="admin-btn-primary text-sm" onClick={() => setAdding(true)}>
           Add business
         </button>
       </div>
-
-      <p className="text-xs -mt-2" style={{ color: "var(--admin-muted)" }}>
-        Businesses you saved from Scout or quick add. Use compact view to move fast; open a card for the full workspace.
-      </p>
 
       <div className="flex flex-wrap gap-2">
         {STAGE_TABS.map((t) => (
@@ -269,6 +331,10 @@ export function LeadsCardBrowser({
         </section>
       ) : null}
 
+      <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+        These are businesses you saved. Open one to work it.
+      </p>
+
       {filtered.length === 0 ? (
         <section className="admin-card space-y-2">
           <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
@@ -285,10 +351,14 @@ export function LeadsCardBrowser({
           {filtered.map((lead) => {
             const busy = busyId === lead.id;
             const unreadN = Number(lead.unread_reply_count || 0);
+            const extensionCapture =
+              normalizeLeadSourceValue(resolvedCaptureSource(lead)) === "extension";
+            const pulse = pulseLeadId === lead.id;
             return (
               <li
+                id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className="rounded-lg border p-3 flex flex-col gap-2"
+                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""}`}
                 style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.12)" }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -306,6 +376,9 @@ export function LeadsCardBrowser({
                 </div>
                 <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
                   {lead.city || "—"} · {websitePlain(lead)} · {phonePlain(lead)}
+                </p>
+                <p className="text-[10px] leading-snug opacity-80" style={{ color: "var(--admin-muted)" }}>
+                  {formatLeadSourceBadge(lead)}
                 </p>
                 <p className="text-xs line-clamp-2" style={{ color: "var(--admin-fg)" }}>
                   {opportunityLine(lead)}
@@ -390,10 +463,14 @@ export function LeadsCardBrowser({
           {filtered.map((lead) => {
             const busy = busyId === lead.id;
             const unreadN = Number(lead.unread_reply_count || 0);
+            const extensionCapture =
+              normalizeLeadSourceValue(resolvedCaptureSource(lead)) === "extension";
+            const pulse = pulseLeadId === lead.id;
             return (
               <div
+                id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className="admin-card text-left w-full"
+                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <button
@@ -416,6 +493,9 @@ export function LeadsCardBrowser({
                 <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
                   {websitePlain(lead)} · {phonePlain(lead)}
                   {unreadN > 0 ? ` · ${unreadN} unread` : ""}
+                </p>
+                <p className="text-[11px] mt-1" style={{ color: "var(--admin-muted)" }}>
+                  {formatLeadSourceBadge(lead)}
                 </p>
                 <p className="text-xs mt-2 line-clamp-3" style={{ color: "var(--admin-fg)" }}>
                   {opportunityLine(lead)}

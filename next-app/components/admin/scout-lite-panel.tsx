@@ -462,7 +462,7 @@ export function ScoutLitePanel({
                         title={!oppId ? "Run a fresh Scout run to link this row to an opportunity." : undefined}
                         onClick={async () => {
                           const res = await onAddLead(row.id, oppId);
-                          if (res) onToast(res.created ? "Lead added" : "Already in CRM");
+                          if (res) onToast(res.created ? "Saved to Leads" : "Saved to Leads (already in your list)");
                         }}
                       >
                         Add lead
@@ -633,7 +633,7 @@ export function ScoutLitePanel({
                         onClick={async () => {
                           const oid = String(detail.source_external_id || "").trim();
                           const res = await onAddLead(detail.id, oid);
-                          if (res) onToast(res.created ? "Lead added" : "Already in CRM");
+                          if (res) onToast(res.created ? "Saved to Leads" : "Saved to Leads (already in your list)");
                         }}
                       >
                         Add lead
