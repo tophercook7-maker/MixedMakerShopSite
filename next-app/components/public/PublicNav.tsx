@@ -26,10 +26,10 @@ export function PublicNav() {
             <div className="logo">M³</div>
           ) : (
             <Image
-              src="/images/m3-logo.png"
-              alt="MixedMakerShop"
-              width={60}
-              height={60}
+              src="/massive-brain-m3.png"
+              alt="MixedMakerShop M³ — Massive Brain"
+              width={56}
+              height={56}
               className="rounded-xl shadow-[0_0_15px_rgba(255,140,0,0.6)] shrink-0 object-cover"
               priority
               onError={() => setLogoFailed(true)}

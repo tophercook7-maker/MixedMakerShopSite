@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
 import { HeaderActions } from "@/components/admin/HeaderActions";
@@ -22,7 +23,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </aside>
         <div className="min-w-0 flex flex-col">
           <header className="admin-header">
-            <h1>MixedMakerShop Admin</h1>
+            <div className="flex items-center gap-3 min-w-0">
+              <Image
+                src="/massive-brain-m3.png"
+                alt=""
+                width={40}
+                height={40}
+                className="rounded-xl shrink-0 border border-[rgba(212,175,55,0.35)] object-cover hidden sm:block"
+              />
+              <h1 className="truncate">MixedMakerShop Admin · M³</h1>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="admin-quick-actions">
                 <Link href="/admin/leads?add=1">

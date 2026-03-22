@@ -50,12 +50,12 @@ a:hover{text-decoration:underline}
 }
 .brand{display:flex;align-items:center;gap:12px;min-width:260px}
 .logo{
-  width:36px;height:36px;border-radius:12px;
+  width:44px;height:44px;border-radius:14px;
   border:1px solid rgba(240,165,26,.35);
-  background:linear-gradient(135deg, rgba(240,165,26,.25), rgba(255,255,255,.04));
   box-shadow:0 10px 25px rgba(0,0,0,.35);
-  display:grid;place-items:center;
-  font-weight:950;color:var(--gold2);
+  display:block;
+  object-fit:cover;
+  flex-shrink:0;
 }
 .brand-title{display:flex;flex-direction:column;line-height:1.1}
 .brand-title .name{font-weight:950;letter-spacing:.12em;font-size:13px}
@@ -362,9 +362,8 @@ html{scroll-behavior:smooth}
   .brand-title .name { font-size: 12px; }
   .brand-title .sub { font-size: 11px; }
   .logo {
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
+    width: 34px;
+    height: 34px;
   }
   .nav-links {
     gap: 6px;

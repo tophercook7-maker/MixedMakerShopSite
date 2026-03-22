@@ -80,8 +80,8 @@ function LoginForm() {
       <div className="w-full max-w-md rounded-2xl border border-neutral-200 p-6 space-y-6">
         <div className="space-y-3 text-center">
           <img
-            src="/m3-logo.png"
-            alt="MixedMakerShop M3 logo"
+            src="/massive-brain-m3.png"
+            alt="MixedMakerShop M³ — Massive Brain"
             className="mx-auto w-full max-w-[120px] h-auto"
           />
           <h1 className="text-2xl font-bold">MixedMakerShopAdmin</h1>

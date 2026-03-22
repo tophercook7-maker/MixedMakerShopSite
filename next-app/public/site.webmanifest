@@ -1,6 +1,6 @@
 {
-  "name": "MixedMakerShop Admin",
-  "short_name": "MixedMaker",
+  "name": "MixedMakerShop — Massive Brain",
+  "short_name": "M³ CRM",
   "icons": [
     {
       "src": "/m3-192.png",
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#0b2a1f",
-  "background_color": "#0b2a1f",
+  "theme_color": "#0c1929",
+  "background_color": "#0c1929",
   "display": "standalone"
 }
