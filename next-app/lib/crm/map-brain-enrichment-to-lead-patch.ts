@@ -151,13 +151,31 @@ export function buildBrainEnrichmentLeadPatch(
     }
   }
 
-  const nextMove = trimStr(brain.best_next_move);
-  const pitch = trimStr(brain.pitch_angle);
-  if (!exRec && (nextMove || pitch)) {
-    const line = [nextMove, pitch].filter(Boolean).join(" — ").slice(0, 500);
-    if (line) {
-      patchRaw.recommended_next_action = line;
-      updatedFields.push("recommended_next_action");
+  const step = trimStr(brain.simplified_next_step).toLowerCase();
+  const stepLabel =
+    step === "contact now"
+      ? "Contact now"
+      : step === "message on facebook"
+        ? "Message on Facebook"
+        : step === "call now"
+          ? "Call now"
+          : step === "research later"
+            ? "Research later"
+            : step === "skip for now"
+              ? "Skip for now"
+              : "";
+  if (!exRec && stepLabel) {
+    patchRaw.recommended_next_action = stepLabel;
+    updatedFields.push("recommended_next_action");
+  } else {
+    const nextMove = trimStr(brain.best_next_move);
+    const pitch = trimStr(brain.pitch_angle);
+    if (!exRec && (nextMove || pitch)) {
+      const line = [nextMove, pitch].filter(Boolean).join(" — ").slice(0, 500);
+      if (line) {
+        patchRaw.recommended_next_action = line;
+        updatedFields.push("recommended_next_action");
+      }
     }
   }
 
@@ -165,6 +183,52 @@ export function buildBrainEnrichmentLeadPatch(
   if (bPlace && !trimStr(current.place_id)) {
     patchRaw.place_id = bPlace;
     updatedFields.push("place_id");
+  }
+
+  const gbu = trimStr(brain.google_business_url);
+  if (gbu) {
+    const u = gbu.startsWith("http") ? gbu : `https://${gbu}`;
+    if (!trimStr(current.google_business_url)) {
+      patchRaw.google_business_url = u;
+      updatedFields.push("google_business_url");
+    }
+  }
+
+  const apu = trimStr(brain.advertising_page_url);
+  if (apu) {
+    const u = apu.startsWith("http") ? apu : `https://${apu}`;
+    patchRaw.advertising_page_url = u;
+    updatedFields.push("advertising_page_url");
+  }
+  const apl = trimStr(brain.advertising_page_label);
+  if (apl) {
+    patchRaw.advertising_page_label = apl;
+    if (!updatedFields.includes("advertising_page_label")) updatedFields.push("advertising_page_label");
+  }
+
+  const bcmNew = trimStr(brain.best_contact_method);
+  if (bcmNew) {
+    patchRaw.best_contact_method = bcmNew === "contact_page" ? "contact_form" : bcmNew;
+    updatedFields.push("best_contact_method");
+  }
+  const bcvNew = trimStr(brain.best_contact_value);
+  if (bcvNew) {
+    patchRaw.best_contact_value = bcvNew;
+    updatedFields.push("best_contact_value");
+  } else if (bcmNew === "research_later") {
+    patchRaw.best_contact_value = null;
+    updatedFields.push("best_contact_value");
+  }
+
+  const stk = trimStr(brain.suggested_template_key);
+  if (stk) {
+    patchRaw.suggested_template_key = stk;
+    updatedFields.push("suggested_template_key");
+  }
+  const sr = trimStr(brain.suggested_response);
+  if (sr) {
+    patchRaw.suggested_response = sr;
+    updatedFields.push("suggested_response");
   }
 
   return {

@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
 import { LeadContactFirst } from "@/components/admin/lead-contact-first";
-import { LeadEnrichNow } from "@/components/admin/lead-enrich-now";
+import { LeadContactNow } from "@/components/admin/lead-contact-now";
+import { LeadSuggestedResponse } from "@/components/admin/lead-suggested-response";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
 import { canonicalLeadBucket } from "@/lib/lead-bucket";
 import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
@@ -17,6 +18,7 @@ import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { computeLeadLaneBundle } from "@/lib/crm/lead-lane";
 
 type LeadRow = {
   id: string;
@@ -60,6 +62,15 @@ type LeadRow = {
   category?: string | null;
   source_url?: string | null;
   source_label?: string | null;
+  conversion_score?: number | null;
+  why_this_lead_is_here?: string | null;
+  google_business_url?: string | null;
+  advertising_page_url?: string | null;
+  advertising_page_label?: string | null;
+  best_contact_method?: string | null;
+  best_contact_value?: string | null;
+  suggested_template_key?: string | null;
+  suggested_response?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -104,6 +115,15 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "category",
     "source_url",
     "source_label",
+    "conversion_score",
+    "why_this_lead_is_here",
+    "google_business_url",
+    "advertising_page_url",
+    "advertising_page_label",
+    "best_contact_method",
+    "best_contact_value",
+    "suggested_template_key",
+    "suggested_response",
   ].join(","),
   [
     "id",
@@ -1093,11 +1113,12 @@ export default async function AdminLeadDetailPage({
     String(opp?.category || "").trim() ||
     String(lead?.category || lead?.industry || "").trim() ||
     "—";
-  const displayScore = Number(
-    opp?.opportunity_score ??
-      lead?.opportunity_score ??
-      0
-  );
+  const displayScore = (() => {
+    const c = lead?.conversion_score;
+    if (c != null && Number.isFinite(Number(c))) return Number(c);
+    const o = Number(opp?.opportunity_score ?? lead?.opportunity_score ?? 0);
+    return Number.isFinite(o) ? o : null;
+  })();
   const displayWebsite =
     String(opp?.website || "").trim() ||
     String(lead?.website || "").trim();
@@ -1111,7 +1132,95 @@ export default async function AdminLeadDetailPage({
     lead?.facebook_url || caseRow?.facebook_url || caseRow?.facebook || ""
   ).trim();
   const displayInstagram = String(caseRow?.instagram_url || caseRow?.instagram || "").trim();
+  const displayGoogleBusiness = String(lead?.google_business_url || "").trim();
+  const displaySuggestedTemplateKey = String(lead?.suggested_template_key || "").trim();
+  const displaySuggestedResponse = String(lead?.suggested_response || "").trim();
+
+  const resolvedBest = (() => {
+    let method = String(lead?.best_contact_method || "").trim().toLowerCase();
+    if (method === "contact_page") method = "contact_form";
+    if (method === "none") method = "";
+    let value: string | null = String(lead?.best_contact_value || "").trim() || null;
+
+    if (method) {
+      if (method === "email" && !value) value = displayEmail || null;
+      if (method === "facebook" && !value && displayFacebook)
+        value = displayFacebook.startsWith("http") ? displayFacebook : `https://${displayFacebook}`;
+      if (method === "phone" && !value) value = displayPhone || null;
+      if (method === "contact_form" && !value) value = displayContactPage || null;
+      if (method === "website" && !value && displayWebsite && leadHasStandaloneWebsite(displayWebsite))
+        value = displayWebsite.startsWith("http") ? displayWebsite : `https://${displayWebsite}`;
+      return { method, value };
+    }
+    if (displayEmail) return { method: "email", value: displayEmail };
+    if (displayFacebook)
+      return {
+        method: "facebook" as const,
+        value: displayFacebook.startsWith("http") ? displayFacebook : `https://${displayFacebook}`,
+      };
+    if (displayPhone) return { method: "phone", value: displayPhone };
+    if (displayContactPage)
+      return {
+        method: "contact_form" as const,
+        value: displayContactPage.startsWith("http") ? displayContactPage : `https://${displayContactPage}`,
+      };
+    if (displayWebsite && leadHasStandaloneWebsite(displayWebsite))
+      return {
+        method: "website" as const,
+        value: displayWebsite.startsWith("http") ? displayWebsite : `https://${displayWebsite}`,
+      };
+    return { method: "research_later" as const, value: null as string | null };
+  })();
+
+  const resolvedAdvertising = (() => {
+    const url = String(lead?.advertising_page_url || "").trim();
+    const label = String(lead?.advertising_page_label || "").trim();
+    if (url) {
+      return {
+        url: url.startsWith("http") ? url : `https://${url}`,
+        label: label || "Public page",
+      };
+    }
+    if (displayGoogleBusiness) {
+      return {
+        url: displayGoogleBusiness.startsWith("http") ? displayGoogleBusiness : `https://${displayGoogleBusiness}`,
+        label: "Google listing",
+      };
+    }
+    const src = String(lead?.source_url || "").trim();
+    if (src) {
+      const u = src.startsWith("http") ? src : `https://${src}`;
+      const isFb = u.toLowerCase().includes("facebook.") || u.toLowerCase().includes("fb.com");
+      return { url: u, label: isFb ? "Facebook page" : "Source link" };
+    }
+    if (displayFacebook) {
+      return {
+        url: displayFacebook.startsWith("http") ? displayFacebook : `https://${displayFacebook}`,
+        label: "Facebook page",
+      };
+    }
+    if (displayWebsite && leadHasStandaloneWebsite(displayWebsite)) {
+      return {
+        url: displayWebsite.startsWith("http") ? displayWebsite : `https://${displayWebsite}`,
+        label: "Website",
+      };
+    }
+    return { url: null as string | null, label: null as string | null };
+  })();
+
   const hasContactPath = Boolean(displayEmail || displayPhone || displayContactPage || displayFacebook);
+  const laneBundle = computeLeadLaneBundle({
+    email: displayEmail || null,
+    phone: displayPhone || null,
+    website: displayWebsite || null,
+    facebook_url: displayFacebook || null,
+    contact_page: displayContactPage || null,
+    conversion_score: lead?.conversion_score ?? null,
+    opportunity_score: displayScore,
+    why_this_lead_is_here: lead?.why_this_lead_is_here ?? null,
+  });
+  const nextStepLabel =
+    laneBundle.simplified_next_step.charAt(0).toUpperCase() + laneBundle.simplified_next_step.slice(1);
   const hasEmailPath = Boolean(displayEmail);
   const hasContactAvailable = Boolean(displayContactPage || displayFacebook);
   const displayStatus = String(lead?.status || caseRow?.status || "new");
@@ -1146,7 +1255,7 @@ export default async function AdminLeadDetailPage({
   const assessment = buildLeadAssessment({
     website: displayWebsite || null,
     website_status: displayWebsiteStatus,
-    opportunity_score: displayScore,
+    opportunity_score: displayScore ?? 0,
     issue_summary: String(opp?.opportunity_reason || topIssues[0]?.issue || "").trim(),
     issue_list: issueList,
     category: displayCategory,
@@ -1291,20 +1400,32 @@ Want me to show you a quick idea?`;
       ) : null}
       <section className="admin-card space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-3 min-w-0 flex-1">
+          <div className="space-y-2 min-w-0 flex-1">
             <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
               {displayBusinessName}
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
-              {displayScore != null && String(displayScore).trim() !== "" ? (
+              {displayScore != null ? (
                 <span style={{ color: "var(--admin-muted)" }}>
                   Score <strong style={{ color: "var(--admin-fg)" }}>{displayScore}</strong>
                 </span>
               ) : null}
+              <span
+                className="text-[10px] px-2 py-0.5 rounded border"
+                style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
+              >
+                {laneBundle.lead_bucket.replace(/_/g, " ")}
+              </span>
             </div>
-            <p className="text-base font-medium leading-snug" style={{ color: "var(--admin-fg)" }}>
-              {assessment.situation_headline}
+            <p className="text-sm leading-snug" style={{ color: "var(--admin-fg)" }}>
+              {laneBundle.honest_headline}
+            </p>
+            <p className="text-sm font-semibold" style={{ color: "var(--admin-gold)" }}>
+              Next step: {nextStepLabel}
+            </p>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Contact readiness: {laneBundle.contact_readiness} · {laneBundle.summary_line}
             </p>
           </div>
           <Link href="/admin/leads" className="admin-btn-ghost text-sm shrink-0 self-start">
@@ -1312,6 +1433,19 @@ Want me to show you a quick idea?`;
           </Link>
         </div>
       </section>
+
+      <LeadContactNow
+        bestContactMethod={resolvedBest.method}
+        bestContactValue={resolvedBest.value}
+        advertisingPageUrl={resolvedAdvertising.url}
+        advertisingPageLabel={resolvedAdvertising.label}
+        email={displayEmail || null}
+        facebookUrl={displayFacebook || null}
+        phone={displayPhone || null}
+        contactPage={displayContactPage || null}
+        website={displayWebsite || null}
+        googleBusinessUrl={displayGoogleBusiness || null}
+      />
 
       <LeadContactFirst
         email={displayEmail || null}
@@ -1321,11 +1455,9 @@ Want me to show you a quick idea?`;
         website={displayWebsite || null}
         contactPage={displayContactPage || null}
         previewLeadId={resolvedLeadId || null}
-        headerActions={resolvedLeadId ? <LeadEnrichNow leadId={resolvedLeadId} /> : null}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
+      <div className="space-y-6">
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
               What to do
@@ -1336,21 +1468,45 @@ Want me to show you a quick idea?`;
             {resolvedLeadId ? (
               <LeadPrimaryActions
                 leadId={resolvedLeadId}
-                businessName={displayBusinessName}
+                hasContactPath={hasContactPath}
                 initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
               />
             ) : null}
           </section>
 
-          <LeadPitchPanel
-            emailPitch={shortEmailPitch}
-            textPitch={shortTextPitch}
-            doorPitch={shortDoorPitch}
-            showDoor={false}
-          />
-
-          {assessment.matters_bullets.filter(Boolean).length > 0 ? (
           <section className="admin-card space-y-3">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              What to say
+            </h2>
+            {resolvedLeadId ? (
+              <LeadSuggestedResponse
+                businessName={displayBusinessName}
+                leadId={resolvedLeadId}
+                composeHref={leadPath}
+                bestContactMethod={resolvedBest.method}
+                bestContactValue={resolvedBest.value}
+                email={displayEmail || null}
+                facebookUrl={displayFacebook || null}
+                phone={displayPhone || null}
+                suggestedTemplateKey={displaySuggestedTemplateKey || null}
+                suggestedResponse={displaySuggestedResponse || null}
+              />
+            ) : null}
+            <LeadPitchPanel
+              emailPitch={shortEmailPitch}
+              textPitch={shortTextPitch}
+              doorPitch={shortDoorPitch}
+              showDoor={false}
+            />
+          </section>
+
+          <details className="admin-card">
+            <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
+              More details (optional)
+            </summary>
+            <div className="mt-3 space-y-4">
+            {assessment.matters_bullets.filter(Boolean).length > 0 ? (
+          <section className="space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
               Why this matters
             </h2>
@@ -1362,11 +1518,6 @@ Want me to show you a quick idea?`;
           </section>
           ) : null}
 
-          <details className="admin-card">
-            <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
-              More details (optional)
-            </summary>
-            <div className="mt-3 space-y-4">
             <details className="rounded-lg border p-2 text-xs" style={{ borderColor: "var(--admin-border)" }}>
               <summary className="cursor-pointer" style={{ color: "var(--admin-muted)" }}>
                 Technical (support)
@@ -1689,66 +1840,74 @@ Want me to show you a quick idea?`;
             </Link>
           </div>
 
+          <div className="pt-4 border-t space-y-4" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
+              Outreach & drafts
+            </p>
+            {resolvedLeadId ? (
+              <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
+                <LeadWorkspaceActions
+                  leadId={resolvedLeadId}
+                  linkedOpportunityId={oppId || null}
+                  initialBusinessName={displayBusinessName}
+                  initialCategory={displayCategory}
+                  initialCity={displayCity === "—" ? null : displayCity}
+                  initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
+                  initialStatus={lead?.status || null}
+                  initialDealStatus={lead?.deal_status || null}
+                  initialDealStage={lead?.deal_stage || "new"}
+                  initialLastReplyPreview={lead?.last_reply_preview || null}
+                  initialEmail={displayEmail || null}
+                  initialPhone={displayPhone || null}
+                  website={displayWebsite || null}
+                  contactPage={displayContactPage || null}
+                  facebookUrl={displayFacebook || null}
+                  caseHref={caseHref}
+                  initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
+                  initialDoorStatus={lead?.door_status || "not_visited"}
+                  initialRealWorldWhyTarget={lead?.real_world_why_target || lead?.known_context || null}
+                  initialRealWorldWalkInPitch={lead?.real_world_walk_in_pitch || null}
+                  initialBestTimeToVisit={lead?.best_time_to_visit || null}
+                  quickFixSummary={quickFixSummary}
+                  autoGenerate={generate === "1"}
+                  autoCompose={compose === "1"}
+                  autoOpenSampleBuilder={sample === "1"}
+                  initialLastOutreachChannel={
+                    lead?.last_outreach_channel === "email" ||
+                    lead?.last_outreach_channel === "facebook" ||
+                    lead?.last_outreach_channel === "text"
+                      ? lead.last_outreach_channel
+                      : null
+                  }
+                  initialLastOutreachStatus={
+                    lead?.last_outreach_status === "draft" ||
+                    lead?.last_outreach_status === "sending" ||
+                    lead?.last_outreach_status === "sent" ||
+                    lead?.last_outreach_status === "failed"
+                      ? lead.last_outreach_status
+                      : null
+                  }
+                  initialLastOutreachSentAt={String(lead?.last_outreach_sent_at || "").trim() || null}
+                  initialSuggestedOutreachSubject={
+                    displaySuggestedResponse.trim()
+                      ? `Quick idea — ${displayBusinessName}`.slice(0, 200)
+                      : null
+                  }
+                  initialSuggestedOutreachBody={displaySuggestedResponse.trim() || null}
+                />
+              </LeadWorkspaceScrollAnchor>
+            ) : (
+              <section className="admin-card">
+                <h3 className="text-sm font-semibold">Outreach Panel</h3>
+                <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
+                  Outreach actions are disabled because the lead row could not be resolved.
+                </p>
+              </section>
+            )}
+          </div>
+
             </div>
           </details>
-        </div>
-
-        <div className="space-y-6">
-          {resolvedLeadId ? (
-            <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
-              <LeadWorkspaceActions
-                leadId={resolvedLeadId}
-                linkedOpportunityId={oppId || null}
-                initialBusinessName={displayBusinessName}
-                initialCategory={displayCategory}
-                initialCity={displayCity === "—" ? null : displayCity}
-                initialIssue={topIssues[0]?.issue || "Contact info is hard to find"}
-                initialStatus={lead?.status || null}
-                initialDealStatus={lead?.deal_status || null}
-                initialDealStage={lead?.deal_stage || "new"}
-                initialLastReplyPreview={lead?.last_reply_preview || null}
-                initialEmail={displayEmail || null}
-                initialPhone={displayPhone || null}
-                website={displayWebsite || null}
-                contactPage={displayContactPage || null}
-                facebookUrl={displayFacebook || null}
-                caseHref={caseHref}
-                initialNotes={[String(lead?.notes || "").trim(), String(caseRow?.notes || "").trim()].filter(Boolean)}
-                initialDoorStatus={lead?.door_status || "not_visited"}
-                initialRealWorldWhyTarget={lead?.real_world_why_target || lead?.known_context || null}
-                initialRealWorldWalkInPitch={lead?.real_world_walk_in_pitch || null}
-                initialBestTimeToVisit={lead?.best_time_to_visit || null}
-                quickFixSummary={quickFixSummary}
-                autoGenerate={generate === "1"}
-                autoCompose={compose === "1"}
-                autoOpenSampleBuilder={sample === "1"}
-                initialLastOutreachChannel={
-                  lead?.last_outreach_channel === "email" ||
-                  lead?.last_outreach_channel === "facebook" ||
-                  lead?.last_outreach_channel === "text"
-                    ? lead.last_outreach_channel
-                    : null
-                }
-                initialLastOutreachStatus={
-                  lead?.last_outreach_status === "draft" ||
-                  lead?.last_outreach_status === "sending" ||
-                  lead?.last_outreach_status === "sent" ||
-                  lead?.last_outreach_status === "failed"
-                    ? lead.last_outreach_status
-                    : null
-                }
-                initialLastOutreachSentAt={String(lead?.last_outreach_sent_at || "").trim() || null}
-              />
-            </LeadWorkspaceScrollAnchor>
-          ) : (
-            <section className="admin-card">
-              <h3 className="text-sm font-semibold">Outreach Panel</h3>
-              <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-                Outreach actions are disabled because the lead row could not be resolved.
-              </p>
-            </section>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
 import { LeadsWorkflowView } from "@/components/admin/leads-workflow-view";
@@ -20,9 +21,10 @@ export default async function AdminLeadsPage({
     view?: string;
     density?: string;
     highlight?: string;
+    lane?: string;
   }>;
 }) {
-  const { error, detail, add, view, density, highlight } = await searchParams;
+  const { error, detail, add, view, density, highlight, lane } = await searchParams;
   const highlightLeadId = String(highlight || "").trim() || null;
   const classicWorkflow = String(view || "").toLowerCase() === "workflow";
   const cardDensity = String(density || "").toLowerCase() === "detailed" ? "detailed" : "compact";
@@ -172,13 +174,16 @@ export default async function AdminLeadsPage({
           initialAddOpen={String(add || "") === "1"}
         />
       ) : (
-        <LeadsCardBrowser
-          initialLeads={workflowLeads}
-          emptyStateReason={emptyStateReason}
-          initialAddOpen={String(add || "") === "1"}
-          initialDensity={cardDensity}
-          initialHighlightLeadId={highlightLeadId}
-        />
+        <Suspense fallback={<div className="admin-card text-sm text-[var(--admin-muted)]">Loading leads…</div>}>
+          <LeadsCardBrowser
+            initialLeads={workflowLeads}
+            emptyStateReason={emptyStateReason}
+            initialAddOpen={String(add || "") === "1"}
+            initialDensity={cardDensity}
+            initialHighlightLeadId={highlightLeadId}
+            initialLane={String(lane || "").trim() || null}
+          />
+        </Suspense>
       )}
 
       <details className="admin-card">

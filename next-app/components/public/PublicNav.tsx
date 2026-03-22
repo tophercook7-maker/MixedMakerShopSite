@@ -26,7 +26,7 @@ export function PublicNav() {
             <div className="logo">M³</div>
           ) : (
             <Image
-              src="/massive-brain-m3.png"
+              src="/m3-brand.png"
               alt="MixedMakerShop M³ — Massive Brain"
               width={56}
               height={56}

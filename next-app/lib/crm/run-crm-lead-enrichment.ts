@@ -20,7 +20,7 @@ export type CrmEnrichmentRunResult = {
 };
 
 const LEAD_SELECT_FOR_INPUT =
-  "business_name,city,state,source_url,facebook_url,source,lead_source,source_label";
+  "business_name,city,state,source_url,facebook_url,google_business_url,source,lead_source,source_label,email,phone,website,contact_page,conversion_score,opportunity_score,why_this_lead_is_here,category,best_contact_method,best_contact_value,advertising_page_url,advertising_page_label,suggested_template_key,suggested_response";
 
 /**
  * Maps CRM capture channel → Scout Brain `source_type` (Brain contract).
@@ -61,6 +61,7 @@ async function loadLeadEnrichInput(
 ): Promise<ScoutBrainEnrichInput | null> {
   const variants = [
     LEAD_SELECT_FOR_INPUT,
+    "business_name,source_url,facebook_url,source,lead_source,source_label,email,phone,website,contact_page,conversion_score,opportunity_score",
     "business_name,source_url,facebook_url,source,lead_source,source_label",
     "business_name,source_url,facebook_url,source,lead_source",
   ];
@@ -73,13 +74,26 @@ async function loadLeadEnrichInput(
       .maybeSingle();
     if (!error && data) {
       const row = data as unknown as Record<string, unknown>;
+      const conv = row.conversion_score;
+      const opp = row.opportunity_score;
       return {
         business_name: String(row.business_name || "").trim() || "Unknown business",
         city: String(row.city || "").trim() || "",
         state: String(row.state || "").trim() || "",
         source_url: String(row.source_url || "").trim() || "",
         facebook_url: String(row.facebook_url || "").trim() || "",
+        google_business_url: String(row.google_business_url || "").trim() || null,
         source_type: mapCrmLeadRowToBrainSourceType(row),
+        email: String(row.email || "").trim() || null,
+        phone: String(row.phone || "").trim() || null,
+        website: String(row.website || "").trim() || null,
+        contact_page: String(row.contact_page || "").trim() || null,
+        conversion_score: conv != null && Number.isFinite(Number(conv)) ? Number(conv) : null,
+        opportunity_score: opp != null && Number.isFinite(Number(opp)) ? Number(opp) : null,
+        why_this_lead_is_here: String(row.why_this_lead_is_here || "").trim() || null,
+        category: String(row.category || "").trim() || null,
+        source: String(row.source || "").trim() || null,
+        source_label: String(row.source_label || "").trim() || null,
       };
     }
   }

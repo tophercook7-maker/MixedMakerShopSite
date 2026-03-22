@@ -55,6 +55,9 @@ type LeadWorkspaceActionsProps = {
   initialLastOutreachChannel?: "email" | "facebook" | "text" | null;
   initialLastOutreachStatus?: "draft" | "sending" | "sent" | "failed" | null;
   initialLastOutreachSentAt?: string | null;
+  /** Prefill compose when opening with ?compose=1 (e.g. from suggested response). */
+  initialSuggestedOutreachSubject?: string | null;
+  initialSuggestedOutreachBody?: string | null;
 };
 
 type TemplateResponse = {
@@ -318,6 +321,8 @@ export function LeadWorkspaceActions({
   initialLastOutreachChannel = null,
   initialLastOutreachStatus = null,
   initialLastOutreachSentAt = null,
+  initialSuggestedOutreachSubject = null,
+  initialSuggestedOutreachBody = null,
 }: LeadWorkspaceActionsProps) {
   const hasWebsitePresence = Boolean(String(website || "").trim());
   const [subject, setSubject] = useState("");
@@ -450,15 +455,23 @@ export function LeadWorkspaceActions({
 
   useEffect(() => {
     const draft = readPreparedOutreachDraft(leadId);
-    if (!draft) return;
-    if (draft.subject) setSubject(draft.subject);
-    if (draft.body) setBody(draft.body);
-    if (draft.previewUrl) {
-      setPreparedPreviewUrl(draft.previewUrl);
-      setPreviewUrl(draft.previewUrl);
-      setIsPreparedReady(true);
+    if (draft) {
+      if (draft.subject) setSubject(draft.subject);
+      if (draft.body) setBody(draft.body);
+      if (draft.previewUrl) {
+        setPreparedPreviewUrl(draft.previewUrl);
+        setPreviewUrl(draft.previewUrl);
+        setIsPreparedReady(true);
+      }
+      return;
     }
-  }, [leadId]);
+    const sugBody = String(initialSuggestedOutreachBody || "").trim();
+    if (sugBody) {
+      setBody(sugBody);
+      const sugSub = String(initialSuggestedOutreachSubject || "").trim();
+      if (sugSub) setSubject(sugSub);
+    }
+  }, [leadId, initialSuggestedOutreachBody, initialSuggestedOutreachSubject]);
 
   useEffect(() => {
     const preview = String(preparedPreviewUrl || previewUrl || "").trim();

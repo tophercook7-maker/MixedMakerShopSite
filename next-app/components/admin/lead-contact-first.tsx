@@ -62,7 +62,7 @@ export function LeadContactFirst({
     <section className="admin-card space-y-3 border-2" style={{ borderColor: "rgba(212, 175, 55, 0.35)" }}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-          Contact first
+          Contact
         </h2>
         {headerActions}
       </div>
@@ -86,7 +86,7 @@ export function LeadContactFirst({
             </div>
           ) : (
             <span className="text-xs italic" style={{ color: "var(--admin-muted)" }}>
-              No email found yet
+              No email found
             </span>
           )}
         </Row>
@@ -102,7 +102,7 @@ export function LeadContactFirst({
             </>
           ) : (
             <span className="text-xs italic" style={{ color: "var(--admin-muted)" }}>
-              No Facebook link yet
+              No Facebook link saved
             </span>
           )}
         </Row>
@@ -118,7 +118,7 @@ export function LeadContactFirst({
             </>
           ) : (
             <span className="text-xs italic" style={{ color: "var(--admin-muted)" }}>
-              No phone yet
+              No phone found
             </span>
           )}
         </Row>
@@ -134,7 +134,7 @@ export function LeadContactFirst({
             </>
           ) : (
             <span className="text-xs italic" style={{ color: "var(--admin-muted)" }}>
-              No website yet
+              No website found
             </span>
           )}
         </Row>
@@ -150,7 +150,7 @@ export function LeadContactFirst({
             </>
           ) : (
             <span className="text-xs italic" style={{ color: "var(--admin-muted)" }}>
-              No contact page yet
+              No contact page found
             </span>
           )}
         </Row>

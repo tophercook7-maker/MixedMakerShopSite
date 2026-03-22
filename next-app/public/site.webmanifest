@@ -3,14 +3,16 @@
   "short_name": "M³ CRM",
   "icons": [
     {
-      "src": "/m3-192.png",
+      "src": "/m3-brand.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/m3-512.png",
+      "src": "/m3-brand.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "theme_color": "#0c1929",

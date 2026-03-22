@@ -23,7 +23,13 @@ function AdminToast({ message, onDone }: { message: string; onDone: () => void }
   );
 }
 
-export function LeadEnrichNow({ leadId }: { leadId: string }) {
+export function LeadEnrichNow({
+  leadId,
+  variant = "ghost",
+}: {
+  leadId: string;
+  variant?: "ghost" | "primary";
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -69,8 +75,12 @@ export function LeadEnrichNow({ leadId }: { leadId: string }) {
         type="button"
         disabled={busy}
         onClick={() => void run()}
-        className="admin-btn-ghost text-xs py-1 px-2"
-        style={{ color: "var(--admin-muted)" }}
+        className={
+          variant === "primary"
+            ? "admin-btn-primary text-sm px-3 py-2"
+            : "admin-btn-ghost text-xs py-1 px-2"
+        }
+        style={variant === "primary" ? undefined : { color: "var(--admin-muted)" }}
       >
         {busy ? "Enriching…" : "Enrich now"}
       </button>

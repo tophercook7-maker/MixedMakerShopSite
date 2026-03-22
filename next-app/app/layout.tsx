@@ -5,15 +5,15 @@ export const metadata: Metadata = {
   title: "MixedMakerShop — Web Design & Admin",
   description: "MixedMakerShop website and admin — Massive Brain CRM",
   icons: {
-    icon: [{ url: "/m3-icon.png", sizes: "48x48", type: "image/png" }],
-    shortcut: "/m3-icon.png",
-    apple: "/m3-192.png",
+    icon: [{ url: "/m3-brand.png", sizes: "48x48", type: "image/png" }],
+    shortcut: "/m3-brand.png",
+    apple: "/m3-brand.png",
   },
   manifest: "/site.webmanifest",
   themeColor: "#0c1929",
   openGraph: {
     title: "MixedMakerShop — Massive Brain",
-    images: [{ url: "/massive-brain-m3.png", width: 889, height: 889, alt: "M³ Massive Brain" }],
+    images: [{ url: "/m3-brand.png", width: 1024, height: 1024, alt: "MixedMakerShop M³" }],
   },
 };
 

@@ -41,7 +41,7 @@ export default function Sidebar() {
     <>
       <div className="admin-brand-wrap">
         <Image
-          src="/massive-brain-m3.png"
+          src="/m3-brand.png"
           alt=""
           width={40}
           height={40}

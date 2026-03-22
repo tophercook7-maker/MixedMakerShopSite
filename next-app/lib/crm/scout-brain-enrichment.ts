@@ -13,6 +13,18 @@ export type ScoutBrainEnrichInput = {
   source_url?: string | null;
   facebook_url?: string | null;
   source_type: "extension" | "facebook" | "google" | "manual" | "unknown" | "mixed";
+  /** Passed through for deterministic CRM lanes when Places/crawl add nothing */
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  contact_page?: string | null;
+  conversion_score?: number | null;
+  opportunity_score?: number | null;
+  why_this_lead_is_here?: string | null;
+  category?: string | null;
+  source?: string | null;
+  source_label?: string | null;
+  google_business_url?: string | null;
 };
 
 export type ScoutBrainEnrichedLead = {
@@ -20,6 +32,7 @@ export type ScoutBrainEnrichedLead = {
   source_type?: string | null;
   source_url?: string | null;
   facebook_url?: string | null;
+  google_business_url?: string | null;
   website?: string | null;
   normalized_website?: string | null;
   phone?: string | null;
@@ -33,12 +46,22 @@ export type ScoutBrainEnrichedLead = {
   score?: number | null;
   why_this_lead_is_here?: string | null;
   best_contact_method?: string | null;
+  best_contact_value?: string | null;
+  advertising_page_url?: string | null;
+  advertising_page_label?: string | null;
+  suggested_template_key?: string | null;
+  suggested_response?: string | null;
   best_next_move?: string | null;
   pitch_angle?: string | null;
   source_confidence?: number | null;
   match_confidence?: number | null;
   raw_signals?: Record<string, unknown> | null;
   place_id?: string | null;
+  lead_bucket?: string | null;
+  contact_readiness?: string | null;
+  simplified_next_step?: string | null;
+  lane_summary_line?: string | null;
+  honest_headline?: string | null;
 };
 
 export type ScoutBrainEnrichResponse = {
@@ -113,7 +136,24 @@ export async function fetchScoutBrainEnrichLead(
         state: input.state || "",
         source_url: input.source_url || "",
         facebook_url: input.facebook_url || "",
+        google_business_url: input.google_business_url ?? "",
         source_type: input.source_type || "unknown",
+        email: input.email ?? "",
+        phone: input.phone ?? "",
+        website: input.website ?? "",
+        contact_page: input.contact_page ?? "",
+        conversion_score:
+          input.conversion_score != null && Number.isFinite(Number(input.conversion_score))
+            ? Math.round(Number(input.conversion_score))
+            : null,
+        opportunity_score:
+          input.opportunity_score != null && Number.isFinite(Number(input.opportunity_score))
+            ? Math.round(Number(input.opportunity_score))
+            : null,
+        why_this_lead_is_here: input.why_this_lead_is_here ?? "",
+        category: input.category ?? "",
+        source: input.source ?? "",
+        source_label: input.source_label ?? "",
       }),
       signal: controller.signal,
       cache: "no-store",

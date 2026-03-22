@@ -1,4 +1,11 @@
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
+import {
+  computeLeadLaneBundle,
+  CRM_LANE_LABELS,
+  formatContactSignalsLine,
+  type CrmLeadLane,
+  type ContactReadiness,
+} from "@/lib/crm/lead-lane";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 
 export type LeadRowForWorkflow = {
@@ -66,17 +73,58 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
   const website = String(row.website || "").trim();
   const contactPage = String(row.contact_page || "").trim();
   const facebook = String(row.facebook_url || "").trim();
-  const bestContactMethod = String(row.best_contact_method || "").trim().toLowerCase();
+  let bestContactMethod = String(row.best_contact_method || "").trim().toLowerCase();
+  if (bestContactMethod === "contact_page") bestContactMethod = "contact_form";
+  if (bestContactMethod === "none") bestContactMethod = "";
   const hasEmail = Boolean(email);
+  const hasWebsite = Boolean(website);
   const hasContactAvailable = Boolean(contactPage || facebook || phone);
   const resolvedBestContact = (
     bestContactMethod ||
-    (hasEmail ? "email" : contactPage ? "contact_page" : facebook ? "facebook" : phone ? "phone" : "none")
+    (hasEmail
+      ? "email"
+      : contactPage
+        ? "contact_form"
+        : facebook
+          ? "facebook"
+          : phone
+            ? "phone"
+            : hasWebsite
+              ? "website"
+              : "research_later")
   ) as WorkflowLead["best_contact_method"];
   const primaryName =
     String(row.primary_contact_name || row.contact_name || "")
       .trim()
       .trim() || null;
+
+  const laneBundle = computeLeadLaneBundle({
+    email,
+    phone,
+    website,
+    facebook_url: facebook,
+    contact_page: contactPage,
+    conversion_score: row.conversion_score,
+    opportunity_score: row.opportunity_score,
+    why_this_lead_is_here: row.why_this_lead_is_here,
+  });
+  const step = laneBundle.simplified_next_step;
+  const recommendedFromLane: WorkflowLead["recommended_next_action"] =
+    step === "contact now"
+      ? "Generate Email"
+      : step === "call now"
+        ? "Send First Touch"
+        : step === "message on facebook"
+          ? "Send First Touch"
+          : step === "research later"
+            ? "Research Later"
+            : step === "skip for now"
+              ? "Skip For Now"
+              : hasEmail
+                ? "Generate Email"
+                : hasContactAvailable
+                  ? "Open Contact Path"
+                  : "Research Later";
 
   return {
     id: String(row.id || ""),
@@ -95,6 +143,18 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     website_status: row.has_website === false ? "no_website" : website ? "live" : "unknown",
     opportunity_score: row.opportunity_score == null ? null : Number(row.opportunity_score),
     lead_bucket: hasEmail ? "Good Prospect" : hasContactAvailable ? "Needs Review" : "Low Priority",
+    crm_lane: laneBundle.lead_bucket as CrmLeadLane,
+    crm_lane_label: CRM_LANE_LABELS[laneBundle.lead_bucket as CrmLeadLane],
+    contact_readiness_crm: laneBundle.contact_readiness as ContactReadiness,
+    simplified_next_step_crm: laneBundle.simplified_next_step,
+    lane_summary_line: laneBundle.summary_line,
+    contact_signals_line: formatContactSignalsLine({
+      email,
+      phone,
+      website,
+      facebook_url: facebook,
+      contact_page: contactPage,
+    }),
     close_probability: null,
     lead_type: email ? "Easy Win" : "Needs Review",
     best_contact_method: resolvedBestContact,
@@ -108,7 +168,7 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     email_pitch: null,
     text_pitch: null,
     door_pitch: null,
-    recommended_next_action: hasEmail ? "Generate Email" : hasContactAvailable ? "Open Contact Path" : "Research Later",
+    recommended_next_action: recommendedFromLane,
     outreach_channel: hasEmail ? "email" : hasContactAvailable ? "contact" : "skip",
     is_door_to_door_candidate: false,
     website: website || null,

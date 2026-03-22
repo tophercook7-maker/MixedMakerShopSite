@@ -7,6 +7,7 @@ import { LeadBucketBadge } from "@/components/admin/lead-bucket-badge";
 import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { verifyLeadBeforeNavigation } from "@/lib/lead-navigation";
+import type { ContactReadiness, CrmLeadLane } from "@/lib/crm/lead-lane";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 import { LeadForm } from "@/components/admin/lead-form";
 import { OutreachBadges } from "@/components/admin/outreach-badges";
@@ -77,7 +78,16 @@ export type WorkflowLead = {
   lead_bucket?: "Easy Win" | "High Value" | "Good Prospect" | "Needs Review" | "Low Priority" | "door_to_door" | null;
   close_probability?: "low" | "medium" | "high" | null;
   lead_type?: "Easy Win" | "Active Business, Weak Website" | "Church Website Opportunity" | "Needs Review" | "Low Priority" | null;
-  best_contact_method?: "email" | "phone" | "contact_page" | "facebook" | "none" | null;
+  best_contact_method?:
+    | "email"
+    | "phone"
+    | "contact_page"
+    | "contact_form"
+    | "website"
+    | "facebook"
+    | "none"
+    | "research_later"
+    | null;
   primary_problem?: string | null;
   why_it_matters?: string | null;
   why_this_lead_is_here?: string | null;
@@ -144,6 +154,13 @@ export type WorkflowLead = {
   email_sent?: boolean;
   facebook_sent?: boolean;
   text_sent?: boolean;
+  /** Deterministic lane (no Google) — see `lib/crm/lead-lane.ts` */
+  crm_lane?: CrmLeadLane | null;
+  crm_lane_label?: string | null;
+  contact_readiness_crm?: ContactReadiness | null;
+  simplified_next_step_crm?: string | null;
+  lane_summary_line?: string | null;
+  contact_signals_line?: string | null;
 };
 
 function leadHref(lead: Pick<WorkflowLead, "id" | "business_name">, query?: string): string {
@@ -341,7 +358,7 @@ export function LeadsWorkflowView({
       lead_bucket: canonicalLeadBucket(String(payload.lead_bucket || "").trim() || null, payload.opportunity_score as number | null),
       close_probability: "medium",
       lead_type: hasEmail ? "Easy Win" : "Needs Review",
-      best_contact_method: hasEmail ? "email" : hasContactAvailable ? "contact_page" : "none",
+      best_contact_method: hasEmail ? "email" : hasContactAvailable ? "contact_form" : "research_later",
       primary_problem: null,
       why_it_matters: null,
       why_this_lead_is_here: null,

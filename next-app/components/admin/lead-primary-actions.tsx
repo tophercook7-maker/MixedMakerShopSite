@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { addBusinessDays, addBusinessDaysIso } from "@/lib/crm/business-days";
 import { patchLeadApi } from "@/lib/crm/patch-lead-client";
+import { LeadEnrichNow } from "@/components/admin/lead-enrich-now";
 
 function toLocalDatetimeValue(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -11,8 +12,9 @@ function toLocalDatetimeValue(d: Date): string {
 
 type Props = {
   leadId: string;
-  businessName: string;
   initialNextFollowUpAt: string | null;
+  /** When false, show Enrich / Research later / Close instead of Contact / Follow up / Close */
+  hasContactPath: boolean;
 };
 
 function AdminToast({ message, onDone }: { message: string; onDone: () => void }) {
@@ -43,7 +45,7 @@ async function logAutomation(leadId: string, event_type: string, payload: Record
   }).catch(() => {});
 }
 
-export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt }: Props) {
+export function LeadPrimaryActions({ leadId, initialNextFollowUpAt, hasContactPath }: Props) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -71,6 +73,57 @@ export function LeadPrimaryActions({ leadId, businessName, initialNextFollowUpAt
     },
     [leadId]
   );
+
+  if (!hasContactPath) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          No email, phone, Facebook, or contact page yet — enrich or park for research.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <LeadEnrichNow leadId={leadId} variant="primary" />
+          <button
+            type="button"
+            className="admin-btn-ghost text-sm border border-[var(--admin-border)]"
+            disabled={busy}
+            onClick={() =>
+              void run(
+                "Saved for later.",
+                {
+                  recommended_next_action: "Research later",
+                  next_follow_up_at: addBusinessDaysIso(new Date(), 14),
+                  automation_paused: true,
+                },
+                "research_later_snooze"
+              )
+            }
+          >
+            Research later
+          </button>
+          <button
+            type="button"
+            className="admin-btn-ghost text-sm border border-[var(--admin-border)]"
+            disabled={busy}
+            onClick={() =>
+              void run(
+                "Closed.",
+                { status: "lost", automation_paused: true, sequence_active: false },
+                "mark_closed"
+              )
+            }
+          >
+            Close
+          </button>
+        </div>
+        {err ? (
+          <p className="text-xs" style={{ color: "#fca5a5" }}>
+            {err}
+          </p>
+        ) : null}
+        {toast ? <AdminToast message={toast} onDone={() => setToast(null)} /> : null}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <header className="admin-header">
             <div className="flex items-center gap-3 min-w-0">
               <Image
-                src="/massive-brain-m3.png"
+                src="/m3-brand.png"
                 alt=""
                 width={40}
                 height={40}

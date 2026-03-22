@@ -25,9 +25,22 @@ Helpers: `getScoutBrainEnrichBaseUrl()`, `scoutBrainEnrichEndpointUrl()`, `logSc
   "state": "string",
   "source_url": "string",
   "facebook_url": "string",
-  "source_type": "extension | facebook | google | manual | unknown | mixed"
+  "source_type": "extension | facebook | google | manual | unknown | mixed",
+  "email": "optional — CRM row",
+  "phone": "optional",
+  "website": "optional",
+  "contact_page": "optional",
+  "google_business_url": "optional — Maps/Business URL when already known (CRM or prior Places); Brain does not invent this",
+  "conversion_score": "optional int",
+  "opportunity_score": "optional int",
+  "why_this_lead_is_here": "optional",
+  "category": "optional",
+  "source": "optional",
+  "source_label": "optional"
 }
 ```
+
+These optional fields let Scout Brain **classify** the lead even when Places/crawl return nothing (e.g. paused Google billing). See `docs/crm/LEAD_LANES.md`.
 
 `source_type` comes from `mapCrmLeadRowToBrainType()` in `lib/crm/run-crm-lead-enrichment.ts` using `source`, `lead_source`, `source_label`, `facebook_url`:
 
@@ -50,6 +63,7 @@ Helpers: `getScoutBrainEnrichBaseUrl()`, `scoutBrainEnrichEndpointUrl()`, `logSc
     "source_type": "...",
     "source_url": "...",
     "facebook_url": "...",
+    "google_business_url": "...",
     "website": "...",
     "normalized_website": "...",
     "phone": "...",
@@ -62,18 +76,32 @@ Helpers: `getScoutBrainEnrichBaseUrl()`, `scoutBrainEnrichEndpointUrl()`, `logSc
     "tags": ["..."],
     "score": 0,
     "why_this_lead_is_here": "...",
-    "best_contact_method": "...",
+    "best_contact_method": "email | facebook | phone | contact_form | website | research_later",
+    "best_contact_value": "email address, URL, or phone string; null when research_later",
+    "advertising_page_url": "primary public-facing link (Facebook / Google listing / site / source)",
+    "advertising_page_label": "e.g. Facebook page, Google listing, Website",
+    "suggested_template_key": "Brain template id used for copy",
+    "suggested_response": "short ready-to-send text",
     "best_next_move": "...",
     "pitch_angle": "...",
     "source_confidence": 0,
     "match_confidence": 0,
     "raw_signals": {},
-    "place_id": "..."
+    "place_id": "...",
+    "lead_bucket": "ready_to_contact | has_email | …",
+    "contact_readiness": "ready | partial | missing",
+    "simplified_next_step": "contact now | message on facebook | call now | research later | skip for now",
+    "lane_summary_line": "human-readable",
+    "honest_headline": "short owner-facing summary"
   }
 }
 ```
 
 `normalized_facebook_url` is computed in next-app when applying `facebook_url`.
+
+## `POST /api/classify-lead` (Brain only)
+
+Classifies an existing record **without** running Places or site crawl. Same auth as enrich. Request body: optional CRM-shaped fields (`ClassifyLeadBody` in `scout/enriched_lead_schema.py`). Response: `{ "ok": true, "classification": { … } }` with `lead_bucket`, `contact_readiness`, `simplified_next_step`, flags, `honest_headline`, `summary_line`.
 
 ## Fields patched on `public.leads`
 
@@ -86,8 +114,17 @@ Mapping: `lib/crm/map-brain-enrichment-to-lead-patch.ts` → `pickLeadPatchField
 - `why_this_lead_is_here` (only if empty or generic capture text)
 - `conversion_score`, `opportunity_score` from Brain `score` (**raise only**)
 - `lead_tags` (**union**)
-- `recommended_next_action` from `best_next_move` + `pitch_angle` when that field is empty (Brain best_contact / pitch are not stored as separate columns in this pass)
+- `recommended_next_action` from `simplified_next_step` when that field is empty, else `best_next_move` + `pitch_angle` (Brain best_contact / pitch are not stored as separate columns in this pass)
 - `place_id` (if empty)
+- `google_business_url`, `advertising_page_url`, `advertising_page_label`, `best_contact_method`, `best_contact_value`, `suggested_template_key`, `suggested_response` (outreach handoff; see migration `20260320150000_leads_outreach_targets.sql`)
+
+## Outreach templates (Brain)
+
+- `GET /api/outreach-templates` — list templates (same `X-Scout-Enrich-Key` as enrich when `SCOUT_ENRICH_API_KEY` is set).
+- `POST /api/outreach-templates` — create (`template_key`, `title`, `channel`, `category`, `body`, `active`).
+- `PATCH /api/outreach-templates/{id}` — partial update.
+
+next-app proxies these at `/api/scout/outreach-templates` (server uses env key toward Brain).
 
 ## Orchestration
 

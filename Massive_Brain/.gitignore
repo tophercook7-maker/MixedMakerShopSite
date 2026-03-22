@@ -1,0 +1,4 @@
+# Env files (API keys, secrets)
+.env
+*.env
+scout-brain/scout/.env
