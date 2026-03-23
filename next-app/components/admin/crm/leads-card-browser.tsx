@@ -35,6 +35,7 @@ import {
 } from "@/lib/crm/facebook-no-website-reachable";
 import { leadPrimaryActionHintLine, resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
 import { WorkTheseNowStrip } from "@/components/admin/crm/work-these-now-strip";
+import { buildMarkLeadRepliedPatch } from "@/lib/crm/mark-lead-replied";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -314,6 +315,9 @@ export function LeadsCardBrowser({
         return hay.includes(q);
       })
       .sort((a, b) => {
+        const repA = a.status === "replied" ? 1 : 0;
+        const repB = b.status === "replied" ? 1 : 0;
+        if (repA !== repB) return repB - repA;
         if (sortKeyEffective === "score") return Number(b.conversion_score || 0) - Number(a.conversion_score || 0);
         if (sortKeyEffective === "business") return a.business_name.localeCompare(b.business_name);
         if (sortKeyEffective === "follow_up") {
@@ -342,6 +346,13 @@ export function LeadsCardBrowser({
         if (typeof patch.status === "string") next.status = patch.status as WorkflowLead["status"];
         if ("next_follow_up_at" in patch) next.next_follow_up_at = String(patch.next_follow_up_at || "") || null;
         if (patch.automation_paused === true) (next as { automation_paused?: boolean }).automation_paused = true;
+        if (typeof patch.last_reply_preview === "string")
+          next.last_reply_preview = String(patch.last_reply_preview || "").trim() || null;
+        if (typeof patch.last_reply_at === "string")
+          (next as { last_reply_at?: string | null }).last_reply_at = String(patch.last_reply_at || "").trim() || null;
+        if (typeof patch.unread_reply_count === "number" && Number.isFinite(patch.unread_reply_count)) {
+          next.unread_reply_count = Math.max(0, patch.unread_reply_count);
+        }
         return next;
       })
     );
@@ -658,7 +669,7 @@ export function LeadsCardBrowser({
               <li
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""}`}
+                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""}`}
                 style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.12)" }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -702,6 +713,12 @@ export function LeadsCardBrowser({
                 <p className="text-xs line-clamp-2" style={{ color: "var(--admin-fg)" }}>
                   {opportunityLine(lead)}
                 </p>
+                {lead.status === "replied" && lead.last_reply_preview ? (
+                  <p className="text-[11px] font-medium text-emerald-100/90 line-clamp-2">
+                    Reply: {String(lead.last_reply_preview).replace(/\s+/g, " ").trim().slice(0, 140)}
+                    {String(lead.last_reply_preview).length > 140 ? "…" : ""}
+                  </p>
+                ) : null}
                 {unreadN > 0 ? (
                   <p className="text-[11px] font-medium text-rose-200">
                     {unreadN} unread {unreadN === 1 ? "reply" : "replies"}
@@ -793,32 +810,45 @@ export function LeadsCardBrowser({
                           Contacted
                         </button>
                       ) : null}
-                      <button
-                        type="button"
-                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
-                        disabled={busy}
-                        onClick={async () => {
-                          setBusyId(lead.id);
-                          const r = await patchLeadApi(lead.id, {
-                            status: "replied",
-                            is_hot_lead: true,
-                            automation_paused: true,
-                            sequence_active: false,
-                            replied_at: new Date().toISOString(),
-                          });
-                          setBusyId(null);
-                          if (!r.ok) {
-                            setToast(r.error);
-                            return;
-                          }
-                          void createReplyReminder(lead.id, lead.business_name || "Lead");
-                          void logAutomation(lead.id, "mark_replied", {});
-                          setToast("Marked as replied.");
-                          router.refresh();
-                        }}
-                      >
-                        Replied
-                      </button>
+                      {lead.status !== "replied" ? (
+                        <button
+                          type="button"
+                          className="admin-btn-ghost text-xs px-2 py-1.5 border border-emerald-500/35 text-emerald-100"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusyId(lead.id);
+                            const r = await patchLeadApi(
+                              lead.id,
+                              buildMarkLeadRepliedPatch({
+                                currentUnread: lead.unread_reply_count,
+                                alreadyReplied: false,
+                              })
+                            );
+                            setBusyId(null);
+                            if (!r.ok) {
+                              setToast(r.error);
+                              return;
+                            }
+                            void createReplyReminder(lead.id, lead.business_name || "Lead");
+                            void logAutomation(lead.id, "mark_replied", {});
+                            setToast("Marked as replied.");
+                            setLeads((prev) =>
+                              prev.map((l) =>
+                                l.id === lead.id
+                                  ? ({
+                                      ...l,
+                                      status: "replied",
+                                      unread_reply_count: Math.max(0, Number(lead.unread_reply_count || 0)) + 1,
+                                    } as WorkflowLead)
+                                  : l
+                              )
+                            );
+                            router.refresh();
+                          }}
+                        >
+                          Mark replied
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
@@ -856,7 +886,7 @@ export function LeadsCardBrowser({
               <div
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""}`}
+                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <button
@@ -939,8 +969,8 @@ export function LeadsCardBrowser({
                   </div>
                 </dl>
                 {lead.last_reply_preview ? (
-                  <p className="text-xs mt-3 line-clamp-2 italic border-t border-white/10 pt-2" style={{ color: "#fecaca" }}>
-                    “{lead.last_reply_preview}”
+                  <p className="text-xs mt-3 line-clamp-2 border-t border-white/10 pt-2 text-emerald-100/90">
+                    Reply: {String(lead.last_reply_preview).replace(/\s+/g, " ").trim()}
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2 items-center">
@@ -1009,32 +1039,45 @@ export function LeadsCardBrowser({
                           Contacted
                         </button>
                       ) : null}
-                      <button
-                        type="button"
-                        className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
-                        disabled={busy}
-                        onClick={async () => {
-                          setBusyId(lead.id);
-                          const r = await patchLeadApi(lead.id, {
-                            status: "replied",
-                            is_hot_lead: true,
-                            automation_paused: true,
-                            sequence_active: false,
-                            replied_at: new Date().toISOString(),
-                          });
-                          setBusyId(null);
-                          if (!r.ok) {
-                            setToast(r.error);
-                            return;
-                          }
-                          void createReplyReminder(lead.id, lead.business_name || "Lead");
-                          void logAutomation(lead.id, "mark_replied", {});
-                          setToast("Marked as replied.");
-                          router.refresh();
-                        }}
-                      >
-                        Replied
-                      </button>
+                      {lead.status !== "replied" ? (
+                        <button
+                          type="button"
+                          className="admin-btn-ghost text-xs border border-emerald-500/35 text-emerald-100"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusyId(lead.id);
+                            const r = await patchLeadApi(
+                              lead.id,
+                              buildMarkLeadRepliedPatch({
+                                currentUnread: lead.unread_reply_count,
+                                alreadyReplied: false,
+                              })
+                            );
+                            setBusyId(null);
+                            if (!r.ok) {
+                              setToast(r.error);
+                              return;
+                            }
+                            void createReplyReminder(lead.id, lead.business_name || "Lead");
+                            void logAutomation(lead.id, "mark_replied", {});
+                            setToast("Marked as replied.");
+                            setLeads((prev) =>
+                              prev.map((l) =>
+                                l.id === lead.id
+                                  ? ({
+                                      ...l,
+                                      status: "replied",
+                                      unread_reply_count: Math.max(0, Number(lead.unread_reply_count || 0)) + 1,
+                                    } as WorkflowLead)
+                                  : l
+                              )
+                            );
+                            router.refresh();
+                          }}
+                        >
+                          Mark replied
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         className="admin-btn-ghost text-xs border border-[var(--admin-border)]"

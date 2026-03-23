@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { addBusinessDays, addBusinessDaysIso } from "@/lib/crm/business-days";
 import { patchLeadApi } from "@/lib/crm/patch-lead-client";
 import { LeadEnrichNow } from "@/components/admin/lead-enrich-now";
+import { buildMarkLeadRepliedPatch, buildReplySnippetOnlyPatch } from "@/lib/crm/mark-lead-replied";
 
 function toLocalDatetimeValue(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -15,6 +17,9 @@ type Props = {
   initialNextFollowUpAt: string | null;
   /** When false, show Enrich / Research later / Close instead of Contact / Follow up / Close */
   hasContactPath: boolean;
+  /** Pipeline status — used for Mark replied / snippet-only updates */
+  leadStatus?: string | null;
+  unreadReplyCount?: number | null;
 };
 
 function AdminToast({ message, onDone }: { message: string; onDone: () => void }) {
@@ -45,12 +50,27 @@ async function logAutomation(leadId: string, event_type: string, payload: Record
   }).catch(() => {});
 }
 
-export function LeadPrimaryActions({ leadId, initialNextFollowUpAt, hasContactPath }: Props) {
+export function LeadPrimaryActions({
+  leadId,
+  initialNextFollowUpAt,
+  hasContactPath,
+  leadStatus = null,
+  unreadReplyCount = null,
+}: Props) {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduleValue, setScheduleValue] = useState("");
+  const [showReplyField, setShowReplyField] = useState(false);
+  const [replySnippet, setReplySnippet] = useState("");
+
+  const normalizedStatus = String(leadStatus || "")
+    .trim()
+    .toLowerCase();
+  const alreadyReplied = normalizedStatus === "replied";
+  const terminal = normalizedStatus === "won" || normalizedStatus === "lost";
 
   useEffect(() => {
     const d = addBusinessDays(new Date(), 3);
@@ -73,6 +93,40 @@ export function LeadPrimaryActions({ leadId, initialNextFollowUpAt, hasContactPa
     },
     [leadId]
   );
+
+  const markReplied = useCallback(async () => {
+    setBusy(true);
+    setErr(null);
+    const snippet = replySnippet.trim();
+    let patch: Record<string, unknown> | null;
+
+    if (alreadyReplied) {
+      patch = buildReplySnippetOnlyPatch(snippet);
+      if (!patch) {
+        setBusy(false);
+        setErr("Add a short reply snippet to update, or leave blank.");
+        return;
+      }
+    } else {
+      patch = buildMarkLeadRepliedPatch({
+        replyPreview: snippet || null,
+        alreadyReplied: false,
+        currentUnread: unreadReplyCount,
+      });
+    }
+
+    const r = await patchLeadApi(leadId, patch);
+    setBusy(false);
+    if (!r.ok) {
+      setErr(r.error);
+      return;
+    }
+    setToast(alreadyReplied ? "Reply note saved" : "Marked as replied");
+    setReplySnippet("");
+    setShowReplyField(false);
+    void logAutomation(leadId, alreadyReplied ? "reply_snippet_updated" : "mark_replied", {});
+    router.refresh();
+  }, [leadId, alreadyReplied, replySnippet, unreadReplyCount, router]);
 
   if (!hasContactPath) {
     return (
@@ -164,6 +218,16 @@ export function LeadPrimaryActions({ leadId, initialNextFollowUpAt, hasContactPa
         >
           Follow up
         </button>
+        {!terminal ? (
+          <button
+            type="button"
+            className="admin-btn-ghost text-sm border border-emerald-500/40 text-emerald-100"
+            disabled={busy}
+            onClick={() => void markReplied()}
+          >
+            {alreadyReplied ? "Update reply note" : "Mark replied"}
+          </button>
+        ) : null}
         <button
           type="button"
           className="admin-btn-ghost text-sm border border-[var(--admin-border)]"
@@ -179,6 +243,28 @@ export function LeadPrimaryActions({ leadId, initialNextFollowUpAt, hasContactPa
           Close
         </button>
       </div>
+
+      {!terminal ? (
+        <div className="space-y-2">
+          <button
+            type="button"
+            className="text-[11px] underline underline-offset-2 opacity-80 hover:opacity-100"
+            style={{ color: "var(--admin-muted)" }}
+            onClick={() => setShowReplyField((s) => !s)}
+          >
+            {showReplyField ? "Hide" : "Paste their reply (optional)"}
+          </button>
+          {showReplyField ? (
+            <textarea
+              className="admin-input w-full min-h-[72px] text-xs"
+              placeholder="Paste what they said — saved as a short preview on the lead."
+              value={replySnippet}
+              onChange={(e) => setReplySnippet(e.target.value)}
+              maxLength={600}
+            />
+          ) : null}
+        </div>
+      ) : null}
 
       {showSchedule ? (
         <div

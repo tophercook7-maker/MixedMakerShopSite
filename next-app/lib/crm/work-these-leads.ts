@@ -50,6 +50,32 @@ function terminalPipelineStage(lead: WorkflowLead): boolean {
   return s === "won" || s === "lost";
 }
 
+const DEFAULT_REPLIED_STRIP_MAX = 5;
+
+/**
+ * Leads in `replied` status with a contact path — show above "Work these now" for fast follow-up.
+ */
+export function getRepliedStripLeads(leads: WorkflowLead[], max: number = DEFAULT_REPLIED_STRIP_MAX): WorkflowLead[] {
+  return [...leads]
+    .filter((lead) => {
+      if (terminalPipelineStage(lead)) return false;
+      if (normalizeWorkflowLeadStatus(lead.status) !== "replied") return false;
+      return leadHasContactPath({
+        email: lead.email,
+        phone: lead.phone_from_site,
+        contact_page: lead.contact_page,
+        facebook_url: lead.facebook_url,
+      });
+    })
+    .sort((a, b) => {
+      const ta = new Date(a.last_reply_at || a.created_at || 0).getTime();
+      const tb = new Date(b.last_reply_at || b.created_at || 0).getTime();
+      if (tb !== ta) return tb - ta;
+      return leadScore(b) - leadScore(a);
+    })
+    .slice(0, max);
+}
+
 /** Prefer weak / missing site, direct email/phone, and clear outreach signals. */
 function workNowQualityRank(lead: WorkflowLead): number {
   const input = workflowLeadToFolderInput(lead);
@@ -72,6 +98,7 @@ function workNowQualityRank(lead: WorkflowLead): number {
 export function getTopWorkLeads(leads: WorkflowLead[], max: number = DEFAULT_MAX): WorkflowLead[] {
   const ready = leads.filter((lead) => {
     if (terminalPipelineStage(lead)) return false;
+    if (normalizeWorkflowLeadStatus(lead.status) === "replied") return false;
     if (!isReadyToContactLead(lead)) return false;
     if (isGoodWebsiteSansClearOpportunity(workflowLeadToFolderInput(lead))) return false;
     if (!leadHasContactPath({

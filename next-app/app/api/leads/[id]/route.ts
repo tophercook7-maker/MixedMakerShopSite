@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
 import { canonicalizeLeadStatus, leadHasStandaloneWebsite, pickLeadPatchFields } from "@/lib/crm-lead-schema";
+import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 import { recordLeadActivity } from "@/lib/lead-activity";
 import { normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 
@@ -157,9 +158,33 @@ export async function PATCH(
       rawPayload.normalized_facebook_url = normalizeFacebookUrl(f) || null;
     }
   }
-  const payload = pickLeadPatchFields(rawPayload);
+
   const { data: beforeRow } = await supabase.from("leads").select("status").eq("id", id).eq("owner_id", ownerId).maybeSingle();
   const prevStatus = String((beforeRow as { status?: string } | null)?.status || "");
+  const prevNorm = normalizeWorkflowLeadStatus(prevStatus);
+
+  if (Object.prototype.hasOwnProperty.call(rawPayload, "status")) {
+    const nextSt = String(rawPayload.status || "");
+    if (nextSt === "replied" && prevNorm !== "replied") {
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "automation_paused")) {
+        rawPayload.automation_paused = true;
+      }
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "sequence_active")) {
+        rawPayload.sequence_active = false;
+      }
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "next_follow_up_at")) {
+        rawPayload.next_follow_up_at = null;
+      }
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "follow_up_status")) {
+        rawPayload.follow_up_status = "completed";
+      }
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "last_reply_at")) {
+        rawPayload.last_reply_at = new Date().toISOString();
+      }
+    }
+  }
+
+  const payload = pickLeadPatchFields(rawPayload);
 
   const { data, error } = await supabase
     .from("leads")

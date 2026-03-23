@@ -8,6 +8,7 @@ export type WorkTodayLeadRow = Pick<
   | "status"
   | "created_at"
   | "next_follow_up_at"
+  | "last_reply_at"
   | "conversion_score"
   | "opportunity_score"
   | "unread_reply_count"
@@ -56,7 +57,7 @@ function terminalStatus(status: ReturnType<typeof normalizeWorkflowLeadStatus>):
   return status === "won" || status === "lost";
 }
 
-/** Eligible for Work Today: not terminal, and (follow-up due | new | unread). */
+/** Eligible for Work Today: not terminal, and (replied | follow-up due | new | unread). */
 export function isWorkTodayEligible(row: WorkTodayLeadRow, now: Date = new Date()): boolean {
   const status = normalizeWorkflowLeadStatus(row.status);
   if (terminalStatus(status)) return false;
@@ -64,12 +65,14 @@ export function isWorkTodayEligible(row: WorkTodayLeadRow, now: Date = new Date(
   const unread = unreadCount(row) > 0;
   const fu = followUpIsDue(row, nowMs);
   const isNew = status === "new";
-  return fu || isNew || unread;
+  const isReplied = status === "replied";
+  return isReplied || fu || isNew || unread;
 }
 
 export function workTodayPriorityScore(row: WorkTodayLeadRow, now: Date = new Date()): number {
   const nowMs = now.getTime();
   let priority = 0;
+  if (normalizeWorkflowLeadStatus(row.status) === "replied") priority += 130;
   if (unreadCount(row) > 0) priority += 100;
   if (followUpIsDue(row, nowMs)) priority += 80;
   if (normalizeWorkflowLeadStatus(row.status) === "new") priority += 60;
@@ -80,6 +83,7 @@ export function workTodayPriorityScore(row: WorkTodayLeadRow, now: Date = new Da
 
 export function workTodayReasonLine(row: WorkTodayLeadRow, now: Date = new Date()): string {
   const nowMs = now.getTime();
+  if (normalizeWorkflowLeadStatus(row.status) === "replied") return "Replied — follow up";
   if (unreadCount(row) > 0) return "Replied — respond now";
   if (followUpIsDue(row, nowMs)) return "Follow-up due";
   if (normalizeWorkflowLeadStatus(row.status) === "new") {
@@ -108,6 +112,13 @@ export function computeWorkTodayLeads(
     if (pd !== 0) return pd;
     const cs = conversionScore(b) - conversionScore(a);
     if (cs !== 0) return cs;
+    const repA = normalizeWorkflowLeadStatus(a.status) === "replied";
+    const repB = normalizeWorkflowLeadStatus(b.status) === "replied";
+    if (repA && repB) {
+      const lrA = a.last_reply_at ? new Date(a.last_reply_at).getTime() : 0;
+      const lrB = b.last_reply_at ? new Date(b.last_reply_at).getTime() : 0;
+      if (lrB !== lrA) return lrB - lrA;
+    }
     const at = a.created_at ? new Date(a.created_at).getTime() : 0;
     const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
     return bt - at;

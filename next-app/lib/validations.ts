@@ -117,6 +117,12 @@ export const leadSchema = z.object({
   outreach_sent: z.boolean().optional(),
   preview_url: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
   reply_note: z.string().max(2000).optional().transform((v) => (v === "" ? undefined : v)),
+  is_hot_lead: z.boolean().optional(),
+  automation_paused: z.boolean().optional(),
+  last_reply_at: optionalTimestamp,
+  last_reply_preview: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  unread_reply_count: z.number().int().min(0).optional().nullable(),
+  recommended_next_action: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
 });
 
 export const clientSchema = z.object({

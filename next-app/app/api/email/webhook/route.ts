@@ -429,6 +429,8 @@ export async function POST(request: Request) {
             follow_up_2: null,
             follow_up_3: null,
             sequence_active: false,
+            automation_paused: true,
+            follow_up_status: "completed",
             unread_reply_count: nextUnread,
           };
           const updateFull = await adminSb
@@ -444,6 +446,8 @@ export async function POST(request: Request) {
                 last_contacted_at: receivedAt || nowIso,
                 next_follow_up_at: null,
                 unread_reply_count: nextUnread,
+                automation_paused: true,
+                sequence_active: false,
               })
               .eq("id", matchedLeadId)
               .eq("owner_id", matchedOwnerId);

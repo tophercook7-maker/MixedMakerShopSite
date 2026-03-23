@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { addBusinessDaysIso } from "@/lib/crm/business-days";
 import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
+import { buildMarkLeadRepliedPatch } from "@/lib/crm/mark-lead-replied";
 import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
@@ -38,6 +39,7 @@ type LeadWorkspaceActionsProps = {
   initialDealStatus: string | null;
   initialDealStage?: "new" | "interested" | "pricing" | "closing" | "won";
   initialLastReplyPreview?: string | null;
+  initialUnreadReplyCount?: number | null;
   initialEmail: string | null;
   initialPhone: string | null;
   website: string | null;
@@ -322,6 +324,7 @@ export function LeadWorkspaceActions({
   initialLastOutreachSentAt = null,
   initialSuggestedOutreachSubject = null,
   initialSuggestedOutreachBody = null,
+  initialUnreadReplyCount = null,
 }: LeadWorkspaceActionsProps) {
   const hasWebsitePresence = Boolean(String(website || "").trim());
   const prefilledSmsHrefValue = useMemo(() => {
@@ -1204,7 +1207,17 @@ export function LeadWorkspaceActions({
   }
 
   async function postSendMarkReplied() {
-    await updateLead({ status: "replied", replied_at: new Date().toISOString() }, "Lead marked as replied.");
+    const already =
+      String(initialStatus || "")
+        .trim()
+        .toLowerCase() === "replied";
+    await updateLead(
+      buildMarkLeadRepliedPatch({
+        currentUnread: initialUnreadReplyCount,
+        alreadyReplied: already,
+      }),
+      "Lead marked as replied."
+    );
   }
 
   async function postSendArchive() {
@@ -1215,7 +1228,17 @@ export function LeadWorkspaceActions({
   }
 
   async function markRepliedWithReminder() {
-    const ok = await updateLead({ status: "replied", is_hot_lead: true }, "Lead marked replied.");
+    const already =
+      String(initialStatus || "")
+        .trim()
+        .toLowerCase() === "replied";
+    const ok = await updateLead(
+      buildMarkLeadRepliedPatch({
+        currentUnread: initialUnreadReplyCount,
+        alreadyReplied: already,
+      }),
+      "Lead marked replied."
+    );
     if (!ok) return;
     try {
       await createLeadLinkedEvent("reminder", `Reply to lead: ${initialBusinessName || "Lead"}`, 0);

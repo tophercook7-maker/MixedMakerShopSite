@@ -33,6 +33,8 @@ type LeadRow = {
   linked_opportunity_id?: string | null;
   opportunity_score?: number | null;
   status?: string | null;
+  unread_reply_count?: number | null;
+  last_reply_at?: string | null;
   deal_status?: string | null;
   deal_stage?: "new" | "interested" | "pricing" | "closing" | "won" | null;
   last_reply_preview?: string | null;
@@ -90,6 +92,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "linked_opportunity_id",
     "opportunity_score",
     "status",
+    "unread_reply_count",
+    "last_reply_at",
     "deal_status",
     "deal_stage",
     "last_reply_preview",
@@ -144,6 +148,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "linked_opportunity_id",
     "opportunity_score",
     "status",
+    "unread_reply_count",
+    "last_reply_at",
     "deal_status",
     "deal_stage",
     "last_reply_preview",
@@ -174,6 +180,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "linked_opportunity_id",
     "opportunity_score",
     "status",
+    "unread_reply_count",
+    "last_reply_at",
     "deal_status",
     "deal_stage",
     "last_reply_preview",
@@ -200,6 +208,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "linked_opportunity_id",
     "opportunity_score",
     "status",
+    "unread_reply_count",
+    "last_reply_at",
     "deal_status",
     "deal_stage",
     "last_reply_preview",
@@ -1480,6 +1490,12 @@ Want me to show you a quick idea?`;
                 leadId={resolvedLeadId}
                 hasContactPath={hasContactPath}
                 initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+                leadStatus={lead?.status || null}
+                unreadReplyCount={
+                  lead?.unread_reply_count == null || Number.isNaN(Number(lead.unread_reply_count))
+                    ? null
+                    : Math.max(0, Number(lead.unread_reply_count))
+                }
               />
             ) : null}
           </section>
@@ -1867,6 +1883,11 @@ Want me to show you a quick idea?`;
                   initialDealStatus={lead?.deal_status || null}
                   initialDealStage={lead?.deal_stage || "new"}
                   initialLastReplyPreview={lead?.last_reply_preview || null}
+                  initialUnreadReplyCount={
+                    lead?.unread_reply_count == null || Number.isNaN(Number(lead.unread_reply_count))
+                      ? null
+                      : Math.max(0, Number(lead.unread_reply_count))
+                  }
                   initialEmail={displayEmail || null}
                   initialPhone={displayPhone || null}
                   website={displayWebsite || null}
