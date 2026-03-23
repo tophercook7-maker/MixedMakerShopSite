@@ -21,6 +21,7 @@ export type ScoutBrainEnrichInput = {
   conversion_score?: number | null;
   opportunity_score?: number | null;
   why_this_lead_is_here?: string | null;
+  notes?: string | null;
   category?: string | null;
   source?: string | null;
   source_label?: string | null;
@@ -44,6 +45,8 @@ export type ScoutBrainEnrichedLead = {
   category?: string | null;
   tags?: string[] | null;
   score?: number | null;
+  contact_confidence?: number | null;
+  contact_confidence_label?: string | null;
   why_this_lead_is_here?: string | null;
   best_contact_method?: string | null;
   best_contact_value?: string | null;
@@ -151,6 +154,7 @@ export async function fetchScoutBrainEnrichLead(
             ? Math.round(Number(input.opportunity_score))
             : null,
         why_this_lead_is_here: input.why_this_lead_is_here ?? "",
+        notes: input.notes ?? "",
         category: input.category ?? "",
         source: input.source ?? "",
         source_label: input.source_label ?? "",

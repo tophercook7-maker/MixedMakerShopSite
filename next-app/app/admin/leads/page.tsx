@@ -6,6 +6,10 @@ import { LeadsWorkflowView } from "@/components/admin/leads-workflow-view";
 import { LeadsCardBrowser } from "@/components/admin/crm/leads-card-browser";
 import { CapturedLeadsSection } from "@/components/admin/crm/captured-leads-section";
 import { computeCapturedLeads } from "@/lib/crm/captured-leads";
+import {
+  FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM,
+  matchesFacebookNoWebsiteReachableFromRow,
+} from "@/lib/crm/facebook-no-website-reachable";
 import { isMissingColumnError, toWorkflowLead, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 
 export const dynamic = "force-dynamic";
@@ -22,12 +26,19 @@ export default async function AdminLeadsPage({
     density?: string;
     highlight?: string;
     lane?: string;
+    sort?: string;
+    /** Preset: `facebook_no_website_reachable` — see `lib/crm/facebook-no-website-reachable.ts` */
+    target?: string;
   }>;
 }) {
-  const { error, detail, add, view, density, highlight, lane } = await searchParams;
+  const { error, detail, add, view, density, highlight, lane, sort: sortParam, target } = await searchParams;
   const highlightLeadId = String(highlight || "").trim() || null;
   const classicWorkflow = String(view || "").toLowerCase() === "workflow";
   const cardDensity = String(density || "").toLowerCase() === "detailed" ? "detailed" : "compact";
+  const sortRaw = String(sortParam || "").trim().toLowerCase();
+  const initialListSort =
+    sortRaw === "score" || sortRaw === "follow_up" || sortRaw === "business" ? sortRaw : ("created" as const);
+  const targetFacebookMode = String(target || "").trim().toLowerCase() === FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM;
   const supabase = await createClient();
   const {
     data: { user },
@@ -119,7 +130,13 @@ export default async function AdminLeadsPage({
     });
     rowsForUi = rowsForUi.slice(0, totalLeadsCount);
   }
-  const capturedLeads = computeCapturedLeads(rowsForUi, 6);
+  const allCapturedLeads = computeCapturedLeads(rowsForUi, 6);
+  const rowsForCaptured = targetFacebookMode ? rowsForUi.filter(matchesFacebookNoWebsiteReachableFromRow) : rowsForUi;
+  const capturedLeads = computeCapturedLeads(rowsForCaptured, 6);
+  const capturedFilteredEmptyMessage =
+    targetFacebookMode && capturedLeads.length === 0 && allCapturedLeads.length > 0
+      ? "None of your captured leads match Facebook No-Website Reachable right now."
+      : undefined;
   let workflowLeads = rowsForUi.map(toWorkflowLead);
   const renderedLeadsCount = workflowLeads.length;
   const emptyStateReason =
@@ -137,6 +154,11 @@ export default async function AdminLeadsPage({
           <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
             Your saved businesses — use search and filters below, then open a lead to work it.
           </p>
+          {targetFacebookMode ? (
+            <p className="text-xs mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
+              Showing only Facebook leads with no website and a contact path.
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           {classicWorkflow ? (
@@ -165,7 +187,7 @@ export default async function AdminLeadsPage({
         </section>
       ) : null}
 
-      <CapturedLeadsSection items={capturedLeads} />
+      <CapturedLeadsSection items={capturedLeads} filteredEmptyMessage={capturedFilteredEmptyMessage} />
 
       {classicWorkflow ? (
         <LeadsWorkflowView
@@ -182,6 +204,7 @@ export default async function AdminLeadsPage({
             initialDensity={cardDensity}
             initialHighlightLeadId={highlightLeadId}
             initialLane={String(lane || "").trim() || null}
+            initialSort={initialListSort}
           />
         </Suspense>
       )}

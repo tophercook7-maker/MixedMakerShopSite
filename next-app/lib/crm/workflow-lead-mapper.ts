@@ -115,6 +115,9 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     status: row.status,
     best_contact_method: resolvedBestContact,
     is_hot_lead: row.is_hot_lead,
+    has_website: row.has_website,
+    lead_tags: row.lead_tags,
+    opportunity_reason: row.opportunity_reason,
   });
   const step = laneBundle.simplified_next_step;
   const recommendedFromLane: WorkflowLead["recommended_next_action"] =
@@ -244,5 +247,8 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     email_sent: Boolean(row.email_sent),
     facebook_sent: Boolean(row.facebook_sent),
     text_sent: Boolean(row.text_sent),
+    has_website: row.has_website ?? null,
+    lead_tags: Array.isArray(row.lead_tags) ? row.lead_tags : null,
+    opportunity_reason: String(row.opportunity_reason || "").trim() || null,
   };
 }

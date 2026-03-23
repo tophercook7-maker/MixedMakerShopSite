@@ -154,6 +154,9 @@ export type WorkflowLead = {
   email_sent?: boolean;
   facebook_sent?: boolean;
   text_sent?: boolean;
+  has_website?: boolean | null;
+  lead_tags?: string[] | null;
+  opportunity_reason?: string | null;
   /** Deterministic lane (no Google) — see `lib/crm/lead-lane.ts` */
   crm_lane?: CrmLeadLane | null;
   crm_lane_label?: string | null;

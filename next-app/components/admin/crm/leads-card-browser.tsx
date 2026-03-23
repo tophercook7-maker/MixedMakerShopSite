@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { LeadsListReturnLink } from "@/components/admin/crm/leads-list-return-link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { buildLeadPath } from "@/lib/lead-route";
@@ -27,9 +28,21 @@ import {
   leadHasContactPath,
 } from "@/lib/crm/lead-lane";
 import { FOLDER_EMPTY_MESSAGES, parseFolderFromUrlParam, workflowLeadToFolderInput } from "@/lib/crm/lead-buckets";
+import {
+  FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM,
+  facebookNoWebsiteReachableMatchLine,
+  matchesFacebookNoWebsiteReachable,
+} from "@/lib/crm/facebook-no-website-reachable";
+import { leadPrimaryActionHintLine, resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
 import { WorkTheseNowStrip } from "@/components/admin/crm/work-these-now-strip";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
+
+function parseSortKeyFromParam(raw: string | null | undefined, fallback: SortKey): SortKey {
+  const v = String(raw || "").trim().toLowerCase();
+  if (v === "score" || v === "follow_up" || v === "business" || v === "created") return v;
+  return fallback;
+}
 
 const STAGE_TABS: { id: "all" | CrmPipelineStage; label: string }[] = [
   { id: "all", label: "All" },
@@ -144,6 +157,7 @@ export function LeadsCardBrowser({
   initialDensity = "compact",
   initialHighlightLeadId = null,
   initialLane = null,
+  initialSort = "created",
 }: {
   initialLeads: WorkflowLead[];
   emptyStateReason: string;
@@ -153,6 +167,8 @@ export function LeadsCardBrowser({
   initialHighlightLeadId?: string | null;
   /** From `?lane=` — primary CRM bucket filter */
   initialLane?: string | null;
+  /** From `?sort=` — list sort */
+  initialSort?: SortKey;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -160,7 +176,7 @@ export function LeadsCardBrowser({
   const [leads, setLeads] = useState<WorkflowLead[]>(initialLeads);
   const [search, setSearch] = useState("");
   const [stageTab, setStageTab] = useState<(typeof STAGE_TABS)[number]["id"]>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("created");
+  const [sortKey, setSortKey] = useState<SortKey>(() => initialSort);
   const [hotOnly, setHotOnly] = useState(false);
   const [replyOnly, setReplyOnly] = useState(false);
   const [selected, setSelected] = useState<WorkflowLead | null>(null);
@@ -180,9 +196,58 @@ export function LeadsCardBrowser({
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   };
 
+  const replaceUrlTargetPreset = (next: "all" | "facebook_no_website_reachable") => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "all") p.delete("target");
+    else p.set("target", FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
+  const targetPresetActive =
+    String(urlSearch?.get("target") || "")
+      .trim()
+      .toLowerCase() === FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM;
+
   useEffect(() => {
     setLaneTab(parseLaneParam(urlSearch?.get("lane")));
   }, [urlSearch?.toString()]);
+
+  useEffect(() => {
+    const raw = urlSearch?.get("sort");
+    setSortKey(parseSortKeyFromParam(raw, initialSort));
+  }, [urlSearch?.toString(), initialSort]);
+
+  useEffect(() => {
+    if (!urlSearch?.has("density")) return;
+    const d = String(urlSearch?.get("density") || "").trim().toLowerCase();
+    setDensity(d === "detailed" ? "detailed" : "compact");
+  }, [urlSearch?.toString()]);
+
+  const replaceUrlSort = (next: SortKey) => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "created") p.delete("sort");
+    else p.set("sort", next);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
+  const replaceUrlDensity = (next: "compact" | "detailed") => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "compact") p.delete("density");
+    else p.set("density", "detailed");
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
+  useEffect(() => {
+    if (urlSearch?.get("deleted") !== "1") return;
+    setToast("Lead deleted");
+    const p = new URLSearchParams(urlSearch.toString());
+    p.delete("deleted");
+    const next = p.toString();
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }, [urlSearch, pathname, router]);
 
   useEffect(() => {
     const id = String(initialHighlightLeadId || "").trim();
@@ -203,20 +268,27 @@ export function LeadsCardBrowser({
     };
   }, [initialHighlightLeadId]);
 
+  const listBase = useMemo(() => {
+    if (!targetPresetActive) return leads;
+    return leads.filter(matchesFacebookNoWebsiteReachable);
+  }, [leads, targetPresetActive]);
+
+  const presetMatchCount = useMemo(() => leads.filter(matchesFacebookNoWebsiteReachable).length, [leads]);
+
   const laneCounts = useMemo(() => {
     const c = {} as Record<CrmLeadLane, number>;
     for (const id of CRM_LEAD_LANES) c[id] = 0;
-    for (const l of leads) {
+    for (const l of listBase) {
       const k = effectiveCrmLane(l);
       if (k in c) c[k] += 1;
     }
     return c;
-  }, [leads]);
+  }, [listBase]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const sortKeyEffective = sourceTab === "extension" ? "created" : sortKey;
-    return [...leads]
+    return [...listBase]
       .filter((l) => {
         if (laneTab !== "all" && effectiveCrmLane(l) !== laneTab) return false;
         if (stageTab !== "all" && l.status !== stageTab) return false;
@@ -251,7 +323,7 @@ export function LeadsCardBrowser({
         }
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
-  }, [leads, search, stageTab, sourceTab, sortKey, hotOnly, replyOnly, laneTab]);
+  }, [listBase, search, stageTab, sourceTab, sortKey, hotOnly, replyOnly, laneTab]);
 
   const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
     setBusyId(leadId);
@@ -291,7 +363,72 @@ export function LeadsCardBrowser({
         </div>
       ) : null}
 
-      <WorkTheseNowStrip leads={leads} />
+      <section
+        className={`rounded-xl border-2 p-4 sm:p-5 space-y-3 shadow-[0_0_28px_rgba(59,130,246,0.12)] ${
+          targetPresetActive ? "ring-2 ring-blue-400/50 ring-offset-2 ring-offset-[rgba(0,0,0,0.4)]" : ""
+        }`}
+        style={{
+          borderColor: targetPresetActive ? "rgba(59, 130, 246, 0.55)" : "rgba(212, 175, 55, 0.35)",
+          background: targetPresetActive
+            ? "linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(0,0,0,0.32))"
+            : "rgba(0,0,0,0.2)",
+        }}
+        aria-label="Target market preset"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--admin-gold)" }}>
+              Targeting
+            </p>
+            <p className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Target market
+            </p>
+            <p className="text-xs max-w-xl leading-snug" style={{ color: "var(--admin-muted)" }}>
+              {targetPresetActive ? (
+                <>
+                  <span aria-hidden>🔥</span> Facebook leads with no website and a way to reach them.
+                </>
+              ) : (
+                <>All leads, or switch to Facebook No-Website Reachable.</>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center" role="tablist" aria-label="Target preset">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!targetPresetActive}
+            className={
+              !targetPresetActive
+                ? "admin-btn-primary text-sm px-4 py-2.5 rounded-lg ring-2 ring-[var(--admin-gold)]/80 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)]"
+                : "admin-btn-ghost text-sm px-4 py-2.5 rounded-lg border border-[var(--admin-border)]"
+            }
+            onClick={() => replaceUrlTargetPreset("all")}
+          >
+            All leads ({leads.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={targetPresetActive}
+            className={
+              targetPresetActive
+                ? "admin-btn-primary text-sm px-4 py-2.5 rounded-lg ring-2 ring-blue-400/70 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)] shadow-[0_0_20px_rgba(59,130,246,0.25)]"
+                : "admin-btn-ghost text-sm px-4 py-2.5 rounded-lg border border-blue-500/35 text-blue-100 hover:border-blue-400/50"
+            }
+            onClick={() => replaceUrlTargetPreset("facebook_no_website_reachable")}
+          >
+            <span className="inline-flex items-center gap-2">
+              <span aria-hidden>📘</span>
+              Facebook No-Website Reachable
+              <span className="text-xs font-normal opacity-90">({presetMatchCount})</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <WorkTheseNowStrip leads={listBase} />
 
       <section
         className="rounded-xl border-2 p-4 space-y-3"
@@ -302,7 +439,9 @@ export function LeadsCardBrowser({
             Lead folders
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--admin-muted)" }}>
-            Open a folder to focus the list — counts use every lead loaded below (before this folder filter).
+            {targetPresetActive
+              ? "Folders narrow the targeting list — counts only include Facebook No-Website Reachable leads."
+              : "Open a folder to focus the list — counts use every lead loaded below (before this folder filter)."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2" aria-label="Lead folders">
@@ -318,7 +457,7 @@ export function LeadsCardBrowser({
               replaceUrlLane("all");
             }}
           >
-            All ({leads.length})
+            All ({listBase.length})
           </button>
           {CRM_LEAD_LANES.map((id) => (
             <button
@@ -362,7 +501,11 @@ export function LeadsCardBrowser({
             className="rounded-lg border px-3 py-2 text-sm"
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
             value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            onChange={(e) => {
+              const v = e.target.value as SortKey;
+              setSortKey(v);
+              replaceUrlSort(v);
+            }}
           >
             <option value="created">Newest</option>
             <option value="score">Opportunity score</option>
@@ -379,14 +522,20 @@ export function LeadsCardBrowser({
           <button
             type="button"
             className={density === "compact" ? "admin-btn-primary text-xs px-2 py-1.5 rounded-md" : "admin-btn-ghost text-xs px-2 py-1.5 rounded-md"}
-            onClick={() => setDensity("compact")}
+            onClick={() => {
+              setDensity("compact");
+              replaceUrlDensity("compact");
+            }}
           >
             Compact
           </button>
           <button
             type="button"
             className={density === "detailed" ? "admin-btn-primary text-xs px-2 py-1.5 rounded-md" : "admin-btn-ghost text-xs px-2 py-1.5 rounded-md"}
-            onClick={() => setDensity("detailed")}
+            onClick={() => {
+              setDensity("detailed");
+              replaceUrlDensity("detailed");
+            }}
           >
             Detailed
           </button>
@@ -474,11 +623,19 @@ export function LeadsCardBrowser({
           <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
             {leads.length === 0
               ? emptyStateReason || "No leads match filters."
-              : laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
-                ? FOLDER_EMPTY_MESSAGES[laneTab]
-                : laneTab !== "all"
-                  ? "No leads in this folder match your search or status filters."
-                  : "No leads match filters."}
+              : targetPresetActive && presetMatchCount === 0
+                ? "No leads match Facebook No-Website Reachable — add extension captures from Facebook or scout Facebook leads without a standalone site."
+                : targetPresetActive && listBase.length > 0 && laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
+                  ? FOLDER_EMPTY_MESSAGES[laneTab]
+                  : targetPresetActive && listBase.length > 0 && laneTab !== "all"
+                    ? "No leads in this folder match your search or status filters."
+                    : targetPresetActive && listBase.length > 0
+                      ? "No leads match your search or status filters in this targeting mode."
+                      : laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
+                        ? FOLDER_EMPTY_MESSAGES[laneTab]
+                        : laneTab !== "all"
+                          ? "No leads in this folder match your search or status filters."
+                          : "No leads match filters."}
           </p>
           {leads.length === 0 && emptyStateReason ? (
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
@@ -495,6 +652,8 @@ export function LeadsCardBrowser({
               normalizeLeadSourceValue(resolvedCaptureSource(lead)) === "extension";
             const pulse = pulseLeadId === lead.id;
             const canQuickContact = workflowLeadContactPath(lead);
+            const workspaceHref = buildLeadPath(lead.id, lead.business_name);
+            const primaryAction = resolveLeadPrimaryAction(lead, { workspaceHref });
             return (
               <li
                 id={`lead-card-${lead.id}`}
@@ -521,6 +680,16 @@ export function LeadsCardBrowser({
                 <p className="text-[10px] leading-snug font-medium" style={{ color: "var(--admin-fg)" }}>
                   {nextStepLine(lead)}
                 </p>
+                {targetPresetActive ? (
+                  <p className="text-[10px] font-medium leading-snug text-emerald-200/90">
+                    {leadPrimaryActionHintLine(primaryAction)}
+                  </p>
+                ) : null}
+                {targetPresetActive ? (
+                  <p className="text-[10px] font-semibold leading-snug text-blue-200/95" title="Why this lead matches the preset">
+                    {facebookNoWebsiteReachableMatchLine(lead)}
+                  </p>
+                ) : null}
                 <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
                   {lead.city || "—"}
                 </p>
@@ -538,73 +707,123 @@ export function LeadsCardBrowser({
                     {unreadN} unread {unreadN === 1 ? "reply" : "replies"}
                   </p>
                 ) : null}
-                <div className="flex flex-wrap gap-2 mt-auto pt-1">
-                  <Link
-                    href={buildLeadPath(lead.id, lead.business_name)}
-                    className="admin-btn-primary text-xs px-2 py-1.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Open
-                  </Link>
-                  {canQuickContact ? (
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={() => {
-                      const next =
-                        lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
-                          ? undefined
-                          : addBusinessDaysIso(new Date(), 3);
-                      const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
-                      if (next) patch.next_follow_up_at = next;
-                      void patchLead(lead.id, patch, next ? "Marked contacted — follow-up scheduled." : "Marked contacted.", "mark_contacted");
-                    }}
-                  >
-                    Contacted
-                  </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={async () => {
-                      setBusyId(lead.id);
-                      const r = await patchLeadApi(lead.id, {
-                        status: "replied",
-                        is_hot_lead: true,
-                        automation_paused: true,
-                        sequence_active: false,
-                        replied_at: new Date().toISOString(),
-                      });
-                      setBusyId(null);
-                      if (!r.ok) {
-                        setToast(r.error);
-                        return;
-                      }
-                      void createReplyReminder(lead.id, lead.business_name || "Lead");
-                      void logAutomation(lead.id, "mark_replied", {});
-                      setToast("Marked as replied.");
-                      router.refresh();
-                    }}
-                  >
-                    Replied
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={() => {
-                      void patchLead(
-                        lead.id,
-                        { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
-                        "Follow-up scheduled.",
-                        "schedule_follow_up"
-                      );
-                    }}
-                  >
-                    Follow up
-                  </button>
+                <div className="flex flex-wrap gap-2 mt-auto pt-1 items-center">
+                  {targetPresetActive ? (
+                    <>
+                      {primaryAction.type === "research" ? (
+                        <LeadsListReturnLink
+                          href={workspaceHref}
+                          className="admin-btn-primary text-xs px-3 py-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {primaryAction.label}
+                        </LeadsListReturnLink>
+                      ) : primaryAction.href ? (
+                        <a
+                          href={primaryAction.href}
+                          className="admin-btn-primary text-xs px-3 py-2"
+                          onClick={(e) => e.stopPropagation()}
+                          {...(primaryAction.external
+                            ? { target: "_blank" as const, rel: "noopener noreferrer" }
+                            : {})}
+                        >
+                          {primaryAction.label}
+                        </a>
+                      ) : (
+                        <LeadsListReturnLink
+                          href={workspaceHref}
+                          className="admin-btn-primary text-xs px-3 py-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Open
+                        </LeadsListReturnLink>
+                      )}
+                      {primaryAction.type !== "research" && primaryAction.href ? (
+                        <LeadsListReturnLink
+                          href={workspaceHref}
+                          className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100 px-1"
+                          style={{ color: "var(--admin-muted)" }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Open
+                        </LeadsListReturnLink>
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <LeadsListReturnLink
+                        href={workspaceHref}
+                        className="admin-btn-primary text-xs px-2 py-1.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Open
+                      </LeadsListReturnLink>
+                      {canQuickContact ? (
+                        <button
+                          type="button"
+                          className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                          disabled={busy}
+                          onClick={() => {
+                            const next =
+                              lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
+                                ? undefined
+                                : addBusinessDaysIso(new Date(), 3);
+                            const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
+                            if (next) patch.next_follow_up_at = next;
+                            void patchLead(
+                              lead.id,
+                              patch,
+                              next ? "Marked contacted — follow-up scheduled." : "Marked contacted.",
+                              "mark_contacted"
+                            );
+                          }}
+                        >
+                          Contacted
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusyId(lead.id);
+                          const r = await patchLeadApi(lead.id, {
+                            status: "replied",
+                            is_hot_lead: true,
+                            automation_paused: true,
+                            sequence_active: false,
+                            replied_at: new Date().toISOString(),
+                          });
+                          setBusyId(null);
+                          if (!r.ok) {
+                            setToast(r.error);
+                            return;
+                          }
+                          void createReplyReminder(lead.id, lead.business_name || "Lead");
+                          void logAutomation(lead.id, "mark_replied", {});
+                          setToast("Marked as replied.");
+                          router.refresh();
+                        }}
+                      >
+                        Replied
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                        disabled={busy}
+                        onClick={() => {
+                          void patchLead(
+                            lead.id,
+                            { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
+                            "Follow-up scheduled.",
+                            "schedule_follow_up"
+                          );
+                        }}
+                      >
+                        Follow up
+                      </button>
+                    </>
+                  )}
                 </div>
               </li>
             );
@@ -619,6 +838,8 @@ export function LeadsCardBrowser({
               normalizeLeadSourceValue(resolvedCaptureSource(lead)) === "extension";
             const pulse = pulseLeadId === lead.id;
             const canQuickContact = workflowLeadContactPath(lead);
+            const workspaceHrefDetailed = buildLeadPath(lead.id, lead.business_name);
+            const primaryActionDetailed = resolveLeadPrimaryAction(lead, { workspaceHref: workspaceHrefDetailed });
             return (
               <div
                 id={`lead-card-${lead.id}`}
@@ -649,6 +870,16 @@ export function LeadsCardBrowser({
                 <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--admin-fg)" }}>
                   {nextStepLine(lead)}
                 </p>
+                {targetPresetActive ? (
+                  <p className="text-[10px] mt-1 font-medium text-emerald-200/90">
+                    {leadPrimaryActionHintLine(primaryActionDetailed)}
+                  </p>
+                ) : null}
+                {targetPresetActive ? (
+                  <p className="text-[10px] mt-1 font-semibold text-blue-200/95" title="Why this lead matches the preset">
+                    {facebookNoWebsiteReachableMatchLine(lead)}
+                  </p>
+                ) : null}
                 <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--admin-fg)" }}>
                   {contactSignalsLine(lead)}
                   {unreadN > 0 ? ` · ${unreadN} unread` : ""}
@@ -700,69 +931,104 @@ export function LeadsCardBrowser({
                     “{lead.last_reply_preview}”
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link href={buildLeadPath(lead.id, lead.business_name)} className="admin-btn-primary text-xs">
-                    Open
-                  </Link>
-                  {canQuickContact ? (
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={() => {
-                      const next =
-                        lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
-                          ? undefined
-                          : addBusinessDaysIso(new Date(), 3);
-                      const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
-                      if (next) patch.next_follow_up_at = next;
-                      void patchLead(lead.id, patch, next ? "Marked contacted." : "Marked contacted.", "mark_contacted");
-                    }}
-                  >
-                    Contacted
-                  </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={async () => {
-                      setBusyId(lead.id);
-                      const r = await patchLeadApi(lead.id, {
-                        status: "replied",
-                        is_hot_lead: true,
-                        automation_paused: true,
-                        sequence_active: false,
-                        replied_at: new Date().toISOString(),
-                      });
-                      setBusyId(null);
-                      if (!r.ok) {
-                        setToast(r.error);
-                        return;
-                      }
-                      void createReplyReminder(lead.id, lead.business_name || "Lead");
-                      void logAutomation(lead.id, "mark_replied", {});
-                      setToast("Marked as replied.");
-                      router.refresh();
-                    }}
-                  >
-                    Replied
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
-                    disabled={busy}
-                    onClick={() => {
-                      void patchLead(
-                        lead.id,
-                        { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
-                        "Follow-up scheduled.",
-                        "schedule_follow_up"
-                      );
-                    }}
-                  >
-                    Follow up
-                  </button>
+                <div className="mt-3 flex flex-wrap gap-2 items-center">
+                  {targetPresetActive ? (
+                    <>
+                      {primaryActionDetailed.type === "research" ? (
+                        <LeadsListReturnLink href={workspaceHrefDetailed} className="admin-btn-primary text-xs px-3 py-2">
+                          {primaryActionDetailed.label}
+                        </LeadsListReturnLink>
+                      ) : primaryActionDetailed.href ? (
+                        <a
+                          href={primaryActionDetailed.href}
+                          className="admin-btn-primary text-xs px-3 py-2"
+                          {...(primaryActionDetailed.external
+                            ? { target: "_blank" as const, rel: "noopener noreferrer" }
+                            : {})}
+                        >
+                          {primaryActionDetailed.label}
+                        </a>
+                      ) : (
+                        <LeadsListReturnLink href={workspaceHrefDetailed} className="admin-btn-primary text-xs px-3 py-2">
+                          Open
+                        </LeadsListReturnLink>
+                      )}
+                      {primaryActionDetailed.type !== "research" && primaryActionDetailed.href ? (
+                        <LeadsListReturnLink
+                          href={workspaceHrefDetailed}
+                          className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100"
+                          style={{ color: "var(--admin-muted)" }}
+                        >
+                          Open
+                        </LeadsListReturnLink>
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <LeadsListReturnLink href={workspaceHrefDetailed} className="admin-btn-primary text-xs">
+                        Open
+                      </LeadsListReturnLink>
+                      {canQuickContact ? (
+                        <button
+                          type="button"
+                          className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                          disabled={busy}
+                          onClick={() => {
+                            const next =
+                              lead.next_follow_up_at && String(lead.next_follow_up_at).trim()
+                                ? undefined
+                                : addBusinessDaysIso(new Date(), 3);
+                            const patch: Record<string, unknown> = { status: "contacted", automation_paused: false };
+                            if (next) patch.next_follow_up_at = next;
+                            void patchLead(lead.id, patch, next ? "Marked contacted." : "Marked contacted.", "mark_contacted");
+                          }}
+                        >
+                          Contacted
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusyId(lead.id);
+                          const r = await patchLeadApi(lead.id, {
+                            status: "replied",
+                            is_hot_lead: true,
+                            automation_paused: true,
+                            sequence_active: false,
+                            replied_at: new Date().toISOString(),
+                          });
+                          setBusyId(null);
+                          if (!r.ok) {
+                            setToast(r.error);
+                            return;
+                          }
+                          void createReplyReminder(lead.id, lead.business_name || "Lead");
+                          void logAutomation(lead.id, "mark_replied", {});
+                          setToast("Marked as replied.");
+                          router.refresh();
+                        }}
+                      >
+                        Replied
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                        disabled={busy}
+                        onClick={() => {
+                          void patchLead(
+                            lead.id,
+                            { next_follow_up_at: addBusinessDaysIso(new Date(), 3) },
+                            "Follow-up scheduled.",
+                            "schedule_follow_up"
+                          );
+                        }}
+                      >
+                        Follow up
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -832,9 +1098,9 @@ export function LeadsCardBrowser({
               </div>
             </dl>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Link href={buildLeadPath(selected.id, selected.business_name)} className="admin-btn-primary text-sm">
+              <LeadsListReturnLink href={buildLeadPath(selected.id, selected.business_name)} className="admin-btn-primary text-sm">
                 Open workspace
-              </Link>
+              </LeadsListReturnLink>
               <Link href={`/admin/conversations?leadId=${encodeURIComponent(selected.id)}`} className="admin-btn-ghost text-sm">
                 Conversation
               </Link>

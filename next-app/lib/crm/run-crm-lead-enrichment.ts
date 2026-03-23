@@ -20,7 +20,7 @@ export type CrmEnrichmentRunResult = {
 };
 
 const LEAD_SELECT_FOR_INPUT =
-  "business_name,city,state,source_url,facebook_url,google_business_url,source,lead_source,source_label,email,phone,website,contact_page,conversion_score,opportunity_score,why_this_lead_is_here,category,best_contact_method,best_contact_value,advertising_page_url,advertising_page_label,suggested_template_key,suggested_response";
+  "business_name,city,state,source_url,facebook_url,google_business_url,source,lead_source,source_label,email,phone,website,contact_page,conversion_score,opportunity_score,why_this_lead_is_here,notes,category,best_contact_method,best_contact_value,advertising_page_url,advertising_page_label,suggested_template_key,suggested_response";
 
 /**
  * Maps CRM capture channel → Scout Brain `source_type` (Brain contract).
@@ -139,6 +139,8 @@ export async function runCrmLeadEnrichmentAfterSave(
     const fetched = await fetchScoutBrainEnrichLead(input);
     if (!fetched.ok) {
       console.warn("[crm-enrichment] Scout Brain failed:", fetched.error);
+      const rejected =
+        typeof fetched.error === "string" && fetched.error.startsWith("rejected:");
       await logCrmAutomationEvent(supabase, {
         owner_id: ownerId,
         lead_id: leadId,
@@ -146,12 +148,13 @@ export async function runCrmLeadEnrichmentAfterSave(
         payload: {
           source: "scout_brain",
           error: fetched.error,
+          quality_rejected: rejected,
         },
       });
       return {
         enriched: false,
         updatedFields: [],
-        message: "Enrichment unavailable right now.",
+        message: rejected ? fetched.error : "Enrichment unavailable right now.",
         source: "scout_brain",
       };
     }

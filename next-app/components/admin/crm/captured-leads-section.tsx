@@ -1,9 +1,13 @@
-import Link from "next/link";
+"use client";
+
+import { LeadsListReturnLink } from "@/components/admin/crm/leads-list-return-link";
 import { buildLeadPath } from "@/lib/lead-route";
 import type { CapturedLeadListItem } from "@/lib/crm/captured-leads";
 
 type Props = {
   items: CapturedLeadListItem[];
+  /** Shown when `items` is empty because a parent filter removed captured rows (e.g. targeting mode). */
+  filteredEmptyMessage?: string;
 };
 
 function badgeClass(badge: CapturedLeadListItem["badge"]): string {
@@ -12,7 +16,7 @@ function badgeClass(badge: CapturedLeadListItem["badge"]): string {
   return "bg-amber-500/15 text-amber-100 border-amber-400/35";
 }
 
-export function CapturedLeadsSection({ items }: Props) {
+export function CapturedLeadsSection({ items, filteredEmptyMessage }: Props) {
   return (
     <section
       className="rounded-xl border-2 p-4 space-y-3 shadow-[0_0_24px_rgba(212,175,55,0.12)]"
@@ -29,7 +33,7 @@ export function CapturedLeadsSection({ items }: Props) {
 
       {items.length === 0 ? (
         <p className="text-sm py-2" style={{ color: "var(--admin-muted)" }}>
-          No captured leads yet — use the extension to save businesses
+          {filteredEmptyMessage ?? "No captured leads yet — use the extension to save businesses"}
         </p>
       ) : (
         <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 list-none p-0 m-0">
@@ -61,12 +65,12 @@ export function CapturedLeadsSection({ items }: Props) {
                   </p>
                 ) : null}
                 <div className="flex flex-wrap gap-2 pt-1 mt-auto">
-                  <Link href={openHref} className="admin-btn-ghost text-xs px-3 py-1.5">
+                  <LeadsListReturnLink href={openHref} className="admin-btn-ghost text-xs px-3 py-1.5">
                     Open
-                  </Link>
-                  <Link href={contactHref} className="admin-btn-primary text-xs px-3 py-1.5">
+                  </LeadsListReturnLink>
+                  <LeadsListReturnLink href={contactHref} className="admin-btn-primary text-xs px-3 py-1.5">
                     Contact
-                  </Link>
+                  </LeadsListReturnLink>
                 </div>
               </li>
             );

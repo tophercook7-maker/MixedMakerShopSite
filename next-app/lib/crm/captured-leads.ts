@@ -1,4 +1,24 @@
 import type { LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
+import { isGoodWebsiteSansClearOpportunity } from "@/lib/crm/lead-buckets";
+
+function folderInputFromCapturedRow(row: LeadRowForWorkflow) {
+  return {
+    status: row.status,
+    email: row.email,
+    phone: row.phone,
+    website: row.website,
+    facebook_url: row.facebook_url,
+    contact_page: row.contact_page,
+    best_contact_method: row.best_contact_method,
+    conversion_score: row.conversion_score,
+    opportunity_score: row.opportunity_score,
+    why_this_lead_is_here: row.why_this_lead_is_here,
+    is_hot_lead: row.is_hot_lead,
+    has_website: row.has_website,
+    lead_tags: row.lead_tags,
+    opportunity_reason: row.opportunity_reason,
+  };
+}
 
 export type CapturedLeadListItem = {
   id: string;
@@ -34,6 +54,7 @@ export function capturedLeadBadge(row: LeadRowForWorkflow): CapturedLeadListItem
 }
 
 export function isCapturedLeadRow(row: LeadRowForWorkflow): boolean {
+  if (isGoodWebsiteSansClearOpportunity(folderInputFromCapturedRow(row))) return false;
   const c = canonicalSource(row);
   if (c === "extension") return true;
   const tags = tagSet(row);

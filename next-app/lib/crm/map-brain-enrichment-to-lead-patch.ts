@@ -124,6 +124,27 @@ export function buildBrainEnrichmentLeadPatch(
     updatedFields.push("why_this_lead_is_here");
   }
 
+  const ccNum = brain.contact_confidence;
+  const ccLabel = trimStr(brain.contact_confidence_label);
+  if (
+    (ccNum != null && Number.isFinite(Number(ccNum))) ||
+    (ccLabel && ccLabel.length > 0)
+  ) {
+    const prevRaw = current.score_breakdown;
+    const prev =
+      prevRaw != null && typeof prevRaw === "object" && !Array.isArray(prevRaw)
+        ? { ...(prevRaw as Record<string, unknown>) }
+        : {};
+    if (ccNum != null && Number.isFinite(Number(ccNum))) {
+      prev.scout_contact_confidence = Math.max(0, Math.min(100, Math.round(Number(ccNum))));
+    }
+    if (ccLabel) {
+      prev.scout_contact_confidence_label = ccLabel;
+    }
+    patchRaw.score_breakdown = prev;
+    updatedFields.push("score_breakdown");
+  }
+
   const brainScore = brain.score;
   if (brainScore != null && !Number.isNaN(Number(brainScore))) {
     const next = Math.max(0, Math.min(100, Math.round(Number(brainScore))));

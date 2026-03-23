@@ -56,6 +56,11 @@ export type LeadFolderInput = {
   opportunity_score?: number | null;
   why_this_lead_is_here?: string | null;
   is_hot_lead?: boolean | null;
+  /** DB `has_website` when URL parsing is ambiguous */
+  has_website?: boolean | null;
+  /** CRM tags e.g. `no_website_opportunity`, `weak_website` */
+  lead_tags?: string[] | null;
+  opportunity_reason?: string | null;
 };
 
 const READY_EMAIL_SCORE = 40;
@@ -91,6 +96,82 @@ function usableBestContactMethod(bcmRaw: string | null | undefined): boolean {
   return ["email", "phone", "facebook", "contact_form", "website", "contact_page"].includes(x);
 }
 
+const WEAK_WEBSITE_TAGS = new Set([
+  "no_website_opportunity",
+  "weak_website",
+  "website_weak",
+  "broken_website",
+  "manual_low_priority",
+]);
+
+/** Owner-marked queue-low — forces `low_priority` folder (see `computePrimaryLeadFolder`). */
+export const CRM_QUEUE_LOW_TAG = "crm_queue_low";
+
+function hasCrmQueueLowTag(input: LeadFolderInput): boolean {
+  const tags = input.lead_tags;
+  if (!Array.isArray(tags)) return false;
+  return tags.some((t) => String(t || "").trim().toLowerCase() === CRM_QUEUE_LOW_TAG);
+}
+
+function weakWebsiteKeywords(text: string): boolean {
+  const t = text.toLowerCase();
+  return /no website|weak site|weak website|outdated site|broken site|needs (a |)website|facebook only|no site\b|http only/.test(
+    t
+  );
+}
+
+/** Explicit weak / no-site signals from tags or opportunity text */
+export function hasWeakWebsiteSignal(input: LeadFolderInput): boolean {
+  const tags = input.lead_tags;
+  if (Array.isArray(tags)) {
+    for (const t of tags) {
+      const x = String(t || "").trim().toLowerCase();
+      if (WEAK_WEBSITE_TAGS.has(x)) return true;
+    }
+  }
+  const reason = trim(input.opportunity_reason).toLowerCase();
+  if (reason && weakWebsiteKeywords(reason)) return true;
+  return false;
+}
+
+export function hasStandaloneSiteSignal(input: LeadFolderInput): boolean {
+  if (leadHasStandaloneWebsite(trim(input.website))) return true;
+  if (input.has_website === true) return true;
+  return false;
+}
+
+/** Strong enough reason to keep a lead in “act now” lanes despite a decent site */
+export function hasStrongOpportunitySignal(input: LeadFolderInput): boolean {
+  if (Boolean(input.is_hot_lead)) return true;
+  if (trim(input.why_this_lead_is_here).length >= 28) return true;
+  const sc = scoreFrom(input);
+  if (sc >= 52) return true;
+  return false;
+}
+
+/**
+ * Standalone website present, no weak-site tag/reason, and no strong override — not a top outreach target.
+ */
+export function isGoodWebsiteSansClearOpportunity(input: LeadFolderInput): boolean {
+  if (!hasStandaloneSiteSignal(input)) return false;
+  if (hasWeakWebsiteSignal(input)) return false;
+  if (hasStrongOpportunitySignal(input)) return false;
+  return true;
+}
+
+function demoteBucketForGoodWebsite(bucket: LeadFolderBucket, input: LeadFolderInput): LeadFolderBucket {
+  if (!isGoodWebsiteSansClearOpportunity(input)) return bucket;
+  if (bucket === "ready_to_contact") {
+    if (trim(input.email)) bucket = "has_email";
+    else if (trim(input.phone)) bucket = "has_phone";
+    else bucket = "low_priority";
+  }
+  if (bucket === "has_email" || bucket === "has_phone") {
+    return "low_priority";
+  }
+  return bucket;
+}
+
 export function leadHasContactPath(input: Pick<LeadFolderInput, "email" | "phone" | "contact_page" | "facebook_url">): boolean {
   return Boolean(trim(input.email) || trim(input.phone) || trim(input.contact_page) || trim(input.facebook_url));
 }
@@ -107,6 +188,7 @@ export function computeContactReadiness(input: LeadFolderInput): ContactReadines
  */
 export function computePrimaryLeadFolder(input: LeadFolderInput): LeadFolderBucket {
   if (terminalStage(input.status)) return "low_priority";
+  if (hasCrmQueueLowTag(input)) return "low_priority";
 
   const email = trim(input.email);
   const phone = trim(input.phone);
@@ -132,19 +214,19 @@ export function computePrimaryLeadFolder(input: LeadFolderInput): LeadFolderBuck
     (fb && bcmIsFacebook(bcm)) ||
     (cp && !email && !phone && (sc >= 38 || hot));
 
-  if (readyToContact) return "ready_to_contact";
-  if (email) return "has_email";
-  if (phone) return "has_phone";
-
-  if (fb && !hasRealWebsite && !email && !phone && (sc >= FACEBOOK_ONLY_MIN_SCORE || hot || Boolean(why))) {
-    return "facebook_only";
+  let bucket: LeadFolderBucket;
+  if (readyToContact) bucket = "ready_to_contact";
+  else if (email) bucket = "has_email";
+  else if (phone) bucket = "has_phone";
+  else if (fb && !hasRealWebsite && !email && !phone && (sc >= FACEBOOK_ONLY_MIN_SCORE || hot || Boolean(why))) {
+    bucket = "facebook_only";
+  } else if (!email && !phone && !cp && !usableBestContactMethod(bcm) && (sc >= NEEDS_RESEARCH_MIN_SCORE || why || hasRealWebsite || fb)) {
+    bucket = "needs_research";
+  } else {
+    bucket = "low_priority";
   }
 
-  if (!email && !phone && !cp && !usableBestContactMethod(bcm)) {
-    if (sc >= NEEDS_RESEARCH_MIN_SCORE || why || hasRealWebsite || fb) return "needs_research";
-  }
-
-  return "low_priority";
+  return demoteBucketForGoodWebsite(bucket, input);
 }
 
 export function computeSimplifiedNextStep(bucket: LeadFolderBucket, input: LeadFolderInput): SimplifiedNextStep {
@@ -221,6 +303,9 @@ export function workflowLeadToFolderInput(lead: {
   opportunity_score?: number | null;
   why_this_lead_is_here?: string | null;
   is_hot_lead?: boolean | null;
+  has_website?: boolean | null;
+  lead_tags?: string[] | null;
+  opportunity_reason?: string | null;
 }): LeadFolderInput {
   return {
     status: lead.status,
@@ -234,6 +319,9 @@ export function workflowLeadToFolderInput(lead: {
     opportunity_score: lead.opportunity_score,
     why_this_lead_is_here: lead.why_this_lead_is_here,
     is_hot_lead: lead.is_hot_lead,
+    has_website: lead.has_website,
+    lead_tags: lead.lead_tags,
+    opportunity_reason: lead.opportunity_reason,
   };
 }
 

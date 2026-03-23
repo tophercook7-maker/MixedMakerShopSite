@@ -1,5 +1,15 @@
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
-import { computePrimaryLeadFolder, workflowLeadToFolderInput } from "@/lib/crm/lead-buckets";
+import {
+  computePrimaryLeadFolder,
+  hasStandaloneSiteSignal,
+  hasWeakWebsiteSignal,
+  isGoodWebsiteSansClearOpportunity,
+  workflowLeadToFolderInput,
+} from "@/lib/crm/lead-buckets";
+import { resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
+import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
+import { leadHasContactPath } from "@/lib/crm/lead-lane";
+import { buildLeadPath } from "@/lib/lead-route";
 
 const DEFAULT_MAX = 6;
 
@@ -30,16 +40,54 @@ export function isReadyToContactLead(lead: WorkflowLead): boolean {
   return bucket === "ready_to_contact";
 }
 
+function terminalPipelineStage(lead: WorkflowLead): boolean {
+  const s = normalizeWorkflowLeadStatus(lead.status);
+  return s === "won" || s === "lost";
+}
+
+/** Prefer weak / missing site, direct email/phone, and clear outreach signals. */
+function workNowQualityRank(lead: WorkflowLead): number {
+  const input = workflowLeadToFolderInput(lead);
+  let r = 0;
+  if (hasWeakWebsiteSignal(input)) r += 45;
+  if (!hasStandaloneSiteSignal(input)) r += 28;
+  if (trim(lead.email)) r += 22;
+  if (trim(lead.phone_from_site)) r += 18;
+  if (trim(lead.facebook_url)) r += 10;
+  if (trim(lead.contact_page)) r += 6;
+  if (lead.is_hot_lead) r += 25;
+  return r;
+}
+
 /**
  * Top leads in the ready_to_contact bucket for the "Work these now" strip.
- * Sort: highest conversion_score (else opportunity_score), then email > facebook > phone.
+ * Drops terminal rows, “good site / no reason” cases, and rows with no contact path / no primary action.
+ * Sort: score, then quality heuristics, then email > facebook > phone.
  */
 export function getTopWorkLeads(leads: WorkflowLead[], max: number = DEFAULT_MAX): WorkflowLead[] {
-  const ready = leads.filter(isReadyToContactLead);
+  const ready = leads.filter((lead) => {
+    if (terminalPipelineStage(lead)) return false;
+    if (!isReadyToContactLead(lead)) return false;
+    if (isGoodWebsiteSansClearOpportunity(workflowLeadToFolderInput(lead))) return false;
+    if (!leadHasContactPath({
+      email: lead.email,
+      phone: lead.phone_from_site,
+      contact_page: lead.contact_page,
+      facebook_url: lead.facebook_url,
+    }))
+      return false;
+    const primary = resolveLeadPrimaryAction(lead, {
+      workspaceHref: buildLeadPath(lead.id, lead.business_name),
+    });
+    if (primary.type === "research") return false;
+    return true;
+  });
   return [...ready]
     .sort((a, b) => {
       const ds = leadScore(b) - leadScore(a);
       if (ds !== 0) return ds;
+      const dq = workNowQualityRank(b) - workNowQualityRank(a);
+      if (dq !== 0) return dq;
       return contactChannelRank(b) - contactChannelRank(a);
     })
     .slice(0, max);

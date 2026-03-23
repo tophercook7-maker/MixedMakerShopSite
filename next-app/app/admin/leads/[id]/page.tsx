@@ -18,6 +18,8 @@ import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline"
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { computeLeadLaneBundle } from "@/lib/crm/lead-lane";
+import { BackToLeadsLink } from "@/components/admin/crm/back-to-leads-link";
+import { LeadDetailCleanupActions } from "@/components/admin/lead-detail-cleanup-actions";
 
 type LeadRow = {
   id: string;
@@ -63,6 +65,9 @@ type LeadRow = {
   source_label?: string | null;
   conversion_score?: number | null;
   why_this_lead_is_here?: string | null;
+  has_website?: boolean | null;
+  lead_tags?: string[] | null;
+  opportunity_reason?: string | null;
   google_business_url?: string | null;
   advertising_page_url?: string | null;
   advertising_page_label?: string | null;
@@ -123,6 +128,9 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "best_contact_value",
     "suggested_template_key",
     "suggested_response",
+    "has_website",
+    "lead_tags",
+    "opportunity_reason",
   ].join(","),
   [
     "id",
@@ -1224,6 +1232,9 @@ export default async function AdminLeadDetailPage({
     status: lead?.status ?? caseRow?.status ?? null,
     best_contact_method: lead?.best_contact_method ?? null,
     is_hot_lead: lead?.is_hot_lead ?? null,
+    has_website: lead?.has_website ?? null,
+    lead_tags: lead?.lead_tags ?? null,
+    opportunity_reason: lead?.opportunity_reason ?? opp?.opportunity_reason ?? null,
   });
   const nextStepLabel =
     laneBundle.simplified_next_step.charAt(0).toUpperCase() + laneBundle.simplified_next_step.slice(1);
@@ -1435,9 +1446,12 @@ Want me to show you a quick idea?`;
               Contact readiness: {laneBundle.contact_readiness} · {laneBundle.summary_line}
             </p>
           </div>
-          <Link href="/admin/leads" className="admin-btn-ghost text-sm shrink-0 self-start">
-            All businesses
-          </Link>
+          <div className="flex flex-col items-end gap-3 shrink-0 self-start min-w-[200px]">
+            <BackToLeadsLink className="admin-btn-ghost text-sm whitespace-nowrap" />
+            {resolvedLeadId ? (
+              <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
+            ) : null}
+          </div>
         </div>
       </section>
 

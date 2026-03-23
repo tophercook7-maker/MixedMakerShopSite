@@ -98,6 +98,7 @@ export const leadSchema = z.object({
   referral_source: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
   is_referred_client: z.boolean().optional(),
   conversion_score: z.number().int().min(0).max(100).optional(),
+  lead_tags: z.array(z.string().max(120)).max(80).optional(),
   score_breakdown: z.record(z.unknown()).optional(),
   sequence_active: z.boolean().optional(),
   notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),

@@ -1,14 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
+import { LeadsListReturnLink } from "@/components/admin/crm/leads-list-return-link";
 import { buildLeadPath } from "@/lib/lead-route";
-import {
-  getTopWorkLeads,
-  resolveWorkLeadPrimaryAction,
-  workTheseNowContextLine,
-} from "@/lib/crm/work-these-leads";
+import { leadPrimaryActionDetailLine, resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
+import { getTopWorkLeads, workTheseNowContextLine } from "@/lib/crm/work-these-leads";
 
 export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
   const topWork = useMemo(() => getTopWorkLeads(leads), [leads]);
@@ -57,8 +54,8 @@ export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
       </div>
       <ul className="space-y-2 list-none p-0 m-0">
         {topWork.map((lead) => {
-          const action = resolveWorkLeadPrimaryAction(lead);
           const workspace = buildLeadPath(lead.id, lead.business_name);
+          const action = resolveLeadPrimaryAction(lead, { workspaceHref: workspace });
           return (
             <li
               key={lead.id}
@@ -75,18 +72,16 @@ export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
                 <p className="text-[11px] mt-1 leading-snug line-clamp-2" style={{ color: "var(--admin-muted)" }}>
                   {workTheseNowContextLine(lead)}
                 </p>
-                {action ? (
-                  <p className="text-[11px] mt-1 font-medium" style={{ color: "var(--admin-fg)" }}>
-                    {action.detailLine}
-                  </p>
-                ) : (
-                  <p className="text-[11px] mt-1 italic" style={{ color: "var(--admin-muted)" }}>
-                    No direct link — open workspace
-                  </p>
-                )}
+                <p className="text-[11px] mt-1 font-medium" style={{ color: "var(--admin-fg)" }}>
+                  {leadPrimaryActionDetailLine(action)}
+                </p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-                {action ? (
+                {action.type === "research" ? (
+                  <LeadsListReturnLink href={workspace} className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap">
+                    {action.label}
+                  </LeadsListReturnLink>
+                ) : action.href ? (
                   <a
                     href={action.href}
                     {...(action.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
@@ -95,18 +90,18 @@ export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
                     {action.label}
                   </a>
                 ) : (
-                  <Link href={workspace} className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap">
+                  <LeadsListReturnLink href={workspace} className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap">
                     Open
-                  </Link>
+                  </LeadsListReturnLink>
                 )}
-                {action ? (
-                  <Link
+                {action.type !== "research" && action.href ? (
+                  <LeadsListReturnLink
                     href={workspace}
                     className="text-[11px] underline underline-offset-2 opacity-70 hover:opacity-100 px-1"
                     style={{ color: "var(--admin-muted)" }}
                   >
                     Open
-                  </Link>
+                  </LeadsListReturnLink>
                 ) : null}
               </div>
             </li>
