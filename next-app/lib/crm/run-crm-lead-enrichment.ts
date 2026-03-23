@@ -17,6 +17,8 @@ export type CrmEnrichmentRunResult = {
   updatedFields: string[];
   message: string;
   source: "scout_brain" | "local" | "skipped";
+  /** Scout Brain path: Supabase update failed — show `message` to user */
+  saveFailed?: boolean;
 };
 
 const LEAD_SELECT_FOR_INPUT =
@@ -181,6 +183,7 @@ export async function runCrmLeadEnrichmentAfterSave(
       updatedFields: applied.updatedFields,
       message: applied.message,
       source: "scout_brain",
+      saveFailed: applied.saveFailed,
     };
   }
 

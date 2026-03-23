@@ -12,8 +12,7 @@ export type LeadRowForBrainMerge = Record<string, unknown>;
 export { buildBrainEnrichmentLeadPatch, buildPatchFromScoutBrainEnrichment } from "@/lib/crm/map-brain-enrichment-to-lead-patch";
 
 /**
- * Keys allowed on Supabase `update()` after enrichment.
- * Excludes newer outreach columns until migration `20260320150000_leads_outreach_targets` is applied everywhere.
+ * Only these keys are sent to Supabase on enrichment update (everything else is dropped).
  */
 export const SCOUT_BRAIN_ENRICHMENT_SAFE_PATCH_KEYS = [
   "email",
@@ -37,6 +36,9 @@ export const SCOUT_BRAIN_ENRICHMENT_SAFE_PATCH_KEYS = [
   "best_contact_method",
 ] as const;
 
+/** @deprecated Alias — use SCOUT_BRAIN_ENRICHMENT_SAFE_PATCH_KEYS */
+export const SAFE_KEYS = SCOUT_BRAIN_ENRICHMENT_SAFE_PATCH_KEYS;
+
 const SAFE_SET = new Set<string>(SCOUT_BRAIN_ENRICHMENT_SAFE_PATCH_KEYS);
 
 export type ApplyScoutBrainResult = {
@@ -44,6 +46,8 @@ export type ApplyScoutBrainResult = {
   updatedFields: string[];
   message: string;
   hadBrainData: boolean;
+  /** Set when Supabase update failed (client should show `message`). */
+  saveFailed?: boolean;
 };
 
 export async function applyScoutBrainEnrichmentToLead(
@@ -92,14 +96,21 @@ export async function applyScoutBrainEnrichmentToLead(
   const { patchRaw, updatedFields } = buildBrainEnrichmentLeadPatch(current, brain);
   const patch = pickLeadPatchFields(patchRaw);
 
-  const droppedKeys = Object.keys(patch).filter((k) => !SAFE_SET.has(k));
-  const safePatch = Object.fromEntries(Object.entries(patch).filter(([key]) => SAFE_SET.has(key)));
+  const droppedBySchemaWhitelist = Object.keys(patchRaw).filter((k) => !Object.prototype.hasOwnProperty.call(patch, k));
+  const droppedUnsafe = Object.keys(patch).filter((k) => !SAFE_SET.has(k));
+  const dropped_keys = Array.from(new Set([...droppedBySchemaWhitelist, ...droppedUnsafe]));
 
-  if (droppedKeys.length > 0) {
-    console.info("[apply-scout-brain-enrichment] omitted keys not in safe allowlist (often newer columns)", {
+  const safePatch = Object.fromEntries(
+    Object.entries(patch).filter(([key]) => SAFE_SET.has(key))
+  ) as Record<string, unknown>;
+
+  if (dropped_keys.length > 0) {
+    console.info("[apply-scout-brain-enrichment] dropped keys (not written to DB)", {
       lead_id: leadId,
       owner_id: ownerId,
-      dropped_keys: droppedKeys,
+      dropped_keys,
+      dropped_by_schema_whitelist: droppedBySchemaWhitelist,
+      dropped_not_in_safe_keys: droppedUnsafe,
     });
   }
 
@@ -107,7 +118,10 @@ export async function applyScoutBrainEnrichmentToLead(
     return {
       enriched: false,
       updatedFields: [],
-      message: droppedKeys.length > 0 ? "No safe fields to save (run DB migration for outreach columns)" : "No new contact info found",
+      message:
+        dropped_keys.length > 0
+          ? "No safe fields to save after filtering — check dropped_keys in server logs"
+          : "No new contact info found",
       hadBrainData: true,
     };
   }
@@ -121,24 +135,23 @@ export async function applyScoutBrainEnrichmentToLead(
     .eq("owner_id", ownerId);
 
   if (upErr) {
-    console.error("[apply-scout-brain-enrichment] Supabase update failed", {
+    const errMsg = String(upErr.message || "Unknown database error");
+    console.error("[ENRICHMENT ERROR]", {
+      payload: safePatch,
+      error: errMsg,
+      dropped_keys,
       lead_id: leadId,
       owner_id: ownerId,
-      safe_patch_keys: Object.keys(safePatch),
-      safe_patch_sample: Object.fromEntries(
-        Object.entries(safePatch).map(([k, v]) => [k, typeof v === "string" ? `${String(v).slice(0, 80)}…` : v])
-      ),
-      error_message: upErr.message,
-      error_code: upErr.code,
-      error_details: upErr.details,
-      error_hint: upErr.hint,
-      full_error: upErr,
+      code: upErr.code,
+      details: upErr.details,
+      hint: upErr.hint,
     });
     return {
       enriched: false,
       updatedFields: [],
-      message: "Could not save enrichment",
+      message: `Could not save enrichment: ${errMsg}`,
       hadBrainData: true,
+      saveFailed: true,
     };
   }
 

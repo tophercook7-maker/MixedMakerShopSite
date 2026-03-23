@@ -3,6 +3,7 @@
  * One exclusive bucket per lead; priority order matches the folder strip.
  */
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { isValidFacebookBusinessUrl } from "@/lib/crm/facebook-no-website-reachable";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 
 export const LEAD_FOLDER_BUCKETS = [
@@ -172,13 +173,18 @@ function demoteBucketForGoodWebsite(bucket: LeadFolderBucket, input: LeadFolderI
   return bucket;
 }
 
+function usableFacebookUrl(facebook_url: string | null | undefined): boolean {
+  const fb = trim(facebook_url);
+  return Boolean(fb && isValidFacebookBusinessUrl(fb));
+}
+
 export function leadHasContactPath(input: Pick<LeadFolderInput, "email" | "phone" | "contact_page" | "facebook_url">): boolean {
-  return Boolean(trim(input.email) || trim(input.phone) || trim(input.contact_page) || trim(input.facebook_url));
+  return Boolean(trim(input.email) || trim(input.phone) || trim(input.contact_page) || usableFacebookUrl(input.facebook_url));
 }
 
 export function computeContactReadiness(input: LeadFolderInput): ContactReadiness {
   if (trim(input.email) || trim(input.phone)) return "ready";
-  if (trim(input.contact_page) || trim(input.facebook_url)) return "partial";
+  if (trim(input.contact_page) || usableFacebookUrl(input.facebook_url)) return "partial";
   return "missing";
 }
 
@@ -193,6 +199,7 @@ export function computePrimaryLeadFolder(input: LeadFolderInput): LeadFolderBuck
   const email = trim(input.email);
   const phone = trim(input.phone);
   const fb = trim(input.facebook_url);
+  const fbOk = usableFacebookUrl(input.facebook_url);
   const cp = trim(input.contact_page);
   const bcm = trim(input.best_contact_method);
   const website = trim(input.website);
@@ -202,25 +209,25 @@ export function computePrimaryLeadFolder(input: LeadFolderInput): LeadFolderBuck
   const why = trim(input.why_this_lead_is_here);
 
   // Thin leads: no direct path and not worth a research lane
-  const anySignal = email || phone || cp || fb || hasRealWebsite || why || hot;
+  const anySignal = email || phone || cp || fbOk || hasRealWebsite || why || hot;
   if (!anySignal && sc <= JUNK_MAX_SCORE) return "low_priority";
-  if (!email && !phone && !cp && !(fb && bcmIsFacebook(bcm)) && sc <= JUNK_MAX_SCORE && !why && !hot && !fb) {
+  if (!email && !phone && !cp && !(fbOk && bcmIsFacebook(bcm)) && sc <= JUNK_MAX_SCORE && !why && !hot && !fbOk) {
     return "low_priority";
   }
 
   const readyToContact =
     (email && (phone || cp || sc >= READY_EMAIL_SCORE || hot)) ||
     (phone && (email || sc >= READY_PHONE_SCORE || hot)) ||
-    (fb && bcmIsFacebook(bcm)) ||
+    (fbOk && bcmIsFacebook(bcm)) ||
     (cp && !email && !phone && (sc >= 38 || hot));
 
   let bucket: LeadFolderBucket;
   if (readyToContact) bucket = "ready_to_contact";
   else if (email) bucket = "has_email";
   else if (phone) bucket = "has_phone";
-  else if (fb && !hasRealWebsite && !email && !phone && (sc >= FACEBOOK_ONLY_MIN_SCORE || hot || Boolean(why))) {
+  else if (fbOk && !hasRealWebsite && !email && !phone && (sc >= FACEBOOK_ONLY_MIN_SCORE || hot || Boolean(why))) {
     bucket = "facebook_only";
-  } else if (!email && !phone && !cp && !usableBestContactMethod(bcm) && (sc >= NEEDS_RESEARCH_MIN_SCORE || why || hasRealWebsite || fb)) {
+  } else if (!email && !phone && !cp && !usableBestContactMethod(bcm) && (sc >= NEEDS_RESEARCH_MIN_SCORE || why || hasRealWebsite || fbOk)) {
     bucket = "needs_research";
   } else {
     bucket = "low_priority";
@@ -233,6 +240,7 @@ export function computeSimplifiedNextStep(bucket: LeadFolderBucket, input: LeadF
   const email = trim(input.email);
   const phone = trim(input.phone);
   const fb = trim(input.facebook_url);
+  const fbOk = usableFacebookUrl(input.facebook_url);
   const bcm = trim(input.best_contact_method).toLowerCase();
 
   if (bucket === "low_priority") return "skip for now";
@@ -242,7 +250,7 @@ export function computeSimplifiedNextStep(bucket: LeadFolderBucket, input: LeadF
   if (bucket === "has_email") return "contact now";
 
   // ready_to_contact
-  if (bcm === "facebook" || (fb && !email && !phone)) return "message on facebook";
+  if (bcm === "facebook" || (fbOk && !email && !phone)) return "message on facebook";
   if (bcm === "phone" || (phone && !email)) return "call now";
   return "contact now";
 }

@@ -44,6 +44,7 @@ import {
   type LeadPoolTab,
 } from "@/lib/crm/manual-pick-leads";
 import { TopPicksStrip } from "@/components/admin/crm/top-picks-strip";
+import { DailyTenStrip } from "@/components/admin/crm/daily-ten-strip";
 import { PromoteToTopPicksButton } from "@/components/admin/crm/promote-to-top-picks-button";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
@@ -474,7 +475,12 @@ export function LeadsCardBrowser({
         </div>
       </section>
 
-      {poolTab === "all" ? <TopPicksStrip leads={topPickStripLeads} /> : null}
+      {poolTab === "all" ? (
+        <div className="space-y-4">
+          <TopPicksStrip leads={topPickStripLeads} />
+          <DailyTenStrip leads={leads} />
+        </div>
+      ) : null}
 
       <section
         className={`rounded-xl border-2 p-4 sm:p-5 space-y-3 shadow-[0_0_28px_rgba(59,130,246,0.12)] ${

@@ -47,9 +47,14 @@ export function LeadEnrichNow({
         updatedFields?: string[];
         message?: string;
         error?: string;
+        source?: string;
       };
       if (!res.ok) {
-        setToast(String(data.message || data.error || "Could not enrich this lead."));
+        console.error("[ENRICHMENT] request failed", {
+          status: res.status,
+          body: data,
+        });
+        setToast(String(data.error || data.message || "Could not enrich this lead."));
         return;
       }
       if (data.enriched && (data.updatedFields?.length ?? 0) > 0) {

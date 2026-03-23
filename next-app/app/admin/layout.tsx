@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,6 +7,14 @@ import { HeaderActions } from "@/components/admin/HeaderActions";
 import { GlobalScoutJobProvider } from "@/components/admin/scout-job-provider";
 import { ArrowRight, Plus } from "lucide-react";
 import "./admin.css";
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

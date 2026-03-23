@@ -1,9 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata = {
-  title: "MixedMakerShop Studio | Building, Creating, Experimenting",
-  description:
-    "MixedMakerShop is Topher Cook's creative studio. For local business websites: starter setups from $400, full business setups from $900 — see Topher Web Design.",
+export const metadata: Metadata = {
+  title: "MixedMakerShop",
+  description: "Web design, 3D printing, and custom builds that stand out.",
+  openGraph: {
+    title: "MixedMakerShop",
+    description: "Build bold. Print custom. Grow local.",
+    url: "https://mixedmakershop.com",
+    images: ["/og-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MixedMakerShop",
+    description: "Build bold. Print custom. Grow local.",
+    images: ["/og-image"],
+  },
 };
 
 export default function HomePage() {

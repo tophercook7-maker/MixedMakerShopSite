@@ -4,6 +4,7 @@
  * Conservative: fill missing / weak only; merge tags; raise scores only; no FB over real site.
  */
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { isValidFacebookBusinessUrl } from "@/lib/crm/facebook-no-website-reachable";
 import { normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 import type { ScoutBrainEnrichedLead } from "@/lib/crm/scout-brain-enrichment";
 
@@ -89,9 +90,11 @@ export function buildBrainEnrichmentLeadPatch(
   const bFb = trimStr(brain.facebook_url);
   if (bFb && !exFb) {
     const f = bFb.startsWith("http") ? bFb : `https://${bFb}`;
-    patchRaw.facebook_url = f;
-    patchRaw.normalized_facebook_url = normalizeFacebookUrl(f) || null;
-    updatedFields.push("facebook_url", "normalized_facebook_url");
+    if (isValidFacebookBusinessUrl(f)) {
+      patchRaw.facebook_url = f;
+      patchRaw.normalized_facebook_url = normalizeFacebookUrl(f) || null;
+      updatedFields.push("facebook_url", "normalized_facebook_url");
+    }
   }
 
   const bCp = trimStr(brain.contact_page);
@@ -250,6 +253,18 @@ export function buildBrainEnrichmentLeadPatch(
   if (sr) {
     patchRaw.suggested_response = sr;
     updatedFields.push("suggested_response");
+  }
+
+  const projEmail = trimStr(patchRaw.email) || exEmail;
+  const projPhone = trimStr(patchRaw.phone) || exPhone;
+  const projCp = trimStr(patchRaw.contact_page) || exContact;
+  const projFb = trimStr(patchRaw.facebook_url) || exFb;
+  const hasNonFbContact = Boolean(projEmail || projPhone || projCp);
+  const fbOk = Boolean(projFb && isValidFacebookBusinessUrl(projFb));
+  if (!hasNonFbContact && projFb && !fbOk) {
+    patchRaw.recommended_next_action = "Find real Facebook page";
+    patchRaw.best_contact_method = null;
+    updatedFields.push("recommended_next_action", "best_contact_method");
   }
 
   return {

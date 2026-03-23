@@ -11,6 +11,70 @@ import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 /** Use with `?target=facebook_no_website_reachable` on /admin/leads */
 export const FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM = "facebook_no_website_reachable";
 
+const ALLOWED_FB_HOSTS = new Set([
+  "facebook.com",
+  "m.facebook.com",
+  "mbasic.facebook.com",
+  "web.facebook.com",
+  "business.facebook.com",
+  "fb.com",
+  "m.fb.com",
+]);
+
+/**
+ * True for a likely business/page URL — excludes search, groups, marketplace, and other junk.
+ * Kept in sync with Scout Brain `is_valid_facebook_business_url`.
+ */
+export function isValidFacebookBusinessUrl(url: string): boolean {
+  const u = String(url || "").trim();
+  if (!u) return false;
+  let low: string;
+  try {
+    low = decodeURIComponent(u).toLowerCase();
+  } catch {
+    low = u.toLowerCase();
+  }
+  const junk = [
+    "/search/",
+    "/groups/",
+    "/events/",
+    "/marketplace/",
+    "/watch/",
+    "?q=",
+    "&q=",
+    "/search/top",
+    "/search/posts",
+    "/search/pages",
+  ];
+  if (junk.some((j) => low.includes(j))) return false;
+  try {
+    const raw = u.startsWith("http://") || u.startsWith("https://") ? u : `https://${u}`;
+    const parsed = new URL(raw);
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+    if (!ALLOWED_FB_HOSTS.has(host)) return false;
+    const pathRaw = parsed.pathname || "";
+    const pathNorm = pathRaw.endsWith("/") && pathRaw.length > 1 ? pathRaw.slice(0, -1) : pathRaw;
+    if (!pathNorm || pathNorm === "/") return false;
+    const pl = pathNorm.toLowerCase();
+    const badPath = ["/dialog/", "/plugins/", "/login", "/recover", "/legal", "/policy", "/help/"];
+    if (badPath.some((b) => pl.includes(b))) return false;
+    const segments = pathNorm.split("/").filter(Boolean);
+    if (segments.length === 0) return false;
+    const head = segments[0].toLowerCase();
+    const q = parsed.search.toLowerCase();
+    if (head === "profile.php" && q.includes("id=")) return true;
+    if (head === "share" || pl.includes("/share/")) return true;
+    if (head === "pages" && segments.length >= 2) return true;
+    if (head === "pg" && segments.length >= 2) return true;
+    const badHead = new Set(["photo.php", "video.php", "stories", "reel", "reels", "watch"]);
+    if (badHead.has(head)) return false;
+    if (segments.length === 1 && /^[a-zA-Z0-9][a-zA-Z0-9._-]{1,120}$/.test(segments[0])) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function trim(s: string | null | undefined): string {
   return String(s ?? "").trim();
 }
@@ -50,7 +114,8 @@ export type FacebookSourcePick = {
  * `scout_mixed` with `facebook_url` (same as first check); normalized/raw source mentions Facebook.
  */
 export function isFacebookBasedLead(lead: FacebookSourcePick): boolean {
-  if (trim(lead.facebook_url)) return true;
+  const fb = trim(lead.facebook_url);
+  if (fb && isValidFacebookBusinessUrl(fb)) return true;
 
   const canon = normalizeLeadSourceValue(resolvedCaptureSource(lead));
   if (canon === "scout_facebook") return true;
@@ -83,18 +148,20 @@ export function hasNoRealWebsiteForTargetPreset(lead: {
 export function hasReachableContactForTargetPreset(
   lead: Pick<WorkflowLead, "email" | "phone_from_site" | "facebook_url" | "contact_page">
 ): boolean {
-  return Boolean(
-    trim(lead.email) || trim(lead.phone_from_site) || trim(lead.facebook_url) || trim(lead.contact_page)
-  );
+  if (trim(lead.email) || trim(lead.phone_from_site) || trim(lead.contact_page)) return true;
+  const fb = trim(lead.facebook_url);
+  if (fb && isValidFacebookBusinessUrl(fb)) return true;
+  return false;
 }
 
 /** DB / server rows use `phone`; UI leads use `phone_from_site`. */
 export function hasReachableContactForTargetRow(
   row: Pick<LeadRowForWorkflow, "email" | "phone" | "facebook_url" | "contact_page">
 ): boolean {
-  return Boolean(
-    trim(row.email) || trim(row.phone) || trim(row.facebook_url) || trim(row.contact_page)
-  );
+  if (trim(row.email) || trim(row.phone) || trim(row.contact_page)) return true;
+  const fb = trim(row.facebook_url);
+  if (fb && isValidFacebookBusinessUrl(fb)) return true;
+  return false;
 }
 
 export function isFacebookNoWebsiteReachableLead(lead: WorkflowLead): boolean {
@@ -124,6 +191,7 @@ export function facebookNoWebsiteReachableMatchLine(lead: WorkflowLead): string 
   if (trim(lead.email)) return "No website · Has email";
   if (trim(lead.phone_from_site)) return "No website · Has phone";
   if (trim(lead.contact_page)) return "No website · Contact form";
-  if (trim(lead.facebook_url)) return "Facebook only · Reachable";
+  if (trim(lead.facebook_url) && isValidFacebookBusinessUrl(trim(lead.facebook_url)))
+    return "Facebook only · Reachable";
   return "Facebook lead · Has contact path";
 }

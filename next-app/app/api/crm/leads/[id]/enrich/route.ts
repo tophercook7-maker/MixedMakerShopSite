@@ -32,6 +32,21 @@ export async function POST(
 
   const result = await runCrmLeadEnrichmentAfterSave(supabase, ownerId, leadId);
 
+  if (result.saveFailed) {
+    return NextResponse.json(
+      {
+        ok: false,
+        leadId,
+        enriched: false,
+        updatedFields: result.updatedFields,
+        message: result.message,
+        error: result.message,
+        source: result.source,
+      },
+      { status: 500 }
+    );
+  }
+
   return NextResponse.json({
     ok: true,
     leadId,
