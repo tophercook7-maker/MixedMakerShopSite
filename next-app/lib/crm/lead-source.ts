@@ -102,6 +102,7 @@ const SOURCE_BADGE_BY_CANONICAL: Record<string, string> = {
   scout_facebook: "Scout (Facebook)",
   scout_mixed: "Scout",
   manual: "Manual",
+  manual_pick: "Top Picks",
 };
 
 /** Small card line: canonical map + Extension (Label) when `source_label` is set. */

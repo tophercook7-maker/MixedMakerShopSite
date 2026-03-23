@@ -49,8 +49,8 @@ export default function AdminCrmHubPage() {
               gradually.
             </p>
           </div>
-          <Link href="/admin/crm" className="admin-btn-ghost text-sm shrink-0">
-            ← Local CRM (browser)
+          <Link href="/admin/leads?pool=top_picks" className="admin-btn-ghost text-sm shrink-0">
+            Top Picks (database)
           </Link>
         </div>
       </section>

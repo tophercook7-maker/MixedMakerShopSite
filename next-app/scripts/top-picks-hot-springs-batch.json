@@ -1,0 +1,113 @@
+[
+  {
+    "business_name": "BB’s Lawn & Landscaping",
+    "category": "Landscaping",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=bb%27s%20lawn%20and%20landscaping%20hot%20springs",
+    "notes": "No website - FB lead",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "D2 Scape Landscaping",
+    "category": "Landscaping",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=d2%20scape%20hot%20springs",
+    "notes": "Directory only",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "United Lawn Care",
+    "category": "Landscaping",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=united%20lawn%20care%20hot%20springs",
+    "notes": "No strong presence",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "Rosales Lawn Service",
+    "category": "Landscaping",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=rosales%20lawn%20service%20hot%20springs",
+    "notes": "Small operator",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "National Park Lawn Care",
+    "category": "Landscaping",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=national%20park%20lawn%20care%20hot%20springs",
+    "notes": "Service-based",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "JE’s Odd Jobs",
+    "category": "Pressure Washing",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=je%27s%20odd%20jobs%20hot%20springs",
+    "notes": "Multi-service",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "Grass Plus",
+    "category": "Pressure Washing / Lawn",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=grass%20plus%20hot%20springs",
+    "notes": "Local service biz",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "Melinda’s Coffee Corner",
+    "category": "Coffee Shop",
+    "city": "Hot Springs Village",
+    "email": "dnahsv@gmail.com",
+    "facebook_url": "https://www.facebook.com/search/top?q=melinda%27s%20coffee%20corner%20hot%20springs",
+    "notes": "Website broken (HIGH PRIORITY)",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list", "high_priority"],
+    "status": "follow_up"
+  },
+  {
+    "business_name": "Red Light Roastery",
+    "category": "Coffee Shop",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=red%20light%20roastery%20hot%20springs",
+    "notes": "Brand opportunity",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  },
+  {
+    "business_name": "Kollective Coffee",
+    "category": "Coffee Shop",
+    "city": "Hot Springs",
+    "facebook_url": "https://www.facebook.com/search/top?q=kollective%20coffee%20hot%20springs",
+    "notes": "Social-based biz",
+    "source": "manual_pick",
+    "lead_source": "manual_pick",
+    "lead_tags": ["manual_pick", "priority_list"],
+    "status": "new"
+  }
+]

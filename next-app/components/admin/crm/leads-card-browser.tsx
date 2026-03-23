@@ -36,6 +36,15 @@ import {
 import { leadPrimaryActionHintLine, resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
 import { WorkTheseNowStrip } from "@/components/admin/crm/work-these-now-strip";
 import { buildMarkLeadRepliedPatch } from "@/lib/crm/mark-lead-replied";
+import {
+  isScoutSourceLead,
+  isTopPickLead,
+  matchesLeadPoolTab,
+  parseLeadPoolTab,
+  type LeadPoolTab,
+} from "@/lib/crm/manual-pick-leads";
+import { TopPicksStrip } from "@/components/admin/crm/top-picks-strip";
+import { PromoteToTopPicksButton } from "@/components/admin/crm/promote-to-top-picks-button";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -205,6 +214,16 @@ export function LeadsCardBrowser({
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   };
 
+  const poolTab = parseLeadPoolTab(urlSearch?.get("pool"));
+
+  const replaceUrlPool = (next: LeadPoolTab) => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "all") p.delete("pool");
+    else p.set("pool", next);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
   const targetPresetActive =
     String(urlSearch?.get("target") || "")
       .trim()
@@ -269,12 +288,30 @@ export function LeadsCardBrowser({
     };
   }, [initialHighlightLeadId]);
 
+  const pooledLeads = useMemo(() => leads.filter((l) => matchesLeadPoolTab(l, poolTab)), [leads, poolTab]);
+
   const listBase = useMemo(() => {
-    if (!targetPresetActive) return leads;
-    return leads.filter(matchesFacebookNoWebsiteReachable);
-  }, [leads, targetPresetActive]);
+    if (!targetPresetActive) return pooledLeads;
+    return pooledLeads.filter(matchesFacebookNoWebsiteReachable);
+  }, [pooledLeads, targetPresetActive]);
 
   const presetMatchCount = useMemo(() => leads.filter(matchesFacebookNoWebsiteReachable).length, [leads]);
+
+  const poolCounts = useMemo(
+    () => ({
+      all: leads.length,
+      top_picks: leads.filter(isTopPickLead).length,
+      scout: leads.filter(isScoutSourceLead).length,
+    }),
+    [leads]
+  );
+
+  const topPickStripLeads = useMemo(() => {
+    return [...leads]
+      .filter(isTopPickLead)
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 24);
+  }, [leads]);
 
   const laneCounts = useMemo(() => {
     const c = {} as Record<CrmLeadLane, number>;
@@ -286,14 +323,16 @@ export function LeadsCardBrowser({
     return c;
   }, [listBase]);
 
+  const sourceTabEffective: SourceFilterTab = poolTab !== "all" ? "all" : sourceTab;
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const sortKeyEffective = sourceTab === "extension" ? "created" : sortKey;
+    const sortKeyEffective = sourceTabEffective === "extension" ? "created" : sortKey;
     return [...listBase]
       .filter((l) => {
         if (laneTab !== "all" && effectiveCrmLane(l) !== laneTab) return false;
         if (stageTab !== "all" && l.status !== stageTab) return false;
-        if (!leadMatchesSourceFilter(l, sourceTab)) return false;
+        if (!leadMatchesSourceFilter(l, sourceTabEffective)) return false;
         if (hotOnly && !l.is_hot_lead) return false;
         if (replyOnly && !(Number(l.unread_reply_count) > 0) && !String(l.last_reply_preview || "").trim()) return false;
         if (!q) return true;
@@ -327,7 +366,7 @@ export function LeadsCardBrowser({
         }
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
-  }, [listBase, search, stageTab, sourceTab, sortKey, hotOnly, replyOnly, laneTab]);
+  }, [listBase, search, stageTab, sourceTabEffective, sortKey, hotOnly, replyOnly, laneTab]);
 
   const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
     setBusyId(leadId);
@@ -373,6 +412,69 @@ export function LeadsCardBrowser({
           </button>
         </div>
       ) : null}
+
+      <section
+        className="rounded-xl border-2 p-4 sm:p-5 space-y-3"
+        style={{
+          borderColor: "rgba(52, 211, 153, 0.4)",
+          background: "linear-gradient(160deg, rgba(52, 211, 153, 0.08), rgba(0,0,0,0.22))",
+        }}
+        aria-label="Lead pool"
+      >
+        <div className="space-y-1 min-w-0">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-300/90">Working set</p>
+          <p className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+            All leads · Top Picks · Scout
+          </p>
+          <p className="text-xs max-w-xl leading-snug" style={{ color: "var(--admin-muted)" }}>
+            <strong className="text-emerald-200/90">Top Picks</strong> is your hand-picked list (<code className="text-[10px] opacity-90">manual_pick</code>
+            ). <strong className="text-sky-200/85">Scout</strong> is discovery-only — it never mixes into Top Picks unless you promote a lead.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 items-center" role="tablist" aria-label="Lead pool filter">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={poolTab === "all"}
+            className={
+              poolTab === "all"
+                ? "admin-btn-primary text-sm px-4 py-2.5 rounded-lg ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)]"
+                : "admin-btn-ghost text-sm px-4 py-2.5 rounded-lg border border-[var(--admin-border)]"
+            }
+            onClick={() => replaceUrlPool("all")}
+          >
+            All leads ({poolCounts.all})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={poolTab === "top_picks"}
+            className={
+              poolTab === "top_picks"
+                ? "admin-btn-primary text-sm px-4 py-2.5 rounded-lg ring-2 ring-emerald-400/70 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)]"
+                : "admin-btn-ghost text-sm px-4 py-2.5 rounded-lg border border-emerald-500/40"
+            }
+            onClick={() => replaceUrlPool("top_picks")}
+          >
+            Top Picks ({poolCounts.top_picks})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={poolTab === "scout"}
+            className={
+              poolTab === "scout"
+                ? "admin-btn-primary text-sm px-4 py-2.5 rounded-lg ring-2 ring-sky-400/60 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)]"
+                : "admin-btn-ghost text-sm px-4 py-2.5 rounded-lg border border-sky-500/35"
+            }
+            onClick={() => replaceUrlPool("scout")}
+          >
+            Scout leads ({poolCounts.scout})
+          </button>
+        </div>
+      </section>
+
+      {poolTab === "all" ? <TopPicksStrip leads={topPickStripLeads} /> : null}
 
       <section
         className={`rounded-xl border-2 p-4 sm:p-5 space-y-3 shadow-[0_0_28px_rgba(59,130,246,0.12)] ${
@@ -562,7 +664,7 @@ export function LeadsCardBrowser({
         <div className="w-full min-w-[200px]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0 mb-1">
             <span className="text-xs font-semibold" style={{ color: "var(--admin-muted)" }}>
-              Source
+              Source{poolTab !== "all" ? " (use All leads pool to refine by source)" : ""}
             </span>
             <button
               type="button"
@@ -577,7 +679,8 @@ export function LeadsCardBrowser({
             aria-label="Filter by lead source"
             className="w-full max-w-xs rounded-lg border px-3 py-2 text-sm"
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
-            value={sourceTab}
+            value={sourceTabEffective}
+            disabled={poolTab !== "all"}
             onChange={(e) => setSourceTab(e.target.value as SourceFilterTab)}
           >
             {SOURCE_FILTER_OPTIONS.map((o) => (
@@ -634,23 +737,35 @@ export function LeadsCardBrowser({
           <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
             {leads.length === 0
               ? emptyStateReason || "No leads match filters."
-              : targetPresetActive && presetMatchCount === 0
-                ? "No leads match Facebook No-Website Reachable — add extension captures from Facebook or scout Facebook leads without a standalone site."
-                : targetPresetActive && listBase.length > 0 && laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
-                  ? FOLDER_EMPTY_MESSAGES[laneTab]
-                  : targetPresetActive && listBase.length > 0 && laneTab !== "all"
-                    ? "No leads in this folder match your search or status filters."
-                    : targetPresetActive && listBase.length > 0
-                      ? "No leads match your search or status filters in this targeting mode."
-                      : laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
+              : poolTab === "top_picks" && poolCounts.top_picks === 0
+                ? "You don’t have any Top Picks yet. Import hand-picked leads (Admin tools → Import Top Picks JSON) or promote a lead with “Add to Top Picks.”"
+                : poolTab === "scout" && poolCounts.scout === 0
+                  ? "No Scout-sourced leads in your workspace yet. Use Find businesses to add some, or switch to All leads."
+                  : pooledLeads.length === 0 && poolTab !== "all"
+                    ? "No leads in this pool."
+                    : targetPresetActive && presetMatchCount === 0
+                      ? "No leads match Facebook No-Website Reachable — add extension captures from Facebook or scout Facebook leads without a standalone site."
+                      : targetPresetActive && listBase.length > 0 && laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
                         ? FOLDER_EMPTY_MESSAGES[laneTab]
-                        : laneTab !== "all"
+                        : targetPresetActive && listBase.length > 0 && laneTab !== "all"
                           ? "No leads in this folder match your search or status filters."
-                          : "No leads match filters."}
+                          : targetPresetActive && listBase.length > 0
+                            ? "No leads match your search or status filters in this targeting mode."
+                            : laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
+                              ? FOLDER_EMPTY_MESSAGES[laneTab]
+                              : laneTab !== "all"
+                                ? "No leads in this folder match your search or status filters."
+                                : "No leads match filters."}
           </p>
           {leads.length === 0 && emptyStateReason ? (
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
               Go to <Link href="/admin/scout" className="text-[var(--admin-gold)] underline">Find businesses</Link> and add a few leads to get started.
+            </p>
+          ) : poolTab === "top_picks" && poolCounts.top_picks === 0 ? (
+            <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+              Open <strong className="text-emerald-200/90">Admin tools</strong> on this page and use{" "}
+              <strong className="text-emerald-200/90">Import Top Picks (JSON)</strong>, or open any lead and choose{" "}
+              <strong className="text-emerald-200/90">Add to Top Picks</strong>.
             </p>
           ) : null}
         </section>
@@ -864,6 +979,12 @@ export function LeadsCardBrowser({
                       >
                         Follow up
                       </button>
+                      <PromoteToTopPicksButton
+                        leadId={lead.id}
+                        initialTags={lead.lead_tags}
+                        isTopPick={isTopPickLead(lead)}
+                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-emerald-500/35"
+                      />
                     </>
                   )}
                 </div>
@@ -1093,6 +1214,12 @@ export function LeadsCardBrowser({
                       >
                         Follow up
                       </button>
+                      <PromoteToTopPicksButton
+                        leadId={lead.id}
+                        initialTags={lead.lead_tags}
+                        isTopPick={isTopPickLead(lead)}
+                        className="admin-btn-ghost text-xs border border-emerald-500/35"
+                      />
                     </>
                   )}
                 </div>

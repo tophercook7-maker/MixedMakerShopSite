@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { BackfillLeadsButton } from "@/components/admin/backfill-leads-button";
+import { ManualPicksBulkImport } from "@/components/admin/crm/manual-picks-bulk-import";
 import { LeadsWorkflowView } from "@/components/admin/leads-workflow-view";
 import { LeadsCardBrowser } from "@/components/admin/crm/leads-card-browser";
 import { CapturedLeadsSection } from "@/components/admin/crm/captured-leads-section";
@@ -29,6 +30,8 @@ export default async function AdminLeadsPage({
     sort?: string;
     /** Preset: `facebook_no_website_reachable` — see `lib/crm/facebook-no-website-reachable.ts` */
     target?: string;
+    /** Lead pool: `all` | `top_picks` | `scout` — card view reads this via URL */
+    pool?: string;
   }>;
 }) {
   const { error, detail, add, view, density, highlight, lane, sort: sortParam, target } = await searchParams;
@@ -152,7 +155,8 @@ export default async function AdminLeadsPage({
             Leads
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
-            Your saved businesses — use search and filters below, then open a lead to work it.
+            Your saved businesses — use <strong className="text-emerald-200/90 font-medium">Top Picks</strong> for your hand-picked list,{" "}
+            <strong className="text-sky-200/85 font-medium">Scout</strong> for discovery leads, then open a lead to work it.
           </p>
           {targetFacebookMode ? (
             <p className="text-xs mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
@@ -244,6 +248,17 @@ export default async function AdminLeadsPage({
               Import from opportunities
             </p>
             <BackfillLeadsButton />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--admin-muted)" }}>
+              Import Top Picks (JSON)
+            </p>
+            <p className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
+              Bulk-add hand-picked leads as <code className="text-[10px] opacity-90">manual_pick</code> (not Scout). Same as{" "}
+              <code className="text-[10px] opacity-90">POST /api/admin/import-manual-leads</code> (alias:{" "}
+              <code className="text-[10px] opacity-90">/api/leads/bulk-manual-picks</code>).
+            </p>
+            <ManualPicksBulkImport />
           </div>
         </div>
       </details>

@@ -1,9 +1,6 @@
-import CrmDashboard from "@/components/admin/crm-dashboard";
+import { permanentRedirect } from "next/navigation";
 
-export default function AdminCrmPage() {
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-6 md:px-6">
-      <CrmDashboard />
-    </div>
-  );
+/** Local browser CRM removed — all leads live in Supabase. Use /admin/leads (Top Picks pool for hand-picked). */
+export default function AdminCrmRedirectPage() {
+  permanentRedirect("/admin/leads");
 }

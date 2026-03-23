@@ -20,6 +20,8 @@ import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { computeLeadLaneBundle } from "@/lib/crm/lead-lane";
 import { BackToLeadsLink } from "@/components/admin/crm/back-to-leads-link";
 import { LeadDetailCleanupActions } from "@/components/admin/lead-detail-cleanup-actions";
+import { PromoteToTopPicksButton } from "@/components/admin/crm/promote-to-top-picks-button";
+import { isTopPickLead } from "@/lib/crm/manual-pick-leads";
 
 type LeadRow = {
   id: string;
@@ -65,6 +67,8 @@ type LeadRow = {
   category?: string | null;
   source_url?: string | null;
   source_label?: string | null;
+  source?: string | null;
+  lead_source?: string | null;
   conversion_score?: number | null;
   why_this_lead_is_here?: string | null;
   has_website?: boolean | null;
@@ -123,6 +127,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "category",
     "source_url",
     "source_label",
+    "source",
+    "lead_source",
     "conversion_score",
     "why_this_lead_is_here",
     "google_business_url",
@@ -1459,7 +1465,19 @@ Want me to show you a quick idea?`;
           <div className="flex flex-col items-end gap-3 shrink-0 self-start min-w-[200px]">
             <BackToLeadsLink className="admin-btn-ghost text-sm whitespace-nowrap" />
             {resolvedLeadId ? (
-              <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
+              <div className="flex flex-col gap-2 w-full items-end">
+                <PromoteToTopPicksButton
+                  leadId={resolvedLeadId}
+                  initialTags={lead?.lead_tags}
+                  isTopPick={isTopPickLead({
+                    source: lead?.source,
+                    lead_source: lead?.lead_source,
+                    lead_tags: lead?.lead_tags,
+                  })}
+                  className="admin-btn-ghost text-sm px-3 py-2 rounded-lg border border-emerald-500/35 w-full sm:w-auto"
+                />
+                <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
+              </div>
             ) : null}
           </div>
         </div>

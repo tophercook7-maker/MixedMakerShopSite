@@ -31,9 +31,6 @@ function linkActive(pathname: string, href: string): boolean {
   if (href === "/admin/today") {
     return pathname === "/admin/today" || pathname === "/admin";
   }
-  if (href === "/admin/crm") {
-    return pathname === "/admin/crm";
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -85,8 +82,8 @@ export default function Sidebar() {
         <a href="/admin/clients" className="block py-1 hover:text-[var(--admin-gold)]">
           Clients
         </a>
-        <a href="/admin/crm" className="block py-1 hover:text-[var(--admin-gold)]">
-          Local CRM
+        <a href="/admin/leads?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
+          Top Picks
         </a>
         <a href="/admin/crm/hub" className="block py-1 hover:text-[var(--admin-gold)]">
           CRM hub
