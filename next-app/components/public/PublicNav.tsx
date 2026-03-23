@@ -61,6 +61,9 @@ export function PublicNav() {
           <Link href="/3d-printing" className="pill">
             3D Printing
           </Link>
+          <Link href="/upload-print" className="pill">
+            Upload print
+          </Link>
           <Link href="/website-roast" className="pill">
             Free Website Roast
           </Link>
