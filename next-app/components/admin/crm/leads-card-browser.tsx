@@ -26,6 +26,8 @@ import {
   type CrmLeadLane,
   leadHasContactPath,
 } from "@/lib/crm/lead-lane";
+import { FOLDER_EMPTY_MESSAGES, parseFolderFromUrlParam, workflowLeadToFolderInput } from "@/lib/crm/lead-buckets";
+import { WorkTheseNowStrip } from "@/components/admin/crm/work-these-now-strip";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -72,13 +74,7 @@ function contactSignalsLine(lead: WorkflowLead): string {
 }
 
 function parseLaneParam(raw: string | null | undefined): CrmLeadLane | "all" {
-  const x = String(raw || "")
-    .trim()
-    .toLowerCase()
-    .replace(/-/g, "_");
-  if (!x) return "all";
-  if ((CRM_LEAD_LANES as readonly string[]).includes(x)) return x as CrmLeadLane;
-  return "all";
+  return parseFolderFromUrlParam(raw);
 }
 
 function workflowLeadContactPath(lead: WorkflowLead): boolean {
@@ -91,19 +87,7 @@ function workflowLeadContactPath(lead: WorkflowLead): boolean {
 }
 
 function effectiveCrmLane(lead: WorkflowLead): CrmLeadLane {
-  return (
-    lead.crm_lane ??
-    computePrimaryLeadLane({
-      email: lead.email,
-      phone: lead.phone_from_site,
-      website: lead.website,
-      facebook_url: lead.facebook_url,
-      contact_page: lead.contact_page,
-      conversion_score: lead.conversion_score,
-      opportunity_score: lead.opportunity_score,
-      why_this_lead_is_here: lead.why_this_lead_is_here,
-    })
-  );
+  return lead.crm_lane ?? computePrimaryLeadLane(workflowLeadToFolderInput(lead));
 }
 
 function opportunityLine(lead: WorkflowLead): string {
@@ -111,6 +95,20 @@ function opportunityLine(lead: WorkflowLead): string {
   const pick = w || String(lead.detected_issue_summary || "").trim();
   if (!pick || pick === "No website audit data yet") return "—";
   return pick.length > 88 ? `${pick.slice(0, 85)}…` : pick;
+}
+
+function folderBucketLine(lead: WorkflowLead): string {
+  const label = lead.crm_lane_label || CRM_LANE_LABELS[effectiveCrmLane(lead)];
+  return `Bucket: ${label}`;
+}
+
+function nextStepLine(lead: WorkflowLead): string {
+  const raw = String(lead.lane_summary_line || "").trim();
+  if (raw.startsWith("Next:")) return raw;
+  const s = lead.simplified_next_step_crm;
+  if (!s) return "—";
+  const cap = s.charAt(0).toUpperCase() + s.slice(1);
+  return `Next: ${cap}`;
 }
 
 async function logAutomation(leadId: string, event_type: string, payload: Record<string, unknown> = {}) {
@@ -293,22 +291,28 @@ export function LeadsCardBrowser({
         </div>
       ) : null}
 
+      <WorkTheseNowStrip leads={leads} />
+
       <section
         className="rounded-xl border-2 p-4 space-y-3"
-        style={{ borderColor: "rgba(212, 175, 55, 0.4)", background: "rgba(0,0,0,0.2)" }}
+        style={{ borderColor: "rgba(212, 175, 55, 0.45)", background: "rgba(0,0,0,0.22)" }}
       >
         <div>
           <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--admin-gold)" }}>
-            Lead lanes
+            Lead folders
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--admin-muted)" }}>
-            Pick a bucket — same leads as below, filtered. No Google required.
+            Open a folder to focus the list — counts use every lead loaded below (before this folder filter).
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" aria-label="Lead folders">
           <button
             type="button"
-            className={laneTab === "all" ? "admin-btn-primary text-xs px-3 py-2" : "admin-btn-ghost text-xs px-3 py-2 border border-[var(--admin-border)]"}
+            className={
+              laneTab === "all"
+                ? "admin-btn-primary text-xs px-3 py-2 rounded-lg ring-2 ring-[var(--admin-gold)]/85 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)] shadow-md"
+                : "admin-btn-ghost text-xs px-3 py-2 rounded-lg border border-[var(--admin-border)]"
+            }
             onClick={() => {
               setLaneTab("all");
               replaceUrlLane("all");
@@ -322,8 +326,8 @@ export function LeadsCardBrowser({
               type="button"
               className={
                 laneTab === id
-                  ? "admin-btn-primary text-xs px-3 py-2"
-                  : "admin-btn-ghost text-xs px-3 py-2 border border-[var(--admin-border)]"
+                  ? "admin-btn-primary text-xs px-3 py-2 rounded-lg ring-2 ring-[var(--admin-gold)]/85 ring-offset-2 ring-offset-[rgba(0,0,0,0.35)] shadow-md"
+                  : "admin-btn-ghost text-xs px-3 py-2 rounded-lg border border-[var(--admin-border)]"
               }
               onClick={() => {
                 setLaneTab(id);
@@ -468,9 +472,15 @@ export function LeadsCardBrowser({
       {filtered.length === 0 ? (
         <section className="admin-card space-y-2">
           <p className="text-sm font-medium" style={{ color: "var(--admin-fg)" }}>
-            {emptyStateReason || "No leads match filters."}
+            {leads.length === 0
+              ? emptyStateReason || "No leads match filters."
+              : laneTab !== "all" && (laneCounts[laneTab] ?? 0) === 0
+                ? FOLDER_EMPTY_MESSAGES[laneTab]
+                : laneTab !== "all"
+                  ? "No leads in this folder match your search or status filters."
+                  : "No leads match filters."}
           </p>
-          {emptyStateReason ? (
+          {leads.length === 0 && emptyStateReason ? (
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
               Go to <Link href="/admin/scout" className="text-[var(--admin-gold)] underline">Find businesses</Link> and add a few leads to get started.
             </p>
@@ -505,16 +515,11 @@ export function LeadsCardBrowser({
                     {prettyLeadStatus(lead.status)}
                   </span>
                 </div>
-                {lead.crm_lane_label ? (
-                  <span
-                    className="text-[10px] font-semibold px-2 py-0.5 rounded w-fit border"
-                    style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
-                  >
-                    {lead.crm_lane_label}
-                  </span>
-                ) : null}
-                <p className="text-[10px] leading-snug" style={{ color: "var(--admin-muted)" }}>
-                  {lead.lane_summary_line || "—"}
+                <p className="text-[10px] leading-snug opacity-90" style={{ color: "var(--admin-muted)" }}>
+                  {folderBucketLine(lead)}
+                </p>
+                <p className="text-[10px] leading-snug font-medium" style={{ color: "var(--admin-fg)" }}>
+                  {nextStepLine(lead)}
                 </p>
                 <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
                   {lead.city || "—"}
@@ -638,16 +643,11 @@ export function LeadsCardBrowser({
                     {prettyLeadStatus(lead.status)}
                   </span>
                 </div>
-                {lead.crm_lane_label ? (
-                  <p
-                    className="text-[10px] font-semibold mt-2 px-2 py-0.5 rounded w-fit border"
-                    style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
-                  >
-                    {lead.crm_lane_label}
-                  </p>
-                ) : null}
-                <p className="text-[10px] mt-1" style={{ color: "var(--admin-muted)" }}>
-                  {lead.lane_summary_line || "—"}
+                <p className="text-[10px] mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
+                  {folderBucketLine(lead)}
+                </p>
+                <p className="text-[10px] mt-0.5 font-medium" style={{ color: "var(--admin-fg)" }}>
+                  {nextStepLine(lead)}
                 </p>
                 <p className="text-[11px] mt-2 font-medium" style={{ color: "var(--admin-fg)" }}>
                   {contactSignalsLine(lead)}

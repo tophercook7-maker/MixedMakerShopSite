@@ -26,24 +26,23 @@ export function PublicNav() {
             <div className="logo">M³</div>
           ) : (
             <Image
-              src="/m3-brand.png"
-              alt="MixedMakerShop M³ — Massive Brain"
+              src="/images/m3-logo.png"
+              alt="MixedMakerShop M³ logo"
               width={56}
               height={56}
-              className="rounded-xl shadow-[0_0_15px_rgba(255,140,0,0.6)] shrink-0 object-cover"
+              className="rounded-xl shadow-[0_0_15px_rgba(255,140,0,0.6)] shrink-0 object-contain"
               priority
               onError={() => setLogoFailed(true)}
             />
           )}
           <div className="brand-title">
-            <div className="name">MIXEDMAKERSHOP</div>
+            <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Owned & Operated by Topher Cook</strong>
+              <strong>Custom 3D Printing</strong>
             </div>
             <div className="small" style={{ fontSize: 12, color: "rgba(255,255,255,.55)" }}>
-              Custom Web Design • Local Visibility • 3D Printing
+              Web design • Hot Springs, Arkansas • Owned by Topher Cook
             </div>
-            <div className="tag">From ideas to websites, tools, and builds you can hold.</div>
           </div>
         </Link>
         <button ref={toggleRef} className="menu-toggle" type="button" aria-label="Open menu">

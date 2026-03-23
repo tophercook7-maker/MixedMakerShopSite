@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
-import { LeadContactFirst } from "@/components/admin/lead-contact-first";
 import { LeadContactNow } from "@/components/admin/lead-contact-now";
 import { LeadSuggestedResponse } from "@/components/admin/lead-suggested-response";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
@@ -924,12 +923,6 @@ export default async function AdminLeadDetailPage({
   const issueList = Array.from(
     new Set(issueListRaw.map((v) => String(v || "").trim()).filter(Boolean))
   ).slice(0, 8);
-  const signalEmailSource =
-    (Array.isArray(opp?.opportunity_signals) ? opp!.opportunity_signals : [])
-      .map((v) => String(v || "").trim())
-      .find((signal) => signal.toLowerCase().startsWith("email_source:"))
-      ?.split(":")[1]
-      ?.trim() || "";
   const structuredIssues =
     websiteIssuesFromDb.length > 0
       ? websiteIssuesFromDb
@@ -1123,7 +1116,6 @@ export default async function AdminLeadDetailPage({
     String(opp?.website || "").trim() ||
     String(lead?.website || "").trim();
   const displayEmail = String(lead?.email || caseRow?.email || "").trim();
-  const displayEmailSource = displayEmail ? (signalEmailSource || "unknown") : "unknown";
   const displayPhone = String(lead?.phone || caseRow?.phone_from_site || "").trim();
   const displayContactPage = String(
     lead?.contact_page || caseRow?.contact_page || caseRow?.contact_form_url || ""
@@ -1137,15 +1129,26 @@ export default async function AdminLeadDetailPage({
   const displaySuggestedResponse = String(lead?.suggested_response || "").trim();
 
   const resolvedBest = (() => {
+    const fbNorm = displayFacebook
+      ? displayFacebook.startsWith("http")
+        ? displayFacebook
+        : `https://${displayFacebook}`
+      : "";
+    const noEmail = !displayEmail;
+
     let method = String(lead?.best_contact_method || "").trim().toLowerCase();
     if (method === "contact_page") method = "contact_form";
     if (method === "none") method = "";
     let value: string | null = String(lead?.best_contact_value || "").trim() || null;
 
     if (method) {
+      // Facebook-only leads: do not let stored "phone" win over Facebook when there is no email.
+      if (noEmail && fbNorm && method === "phone") {
+        method = "facebook";
+        value = fbNorm;
+      }
       if (method === "email" && !value) value = displayEmail || null;
-      if (method === "facebook" && !value && displayFacebook)
-        value = displayFacebook.startsWith("http") ? displayFacebook : `https://${displayFacebook}`;
+      if (method === "facebook" && !value && displayFacebook) value = fbNorm || null;
       if (method === "phone" && !value) value = displayPhone || null;
       if (method === "contact_form" && !value) value = displayContactPage || null;
       if (method === "website" && !value && displayWebsite && leadHasStandaloneWebsite(displayWebsite))
@@ -1156,7 +1159,7 @@ export default async function AdminLeadDetailPage({
     if (displayFacebook)
       return {
         method: "facebook" as const,
-        value: displayFacebook.startsWith("http") ? displayFacebook : `https://${displayFacebook}`,
+        value: fbNorm,
       };
     if (displayPhone) return { method: "phone", value: displayPhone };
     if (displayContactPage)
@@ -1218,6 +1221,9 @@ export default async function AdminLeadDetailPage({
     conversion_score: lead?.conversion_score ?? null,
     opportunity_score: displayScore,
     why_this_lead_is_here: lead?.why_this_lead_is_here ?? null,
+    status: lead?.status ?? caseRow?.status ?? null,
+    best_contact_method: lead?.best_contact_method ?? null,
+    is_hot_lead: lead?.is_hot_lead ?? null,
   });
   const nextStepLabel =
     laneBundle.simplified_next_step.charAt(0).toUpperCase() + laneBundle.simplified_next_step.slice(1);
@@ -1375,14 +1381,15 @@ Want me to show you a quick idea?`;
     caseRow?.google_review_count != null && String(caseRow.google_review_count).trim() !== "";
   const showGoogleRating =
     caseRow?.google_rating != null && String(caseRow.google_rating).trim() !== "";
-  const showEmailSource = Boolean(displayEmail) && displayEmailSource !== "unknown";
+
+  const showTopLoadWarningBanner = loadWarnings.length > 0 && !lead;
 
   return (
     <div className="space-y-6">
-      {loadWarnings.length > 0 ? (
+      {showTopLoadWarningBanner ? (
         <section className="admin-card">
           <p className="text-sm" style={{ color: "#fca5a5" }}>
-            Lead found, but related website/case data is missing.
+            Could not load this lead normally. Details below.
           </p>
           <ul className="list-disc pl-5 mt-2 text-xs" style={{ color: "var(--admin-muted)" }}>
             {Array.from(new Set(loadWarnings)).map((warning) => (
@@ -1444,17 +1451,6 @@ Want me to show you a quick idea?`;
         phone={displayPhone || null}
         contactPage={displayContactPage || null}
         website={displayWebsite || null}
-        googleBusinessUrl={displayGoogleBusiness || null}
-      />
-
-      <LeadContactFirst
-        email={displayEmail || null}
-        emailSource={showEmailSource ? displayEmailSource : null}
-        facebookUrl={displayFacebook || null}
-        phone={displayPhone || null}
-        website={displayWebsite || null}
-        contactPage={displayContactPage || null}
-        previewLeadId={resolvedLeadId || null}
       />
 
       <div className="space-y-6">

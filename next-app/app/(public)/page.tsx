@@ -70,14 +70,21 @@ export default function HomePage() {
               </p>
             </div>
             <div className="card project-card">
-              <h3 style={{ margin: "0 0 10px" }}>Creative concept testing</h3>
+              <h3 style={{ margin: "0 0 10px" }}>Custom 3D printing (PLA)</h3>
               <p className="small" style={{ margin: "0 0 16px", flex: 1, color: "var(--muted)" }}>
-                Design and copy experiments that evolve into real production direction.
+                Useful parts, mounts, organizers, and replacement pieces — designed and printed for real workshops and
+                homes.
+              </p>
+              <p className="small" style={{ margin: 0 }}>
+                <Link href="/3d-printing" style={{ color: "var(--gold)" }}>
+                  Custom 3D printing →
+                </Link>
               </p>
             </div>
           </div>
           <p className="small" style={{ margin: 0 }}>
-            Want to see website-specific work? <Link href="/website-samples">Browse website samples</Link>.
+            Website work: <Link href="/web-design">Work With Topher</Link> · Samples:{" "}
+            <Link href="/website-samples">website samples</Link>.
           </p>
         </div>
       </section>

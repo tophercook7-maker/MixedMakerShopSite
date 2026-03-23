@@ -79,14 +79,19 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
   const hasEmail = Boolean(email);
   const hasWebsite = Boolean(website);
   const hasContactAvailable = Boolean(contactPage || facebook || phone);
+  const hasFacebook = Boolean(facebook);
+  let effectiveMethod = bestContactMethod;
+  if (!hasEmail && hasFacebook && effectiveMethod === "phone") {
+    effectiveMethod = "facebook";
+  }
   const resolvedBestContact = (
-    bestContactMethod ||
+    effectiveMethod ||
     (hasEmail
       ? "email"
-      : contactPage
-        ? "contact_form"
-        : facebook
-          ? "facebook"
+      : hasFacebook
+        ? "facebook"
+        : contactPage
+          ? "contact_form"
           : phone
             ? "phone"
             : hasWebsite
@@ -107,6 +112,9 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     conversion_score: row.conversion_score,
     opportunity_score: row.opportunity_score,
     why_this_lead_is_here: row.why_this_lead_is_here,
+    status: row.status,
+    best_contact_method: resolvedBestContact,
+    is_hot_lead: row.is_hot_lead,
   });
   const step = laneBundle.simplified_next_step;
   const recommendedFromLane: WorkflowLead["recommended_next_action"] =
