@@ -6,7 +6,12 @@ import {
   isGoodWebsiteSansClearOpportunity,
   workflowLeadToFolderInput,
 } from "@/lib/crm/lead-buckets";
-import { resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
+import {
+  appendEncodedSmsBody,
+  buildLeadSmsMessage,
+  cleanPhoneForSmsAndTel,
+  resolveLeadPrimaryAction,
+} from "@/lib/crm/lead-primary-action";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 import { leadHasContactPath } from "@/lib/crm/lead-lane";
 import { buildLeadPath } from "@/lib/lead-route";
@@ -93,7 +98,7 @@ export function getTopWorkLeads(leads: WorkflowLead[], max: number = DEFAULT_MAX
     .slice(0, max);
 }
 
-export type WorkLeadPrimaryKind = "email" | "facebook" | "phone" | "contact_form";
+export type WorkLeadPrimaryKind = "email" | "facebook" | "sms" | "phone" | "contact_form";
 
 export type WorkLeadPrimaryAction = {
   kind: WorkLeadPrimaryKind;
@@ -103,17 +108,8 @@ export type WorkLeadPrimaryAction = {
   detailLine: string;
   href: string;
   external: boolean;
+  secondary?: { label: string; href: string };
 };
-
-function formatPhoneDisplay(raw: string): string {
-  const d = raw.replace(/\D/g, "");
-  if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
-  if (d.length === 11 && d.startsWith("1")) {
-    const x = d.slice(1);
-    return `(${x.slice(0, 3)}) ${x.slice(3, 6)}-${x.slice(6)}`;
-  }
-  return raw.trim();
-}
 
 function absoluteUrl(raw: string): string {
   const u = raw.trim();
@@ -156,13 +152,15 @@ export function resolveWorkLeadPrimaryAction(lead: WorkflowLead): WorkLeadPrimar
 
   const tryPhone = (): WorkLeadPrimaryAction | null => {
     if (!phone) return null;
-    const tel = phone.replace(/[^\d+]/g, "");
+    const links = cleanPhoneForSmsAndTel(phone);
+    if (!links) return null;
     return {
-      kind: "phone",
-      label: "Call",
-      detailLine: `Phone → ${formatPhoneDisplay(phone)}`,
-      href: tel.startsWith("+") ? `tel:${tel}` : `tel:${tel}`,
+      kind: "sms",
+      label: "Text",
+      detailLine: `Text → ${links.display}`,
+      href: appendEncodedSmsBody(links.smsHref, buildLeadSmsMessage(lead)),
       external: false,
+      secondary: { label: "Call", href: links.telHref },
     };
   };
 

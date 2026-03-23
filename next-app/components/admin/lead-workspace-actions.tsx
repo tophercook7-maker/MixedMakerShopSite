@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { addBusinessDaysIso } from "@/lib/crm/business-days";
+import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
+import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
   BUSINESS_TYPE_OPTIONS,
@@ -105,9 +107,6 @@ function sampleDraftFingerprint(s: LeadSampleRecord): string {
   ].join("\u0000");
 }
 const OUTREACH_DRAFTS_KEY = "crm.outreach_prepared_drafts";
-
-const DEFAULT_SMS_TEMPLATE =
-  "Hi, this is Topher with Topher's Web Design. I noticed an online visibility opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
 const QUICK_REPLY_STORAGE_KEY = "crm.quick_replies.custom";
 
@@ -325,6 +324,18 @@ export function LeadWorkspaceActions({
   initialSuggestedOutreachBody = null,
 }: LeadWorkspaceActionsProps) {
   const hasWebsitePresence = Boolean(String(website || "").trim());
+  const prefilledSmsHrefValue = useMemo(() => {
+    const phone = String(initialPhone || "").trim();
+    if (!phone) return null;
+    const links = cleanPhoneForSmsAndTel(phone);
+    if (!links) return null;
+    const body = buildLeadSmsBody({
+      website: String(website || ""),
+      lead_tags: undefined,
+      has_website: null,
+    });
+    return appendEncodedSmsBody(links.smsHref, body);
+  }, [initialPhone, website]);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -1389,19 +1400,6 @@ export function LeadWorkspaceActions({
     );
   }
 
-  function smsTemplate() {
-    return DEFAULT_SMS_TEMPLATE.replace(
-      "an online visibility opportunity",
-      `an online visibility opportunity for ${initialBusinessName || "your business"}`
-    );
-  }
-
-  function smsHref() {
-    const phone = String(initialPhone || "").replace(/[^\d+]/g, "");
-    const body = encodeURIComponent(smsTemplate());
-    return `sms:${encodeURIComponent(phone)}?&body=${body}`;
-  }
-
   async function copyNumber() {
     const next = String(initialPhone || "").trim();
     if (!next) {
@@ -1419,7 +1417,13 @@ export function LeadWorkspaceActions({
 
   async function copyTextScript() {
     try {
-      await navigator.clipboard.writeText(smsTemplate());
+      await navigator.clipboard.writeText(
+        buildLeadSmsBody({
+          website: String(website || ""),
+          lead_tags: undefined,
+          has_website: null,
+        })
+      );
       setMessage("Text script copied.");
       setError(null);
     } catch {
@@ -2974,7 +2978,13 @@ export function LeadWorkspaceActions({
           ) : null}
           {initialPhone ? (
             <>
-              <a href={smsHref()} className="admin-btn-ghost">
+              <a
+                href={prefilledSmsHrefValue ?? "#"}
+                className="admin-btn-ghost"
+                onClick={(event) => {
+                  if (!prefilledSmsHrefValue) event.preventDefault();
+                }}
+              >
                 Text from Mac
               </a>
               <button className="admin-btn-ghost" onClick={() => void copyNumber()}>

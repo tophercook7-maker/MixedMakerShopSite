@@ -11,6 +11,8 @@ import type { ContactReadiness, CrmLeadLane } from "@/lib/crm/lead-lane";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
 import { LeadForm } from "@/components/admin/lead-form";
 import { OutreachBadges } from "@/components/admin/outreach-badges";
+import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
+import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
 
 function formatLeadApiError(body: unknown, fallback: string): string {
   if (!body || typeof body !== "object") return fallback;
@@ -20,9 +22,6 @@ function formatLeadApiError(body: unknown, fallback: string): string {
   if (typeof rec.message === "string") return rec.message;
   return fallback;
 }
-
-const DEFAULT_SMS_TEMPLATE =
-  "Hi, this is Topher with Topher's Web Design. I noticed a website opportunity that could help customers reach your business more easily. Want me to send you a quick example?";
 
 type FollowUpStatus = "pending" | "completed";
 
@@ -179,12 +178,19 @@ function actionDebug(action: string, payload: Record<string, unknown>) {
   console.info("[Action Debug]", action, payload);
 }
 
-function smsHref(rawPhone: string, businessName: string) {
-  const phone = String(rawPhone || "").replace(/[^\d+]/g, "");
-  const body = encodeURIComponent(
-    DEFAULT_SMS_TEMPLATE.replace("a website opportunity", `a website opportunity for ${businessName || "your business"}`)
-  );
-  return `sms:${encodeURIComponent(phone)}?&body=${body}`;
+function leadPrefilledSmsHref(
+  lead: Pick<WorkflowLead, "phone_from_site" | "website" | "lead_tags" | "has_website">
+): string | null {
+  const phone = String(lead.phone_from_site || "").trim();
+  if (!phone) return null;
+  const links = cleanPhoneForSmsAndTel(phone);
+  if (!links) return null;
+  const body = buildLeadSmsBody({
+    website: String(lead.website || ""),
+    lead_tags: lead.lead_tags,
+    has_website: lead.has_website,
+  });
+  return appendEncodedSmsBody(links.smsHref, body);
 }
 
 function doorScoreClass(score: number | null | undefined): string {
@@ -1976,9 +1982,12 @@ export function LeadsWorkflowView({
                   {lead.phone_from_site ? (
                     <>
                       <a
-                        href={smsHref(lead.phone_from_site, lead.business_name)}
+                        href={leadPrefilledSmsHref(lead) ?? "#"}
                         className="admin-btn-ghost text-xs"
-                        onClick={() => actionDebug("Text from Mac clicked", { leadId: lead.id, phone: lead.phone_from_site })}
+                        onClick={(event) => {
+                          if (!leadPrefilledSmsHref(lead)) event.preventDefault();
+                          actionDebug("Text from Mac clicked", { leadId: lead.id, phone: lead.phone_from_site });
+                        }}
                       >
                         Text from Mac
                       </a>
@@ -1994,10 +2003,11 @@ export function LeadsWorkflowView({
                         className="admin-btn-ghost text-xs"
                         onClick={() =>
                           void copyText(
-                            DEFAULT_SMS_TEMPLATE.replace(
-                              "a website opportunity",
-                              `a website opportunity for ${lead.business_name || "your business"}`
-                            ),
+                            buildLeadSmsBody({
+                              website: String(lead.website || ""),
+                              lead_tags: lead.lead_tags,
+                              has_website: lead.has_website,
+                            }),
                             "Could not copy text script."
                           )
                         }
@@ -2369,8 +2379,11 @@ export function LeadsWorkflowView({
                         {lead.phone_from_site ? (
                           <>
                             <a
-                              href={smsHref(lead.phone_from_site, lead.business_name)}
+                              href={leadPrefilledSmsHref(lead) ?? "#"}
                               className="text-[var(--admin-gold)] hover:underline text-xs"
+                              onClick={(event) => {
+                                if (!leadPrefilledSmsHref(lead)) event.preventDefault();
+                              }}
                             >
                               Text from Mac
                             </a>
@@ -2386,10 +2399,11 @@ export function LeadsWorkflowView({
                               className="text-[var(--admin-gold)] hover:underline text-xs"
                               onClick={() =>
                                 void copyText(
-                                  DEFAULT_SMS_TEMPLATE.replace(
-                                    "a website opportunity",
-                                    `a website opportunity for ${lead.business_name || "your business"}`
-                                  ),
+                                  buildLeadSmsBody({
+                                    website: String(lead.website || ""),
+                                    lead_tags: lead.lead_tags,
+                                    has_website: lead.has_website,
+                                  }),
                                   "Could not copy text script."
                                 )
                               }

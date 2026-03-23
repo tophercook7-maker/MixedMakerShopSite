@@ -719,16 +719,28 @@ export function LeadsCardBrowser({
                           {primaryAction.label}
                         </LeadsListReturnLink>
                       ) : primaryAction.href ? (
-                        <a
-                          href={primaryAction.href}
-                          className="admin-btn-primary text-xs px-3 py-2"
-                          onClick={(e) => e.stopPropagation()}
-                          {...(primaryAction.external
-                            ? { target: "_blank" as const, rel: "noopener noreferrer" }
-                            : {})}
-                        >
-                          {primaryAction.label}
-                        </a>
+                        <>
+                          <a
+                            href={primaryAction.href}
+                            className="admin-btn-primary text-xs px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                            {...(primaryAction.external
+                              ? { target: "_blank" as const, rel: "noopener noreferrer" }
+                              : {})}
+                          >
+                            {primaryAction.label}
+                          </a>
+                          {primaryAction.secondary?.href ? (
+                            <a
+                              href={primaryAction.secondary.href}
+                              className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100 px-1"
+                              style={{ color: "var(--admin-muted)" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {primaryAction.secondary.label}
+                            </a>
+                          ) : null}
+                        </>
                       ) : (
                         <LeadsListReturnLink
                           href={workspaceHref}
@@ -939,15 +951,26 @@ export function LeadsCardBrowser({
                           {primaryActionDetailed.label}
                         </LeadsListReturnLink>
                       ) : primaryActionDetailed.href ? (
-                        <a
-                          href={primaryActionDetailed.href}
-                          className="admin-btn-primary text-xs px-3 py-2"
-                          {...(primaryActionDetailed.external
-                            ? { target: "_blank" as const, rel: "noopener noreferrer" }
-                            : {})}
-                        >
-                          {primaryActionDetailed.label}
-                        </a>
+                        <>
+                          <a
+                            href={primaryActionDetailed.href}
+                            className="admin-btn-primary text-xs px-3 py-2"
+                            {...(primaryActionDetailed.external
+                              ? { target: "_blank" as const, rel: "noopener noreferrer" }
+                              : {})}
+                          >
+                            {primaryActionDetailed.label}
+                          </a>
+                          {primaryActionDetailed.secondary?.href ? (
+                            <a
+                              href={primaryActionDetailed.secondary.href}
+                              className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100"
+                              style={{ color: "var(--admin-muted)" }}
+                            >
+                              {primaryActionDetailed.secondary.label}
+                            </a>
+                          ) : null}
+                        </>
                       ) : (
                         <LeadsListReturnLink href={workspaceHrefDetailed} className="admin-btn-primary text-xs px-3 py-2">
                           Open

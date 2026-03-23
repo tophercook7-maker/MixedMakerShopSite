@@ -82,13 +82,24 @@ export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
                     {action.label}
                   </LeadsListReturnLink>
                 ) : action.href ? (
-                  <a
-                    href={action.href}
-                    {...(action.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap"
-                  >
-                    {action.label}
-                  </a>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a
+                      href={action.href}
+                      {...(action.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap"
+                    >
+                      {action.label}
+                    </a>
+                    {action.secondary?.href ? (
+                      <a
+                        href={action.secondary.href}
+                        className="text-[11px] underline underline-offset-2 opacity-80 hover:opacity-100 px-0.5"
+                        style={{ color: "var(--admin-muted)" }}
+                      >
+                        {action.secondary.label}
+                      </a>
+                    ) : null}
+                  </div>
                 ) : (
                   <LeadsListReturnLink href={workspace} className="admin-btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap">
                     Open

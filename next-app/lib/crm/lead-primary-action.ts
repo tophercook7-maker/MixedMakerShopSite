@@ -2,9 +2,49 @@
  * Single best outreach action from stored fields only (fixed priority — no live Google).
  */
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
+import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
+import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
 import type { LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 
-export type LeadPrimaryActionType = "email" | "facebook" | "phone" | "contact_form" | "open" | "research";
+export { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
+export { buildLeadSmsBody, type LeadSmsBodyInput } from "@/lib/crm/lead-sms-body";
+
+/** Prefilled SMS copy for CRM Text action (stored fields only). */
+export function buildLeadSmsMessage(
+  lead: Pick<WorkflowLead, "website" | "lead_tags" | "has_website">
+): string {
+  return buildLeadSmsBody({
+    website: trim(lead.website),
+    lead_tags: lead.lead_tags,
+    has_website: lead.has_website,
+  });
+}
+
+export function buildLeadSmsMessageFromRow(
+  row: Pick<LeadRowForWorkflow, "website" | "lead_tags" | "has_website">
+): string {
+  return buildLeadSmsBody({
+    website: String(row.website || ""),
+    lead_tags: row.lead_tags,
+    has_website: row.has_website,
+  });
+}
+
+export type LeadPrimaryActionType =
+  | "email"
+  | "facebook"
+  | "sms"
+  | "phone"
+  | "contact_form"
+  | "open"
+  | "research";
+
+export type LeadPrimaryActionSecondary = {
+  type: "phone";
+  label: string;
+  href: string;
+  value?: string;
+};
 
 export type LeadPrimaryAction = {
   type: LeadPrimaryActionType;
@@ -12,8 +52,10 @@ export type LeadPrimaryAction = {
   href?: string;
   value?: string;
   reason?: string;
-  /** `tel` / `mailto` false; http(s) true */
+  /** `tel` / `mailto` / `sms` false; http(s) true */
   external?: boolean;
+  /** When primary is Text (sms), optional Call (tel) link */
+  secondary?: LeadPrimaryActionSecondary;
 };
 
 function trim(s: string | null | undefined): string {
@@ -24,22 +66,6 @@ function absoluteUrl(raw: string): string {
   const u = trim(raw);
   if (!u) return "";
   return u.startsWith("http") ? u : `https://${u}`;
-}
-
-function telHref(phone: string): string {
-  const tel = phone.replace(/[^\d+]/g, "");
-  if (!tel) return "";
-  return tel.startsWith("+") ? `tel:${tel}` : `tel:${tel}`;
-}
-
-function formatPhoneDisplay(raw: string): string {
-  const d = raw.replace(/\D/g, "");
-  if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
-  if (d.length === 11 && d.startsWith("1")) {
-    const x = d.slice(1);
-    return `(${x.slice(0, 3)}) ${x.slice(3, 6)}-${x.slice(6)}`;
-  }
-  return raw.trim();
 }
 
 export type ResolveLeadPrimaryActionOptions = {
@@ -76,14 +102,21 @@ export function resolveLeadPrimaryAction(
 
   const phone = trim(lead.phone_from_site);
   if (phone) {
-    const href = telHref(phone);
-    if (href) {
+    const links = cleanPhoneForSmsAndTel(phone);
+    if (links) {
+      const body = buildLeadSmsMessage(lead);
       return {
-        type: "phone",
-        label: "Call",
-        href,
-        value: formatPhoneDisplay(phone),
+        type: "sms",
+        label: "Text",
+        href: appendEncodedSmsBody(links.smsHref, body),
+        value: links.display,
         external: false,
+        secondary: {
+          type: "phone",
+          label: "Call",
+          href: links.telHref,
+          value: links.display,
+        },
       };
     }
   }
@@ -150,14 +183,21 @@ export function resolveLeadPrimaryActionFromRow(
 
   const phone = trim(row.phone);
   if (phone) {
-    const href = telHref(phone);
-    if (href) {
+    const links = cleanPhoneForSmsAndTel(phone);
+    if (links) {
+      const body = buildLeadSmsMessageFromRow(row);
       return {
-        type: "phone",
-        label: "Call",
-        href,
-        value: formatPhoneDisplay(phone),
+        type: "sms",
+        label: "Text",
+        href: appendEncodedSmsBody(links.smsHref, body),
+        value: links.display,
         external: false,
+        secondary: {
+          type: "phone",
+          label: "Call",
+          href: links.telHref,
+          value: links.display,
+        },
       };
     }
   }
@@ -202,6 +242,8 @@ export function leadPrimaryActionDetailLine(action: LeadPrimaryAction): string {
       return action.value ? `Email → ${action.value}` : "Email";
     case "facebook":
       return "Facebook → Open page";
+    case "sms":
+      return action.value ? `Text → ${action.value}` : "Text";
     case "phone":
       return action.value ? `Phone → ${action.value}` : "Call";
     case "contact_form":
@@ -222,6 +264,8 @@ export function leadPrimaryActionHintLine(action: LeadPrimaryAction): string {
       return "Best action: Email";
     case "facebook":
       return "Best action: Message on Facebook";
+    case "sms":
+      return "Best action: Text";
     case "phone":
       return "Best action: Call";
     case "contact_form":
