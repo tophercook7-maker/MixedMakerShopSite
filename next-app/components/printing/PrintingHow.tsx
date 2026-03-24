@@ -21,7 +21,7 @@ const STEPS = [
 export function PrintingHow() {
   return (
     <PrintingSection className="bg-gradient-to-b from-black/35 via-transparent to-black/20">
-      <div className="mx-auto max-w-[72rem] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16">
         <PrintingSectionHeader
           eyebrow="Process"
           title="How it works"

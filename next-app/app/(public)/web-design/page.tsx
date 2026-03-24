@@ -11,7 +11,7 @@ export default function WebDesignPage() {
     <>
       <section className="hero">
         <div className="container">
-          <div style={{ maxWidth: 860 }}>
+          <div className="hero-copy">
             <div className="kicker">
               <span className="dot" /> Topher Web Design
             </div>
@@ -25,8 +25,8 @@ export default function WebDesignPage() {
               your phone to ring.
             </p>
             <div className="btn-row">
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
               <Link href="/website-samples" className="btn ghost">
                 View Website Samples
@@ -42,7 +42,7 @@ export default function WebDesignPage() {
           <p className="transformations-subhead" style={{ margin: "0 0 22px" }}>
             I help local businesses get more calls by fixing the online side of things.
           </p>
-          <ul className="small" style={{ margin: "0 0 0 20px", maxWidth: 640, color: "var(--muted)", lineHeight: 1.65 }}>
+          <ul className="small copy-readable" style={{ margin: "0 0 0 20px", color: "var(--muted)", lineHeight: 1.65 }}>
             <li>Clean, mobile-friendly websites</li>
             <li>Click-to-call buttons</li>
             <li>Simple quote/contact forms</li>
@@ -190,8 +190,8 @@ export default function WebDesignPage() {
               <p className="small" style={{ margin: "0 0 16px", color: "var(--muted)" }}>
                 I&apos;ll take a quick look at your business and tell you exactly what I&apos;d do — no pressure.
               </p>
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
             </div>
           </div>
@@ -294,8 +294,8 @@ export default function WebDesignPage() {
               I&apos;ll show you exactly what I&apos;d fix — no pressure.
             </p>
             <div className="btn-row">
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
               <Link href="/contact" className="btn ghost">
                 Contact Topher

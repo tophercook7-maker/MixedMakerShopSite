@@ -39,7 +39,7 @@ export function inferContactBandTitle(draft: SectionCopyDraftPick, portfolioCopy
 export function inferContactBandSub(draft: SectionCopyDraftPick, portfolioCopy: boolean): string {
   if (draft.contactBandSub) return draft.contactBandSub;
   if (portfolioCopy) {
-    return "Customers can call, email, or request a quote in one click on a live site.";
+    return "Reach out by phone or email — we are happy to answer questions.";
   }
   const hay = `${draft.tagline} ${draft.businessName} ${draft.offeringsTitle}`.toLowerCase();
   if (
@@ -74,7 +74,7 @@ export function inferServicesSectionLead(draft: SectionCopyDraftPick, portfolioC
     return draft.servicesSectionLead;
   }
   if (portfolioCopy) {
-    return "Clear service names and short benefits help visitors compare options and call faster.";
+    return "Straightforward options so customers know what you offer and how to get started.";
   }
   const hay = haystack(draft);
   if (
@@ -126,7 +126,7 @@ export function inferGallerySectionLead(draft: SectionCopyDraftPick, portfolioCo
     return draft.gallerySectionLead;
   }
   if (portfolioCopy) {
-    return "Project-style photography and real jobs build confidence before the first conversation.";
+    return "A look at the quality and atmosphere customers can expect.";
   }
   const hay = haystack(draft);
   if (

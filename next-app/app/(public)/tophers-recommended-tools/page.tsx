@@ -116,7 +116,7 @@ export default function TophersRecommendedToolsPage() {
             <h1 className="h1" style={{ marginBottom: 10 }}>
               Tools I Use to Build Websites That Actually Work
             </h1>
-            <p className="subhead" style={{ maxWidth: 760 }}>
+            <p className="subhead">
               A practical list of tools I trust for domains, hosting, communication, and day-to-day client work.
             </p>
           </div>

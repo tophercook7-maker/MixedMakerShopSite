@@ -30,7 +30,7 @@ export function PublicNav() {
               alt="MixedMakerShop M³ logo"
               width={56}
               height={56}
-              className="rounded-xl shadow-[0_0_15px_rgba(255,140,0,0.6)] shrink-0 object-contain"
+              className="rounded-xl border border-zinc-200/80 shadow-sm shrink-0 object-contain"
               priority
               onError={() => setLogoFailed(true)}
             />
@@ -40,7 +40,7 @@ export function PublicNav() {
             <div className="sub">
               <strong>Custom 3D Printing</strong>
             </div>
-            <div className="small" style={{ fontSize: 12, color: "rgba(255,255,255,.55)" }}>
+            <div className="small" style={{ fontSize: 12 }}>
               Web design • Hot Springs, Arkansas • Owned by Topher Cook
             </div>
           </div>
@@ -58,6 +58,9 @@ export function PublicNav() {
           <Link href="/website-samples" className="pill">
             Website Samples
           </Link>
+          <Link href="/offer" className="pill">
+            Website + SEO Offer
+          </Link>
           <Link href="/3d-printing" className="pill">
             3D Printing
           </Link>
@@ -67,8 +70,8 @@ export function PublicNav() {
           <Link href="/website-roast" className="pill">
             Free Website Roast
           </Link>
-          <Link href="/web-design" className="pill cta">
-            Get My Free Mockup ➜
+          <Link href="/free-mockup" className="pill cta">
+            Get My Free Website Preview ➜
           </Link>
           <Link href="/auth/login" className="pill">
             Admin

@@ -1,4 +1,10 @@
 -- Shareable lead website mockups (sales previews, not production sites).
+--
+-- If you see: relation "public.crm_mockups" does not exist
+-- → Run SECTION A alone first and confirm it succeeds, then run SECTION B.
+-- → If SECTION A fails on foreign keys, your public.leads or auth.users must exist first.
+
+-- ========== SECTION A — table only (run this first) ==========
 
 create table if not exists public.crm_mockups (
   id uuid primary key default gen_random_uuid(),
@@ -28,20 +34,18 @@ create index if not exists idx_crm_mockups_owner_updated
 
 comment on table public.crm_mockups is 'CRM: personalized website preview per lead; public access via slug RPC only.';
 
+-- ========== SECTION B — after SECTION A succeeds ==========
+
+-- One-line body avoids unclosed $$ if the script is truncated when pasted.
 create or replace function public.touch_crm_mockups_updated_at()
 returns trigger
 language plpgsql
-as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
+as 'begin NEW.updated_at := now(); return NEW; end;';
 
 drop trigger if exists trg_crm_mockups_updated_at on public.crm_mockups;
 create trigger trg_crm_mockups_updated_at
   before update on public.crm_mockups
-  for each row execute function public.touch_crm_mockups_updated_at();
+  for each row execute procedure public.touch_crm_mockups_updated_at();
 
 alter table public.crm_mockups enable row level security;
 
@@ -51,7 +55,7 @@ create policy crm_mockups_owner_all on public.crm_mockups
   using (auth.uid() = owner_id)
   with check (auth.uid() = owner_id);
 
--- Public read by slug only (no direct anon table access to other rows).
+-- SQL-standard body (PostgreSQL 14+).
 create or replace function public.get_public_crm_mockup_by_slug(p_slug text)
 returns table (
   id uuid,
@@ -72,7 +76,7 @@ language sql
 security definer
 set search_path = public
 stable
-as $$
+begin atomic
   select
     m.id,
     m.template_key,
@@ -90,6 +94,6 @@ as $$
   from public.crm_mockups m
   where m.mockup_slug = nullif(trim(p_slug), '')
   limit 1;
-$$;
+end;
 
 grant execute on function public.get_public_crm_mockup_by_slug(text) to anon, authenticated;

@@ -18,7 +18,7 @@ export function PrintingHero() {
       <div className="pointer-events-none absolute -right-24 top-0 h-[22rem] w-[22rem] rounded-full bg-emerald-500/[0.14] blur-[100px]" />
       <div className="pointer-events-none absolute bottom-0 left-1/4 h-56 w-72 rounded-full bg-orange-400/10 blur-[90px]" />
 
-      <div className="relative mx-auto flex max-w-[72rem] flex-col gap-14 px-5 sm:px-8 lg:flex-row lg:items-center lg:gap-20">
+      <div className="relative mx-auto flex w-full max-w-[1400px] flex-col gap-16 px-6 md:px-10 lg:px-16 lg:flex-row lg:items-center lg:gap-20">
         <div className="min-w-0 flex-1">
           <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-[11px] font-semibold uppercase tracking-[0.32em] text-orange-400/95">

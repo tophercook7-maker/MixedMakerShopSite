@@ -8,6 +8,7 @@ export function PortfolioSampleClient({ slug }: { slug: string }) {
   const found = getPortfolioSampleBySlug(slug);
   if (!found) return null;
   const imageCategoryKey = imageCategoryFromPortfolioRouteSlug(slug);
+  const isWellness = slug === "wellness";
   return (
     <SampleDraftClient
       initialDraft={found.draft}
@@ -20,6 +21,9 @@ export function PortfolioSampleClient({ slug }: { slug: string }) {
         portfolioFooter: true,
         portfolioCopy: true,
         imageCategoryKey,
+        wideLayout: isWellness,
+        aboutBeforeTrust: isWellness,
+        testimonialsBeforeTrustBullets: isWellness,
       }}
     />
   );

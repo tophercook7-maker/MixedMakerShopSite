@@ -24,8 +24,8 @@ export default function PricingPage() {
                 calls.
               </p>
               <div className="actions">
-                <Link href="/contact" className="mini gold">
-                  Get My Free Mockup
+                <Link href="/free-mockup" className="mini gold">
+                  Get My Free Website Preview
                 </Link>
               </div>
             </div>
@@ -37,8 +37,8 @@ export default function PricingPage() {
                 more consistency.
               </p>
               <div className="actions">
-                <Link href="/contact" className="mini gold">
-                  Get My Free Mockup
+                <Link href="/free-mockup" className="mini gold">
+                  Get My Free Website Preview
                 </Link>
               </div>
             </div>
@@ -61,8 +61,8 @@ export default function PricingPage() {
             .
           </p>
           <div style={{ marginTop: 28 }}>
-            <Link href="/contact" className="btn gold">
-              Get My Free Mockup
+            <Link href="/free-mockup" className="btn gold">
+              Get My Free Website Preview
             </Link>
           </div>
         </div>

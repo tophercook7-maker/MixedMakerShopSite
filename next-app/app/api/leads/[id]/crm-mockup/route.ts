@@ -5,11 +5,29 @@ import {
   buildMockupContentFromLead,
   generateMockupSlug,
   getMockupTemplateForLead,
+  isWiseBodyMindSoulLead,
+  PREFERRED_WISE_BODY_MIND_SOUL_MOCKUP_SLUG,
+  wiseBodyMindSoulShareRawFields,
   type LeadRowForMockup,
 } from "@/lib/crm-mockup";
 import { recordLeadActivity } from "@/lib/lead-activity";
 
 const TABLE = "crm_mockups";
+
+async function resolveMockupSlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  existingSlug: string | null | undefined,
+  lead: LeadRowForMockup,
+): Promise<string> {
+  const kept = String(existingSlug || "").trim();
+  if (kept) return kept;
+  if (isWiseBodyMindSoulLead(lead)) {
+    const preferred = PREFERRED_WISE_BODY_MIND_SOUL_MOCKUP_SLUG;
+    const { data, error } = await supabase.from(TABLE).select("id").eq("mockup_slug", preferred).maybeSingle();
+    if (!error && !data) return preferred;
+  }
+  return generateMockupSlug();
+}
 
 function requestOrigin(req: NextRequest): string {
   const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
@@ -77,10 +95,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const lead = leadRow as LeadRowForMockup;
   const tpl = getMockupTemplateForLead(lead);
   const content = buildMockupContentFromLead(lead, tpl);
+  const wiseExtras = isWiseBodyMindSoulLead(lead) ? wiseBodyMindSoulShareRawFields() : {};
   const rawPayload = {
     services: content.services,
     style_preset: tpl.stylePreset,
     color_preset: tpl.colorPreset,
+    ...wiseExtras,
   };
 
   const { data: existing, error: exErr } = await supabase
@@ -96,8 +116,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const origin = requestOrigin(req);
-  const slug =
-    String((existing as { mockup_slug?: string } | null)?.mockup_slug || "").trim() || generateMockupSlug();
+  const slug = await resolveMockupSlug(supabase, (existing as { mockup_slug?: string } | null)?.mockup_slug, lead);
   const now = new Date().toISOString();
 
   const baseRow = {

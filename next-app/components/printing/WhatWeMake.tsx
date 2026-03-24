@@ -27,7 +27,7 @@ const ITEMS = [
 export function WhatWeMake() {
   return (
     <PrintingSection className="bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(249,115,22,0.06),transparent)]">
-      <div className="mx-auto max-w-[72rem] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16">
         <PrintingSectionHeader
           eyebrow="Capabilities"
           title="What we make"

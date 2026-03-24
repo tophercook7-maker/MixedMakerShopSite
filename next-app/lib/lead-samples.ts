@@ -826,7 +826,7 @@ export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
     .slice(0, 8);
   return {
     businessName: sample.business_name,
-    tagline: `${sample.business_type} · website preview`,
+    tagline: `${sample.business_type} · local service`,
     localPositioning: sample.intro_text,
     heroImageUrl: heroImage,
     heroImageAlt: `${sample.business_name} featured image`,
@@ -845,7 +845,7 @@ export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
     whyChooseTitle: `Why customers choose ${sample.business_name}`,
     whyChooseBullets: whyChooseBulletsForBusiness(sample.business_name, sample.business_type),
     aboutTitle: `About ${sample.business_name}`,
-    aboutText: `${sample.intro_text} This layout is a starting point — your real site would use your photos, reviews, and exact offers.`,
+    aboutText: `${sample.intro_text} We focus on clear service descriptions, easy contact paths, and a professional first impression.`,
     trustTitle: "What people say",
     trustQuotes: [
       {
@@ -863,9 +863,9 @@ export function leadSampleToDraft(sample: LeadSampleRecord): SampleDraft {
     phone: "(555) 555-0199",
     hours: sampleHours(sample.business_type),
     contactBandTitle: "Get a quote",
-    contactBandSub: "This sample shows how simple it can be for customers to reach you. On your live site, these buttons call and email you directly.",
-    finalTitle: "Want this as your real website?",
-    finalSub: "I can turn this sample into a live site with your branding, photos, and Google-friendly pages.",
-    finalCta: "Request build",
+    contactBandSub: "Reach out anytime — we respond quickly during business hours.",
+    finalTitle: "Ready for more calls and booked jobs?",
+    finalSub: "Tell us what you need — we’ll follow up with next steps and timing.",
+    finalCta: "Call now",
   };
 }

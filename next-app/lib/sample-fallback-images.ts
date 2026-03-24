@@ -14,6 +14,7 @@ export type SampleImageCategory =
   | "restaurant"
   | "church"
   | "coffee"
+  | "wellness"
   | "default-service-business";
 
 /** Category hero when primary src fails or is empty. */
@@ -33,6 +34,8 @@ export const SAMPLE_CATEGORY_FALLBACK_HERO: Record<SampleImageCategory, string> 
     "https://images.unsplash.com/photo-1465848059293-208e11dfea17?auto=format&fit=crop&w=1600&q=80",
   coffee:
     "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1600&q=80",
+  wellness:
+    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1600&q=80",
   "default-service-business":
     "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80",
 };
@@ -56,6 +59,8 @@ export const SAMPLE_CATEGORY_FALLBACK_CARD: Record<SampleImageCategory, string> 
     "https://images.unsplash.com/photo-1531808012724-688c1de500b4?auto=format&fit=crop&w=900&q=80",
   coffee:
     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
+  wellness:
+    "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=900&q=80",
   "default-service-business":
     "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80",
 };
@@ -151,6 +156,17 @@ export function inferImageCategoryFromDraftPick(p: DraftPick): SampleImageCatego
   ) {
     return "restaurant";
   }
+  if (
+    hay.includes("wellness") ||
+    hay.includes("massage") ||
+    hay.includes("yoga") ||
+    hay.includes("sound bath") ||
+    hay.includes("meditation") ||
+    hay.includes("holistic") ||
+    (hay.includes("spa") && !hay.includes("detail"))
+  ) {
+    return "wellness";
+  }
   return "default-service-business";
 }
 
@@ -162,6 +178,9 @@ export function inferImageCategoryFromLeadSample(sample: LeadSampleRecord | null
   if (hay.includes("landscap") || hay.includes("lawn")) return "landscaping";
   if (hay.includes("plumb") || hay.includes("hvac")) return "plumbing";
   if (hay.includes("restaurant") || hay.includes("food")) return "restaurant";
+  if (hay.includes("wellness") || hay.includes("massage") || hay.includes("yoga") || hay.includes("sound bath")) {
+    return "wellness";
+  }
   const pool = String(sample.suggested_image_category || "").toLowerCase();
   if (pool.includes("pressure")) return "pressure-washing";
   if (pool.includes("detail")) return "auto-detailing";

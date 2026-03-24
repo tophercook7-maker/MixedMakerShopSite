@@ -10,7 +10,9 @@ export function CrmMockupPreviewClient({ row }: { row: PublicCrmMockupRow }) {
     [row]
   );
 
-  const footerMessage = `Personalized preview for ${row.business_name || "your business"} — example layout only, not a live site.`;
+  const footerMessage = `Prepared for ${row.business_name || "your business"}. This is a layout example — not a live website.`;
+
+  const isWellness = row.template_key === "wellness";
 
   return (
     <SampleDraftClient
@@ -25,6 +27,9 @@ export function CrmMockupPreviewClient({ row }: { row: PublicCrmMockupRow }) {
         portfolioFooterMessage: footerMessage,
         portfolioCopy: true,
         imageCategoryKey,
+        wideLayout: true,
+        aboutBeforeTrust: isWellness,
+        testimonialsBeforeTrustBullets: isWellness,
       }}
     />
   );

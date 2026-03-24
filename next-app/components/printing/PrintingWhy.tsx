@@ -23,7 +23,7 @@ export function PrintingWhy() {
   return (
     <PrintingSection className="overflow-hidden bg-black/25">
       <div className="pointer-events-none absolute right-0 top-0 h-80 w-80 translate-x-1/4 rounded-full bg-emerald-600/[0.08] blur-[110px]" />
-      <div className="relative mx-auto max-w-[72rem] px-5 sm:px-8">
+      <div className="relative mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16">
         <PrintingSectionHeader
           eyebrow="Why us"
           title="Why people use us"

@@ -201,7 +201,7 @@ export function HomeMockupForm() {
           </div>
           {error && <p className="small" style={{ color: "var(--gold)", marginTop: 12 }}>{error}</p>}
           <button type="submit" className="btn gold" style={{ marginTop: 24 }} disabled={loading}>
-            {loading ? "Sending…" : "Get My Free Mockup"}
+            {loading ? "Sending…" : "Get My Free Website Preview"}
           </button>
           <p className="small" style={{ marginTop: 14 }}>More detail = a mockup that better fits your vision.</p>
         </div>

@@ -10,7 +10,7 @@ function tagLine(tags: string[]): string {
 export function StlLibraryGrid() {
   return (
     <PrintingSection id="stl-library-resources" className="scroll-mt-24 bg-[radial-gradient(ellipse_70%_50%_at_100%_0%,rgba(16,185,129,0.05),transparent)]">
-      <div className="mx-auto max-w-[72rem] px-5 sm:px-8">
+      <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16">
         <PrintingSectionHeader
           align="left"
           eyebrow="Resources"

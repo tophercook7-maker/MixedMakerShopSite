@@ -37,8 +37,8 @@ export default function SmallBusinessWebsitesPage() {
           </div>
 
           <div className="btn-row" style={{ marginTop: 22 }}>
-            <Link href="/contact" className="btn gold">
-              Get My Free Mockup
+            <Link href="/free-mockup" className="btn gold">
+              Get My Free Website Preview
             </Link>
             <Link href="/web-design" className="btn ghost">
               Web Design Services

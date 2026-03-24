@@ -12,16 +12,11 @@ import {
   inferImageCategoryFromDraftPick,
   type SampleImageCategory,
 } from "@/lib/sample-fallback-images";
-import {
-  inferContactBandSub,
-  inferContactBandTitle,
-  inferGallerySectionLead,
-  inferServicesSectionLead,
-} from "@/lib/sample-section-copy";
+import { inferGallerySectionLead, inferServicesSectionLead } from "@/lib/sample-section-copy";
 
 type Mode = "edit" | "presentation";
 type StylePreset = "clean-modern" | "bold-premium" | "friendly-local" | "minimal-elegant";
-type ColorPreset = "blue" | "green" | "dark" | "warm-neutral" | "bold-accent";
+type ColorPreset = "blue" | "green" | "dark" | "warm-neutral" | "bold-accent" | "wellness";
 
 export type SampleDraft = {
   businessName: string;
@@ -51,6 +46,8 @@ export type SampleDraft = {
   address: string;
   phone: string;
   hours: string[];
+  contactEmail?: string;
+  contactFacebookUrl?: string;
   /** Prominent contact / quote strip above footer */
   contactBandTitle?: string;
   contactBandSub?: string;
@@ -67,6 +64,8 @@ export type SampleDraft = {
   finalTitle: string;
   finalSub: string;
   finalCta: string;
+  /** Optional CTA under the about section (e.g. wellness booking). */
+  aboutCtaLabel?: string;
 };
 
 export type SampleDraftEmbedOptions = {
@@ -80,6 +79,12 @@ export type SampleDraftEmbedOptions = {
   portfolioFooter?: boolean;
   /** When `portfolioFooter` is true, overrides the default footer sentence. */
   portfolioFooterMessage?: string;
+  /** Wider `.container` and hero layout (funnel + shareable mockups). */
+  wideLayout?: boolean;
+  /** Render About before testimonials / trust band (wellness-style story flow). */
+  aboutBeforeTrust?: boolean;
+  /** When true, show testimonial quotes above the numbered trust / support points. */
+  testimonialsBeforeTrustBullets?: boolean;
   /** Replace internal “demo” helper copy with sendable portfolio tone. */
   portfolioCopy?: boolean;
   /** Explicit image fallback category (portfolio routes). Otherwise inferred from draft copy. */
@@ -105,6 +110,7 @@ const COLOR_PRESET_OPTIONS: Array<{ id: ColorPreset; label: string }> = [
   { id: "dark", label: "Dark" },
   { id: "warm-neutral", label: "Warm Neutral" },
   { id: "bold-accent", label: "Bold Accent" },
+  { id: "wellness", label: "Wellness (layered sand & sage)" },
 ];
 
 const STYLE_PRESETS: Record<
@@ -124,9 +130,9 @@ const STYLE_PRESETS: Record<
   }
 > = {
   "clean-modern": {
-    sectionPad: "50px",
-    heroPad: "72px",
-    h1Size: "clamp(40px, 5vw, 62px)",
+    sectionPad: "clamp(72px, 10vw, 112px)",
+    heroPad: "clamp(96px, 14vw, 140px)",
+    h1Size: "clamp(2.75rem, 5vw + 1rem, 3.75rem)",
     h2Size: "clamp(28px, 3vw, 36px)",
     bodySize: "17px",
     radius: "16px",
@@ -137,9 +143,9 @@ const STYLE_PRESETS: Record<
     cardContrast: 0.08,
   },
   "bold-premium": {
-    sectionPad: "62px",
-    heroPad: "88px",
-    h1Size: "clamp(44px, 5.6vw, 72px)",
+    sectionPad: "clamp(80px, 11vw, 120px)",
+    heroPad: "clamp(104px, 15vw, 148px)",
+    h1Size: "clamp(2.85rem, 5.5vw + 1rem, 4rem)",
     h2Size: "clamp(30px, 3.2vw, 40px)",
     bodySize: "18px",
     radius: "22px",
@@ -150,9 +156,9 @@ const STYLE_PRESETS: Record<
     cardContrast: 0.14,
   },
   "friendly-local": {
-    sectionPad: "56px",
-    heroPad: "76px",
-    h1Size: "clamp(40px, 5vw, 64px)",
+    sectionPad: "clamp(76px, 10vw, 116px)",
+    heroPad: "clamp(100px, 14vw, 136px)",
+    h1Size: "clamp(2.75rem, 5vw + 1rem, 3.85rem)",
     h2Size: "clamp(28px, 3vw, 36px)",
     bodySize: "18px",
     radius: "26px",
@@ -163,9 +169,9 @@ const STYLE_PRESETS: Record<
     cardContrast: 0.1,
   },
   "minimal-elegant": {
-    sectionPad: "46px",
-    heroPad: "66px",
-    h1Size: "clamp(38px, 4.7vw, 58px)",
+    sectionPad: "clamp(68px, 9vw, 100px)",
+    heroPad: "clamp(88px, 12vw, 124px)",
+    h1Size: "clamp(2.5rem, 4.5vw + 1rem, 3.5rem)",
     h2Size: "clamp(26px, 2.8vw, 34px)",
     bodySize: "16px",
     radius: "10px",
@@ -213,7 +219,7 @@ const COLOR_PRESETS: Record<
     accent: "#9dc0ff",
   },
   green: {
-    bg: "radial-gradient(1000px 620px at 12% 2%, rgba(78,211,150,.38), transparent 58%), linear-gradient(180deg, #0a1f17 0%, #123427 55%, #0a241b 100%)",
+    bg: "radial-gradient(1000px 620px at 12% 2%, rgba(78,211,150,.38), transparent 58%), radial-gradient(820px 480px at 88% 100%, rgba(180, 140, 95, 0.14), transparent 55%), linear-gradient(180deg, #0a1f17 0%, #123427 55%, #0a241b 100%)",
     heroBg: "radial-gradient(circle at 22% 10%, rgba(88,235,171,.34), transparent 58%)",
     sectionTint: "rgba(86,219,157,.08)",
     navBg: "rgba(12, 39, 29, 0.72)",
@@ -276,6 +282,27 @@ const COLOR_PRESETS: Record<
     secondaryText: "#fff4f8",
     accent: "#ffb7cf",
   },
+  /**
+   * Layered sand, sage, stone, and clay — no stark white full-page default.
+   * Use for wellness and similar calm local-service mockups.
+   */
+  wellness: {
+    bg: "radial-gradient(1100px 680px at 6% 0%, rgba(212, 196, 172, 0.55), transparent 58%), radial-gradient(900px 560px at 94% 12%, rgba(138, 158, 142, 0.38), transparent 52%), radial-gradient(700px 500px at 50% 100%, rgba(176, 132, 118, 0.22), transparent 50%), linear-gradient(185deg, #e6d9c8 0%, #d8cfc0 38%, #c9bfb0 72%, #4a4540 100%)",
+    heroBg:
+      "radial-gradient(circle at 20% 8%, rgba(255, 252, 246, 0.5), transparent 52%), radial-gradient(circle at 85% 40%, rgba(120, 142, 128, 0.18), transparent 48%)",
+    sectionTint: "rgba(95, 112, 98, 0.12)",
+    navBg: "rgba(238, 228, 216, 0.88)",
+    surface: "rgba(255, 251, 245, 0.78)",
+    surfaceAlt: "rgba(222, 212, 198, 0.62)",
+    text: "#2c2824",
+    muted: "rgba(60, 52, 44, 0.78)",
+    border: "rgba(120, 108, 92, 0.28)",
+    primary: "#5f6f62",
+    primaryText: "#f9f7f2",
+    secondary: "rgba(60, 52, 44, 0.08)",
+    secondaryText: "#2c2824",
+    accent: "#8a7a6c",
+  },
 };
 
 function withDraftDefaults(d: SampleDraft): SampleDraft {
@@ -298,6 +325,14 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   useEffect(() => {
     setDraft(withDraftDefaults(initialDraft));
   }, [initialDraft]);
+
+  useEffect(() => {
+    if (embedOptions?.initialStylePreset) setStylePreset(embedOptions.initialStylePreset);
+  }, [embedOptions?.initialStylePreset]);
+
+  useEffect(() => {
+    if (embedOptions?.initialColorPreset) setColorPreset(embedOptions.initialColorPreset);
+  }, [embedOptions?.initialColorPreset]);
 
   useEffect(() => {
     if (lockPresentation) setMode("presentation");
@@ -403,12 +438,23 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   const whyBullets = draft.whyChooseBullets ?? [];
   const secondaryHref = embedOptions?.secondaryHref ?? "/website-samples";
   const portfolioCopy = Boolean(embedOptions?.portfolioCopy);
+  const singleHeroCta = Boolean(embedOptions?.lockPresentation);
+  const mailHref = draft.contactEmail?.trim()
+    ? `mailto:${encodeURIComponent(draft.contactEmail.trim())}`
+    : "";
+  const facebookHref = (() => {
+    const raw = draft.contactFacebookUrl?.trim() || "";
+    if (!raw) return "";
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw.replace(/^\/+/, "")}`;
+  })();
+  const showWhyOrTrust = whyBullets.length > 0 || (draft.trustQuotes?.length ?? 0) > 0;
   const imageCategory: SampleImageCategory =
     embedOptions?.imageCategoryKey ?? inferImageCategoryFromDraftPick(draft);
   const servicesLead = inferServicesSectionLead(draft, portfolioCopy);
   const galleryLead = inferGallerySectionLead(draft, portfolioCopy);
-  const contactBandTitleResolved = inferContactBandTitle(draft, portfolioCopy);
-  const contactBandSubResolved = inferContactBandSub(draft, portfolioCopy);
+  const aboutBeforeTrust = Boolean(embedOptions?.aboutBeforeTrust);
+  const testimonialsBeforeTrustBullets = Boolean(embedOptions?.testimonialsBeforeTrustBullets);
   const servicesNavLabel = draft.servicesNavLabel ?? "Services";
   const serviceCardHref = draft.serviceCardsLinkToContact ? "#contact" : telHref;
   const serviceCardLabel = draft.serviceCardsLinkToContact
@@ -422,6 +468,111 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
       draft,
     }),
     [mode, stylePreset, colorPreset, draft],
+  );
+
+  const aboutSection = (
+    <section className="section sample-section" id="about">
+      <div className="container">
+        <h2 className="sample-h2">{draft.aboutTitle}</h2>
+        <p className="sample-sub sample-about-body">{draft.aboutText}</p>
+        {draft.aboutCtaLabel ? (
+          <div className="btn-row" style={{ marginTop: 22 }}>
+            <a href={telHref} className="btn gold">
+              {draft.aboutCtaLabel}
+            </a>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+
+  const whyTrustSection =
+    showWhyOrTrust ? (
+      <section className="section sample-section sample-why-trust" id="why">
+        <div className="container">
+          {testimonialsBeforeTrustBullets ? (
+            <>
+              {(draft.trustQuotes?.length ?? 0) > 0 ? (
+                <>
+                  <h2 className="sample-h2">{draft.trustTitle}</h2>
+                  <div className="sample-testimonial-grid">
+                    {draft.trustQuotes.map((entry) => (
+                      <blockquote key={entry.by} className="sample-quote-minimal">
+                        <p className="sample-quote-text">&ldquo;{entry.quote}&rdquo;</p>
+                        <footer className="sample-quote-by">— {entry.by}</footer>
+                      </blockquote>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+              {whyBullets.length > 0 ? (
+                <>
+                  <h2
+                    className={`sample-h2${(draft.trustQuotes?.length ?? 0) > 0 ? " sample-h2-trust-follow" : ""}`}
+                  >
+                    {draft.whyChooseTitle}
+                  </h2>
+                  <div className="sample-why-grid">
+                    {whyBullets.map((line, idx) => (
+                      <div key={idx} className="sample-why-card">
+                        <span className="sample-why-index" aria-hidden="true">
+                          {idx + 1}
+                        </span>
+                        <p className="sample-why-text">{line}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {whyBullets.length > 0 ? (
+                <>
+                  <h2 className="sample-h2">{draft.whyChooseTitle}</h2>
+                  <div className="sample-why-grid">
+                    {whyBullets.map((line, idx) => (
+                      <div key={idx} className="sample-why-card">
+                        <span className="sample-why-index" aria-hidden="true">
+                          {idx + 1}
+                        </span>
+                        <p className="sample-why-text">{line}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+              {(draft.trustQuotes?.length ?? 0) > 0 ? (
+                <>
+                  <h2 className={`sample-h2${whyBullets.length > 0 ? " sample-h2-trust-follow" : ""}`}>
+                    {draft.trustTitle}
+                  </h2>
+                  <div className="sample-testimonial-grid">
+                    {draft.trustQuotes.map((entry) => (
+                      <blockquote key={entry.by} className="sample-quote-minimal">
+                        <p className="sample-quote-text">&ldquo;{entry.quote}&rdquo;</p>
+                        <footer className="sample-quote-by">— {entry.by}</footer>
+                      </blockquote>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </>
+          )}
+        </div>
+      </section>
+    ) : null;
+
+  const aboutAndTrustOrdered = aboutBeforeTrust ? (
+    <>
+      {aboutSection}
+      {whyTrustSection}
+    </>
+  ) : (
+    <>
+      {whyTrustSection}
+      {aboutSection}
+    </>
   );
 
   const updateField = (field: keyof SampleDraft, value: string) => {
@@ -453,6 +604,9 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     if (hay.includes("lawn")) {
       return ["Get a Quick Quote", "Request Service", "Call Now", "Schedule This Week"];
     }
+    if (hay.includes("massage") || hay.includes("yoga") || hay.includes("wellness") || hay.includes("sound bath")) {
+      return ["Book a Session", "Schedule Now", "Explore Services", "Call to Book"];
+    }
     return ["Get Started", "Call Now", "Contact Us", "Learn More"];
   }, [draft.offeringsTitle, draft.tagline]);
 
@@ -467,7 +621,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
             <div className="sample-site-links">
               <a href="#services">{servicesNavLabel}</a>
               {galleryList.length ? <a href="#gallery">Gallery</a> : null}
-              {whyBullets.length ? <a href="#why">Why us</a> : null}
+              {showWhyOrTrust ? <a href="#why">Why choose us</a> : null}
               <a href="#about">About</a>
               <a href="#contact">Contact</a>
             </div>
@@ -478,26 +632,28 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         <div className="container" id="top">
           <div className="sample-hero-grid">
             <div className="sample-hero-content">
-            <p className="sample-business-name">{draft.businessName}</p>
-            <p className="sample-tagline">{draft.tagline}</p>
-            <h1 className="sample-h1">{draft.heroHeadline}</h1>
-            <p className="sample-sub">{draft.heroSub}</p>
-            <p className="sample-local">{draft.localPositioning}</p>
-            <div className="btn-row">
-              <a href={telHref} className="btn gold">
-                {draft.heroPrimaryCta}
-              </a>
-              {secondaryHref.startsWith("/") && !secondaryHref.startsWith("/#") ? (
-                <Link href={secondaryHref} className="btn ghost">
-                  {draft.heroSecondaryCta}
-                </Link>
-              ) : (
-                <a href={secondaryHref} className="btn ghost">
-                  {draft.heroSecondaryCta}
+              <p className="sample-business-name">{draft.businessName}</p>
+              <p className="sample-tagline">{draft.tagline}</p>
+              <h1 className="sample-h1">{draft.heroHeadline}</h1>
+              <p className="sample-sub">{draft.heroSub}</p>
+              {draft.localPositioning ? <p className="sample-local">{draft.localPositioning}</p> : null}
+              <div className="btn-row">
+                <a href={telHref} className="btn gold">
+                  {draft.heroPrimaryCta}
                 </a>
-              )}
+                {!singleHeroCta ? (
+                  secondaryHref.startsWith("/") && !secondaryHref.startsWith("/#") ? (
+                    <Link href={secondaryHref} className="btn ghost">
+                      {draft.heroSecondaryCta}
+                    </Link>
+                  ) : (
+                    <a href={secondaryHref} className="btn ghost">
+                      {draft.heroSecondaryCta}
+                    </a>
+                  )
+                ) : null}
+              </div>
             </div>
-          </div>
             <figure className="sample-hero-spotlight" aria-label={draft.heroImageAlt ?? `${draft.businessName} featured image`}>
               <ResilientHeroImage
                 primarySrc={draft.heroImageUrl}
@@ -555,99 +711,56 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         </section>
       ) : null}
 
-      {whyBullets.length ? (
-        <section className="section sample-section" id="why">
-          <div className="container">
-            <h2 className="sample-h2">{draft.whyChooseTitle}</h2>
-            <div className="sample-why-grid">
-              {whyBullets.map((line, idx) => (
-                <div key={idx} className="sample-why-card">
-                  <span className="sample-why-index">{idx + 1}</span>
-                  <p className="sample-why-text">{line}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
+      {aboutAndTrustOrdered}
 
-      <section className="section sample-section" id="about">
-        <div className="container">
-          <div className="panel sample-panel">
-            <h2 className="sample-h2">{draft.aboutTitle}</h2>
-            <p className="sample-sub" style={{ margin: 0 }}>
-              {draft.aboutText}
-            </p>
-          </div>
+      <section className="section sample-section sample-mid-cta" id="cta">
+        <div className="container sample-mid-cta-inner">
+          <h2 className="sample-mid-cta-title">{draft.finalTitle}</h2>
+          <p className="sample-mid-cta-sub">{draft.finalSub}</p>
+          <a href={telHref} className="btn gold sample-mid-cta-btn">
+            {draft.finalCta}
+          </a>
         </div>
       </section>
 
-      <section className="section sample-section">
+      <section className="section sample-section sample-contact-block" id="contact">
         <div className="container">
-          <h2 className="sample-h2">{draft.trustTitle}</h2>
-          <div className="grid-2">
-            {draft.trustQuotes.map((entry) => (
-              <blockquote key={entry.by} className="card sample-quote">
-                <p style={{ margin: "0 0 10px" }}>&ldquo;{entry.quote}&rdquo;</p>
-                <p className="small" style={{ margin: 0, opacity: 0.85 }}>
-                  — {entry.by}
-                </p>
-              </blockquote>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section sample-contact-band" id="contact">
-        <div className="container">
-          <div className="sample-contact-band-inner">
-            <div>
-              <h2 className="sample-h2 sample-contact-band-title">{contactBandTitleResolved}</h2>
-              <p className="sample-sub sample-contact-band-sub">{contactBandSubResolved}</p>
-            </div>
-            <div className="btn-row sample-contact-band-actions">
-              <a href={telHref} className="btn gold">
-                {draft.heroPrimaryCta}
-              </a>
-              <a href={telHref} className="btn ghost">
-                Call {draft.phone}
-              </a>
-            </div>
-          </div>
-          <h3 className="sample-h2 sample-h3-spacing">{draft.locationTitle}</h3>
-          <div className="grid-2">
-            <div className="card sample-info">
-              <h3 style={{ margin: "0 0 8px" }}>{draft.locationName}</h3>
-              <p className="small" style={{ margin: "0 0 6px" }}>
-                {draft.address}
-              </p>
-              <a href={telHref} className="small" style={{ margin: 0, display: "inline-block" }}>
+          <h2 className="sample-h2">{draft.locationTitle}</h2>
+          <div className="sample-contact-grid">
+            <div className="sample-contact-cell">
+              <span className="sample-contact-k">Phone</span>
+              <a href={telHref} className="sample-contact-v">
                 {draft.phone}
               </a>
             </div>
-            <div className="card sample-info" id="hours">
-              <h3 style={{ margin: "0 0 8px" }}>Hours</h3>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {mailHref ? (
+              <div className="sample-contact-cell">
+                <span className="sample-contact-k">Email</span>
+                <a href={mailHref} className="sample-contact-v">
+                  {draft.contactEmail}
+                </a>
+              </div>
+            ) : null}
+            {facebookHref ? (
+              <div className="sample-contact-cell">
+                <span className="sample-contact-k">Facebook</span>
+                <a href={facebookHref} className="sample-contact-v" target="_blank" rel="noopener noreferrer">
+                  Profile
+                </a>
+              </div>
+            ) : null}
+            <div className="sample-contact-cell sample-contact-cell-span">
+              <span className="sample-contact-k">Location</span>
+              <p className="sample-contact-v sample-contact-plain">{draft.locationName}</p>
+              <p className="sample-contact-v sample-contact-plain">{draft.address}</p>
+            </div>
+            <div className="sample-contact-cell sample-contact-cell-span">
+              <span className="sample-contact-k">Hours</span>
+              <ul className="sample-hours-list">
                 {draft.hours.map((line) => (
-                  <li key={line} className="small" style={{ marginBottom: 6 }}>
-                    {line}
-                  </li>
+                  <li key={line}>{line}</li>
                 ))}
               </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section sample-section">
-        <div className="container">
-          <div className="panel sample-panel sample-final-panel">
-            <h2 className="sample-h2">{draft.finalTitle}</h2>
-            <p className="sample-sub">{draft.finalSub}</p>
-            <div className="btn-row">
-              <a href={telHref} className="btn gold">
-                {draft.finalCta}
-              </a>
             </div>
           </div>
         </div>
@@ -669,7 +782,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               }}
             >
               {embedOptions?.portfolioFooterMessage?.trim() ||
-                "This is a sample concept showing the kind of website Topher can build for local businesses."}
+                "Design concept for a local business website — built to show layout, structure, and flow."}
             </p>
           </div>
         </footer>
@@ -677,16 +790,21 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     </>
   );
 
+  const wideClass = embedOptions?.wideLayout ? " sample-standalone--wide" : "";
+
   if (lockPresentation) {
     return (
-      <div className="sample-standalone is-presentation" style={visualVars}>
+      <div className={`sample-standalone is-presentation${wideClass}`} style={visualVars}>
         {site}
       </div>
     );
   }
 
   return (
-    <div className={`sample-standalone ${mode === "presentation" ? "is-presentation" : "is-edit"}`} style={visualVars}>
+    <div
+      className={`sample-standalone ${mode === "presentation" ? "is-presentation" : "is-edit"}${wideClass}`}
+      style={visualVars}
+    >
       {mode === "edit" ? (
         <div className="sample-live-builder">
           <aside className="sample-editor-dock">

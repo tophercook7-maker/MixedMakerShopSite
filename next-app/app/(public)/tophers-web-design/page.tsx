@@ -38,16 +38,16 @@ export default function TophersWebDesignPage() {
             <h1 className="h1" style={{ marginBottom: 10 }}>
               Topher&apos;s Web Design
             </h1>
-            <p className="subhead" style={{ maxWidth: 760 }}>
+            <p className="subhead">
               Simple, mobile-friendly sites with click-to-call, clear forms, Google cleanup, and review setup — built for
               more calls, not agency overhead.
             </p>
-            <p className="small" style={{ margin: "14px 0 0", maxWidth: 640, color: "var(--muted)" }}>
+            <p className="small copy-readable" style={{ margin: "14px 0 0", color: "var(--muted)" }}>
               Starter setups from $400 · Full business setups from $900 · Custom builds on quote
             </p>
             <div className="btn-row" style={{ marginTop: 20 }}>
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
             </div>
           </div>
@@ -153,8 +153,8 @@ export default function TophersWebDesignPage() {
               I&apos;ll show you exactly what I&apos;d fix — no pressure.
             </p>
             <div className="btn-row" style={{ justifyContent: "center" }}>
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
             </div>
           </div>

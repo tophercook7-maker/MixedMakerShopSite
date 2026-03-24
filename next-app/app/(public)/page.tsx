@@ -24,7 +24,7 @@ export default function HomePage() {
       {/* 1) Hero */}
       <section className="hero">
         <div className="container">
-          <div style={{ maxWidth: 860 }}>
+          <div className="hero-copy">
             <div className="kicker">
               <span className="dot" /> MixedMakerShop Studio • Build • Create • Experiment
             </div>
@@ -95,8 +95,8 @@ export default function HomePage() {
             </div>
           </div>
           <p className="small" style={{ margin: 0 }}>
-            Website work: <Link href="/web-design">Work With Topher</Link> · Samples:{" "}
-            <Link href="/website-samples">website samples</Link>.
+            Website preview: <Link href="/free-mockup">See your website</Link> · Work with Topher:{" "}
+            <Link href="/web-design">web design</Link> · <Link href="/website-samples">samples</Link>.
           </p>
         </div>
       </section>
@@ -113,11 +113,14 @@ export default function HomePage() {
               design page.
             </p>
             <div className="btn-row">
-              <Link className="btn gold" href="/web-design">
+              <Link className="btn gold" href="/free-mockup">
+                Get My Free Website Preview
+              </Link>
+              <Link className="btn ghost" href="/web-design">
                 Work With Topher
               </Link>
               <Link className="btn ghost" href="/website-samples">
-                View Website Samples
+                View samples
               </Link>
             </div>
           </div>

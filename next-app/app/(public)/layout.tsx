@@ -1,5 +1,6 @@
 import { PublicNav } from "@/components/public/PublicNav";
 import { PublicFooter } from "@/components/public/PublicFooter";
+import { PublicMotionInit } from "@/components/public/PublicMotionInit";
 
 export default function PublicLayout({
   children,
@@ -9,6 +10,7 @@ export default function PublicLayout({
       <PublicNav />
       <main className="flex-1">{children}</main>
       <PublicFooter />
+      <PublicMotionInit />
     </div>
   );
 }

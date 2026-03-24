@@ -21,10 +21,10 @@ export default function RestaurantRedesignPage() {
             <p className="small" style={{ margin: "0 0 8px", opacity: 0.85 }}>
               Concept page · Restaurant & hospitality
             </p>
-            <h1 style={{ margin: "0 0 12px", maxWidth: 720 }}>
+            <h1 className="h1" style={{ margin: "0 0 12px" }}>
               Restaurant websites that sell the room — not the confusion
             </h1>
-            <p className="subhead" style={{ margin: 0, maxWidth: 720, lineHeight: 1.55 }}>
+            <p className="subhead" style={{ margin: 0, lineHeight: 1.55 }}>
               Most restaurant homepages bury the menu, hide hours, and load like it is 2012. This page explains how a
               redesign fixes that: mobile-first layout, obvious reserve and order paths, and photography that matches
               how guests actually decide where to eat.
@@ -108,7 +108,7 @@ export default function RestaurantRedesignPage() {
             <h2 className="section-heading" style={{ margin: "0 0 10px", fontSize: "1.25rem" }}>
               See it in a live sample layout
             </h2>
-            <p className="small" style={{ margin: "0 0 16px", lineHeight: 1.5, maxWidth: 720 }}>
+            <p className="small copy-readable" style={{ margin: "0 0 16px", lineHeight: 1.5 }}>
               The <strong>Southern Diner Concept</strong> and <strong>Brick &amp; Ember</strong> portfolio demo show the
               same structure we use for real clients: hero, services / menu blocks, gallery, reviews, and a strong
               closing CTA. Open either link on your phone — that is the bar we build toward.
@@ -143,8 +143,8 @@ export default function RestaurantRedesignPage() {
               more covers and takeout orders.
             </p>
             <div className="btn-row">
-              <Link href="/contact" className="btn gold">
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold">
+                Get My Free Website Preview
               </Link>
               <Link href="/contact" className="btn ghost">
                 Contact

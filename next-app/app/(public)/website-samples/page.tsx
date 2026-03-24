@@ -35,14 +35,14 @@ export default function WebsiteSamplesPage() {
             <h2 className="section-heading" style={{ margin: "0 0 8px", fontSize: "1.35rem" }}>
               Proven website examples for local businesses
             </h2>
-            <p className="small" style={{ margin: "0 0 10px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+            <p className="small copy-readable" style={{ margin: "0 0 10px", opacity: 0.9, lineHeight: 1.55 }}>
               These are real examples of simple, high-converting websites built for local businesses.
             </p>
-            <p className="small" style={{ margin: "0 0 10px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+            <p className="small copy-readable" style={{ margin: "0 0 10px", opacity: 0.9, lineHeight: 1.55 }}>
               Each one is designed to help bring in more calls, messages, and customers — without overcomplicating
               things.
             </p>
-            <p className="small" style={{ margin: "0 0 22px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+            <p className="small copy-readable" style={{ margin: "0 0 22px", opacity: 0.9, lineHeight: 1.55 }}>
               Your business can follow a proven layout like these, or we can build something fully custom.
             </p>
 
@@ -58,10 +58,10 @@ export default function WebsiteSamplesPage() {
               <p className="small" style={{ margin: "0 0 14px", lineHeight: 1.55, maxWidth: 640 }}>
                 If you want something like this for your business, I can put together a quick example for you.
               </p>
-              <Link href="/contact" className="btn gold" style={{ marginBottom: 10 }}>
-                Get My Free Mockup
+              <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
+                Get My Free Website Preview
               </Link>
-              <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>
+              <p className="small copy-readable" style={{ margin: 0, opacity: 0.75, fontStyle: "italic" }}>
                 Built for real local businesses — not templates, not fluff.
               </p>
             </div>
@@ -111,7 +111,7 @@ export default function WebsiteSamplesPage() {
               marginBottom: 24,
             }}
           >
-            <div className="container" style={{ padding: 0, maxWidth: "var(--max)" }}>
+            <div className="container" style={{ padding: 0 }}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                 <span className="small" style={{ fontWeight: 900, marginRight: 8 }}>
                   Filter:
@@ -181,8 +181,8 @@ export default function WebsiteSamplesPage() {
             <p className="small" style={{ margin: "0 0 18px", lineHeight: 1.55, maxWidth: 640 }}>
               No pressure — just something to help you see what&apos;s possible.
             </p>
-            <Link href="/contact" className="btn gold" style={{ marginBottom: 10 }}>
-              Get My Free Mockup
+            <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
+              Get My Free Website Preview
             </Link>
             <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>
               Built for real local businesses — not templates, not fluff.

@@ -10,7 +10,7 @@ export type PortfolioSampleMeta = {
   cardImageUrl: string;
   /** For SampleDraftClient */
   stylePreset: "clean-modern" | "bold-premium" | "friendly-local" | "minimal-elegant";
-  colorPreset: "blue" | "green" | "dark" | "warm-neutral" | "bold-accent";
+  colorPreset: "blue" | "green" | "dark" | "warm-neutral" | "bold-accent" | "wellness";
 };
 
 /** Niche-matched pressure washing: active washing, flatwork, siding, outdoor living — not generic interiors. */
@@ -51,6 +51,17 @@ const FOOD = [
   "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1400&q=80",
 ];
 
+/** Wellness / spa / yoga — calm imagery; pairs with `wellness` color preset (layered sand & sage, not stark white). */
+const WELLNESS = [
+  "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1400&q=80",
+  "https://images.unsplash.com/photo-1528319725582-ddc096101511?auto=format&fit=crop&w=1400&q=80",
+];
+
+/**
+ * Lawn care and similar local-service samples: use color presets with layered gradients (e.g. `green`),
+ * not flat white page backgrounds — see `wellness` for spa/yoga and `green` for outdoor trades.
+ */
 function draftPressureWashing(): SampleDraft {
   return {
     businessName: "ClearView Pressure Washing",
@@ -306,6 +317,82 @@ function draftPlumbingHvac(): SampleDraft {
   };
 }
 
+function draftWellnessWiseBody(): SampleDraft {
+  return {
+    businessName: "Wise Body Mind Soul",
+    tagline: "Melissa Wise · Massage · Yoga · Sound healing",
+    localPositioning:
+      "A calmer, more restorative online experience designed to match the quality of the care offered in person.",
+    heroImageUrl: WELLNESS[0],
+    heroImageAlt: "Calm spa treatment room with soft towels and natural light",
+    heroHeadline: "Holistic wellness for body, mind, and soul",
+    heroSub: "Massage therapy, yoga, and restorative healing experiences in Hot Springs Village, Arkansas.",
+    heroPrimaryCta: "Book a Session",
+    heroSecondaryCta: "Explore Services",
+    offeringsTitle: "Services",
+    servicesSectionLead:
+      "Thoughtful sessions and classes — each offering is designed to help you reset, breathe deeper, and feel more like yourself.",
+    offerings: [
+      {
+        name: "Massage Therapy",
+        text: "Therapeutic touch to ease tension, support recovery, and restore balance — tailored pressure and focus based on what your body needs that day.",
+        image: WELLNESS[0],
+        imageAlt: "Therapeutic massage session in a peaceful treatment space",
+      },
+      {
+        name: "Yoga Classes",
+        text: "Grounding movement and breath in a supportive setting — approachable pacing whether you are new to the mat or returning to practice.",
+        image: WELLNESS[1],
+        imageAlt: "Yoga practice in a bright, calm studio space",
+      },
+      {
+        name: "Sound Baths",
+        text: "Immersive sound and stillness to quiet the mind — a gentle reset for nervous system and spirit without needing to \"do\" anything.",
+        image: WELLNESS[2],
+        imageAlt: "Singing bowls and meditation props arranged for a sound bath",
+      },
+    ],
+    gallerySectionTitle: "",
+    galleryImages: [],
+    whyChooseTitle: "What makes this practice different",
+    whyChooseBullets: [
+      "Personalized sessions — your goals and comfort lead every visit.",
+      "Thoughtful therapeutic products and a clean, calming environment.",
+      "A supportive healing space where you are seen as a whole person.",
+      "Local Hot Springs Village practice with booking that respects your time.",
+    ],
+    aboutTitle: "A healing practice rooted in experience",
+    aboutText:
+      "Wise Body Mind Soul exists to hold space for real rest. Melissa brings years of hands-on bodywork, movement, and mindful practice together so clients can soften stress, reconnect with their bodies, and leave feeling lighter. This work is slow, intentional, and grounded in compassion — never rushed, never noisy.",
+    aboutCtaLabel: "Book a Session",
+    trustTitle: "Kind words from clients",
+    trustQuotes: [
+      {
+        quote: "The most grounding massage I have had in years — I walked out feeling human again.",
+        by: "Local client",
+      },
+      {
+        quote: "Her yoga classes feel welcoming, not intimidating. I finally stuck with a practice.",
+        by: "Class member",
+      },
+      {
+        quote: "The sound bath was unlike anything I expected — deep calm without forcing it.",
+        by: "First-time guest",
+      },
+    ],
+    locationTitle: "Visit & hours",
+    locationName: "Wise Body Mind Soul",
+    address: "Hot Springs Village, Arkansas — details provided when you book.",
+    phone: "(501) 555-0191",
+    hours: ["By appointment", "Message or call for class schedule", "New clients welcome"],
+    contactBandTitle: "Questions before you book?",
+    contactBandSub: "Reach out for session types, class times, or what to expect on your first visit.",
+    finalTitle: "Ready to book your session?",
+    finalSub: "Experience massage therapy, yoga, and restorative wellness in a calm local setting.",
+    finalCta: "Schedule Now",
+  };
+}
+
 function draftRestaurant(): SampleDraft {
   return {
     businessName: "Brick & Ember Kitchen",
@@ -420,6 +507,17 @@ const DEFINITIONS: Array<
     stylePreset: "minimal-elegant",
     colorPreset: "bold-accent",
     buildDraft: draftRestaurant,
+  },
+  {
+    routeSlug: "wellness",
+    title: "Wise Body Mind Soul — Wellness Mockup",
+    category: "Wellness / Massage / Yoga",
+    description:
+      "Wide, premium wellness homepage with layered sand-and-sage backgrounds — massage, yoga, and sound baths with clear booking flow.",
+    cardImageUrl: WELLNESS[0],
+    stylePreset: "minimal-elegant",
+    colorPreset: "wellness",
+    buildDraft: draftWellnessWiseBody,
   },
 ];
 

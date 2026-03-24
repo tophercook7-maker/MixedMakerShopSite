@@ -6,7 +6,7 @@ export function PublicFooter() {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-col">
-            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 950, color: "rgba(255,255,255,.9)" }}>
+            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 600, color: "var(--pub-fg-heading)" }}>
               Contact
             </h2>
             <p className="small" style={{ margin: 0, opacity: 0.9 }}>
@@ -23,7 +23,7 @@ export function PublicFooter() {
             </p>
           </div>
           <div className="footer-col">
-            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 950, color: "rgba(255,255,255,.9)" }}>
+            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 600, color: "var(--pub-fg-heading)" }}>
               Web Design Services
             </h2>
             <ul className="footer-links" style={{ margin: 0, padding: 0, listStyle: "none" }}>

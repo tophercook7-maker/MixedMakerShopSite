@@ -9,6 +9,7 @@ type MockupApiRow = {
   mockup_url_resolved?: string | null;
   template_key?: string;
   updated_at?: string;
+  raw_payload?: Record<string, unknown> | null;
 };
 
 function buildPreviewUrl(slug: string): string {
@@ -92,6 +93,12 @@ export function LeadMockupSharePanel({
   }
 
   const share = shareUrl ? buildMockupShareMessages(shareUrl) : null;
+  const payload = mockup?.raw_payload && typeof mockup.raw_payload === "object" ? mockup.raw_payload : {};
+  const adminTitle = typeof payload.admin_title === "string" ? payload.admin_title.trim() : "";
+  const shareEmailSubject = typeof payload.share_email_subject === "string" ? payload.share_email_subject.trim() : "";
+  const shareEmailBody = typeof payload.share_email_body === "string" ? payload.share_email_body.trim() : "";
+  const shareTextCustom = typeof payload.share_text === "string" ? payload.share_text.trim() : "";
+  const shareFacebookCustom = typeof payload.share_facebook === "string" ? payload.share_facebook.trim() : "";
 
   return (
     <div className="admin-card space-y-3">
@@ -149,6 +156,12 @@ export function LeadMockupSharePanel({
             </button>
           </div>
           <p className="text-[11px] break-all" style={{ color: "var(--admin-muted)" }}>
+            {adminTitle ? (
+              <>
+                <strong style={{ color: "var(--admin-fg)" }}>{adminTitle}</strong>
+                <br />
+              </>
+            ) : null}
             Template: <strong style={{ color: "var(--admin-fg)" }}>{mockup.template_key || "—"}</strong>
             {mockup.updated_at ? (
               <>
@@ -158,14 +171,61 @@ export function LeadMockupSharePanel({
             ) : null}
           </p>
 
-          {share ? (
+          {shareEmailSubject && shareEmailBody ? (
             <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
               <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
-                Copy-paste outreach
+                Email helper (Melissa / Wise Body Mind Soul)
+              </p>
+              <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+                Paste subject and body separately. Add the mockup link in your send when you are ready.
               </p>
               <div className="space-y-1">
                 <p className="text-[11px] font-semibold" style={{ color: "var(--admin-muted)" }}>
-                  Email
+                  Subject
+                </p>
+                <pre
+                  className="text-[11px] whitespace-pre-wrap rounded p-2"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
+                >
+                  {shareEmailSubject}
+                </pre>
+                <button
+                  type="button"
+                  className="admin-btn-ghost text-[11px]"
+                  onClick={() => void copyText("Subject", shareEmailSubject)}
+                >
+                  Copy subject
+                </button>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold" style={{ color: "var(--admin-muted)" }}>
+                  Body
+                </p>
+                <pre
+                  className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-40 overflow-auto"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
+                >
+                  {shareEmailBody}
+                </pre>
+                <button
+                  type="button"
+                  className="admin-btn-ghost text-[11px]"
+                  onClick={() => void copyText("Email body", shareEmailBody)}
+                >
+                  Copy body
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {share ? (
+            <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+                Copy-paste outreach {shareUrl ? "(includes link)" : ""}
+              </p>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold" style={{ color: "var(--admin-muted)" }}>
+                  Email (with link)
                 </p>
                 <pre
                   className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-28 overflow-auto"
@@ -189,12 +249,14 @@ export function LeadMockupSharePanel({
                   className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-24 overflow-auto"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
                 >
-                  {share.text}
+                  {shareTextCustom ? `${shareTextCustom}\n${shareUrl}` : share.text}
                 </pre>
                 <button
                   type="button"
                   className="admin-btn-ghost text-[11px]"
-                  onClick={() => void copyText("Text draft", share.text)}
+                  onClick={() =>
+                    void copyText("Text draft", shareTextCustom ? `${shareTextCustom}\n${shareUrl}` : share.text)
+                  }
                 >
                   Copy text
                 </button>
@@ -207,12 +269,17 @@ export function LeadMockupSharePanel({
                   className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-28 overflow-auto"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
                 >
-                  {share.facebook}
+                  {shareFacebookCustom ? `${shareFacebookCustom}\n${shareUrl}` : share.facebook}
                 </pre>
                 <button
                   type="button"
                   className="admin-btn-ghost text-[11px]"
-                  onClick={() => void copyText("Facebook draft", share.facebook)}
+                  onClick={() =>
+                    void copyText(
+                      "Facebook draft",
+                      shareFacebookCustom ? `${shareFacebookCustom}\n${shareUrl}` : share.facebook,
+                    )
+                  }
                 >
                   Copy Facebook
                 </button>

@@ -11,7 +11,7 @@ export function PrintingCtaBand() {
     <PrintingSection divider={false} className="border-b-0 pb-[5rem] pt-0 md:pb-[6.5rem]">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-600/[0.12] via-transparent to-emerald-600/[0.08]" />
       <div className="pointer-events-none absolute -left-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-orange-500/25 blur-[100px]" />
-      <div className="relative mx-auto max-w-[72rem] px-5 sm:px-8">
+      <div className="relative mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16">
         <div className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.1] bg-gradient-to-br from-white/[0.07] via-white/[0.02] to-black/50 p-8 shadow-[0_32px_90px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:p-10 md:p-12">
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-orange-500/15 blur-3xl"
