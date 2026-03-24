@@ -1,7 +1,7 @@
 import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
 import { PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY } from "@/lib/sample-fallback-images";
 
-/** Permanent public portfolio samples (not CRM / lead previews). */
+/** Full-page website examples for common local trades (public pages). */
 export type PortfolioSampleMeta = {
   routeSlug: string;
   title: string;
@@ -375,7 +375,7 @@ const DEFINITIONS: Array<
     routeSlug: "pressure-washing",
     title: "ClearView Pressure Washing",
     category: "Pressure washing",
-    description: "A clean, high-converting pressure washing website sample with strong service blocks and quote CTAs.",
+    description: "A simple pressure washing website designed to turn visitors into calls and booked jobs.",
     cardImageUrl: PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY,
     stylePreset: "clean-modern",
     colorPreset: "blue",
@@ -385,7 +385,7 @@ const DEFINITIONS: Array<
     routeSlug: "auto-detailing",
     title: "North River Auto Detailing",
     category: "Auto detailing",
-    description: "A mobile-friendly detailing site built to help get more calls and booked appointments.",
+    description: "A mobile-friendly detailing site built to bring in more calls and booked appointments.",
     cardImageUrl: DETAIL[0],
     stylePreset: "bold-premium",
     colorPreset: "dark",
@@ -395,7 +395,7 @@ const DEFINITIONS: Array<
     routeSlug: "landscaping",
     title: "Greenline Lawn & Landscape",
     category: "Landscaping / lawn care",
-    description: "Route-based lawn care positioning with mulch, trimming, and seasonal messaging that sells trust.",
+    description: "A lawn care site focused on recurring work, estimates, and trust — so neighbors know who to call.",
     cardImageUrl: LAWN[0],
     stylePreset: "friendly-local",
     colorPreset: "green",
@@ -405,7 +405,7 @@ const DEFINITIONS: Array<
     routeSlug: "plumbing",
     title: "Summit Plumbing & Comfort",
     category: "Plumbing / HVAC",
-    description: "Service-trades layout emphasizing emergency access, tune-ups, and clear homeowner language.",
+    description: "A plumbing and HVAC site built for emergency calls, tune-ups, and clear next steps for homeowners.",
     cardImageUrl: HVAC[0],
     stylePreset: "clean-modern",
     colorPreset: "warm-neutral",
@@ -415,7 +415,7 @@ const DEFINITIONS: Array<
     routeSlug: "restaurant",
     title: "Brick & Ember Kitchen",
     category: "Restaurant / food truck",
-    description: "Hospitality sample merging dine-in, catering, and truck events with ordering-first CTAs.",
+    description: "A restaurant and food truck site that makes ordering, catering, and events easy to find and book.",
     cardImageUrl: FOOD[0],
     stylePreset: "minimal-elegant",
     colorPreset: "bold-accent",

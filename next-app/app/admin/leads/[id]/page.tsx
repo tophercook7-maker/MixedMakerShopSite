@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { LeadMockupSharePanel } from "@/components/admin/lead-mockup-share-panel";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
 import { LeadContactNow } from "@/components/admin/lead-contact-now";
@@ -1890,6 +1891,7 @@ Want me to show you a quick idea?`;
             </p>
             {resolvedLeadId ? (
               <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
+                <LeadMockupSharePanel leadId={resolvedLeadId} businessName={displayBusinessName} />
                 <LeadWorkspaceActions
                   leadId={resolvedLeadId}
                   linkedOpportunityId={oppId || null}

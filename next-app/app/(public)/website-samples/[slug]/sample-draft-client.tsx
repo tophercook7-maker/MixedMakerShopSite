@@ -78,6 +78,8 @@ export type SampleDraftEmbedOptions = {
   secondaryHref?: string;
   /** Footer attribution line for portfolio samples. */
   portfolioFooter?: boolean;
+  /** When `portfolioFooter` is true, overrides the default footer sentence. */
+  portfolioFooterMessage?: string;
   /** Replace internal “demo” helper copy with sendable portfolio tone. */
   portfolioCopy?: boolean;
   /** Explicit image fallback category (portfolio routes). Otherwise inferred from draft copy. */
@@ -666,7 +668,8 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
                 lineHeight: 1.5,
               }}
             >
-              This is a sample concept showing the kind of website Topher can build for local businesses.
+              {embedOptions?.portfolioFooterMessage?.trim() ||
+                "This is a sample concept showing the kind of website Topher can build for local businesses."}
             </p>
           </div>
         </footer>

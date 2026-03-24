@@ -9,24 +9,28 @@ import type { LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 export { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
 export { buildLeadSmsBody, type LeadSmsBodyInput } from "@/lib/crm/lead-sms-body";
 
-/** Prefilled SMS copy for CRM Text action (stored fields only). */
+/** Prefilled SMS copy for CRM Text action (stored fields + niche scripts). */
 export function buildLeadSmsMessage(
-  lead: Pick<WorkflowLead, "website" | "lead_tags" | "has_website">
+  lead: Pick<WorkflowLead, "website" | "lead_tags" | "has_website" | "category" | "business_name">
 ): string {
   return buildLeadSmsBody({
     website: trim(lead.website),
     lead_tags: lead.lead_tags,
     has_website: lead.has_website,
+    category: lead.category,
+    businessName: lead.business_name,
   });
 }
 
 export function buildLeadSmsMessageFromRow(
-  row: Pick<LeadRowForWorkflow, "website" | "lead_tags" | "has_website">
+  row: Pick<LeadRowForWorkflow, "website" | "lead_tags" | "has_website" | "category" | "business_name">
 ): string {
   return buildLeadSmsBody({
     website: String(row.website || ""),
     lead_tags: row.lead_tags,
     has_website: row.has_website,
+    category: row.category,
+    businessName: row.business_name,
   });
 }
 

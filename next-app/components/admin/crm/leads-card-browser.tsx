@@ -33,6 +33,7 @@ import {
   facebookNoWebsiteReachableMatchLine,
   matchesFacebookNoWebsiteReachable,
 } from "@/lib/crm/facebook-no-website-reachable";
+import { outreachScriptLabel, resolveOutreachScriptNiche } from "@/lib/crm-utils";
 import { leadPrimaryActionHintLine, resolveLeadPrimaryAction } from "@/lib/crm/lead-primary-action";
 import { WorkTheseNowStrip } from "@/components/admin/crm/work-these-now-strip";
 import { buildMarkLeadRepliedPatch } from "@/lib/crm/mark-lead-replied";
@@ -831,6 +832,9 @@ export function LeadsCardBrowser({
                 <p className="text-[10px] leading-snug opacity-80" style={{ color: "var(--admin-muted)" }}>
                   {formatLeadSourceBadge(lead)}
                 </p>
+                <p className="text-[9px] uppercase tracking-wide opacity-60" style={{ color: "var(--admin-muted)" }}>
+                  Script: {outreachScriptLabel(resolveOutreachScriptNiche(lead.category))}
+                </p>
                 <p className="text-xs line-clamp-2" style={{ color: "var(--admin-fg)" }}>
                   {opportunityLine(lead)}
                 </p>
@@ -1055,6 +1059,9 @@ export function LeadsCardBrowser({
                 </p>
                 <p className="text-[11px] mt-1" style={{ color: "var(--admin-muted)" }}>
                   {formatLeadSourceBadge(lead)}
+                </p>
+                <p className="text-[9px] mt-0.5 uppercase tracking-wide opacity-60" style={{ color: "var(--admin-muted)" }}>
+                  Script: {outreachScriptLabel(resolveOutreachScriptNiche(lead.category))}
                 </p>
                 <p className="text-xs mt-2 line-clamp-3" style={{ color: "var(--admin-fg)" }}>
                   {opportunityLine(lead)}

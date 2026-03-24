@@ -31,7 +31,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "bean-bliss",
     name: "Bean Bliss",
-    desc: "Warm neighborhood bar with hero, menu favorites, gallery, and visit block — ready to swap in your photos.",
+    desc: "Neighborhood coffee shop layout: menu highlights, photos, and an easy path to visit or call.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80",
@@ -39,7 +39,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "bean-bliss-boho",
     name: "Bean Bliss Boho",
-    desc: "Earthy boho palette with bakery-forward imagery, trust quotes, and soft CTAs that feel boutique, not corporate.",
+    desc: "Warm boho style with bakery-forward photos and reviews — feels local and trustworthy, not corporate.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=900&q=80",
@@ -47,7 +47,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "noir-roast",
     name: "Noir Roast",
-    desc: "Editorial minimal layout: strong headline, restrained color, and menu cards that read upscale on mobile.",
+    desc: "Clean, upscale coffee look that reads well on phones — strong headline and easy-to-scan menu.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=900&q=80",
@@ -55,7 +55,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "noir-roast-rustic",
     name: "Noir Roast Rustic",
-    desc: "Cabin-roastery mood with wood-toned hero, cozy sections, and pickup-friendly primary actions.",
+    desc: "Cozy roastery vibe with wood tones, clear hours, and simple ways to order or get in touch.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=80",
@@ -63,7 +63,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "sunrise-cafe",
     name: "Sunrise Café",
-    desc: "Retro-playful energy: bold type, gallery of the bar, and hours that are impossible to miss.",
+    desc: "Bold, friendly energy with photos of the bar and hours customers can’t miss.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=900&q=80",
@@ -71,7 +71,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "sunrise-cafe-modern",
     name: "Sunrise Café Modern",
-    desc: "Night-out cafe concept — glassy surfaces, contrast, and order-first CTAs for a younger crowd.",
+    desc: "Modern night-out cafe style — quick paths to call or order for a younger crowd.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=900&q=80",
@@ -79,7 +79,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "route-66-coffee",
     name: "Route 66 Coffee",
-    desc: "Diner-meets-espresso-bar: vintage personality with practical tap-to-call and menu scan layout.",
+    desc: "Classic diner-meets-espresso personality with tap-to-call and a menu that’s easy to skim.",
     category: "coffee",
     imageUrl:
       "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
@@ -88,7 +88,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "diamond-plumbing",
     name: "Diamond Plumbing Co.",
-    desc: "Emergency-ready plumbing site with service pages, trust proof, and call-first actions.",
+    desc: "Plumbing site built for emergencies, trust, and getting the phone to ring.",
     category: "service",
     imageUrl:
       "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=900&q=80",
@@ -96,7 +96,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "greenridge-lawn-care",
     name: "Greenridge Lawn Care",
-    desc: "Route-based lawn care: mowing, seasonal cleanups, and fertilization blocks with neighbor-trust tone.",
+    desc: "Lawn care layout that sells recurring visits, seasonal work, and neighbor-level trust.",
     category: "service",
     imageUrl:
       "https://images.unsplash.com/photo-1458245201577-fc8a130b8829?auto=format&fit=crop&w=900&q=80",
@@ -114,7 +114,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "grace-fellowship-church",
     name: "Grace Fellowship Church",
-    desc: "Established church flow: sanctuary hero, ministries as services, gallery, and plan-your-visit CTAs.",
+    desc: "Welcoming church flow: ministries, photos, and a clear plan-your-visit path.",
     category: "church",
     imageUrl:
       "https://images.unsplash.com/photo-1465848059293-208e11dfea17?auto=format&fit=crop&w=900&q=80",
@@ -130,7 +130,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "oak-hill-community-church",
     name: "Oak Hill Community Church",
-    desc: "Small-town warmth: community gallery, midweek groups, and contact-first ministry cards.",
+    desc: "Small-town warmth: community photos, midweek groups, and easy ways to connect.",
     category: "church",
     imageUrl:
       "https://images.unsplash.com/photo-1531808012724-688c1de500b4?auto=format&fit=crop&w=900&q=80",
@@ -139,7 +139,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "restaurant-redesign-demo",
     name: "Restaurant Redesign Demo",
-    desc: "How we tighten menus, speed, and mobile UX — plus links to live restaurant samples you can send.",
+    desc: "See how a tighter menu and faster mobile flow can bring more orders — with links to live examples.",
     category: "redesign",
     imageUrl:
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
@@ -149,7 +149,7 @@ export const WEBSITE_SAMPLES: WebsiteSample[] = [
   {
     slug: "website-teardown-tool",
     name: "Website Teardown Tool",
-    desc: "Free website check: submit your URL and get a concise review with actionable fixes.",
+    desc: "Free check: send your URL and get a short, honest review with fixes you can act on.",
     category: "tool",
     imageUrl:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80",

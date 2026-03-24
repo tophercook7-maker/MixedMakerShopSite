@@ -13,6 +13,7 @@ import { LeadForm } from "@/components/admin/lead-form";
 import { OutreachBadges } from "@/components/admin/outreach-badges";
 import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
 import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
+import { getTemplateSet } from "@/lib/crm-utils";
 
 function formatLeadApiError(body: unknown, fallback: string): string {
   if (!body || typeof body !== "object") return fallback;
@@ -25,11 +26,9 @@ function formatLeadApiError(body: unknown, fallback: string): string {
 
 type FollowUpStatus = "pending" | "completed";
 
-const FOLLOW_UP_TEMPLATES: Record<number, string> = {
-  1: "Hey, just wanted to follow up real quick — were you still interested in getting help with your website?\n\nIf so, I'd be happy to put together a clean and affordable option for your business.",
-  2: "Hey, just checking back in — are you still looking to improve your website or get one set up for your business?\n\nIf that's still on your radar, I can help with something clean, simple, and affordable.",
-  3: "Hey, I'll leave you alone after this — if you ever want a simple site that makes it easy for customers to reach you, just reply anytime.\n\nEither way, wishing you the best.",
-};
+function followUpMessageForLead(lead: Pick<WorkflowLead, "business_name" | "category">): string {
+  return getTemplateSet({ businessName: lead.business_name, category: lead.category }).smsFollowUp;
+}
 
 function followUpDelayDaysForStage(stage: number): number {
   if (stage <= 1) return 2;
@@ -179,7 +178,7 @@ function actionDebug(action: string, payload: Record<string, unknown>) {
 }
 
 function leadPrefilledSmsHref(
-  lead: Pick<WorkflowLead, "phone_from_site" | "website" | "lead_tags" | "has_website">
+  lead: Pick<WorkflowLead, "phone_from_site" | "website" | "lead_tags" | "has_website" | "category" | "business_name">
 ): string | null {
   const phone = String(lead.phone_from_site || "").trim();
   if (!phone) return null;
@@ -189,6 +188,8 @@ function leadPrefilledSmsHref(
     website: String(lead.website || ""),
     lead_tags: lead.lead_tags,
     has_website: lead.has_website,
+    category: lead.category,
+    businessName: lead.business_name,
   });
   return appendEncodedSmsBody(links.smsHref, body);
 }
@@ -798,18 +799,14 @@ export function LeadsWorkflowView({
 
   async function sendFollowUpForLead(lead: WorkflowLead) {
     const stage = clampFollowUpStage(lead.follow_up_stage || 1) || 1;
-    const template = FOLLOW_UP_TEMPLATES[stage];
-    if (!template) {
-      setError("No follow-up template found for this stage.");
-      return;
-    }
+    const template = followUpMessageForLead(lead);
     const sendRes = await fetch("/api/scout/outreach/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         lead_id: lead.id,
         subject: `Quick follow-up for ${lead.business_name}`,
-        body: template,
+        body: `${template}\n\n— Topher`,
         message_type: "short",
       }),
     });
@@ -1436,7 +1433,7 @@ export function LeadsWorkflowView({
           <div className="space-y-2">
             {pendingFollowUps.slice(0, 20).map((lead) => {
               const stage = clampFollowUpStage(lead.follow_up_stage || 1) || 1;
-              const previewMessage = FOLLOW_UP_TEMPLATES[stage] || FOLLOW_UP_TEMPLATES[1];
+              const previewMessage = followUpMessageForLead(lead);
               return (
                 <article
                   key={`followup-${lead.id}`}
@@ -1979,6 +1976,31 @@ export function LeadsWorkflowView({
                   >
                     Send Email
                   </a>
+                  {lead.facebook_url ? (
+                    <>
+                      <a
+                        href={lead.facebook_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="admin-btn-ghost text-xs"
+                        onClick={() => actionDebug("Open Facebook clicked", { leadId: lead.id })}
+                      >
+                        Open Facebook
+                      </a>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs"
+                        onClick={() =>
+                          void copyText(
+                            getTemplateSet({ businessName: lead.business_name, category: lead.category }).facebookMessage,
+                            "Could not copy Facebook message."
+                          )
+                        }
+                      >
+                        Copy FB message
+                      </button>
+                    </>
+                  ) : null}
                   {lead.phone_from_site ? (
                     <>
                       <a
@@ -2007,6 +2029,8 @@ export function LeadsWorkflowView({
                               website: String(lead.website || ""),
                               lead_tags: lead.lead_tags,
                               has_website: lead.has_website,
+                              category: lead.category,
+                              businessName: lead.business_name,
                             }),
                             "Could not copy text script."
                           )
@@ -2376,6 +2400,31 @@ export function LeadsWorkflowView({
                         >
                           Send Email
                         </a>
+                        {lead.facebook_url ? (
+                          <>
+                            <a
+                              href={lead.facebook_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[var(--admin-gold)] hover:underline text-xs"
+                            >
+                              Open Facebook
+                            </a>
+                            <button
+                              type="button"
+                              className="text-[var(--admin-gold)] hover:underline text-xs"
+                              onClick={() =>
+                                void copyText(
+                                  getTemplateSet({ businessName: lead.business_name, category: lead.category })
+                                    .facebookMessage,
+                                  "Could not copy Facebook message."
+                                )
+                              }
+                            >
+                              Copy FB message
+                            </button>
+                          </>
+                        ) : null}
                         {lead.phone_from_site ? (
                           <>
                             <a
@@ -2403,6 +2452,8 @@ export function LeadsWorkflowView({
                                     website: String(lead.website || ""),
                                     lead_tags: lead.lead_tags,
                                     has_website: lead.has_website,
+                                    category: lead.category,
+                                    businessName: lead.business_name,
                                   }),
                                   "Could not copy text script."
                                 )

@@ -6,6 +6,7 @@ import { addBusinessDaysIso } from "@/lib/crm/business-days";
 import { appendEncodedSmsBody, cleanPhoneForSmsAndTel } from "@/lib/crm/lead-phone-link";
 import { buildMarkLeadRepliedPatch } from "@/lib/crm/mark-lead-replied";
 import { buildLeadSmsBody } from "@/lib/crm/lead-sms-body";
+import { getTemplateSet, outreachScriptLabel } from "@/lib/crm-utils";
 import { buildLeadPath } from "@/lib/lead-route";
 import {
   BUSINESS_TYPE_OPTIONS,
@@ -62,12 +63,6 @@ type LeadWorkspaceActionsProps = {
   /** Prefill compose when opening with ?compose=1 (e.g. from suggested response). */
   initialSuggestedOutreachSubject?: string | null;
   initialSuggestedOutreachBody?: string | null;
-};
-
-type TemplateResponse = {
-  short_email?: string;
-  longer_email?: string;
-  follow_up_note?: string;
 };
 
 type PreparedOutreachDraft = {
@@ -245,27 +240,6 @@ function inferSuggestedClosingReply(replyText: string, currentStatus: string): C
   return CLOSING_REPLIES[0];
 }
 
-function fallbackDraft(name: string, issue: string, opts?: { hasWebsite?: boolean; hasScreenshot?: boolean }) {
-  const hasWebsite = Boolean(opts?.hasWebsite);
-  const hasScreenshot = Boolean(opts?.hasScreenshot);
-  const opener = hasWebsite
-    ? `I was looking at your website and noticed: ${issue || "something that might be affecting conversions"}.`
-    : `I was looking at your business online and noticed: ${issue || "you do not have a clear website presence yet"}.`;
-  return {
-    subject: hasWebsite ? "quick question about your website" : "quick idea for your business",
-    body: [
-      `Hi ${name || ""},`,
-      "",
-      opener,
-      "",
-      ...(hasScreenshot ? ["I grabbed a quick screenshot showing it.", ""] : []),
-      "Would you like me to send it over?",
-      "",
-      "- Topher",
-    ].join("\n"),
-  };
-}
-
 function beginnerPricingSuggestion(category: string): { label: string; midpoint: number } {
   const normalized = String(category || "").toLowerCase();
   const isStandard =
@@ -276,21 +250,6 @@ function beginnerPricingSuggestion(category: string): { label: string; midpoint:
   return isStandard
     ? { label: "Business setup ($900)", midpoint: 900 }
     : { label: "Starter setup ($400)", midpoint: 400 };
-}
-
-function sanitizeOutreachBody(body: string, opts: { hasWebsite: boolean; hasScreenshot: boolean }): string {
-  let next = String(body || "").trim();
-  if (!opts.hasWebsite) {
-    next = next.replace(/looking at your website/gi, "looking at your business online");
-    next = next.replace(/your website/gi, "your online presence");
-  }
-  if (!opts.hasScreenshot) {
-    next = next
-      .split("\n")
-      .filter((line) => !/screenshot/i.test(line))
-      .join("\n");
-  }
-  return next;
 }
 
 export function LeadWorkspaceActions({
@@ -326,7 +285,6 @@ export function LeadWorkspaceActions({
   initialSuggestedOutreachBody = null,
   initialUnreadReplyCount = null,
 }: LeadWorkspaceActionsProps) {
-  const hasWebsitePresence = Boolean(String(website || "").trim());
   const prefilledSmsHrefValue = useMemo(() => {
     const phone = String(initialPhone || "").trim();
     if (!phone) return null;
@@ -336,9 +294,11 @@ export function LeadWorkspaceActions({
       website: String(website || ""),
       lead_tags: undefined,
       has_website: null,
+      category: initialCategory,
+      businessName: initialBusinessName,
     });
     return appendEncodedSmsBody(links.smsHref, body);
-  }, [initialPhone, website]);
+  }, [initialPhone, website, initialCategory, initialBusinessName]);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -941,66 +901,11 @@ export function LeadWorkspaceActions({
     setError(null);
     setMessage(null);
     try {
-      console.info("[Action Debug] Generate Email request started", { leadId });
-      const res = await fetch("/api/scout/outreach/template", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lead_id: leadId,
-          linked_opportunity_id: linkedOpportunityId,
-        }),
-      });
-      const data = (await res.json().catch(() => ({}))) as TemplateResponse & { error?: string };
-      console.info("[Action Debug] Generate Email response", { leadId, status: res.status, body: data });
-      if (!res.ok) throw new Error(data.error || "Could not generate outreach preview.");
-
-      const fallback = fallbackDraft(initialBusinessName, initialIssue, {
-        hasWebsite: hasWebsitePresence,
-        hasScreenshot: false,
-      });
-      const nextSubject = fallback.subject;
-      let nextBody =
-        String(data.short_email || "").trim() ||
-        String(data.longer_email || "").trim() ||
-        String(data.follow_up_note || "").trim() ||
-        fallback.body;
-      if (
-        quickFixSummary &&
-        !/quick improvement idea|quick fix/i.test(nextBody)
-      ) {
-        nextBody = `${nextBody}\n\nI put together a quick improvement idea: ${quickFixSummary}`;
-      }
-      nextBody = sanitizeOutreachBody(nextBody, {
-        hasWebsite: hasWebsitePresence,
-        hasScreenshot: false,
-      });
-
-      setSubject(nextSubject);
-      setBody(nextBody);
-      setMessage("Outreach draft generated.");
-      console.info("[Action Debug] Generate Email request succeeded", { leadId });
-    } catch (e) {
-      const fallback = fallbackDraft(initialBusinessName, initialIssue, {
-        hasWebsite: hasWebsitePresence,
-        hasScreenshot: false,
-      });
-      setSubject(fallback.subject);
-      setBody(
-        sanitizeOutreachBody(
-          quickFixSummary
-            ? `${fallback.body}\n\nI put together a quick improvement idea: ${quickFixSummary}`
-            : fallback.body,
-          {
-            hasWebsite: hasWebsitePresence,
-            hasScreenshot: false,
-          }
-        )
-      );
-      setError(e instanceof Error ? e.message : "Could not generate outreach draft.");
-      console.error("[Action Debug] Generate Email request failed", {
-        leadId,
-        error: e instanceof Error ? e.message : "unknown",
-      });
+      const t = getTemplateSet({ businessName: initialBusinessName, category: initialCategory });
+      setSubject(t.emailSubject);
+      setBody(t.emailBody);
+      setMessage("Outreach draft ready (niche script).");
+      console.info("[Action Debug] Generate Email niche template applied", { leadId, niche: t.niche });
     } finally {
       setIsGenerating(false);
     }
@@ -1445,12 +1350,25 @@ export function LeadWorkspaceActions({
           website: String(website || ""),
           lead_tags: undefined,
           has_website: null,
+          category: initialCategory,
+          businessName: initialBusinessName,
         })
       );
       setMessage("Text script copied.");
       setError(null);
     } catch {
       setError("Could not copy text script.");
+    }
+  }
+
+  async function copyFacebookOutreachScript() {
+    const t = getTemplateSet({ businessName: initialBusinessName, category: initialCategory });
+    try {
+      await navigator.clipboard.writeText(t.facebookMessage);
+      setMessage("Facebook message copied.");
+      setError(null);
+    } catch {
+      setError("Could not copy Facebook message.");
     }
   }
 
@@ -2585,9 +2503,14 @@ export function LeadWorkspaceActions({
                     Copy Message
                   </button>
                   {facebookUrl ? (
-                    <a href={facebookUrl} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
-                      Open Facebook
-                    </a>
+                    <>
+                      <a href={facebookUrl} target="_blank" rel="noreferrer" className="admin-btn-ghost text-xs">
+                        Open Facebook
+                      </a>
+                      <button type="button" className="admin-btn-ghost text-xs" onClick={() => void copyFacebookOutreachScript()}>
+                        Copy FB message
+                      </button>
+                    </>
                   ) : null}
                   <button className="admin-btn-primary text-xs" onClick={() => void sendEmail()} disabled={isSending}>
                     {isSending ? "Sending..." : "Send Email"}
@@ -2621,6 +2544,9 @@ export function LeadWorkspaceActions({
 
       <div className="admin-card space-y-3">
         <h3 className="text-sm font-semibold">Email &amp; messages</h3>
+        <p className="text-[10px] tracking-wide uppercase" style={{ color: "var(--admin-muted)" }}>
+          Script: {outreachScriptLabel(getTemplateSet({ businessName: initialBusinessName, category: initialCategory }).niche)}
+        </p>
         <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
           Draft, send, and track outreach from here.
         </p>
@@ -3027,6 +2953,16 @@ export function LeadWorkspaceActions({
                 disabled={isUpdating}
               >
                 Mark Text Sent
+              </button>
+            </>
+          ) : null}
+          {facebookUrl ? (
+            <>
+              <a href={facebookUrl} target="_blank" rel="noreferrer" className="admin-btn-ghost">
+                Open Facebook
+              </a>
+              <button type="button" className="admin-btn-ghost" onClick={() => void copyFacebookOutreachScript()}>
+                Copy FB message
               </button>
             </>
           ) : null}

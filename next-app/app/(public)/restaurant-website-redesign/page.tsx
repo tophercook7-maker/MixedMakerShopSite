@@ -143,7 +143,7 @@ export default function RestaurantRedesignPage() {
               more covers and takeout orders.
             </p>
             <div className="btn-row">
-              <Link href="/#free-mockup-request" className="btn gold">
+              <Link href="/contact" className="btn gold">
                 Get My Free Mockup
               </Link>
               <Link href="/contact" className="btn ghost">

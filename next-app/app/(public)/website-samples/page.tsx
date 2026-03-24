@@ -27,18 +27,45 @@ export default function WebsiteSamplesPage() {
         <div className="panel">
           <h1 style={{ margin: "0 0 10px" }}>Website Samples</h1>
           <p className="subhead" style={{ margin: "0 0 20px" }}>
-            Polished portfolio examples for common local trades (always available), plus interactive concepts — coffee,
-            restaurants, churches, and more. Yours can follow any of these or go fully custom.
+            Real examples of simple sites for local businesses — trades, food, coffee, churches, and more. Pick up ideas
+            for your own, or we can build something fully custom.
           </p>
 
           <div style={{ marginBottom: 36 }}>
             <h2 className="section-heading" style={{ margin: "0 0 8px", fontSize: "1.35rem" }}>
-              Evergreen portfolio samples
+              Proven website examples for local businesses
             </h2>
-            <p className="small" style={{ margin: "0 0 18px", opacity: 0.9, maxWidth: 720 }}>
-              Ready-to-send homepage demos for pressure washing, detailing, landscaping, plumbing/HVAC, and restaurant /
-              food truck. These are permanent public pages — separate from CRM-generated previews for individual leads.
+            <p className="small" style={{ margin: "0 0 10px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+              These are real examples of simple, high-converting websites built for local businesses.
             </p>
+            <p className="small" style={{ margin: "0 0 10px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+              Each one is designed to help bring in more calls, messages, and customers — without overcomplicating
+              things.
+            </p>
+            <p className="small" style={{ margin: "0 0 22px", opacity: 0.9, maxWidth: 720, lineHeight: 1.55 }}>
+              Your business can follow a proven layout like these, or we can build something fully custom.
+            </p>
+
+            <div
+              className="card"
+              style={{
+                marginBottom: 24,
+                padding: "18px 20px",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <p className="small" style={{ margin: "0 0 14px", lineHeight: 1.55, maxWidth: 640 }}>
+                If you want something like this for your business, I can put together a quick example for you.
+              </p>
+              <Link href="/contact" className="btn gold" style={{ marginBottom: 10 }}>
+                Get My Free Mockup
+              </Link>
+              <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>
+                Built for real local businesses — not templates, not fluff.
+              </p>
+            </div>
+
             <div className="grid-2">
               {PORTFOLIO_SAMPLES.map((p) => (
                 <article
@@ -63,7 +90,7 @@ export default function WebsiteSamplesPage() {
                       {p.description}
                     </p>
                     <Link className="btn gold" href={`/samples/${p.routeSlug}`} style={{ alignSelf: "flex-start" }}>
-                      Open preview
+                      View example
                     </Link>
                   </div>
                 </article>
@@ -72,7 +99,7 @@ export default function WebsiteSamplesPage() {
           </div>
 
           <h2 className="section-heading" style={{ margin: "0 0 16px", fontSize: "1.25rem" }}>
-            More sample concepts
+            More examples by industry
           </h2>
 
           {/* Filter bar - optional, does not hide samples by default */}
@@ -135,10 +162,31 @@ export default function WebsiteSamplesPage() {
             </div>
           )}
 
-          <div className="btn-row" style={{ marginTop: 28 }}>
-            <Link href="/#free-mockup-request" className="btn gold">
+          <div
+            className="card"
+            style={{
+              marginTop: 36,
+              padding: "22px 22px 24px",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--border)",
+            }}
+          >
+            <h2 className="section-heading" style={{ margin: "0 0 12px", fontSize: "1.2rem" }}>
+              Want something like this for your business?
+            </h2>
+            <p className="small" style={{ margin: "0 0 10px", lineHeight: 1.55, maxWidth: 640 }}>
+              I can put together a quick example showing what your website could look like and how it could help bring
+              in more customers.
+            </p>
+            <p className="small" style={{ margin: "0 0 18px", lineHeight: 1.55, maxWidth: 640 }}>
+              No pressure — just something to help you see what&apos;s possible.
+            </p>
+            <Link href="/contact" className="btn gold" style={{ marginBottom: 10 }}>
               Get My Free Mockup
             </Link>
+            <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>
+              Built for real local businesses — not templates, not fluff.
+            </p>
           </div>
         </div>
       </div>
@@ -174,7 +222,7 @@ function SampleCard({ sample }: { sample: WebsiteSample }) {
             {sample.desc}
           </p>
           <span className="btn gold" style={{ marginTop: 14, alignSelf: "flex-start", display: "inline-block" }}>
-            Open preview
+            View example
           </span>
         </div>
       </Link>
