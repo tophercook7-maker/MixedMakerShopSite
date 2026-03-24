@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  themeColor: "#fafafa",
+  themeColor: "#0b0f0e",
   openGraph: {
     title: "MixedMakerShop",
     description: "Web design, 3D printing, and custom builds that stand out.",

@@ -38,7 +38,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Websites &amp; growth for local business</strong>
+              <strong>Custom 3D printing &amp; web design</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -49,6 +49,9 @@ export function PublicNav() {
         <nav ref={navRef} className="main-nav nav-links">
           <Link href="/" className="pill">
             Home
+          </Link>
+          <Link href="/web-design" className="pill">
+            Work With Topher
           </Link>
           <Link href="/website-samples" className="pill">
             Website Samples

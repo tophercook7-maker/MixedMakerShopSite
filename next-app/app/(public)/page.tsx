@@ -56,42 +56,53 @@ export default function HomePage() {
   return (
     <div className="home-premium home-premium--textured">
       {/* Hero */}
-      <section className="home-band home-band--hero relative overflow-hidden">
+      <section className="home-band home-band--hero home-hero relative overflow-hidden">
         <div className="home-band-hero-bg pointer-events-none absolute inset-0" aria-hidden />
-        <div className={`${shell} relative z-[1] py-16 md:py-24 lg:py-28`}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.05fr] gap-12 lg:gap-16 items-center">
-            <div>
-              <p className="home-reveal home-eyebrow mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-[#00FFB2]">
+        <div className="home-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
+        <div className="home-hero-grain pointer-events-none absolute inset-0" aria-hidden />
+        <div
+          className={`${shell} home-hero-inner relative z-[2] pt-20 sm:pt-24 md:pt-32 lg:pt-[8.75rem] pb-24 sm:pb-28 md:pb-32 lg:pb-[6.5rem]`}
+        >
+          <div className="grid grid-cols-1 items-center gap-y-14 lg:gap-y-0 lg:grid-cols-[minmax(0,1fr)_minmax(400px,1.18fr)] lg:gap-x-16 xl:gap-x-[7rem] lg:items-center">
+            <div className="home-hero-copy max-w-[720px] lg:max-w-[680px] xl:max-w-[720px] lg:pr-2">
+              <p className="home-reveal home-hero-eyebrow">
                 Websites that actually bring in customers
               </p>
-              <h1 className="home-reveal home-section-title text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-[#E8FDF5] leading-[0.98] md:leading-tight">
-                Websites that help local businesses get found, get calls, and grow
+              <h1 className="home-reveal home-hero-headline home-section-title">
+                Websites that help local businesses
+                <br className="hidden md:block" /> get found, get calls, and grow
               </h1>
-              <p className={`home-reveal mt-6 ${body} ${read}`}>
+              <p className="home-reveal home-hero-sub">
                 Not just a website — a complete system with design, SEO, Google Business optimization, and ongoing
                 support that keeps your business visible and moving forward.
               </p>
-              <p className="home-reveal mt-4 text-sm leading-relaxed text-[#9FB5AD]">
-                Built for local businesses in Hot Springs and beyond.
+              <p className="home-reveal home-hero-support">
+                Designed to help your business get found, look credible, and grow.
               </p>
-              <div className="home-reveal mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/free-mockup"
-                  className="home-btn-primary inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-[15px] font-semibold text-[#0B0F0E] transition-transform duration-200 ease-out hover:scale-[1.03]"
-                >
+              <p className="home-reveal home-hero-loc">
+                <span className="home-hero-loc-pill">Hot Springs, Arkansas</span>
+                <span className="home-hero-loc-meta">Website · SEO · Ongoing growth</span>
+              </p>
+              <div className="home-reveal home-hero-ctas">
+                <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero">
                   Get My Free Website Preview
                 </Link>
-                <Link
-                  href="/offer"
-                  className="inline-flex items-center justify-center rounded-2xl border border-[rgba(0,255,178,0.35)] bg-[rgba(0,255,178,0.06)] px-6 py-3.5 text-[15px] font-medium text-[#E8FDF5] transition-colors hover:border-[#35FFC1] hover:bg-[rgba(0,255,178,0.12)]"
-                >
+                <Link href="/offer" className="home-btn-secondary--hero">
                   See the Website + SEO Offer
                 </Link>
               </div>
+              <ul className="home-reveal home-hero-trust" aria-label="What to expect">
+                <li>Built for local businesses</li>
+                <li>SEO-minded from the start</li>
+                <li>Mockup first, no pressure</li>
+              </ul>
             </div>
-            <HomeSalesVisual />
+            <div className="home-reveal home-hero-visual-slot w-full min-w-0 flex justify-center lg:justify-end">
+              <HomeSalesVisual />
+            </div>
           </div>
         </div>
+        <div className="home-band-hero-foot pointer-events-none absolute inset-x-0 bottom-0 z-[1]" aria-hidden />
       </section>
 
       {/* Problem */}

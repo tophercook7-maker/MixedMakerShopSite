@@ -28,11 +28,13 @@ function assignStaggerDelays(nodes: HTMLElement[]) {
     if (!byScope.has(scope)) byScope.set(scope, []);
     byScope.get(scope)!.push(el);
   }
-  for (const list of Array.from(byScope.values())) {
+  Array.from(byScope.entries()).forEach(([scope, list]) => {
+    const step =
+      scope instanceof HTMLElement && scope.classList.contains("home-band--hero") ? 0.11 : 0.07;
     list.forEach((el: HTMLElement, i: number) => {
-      el.style.setProperty("--motion-delay", `${Math.min(i, 14) * 0.07}s`);
+      el.style.setProperty("--motion-delay", `${Math.min(i, 14) * step}s`);
     });
-  }
+  });
 }
 
 export function PublicMotionInit() {
