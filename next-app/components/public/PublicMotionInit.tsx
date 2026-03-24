@@ -17,12 +17,13 @@ const REVEAL_SELECTOR = [
   "main .offer-page .offer-section-title",
   "main .offer-page .offer-reveal-line",
   "main .offer-page .offer-card",
+  "main .home-premium .home-reveal",
 ].join(", ");
 
 function assignStaggerDelays(nodes: HTMLElement[]) {
   const byScope = new Map<Element, HTMLElement[]>();
   for (const el of nodes) {
-    const scope = el.closest(".section") ?? el.closest(".sample-section");
+    const scope = el.closest(".section") ?? el.closest(".sample-section") ?? el.closest(".home-band");
     if (!scope) continue;
     if (!byScope.has(scope)) byScope.set(scope, []);
     byScope.get(scope)!.push(el);

@@ -19,7 +19,7 @@ export function PublicNav() {
   }, []);
 
   return (
-    <header className="nav">
+    <header className="nav nav--premium">
       <div className="nav-inner">
         <Link href="/" className="brand">
           {logoFailed ? (
@@ -30,7 +30,7 @@ export function PublicNav() {
               alt="MixedMakerShop M³ logo"
               width={56}
               height={56}
-              className="rounded-xl border border-zinc-200/80 shadow-sm shrink-0 object-contain"
+              className="nav-brand-logo rounded-xl shrink-0 object-contain"
               priority
               onError={() => setLogoFailed(true)}
             />
@@ -38,11 +38,9 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Custom 3D Printing</strong>
+              <strong>Websites &amp; growth for local business</strong>
             </div>
-            <div className="small" style={{ fontSize: 12 }}>
-              Web design • Hot Springs, Arkansas • Owned by Topher Cook
-            </div>
+            <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
         </Link>
         <button ref={toggleRef} className="menu-toggle" type="button" aria-label="Open menu">
@@ -51,9 +49,6 @@ export function PublicNav() {
         <nav ref={navRef} className="main-nav nav-links">
           <Link href="/" className="pill">
             Home
-          </Link>
-          <Link href="/web-design" className="pill">
-            Work With Topher
           </Link>
           <Link href="/website-samples" className="pill">
             Website Samples
@@ -65,15 +60,12 @@ export function PublicNav() {
             3D Printing
           </Link>
           <Link href="/upload-print" className="pill">
-            Upload print
-          </Link>
-          <Link href="/website-roast" className="pill">
-            Free Website Roast
+            Upload Print
           </Link>
           <Link href="/free-mockup" className="pill cta">
-            Get My Free Website Preview ➜
+            Get My Free Website Preview
           </Link>
-          <Link href="/auth/login" className="pill">
+          <Link href="/auth/login" className="pill pill--muted">
             Admin
           </Link>
         </nav>

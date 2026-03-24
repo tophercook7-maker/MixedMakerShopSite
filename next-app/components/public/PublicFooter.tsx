@@ -2,15 +2,15 @@ import Link from "next/link";
 
 export function PublicFooter() {
   return (
-    <footer className="footer" id="contact">
+    <footer className="footer footer--premium" id="contact">
       <div className="container">
         <div className="footer-grid">
           <div className="footer-col">
-            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 600, color: "var(--pub-fg-heading)" }}>
+            <h2 className="small footer-premium-heading" style={{ margin: "0 0 10px", fontWeight: 600 }}>
               Contact
             </h2>
             <p className="small" style={{ margin: 0, opacity: 0.9 }}>
-              MixedMakerShop — Web design studio based in Hot Springs, Arkansas.
+              MixedMakerShop — Websites, SEO, and growth support for local businesses. Based in Hot Springs, Arkansas.
             </p>
             <p className="small" style={{ margin: "6px 0 0" }}>
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
@@ -23,7 +23,7 @@ export function PublicFooter() {
             </p>
           </div>
           <div className="footer-col">
-            <h2 className="small" style={{ margin: "0 0 10px", fontWeight: 600, color: "var(--pub-fg-heading)" }}>
+            <h2 className="small footer-premium-heading" style={{ margin: "0 0 10px", fontWeight: 600 }}>
               Web Design Services
             </h2>
             <ul className="footer-links" style={{ margin: 0, padding: 0, listStyle: "none" }}>
