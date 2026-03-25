@@ -19,21 +19,21 @@ export function StlLibraryGrid() {
               <PrintingSectionHeader
                 align="left"
                 title="Need ideas first?"
-                subtitle="Browse these libraries if you want inspiration before we customize or print something for you."
-                className="max-w-3xl lg:max-w-4xl"
+                subtitle="Need inspiration first? These libraries are useful when you want to browse ideas before having us print, tweak, or customize something."
+                className="max-w-4xl"
               />
-              <p className="mb-10 max-w-2xl text-[0.8125rem] leading-relaxed text-white/42 md:mb-12">
-                Always confirm licensing on any model you didn&apos;t create — especially if you plan to sell prints.
+              <p className="mb-10 max-w-3xl text-[0.8125rem] leading-relaxed text-white/45 md:mb-12">
+                Always verify licensing on any file you didn&apos;t model yourself — especially for resale.
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:gap-5 xl:grid-cols-3">
                 {STL_LIBRARY_SITES.map((site, index) => (
                   <RevealOnScroll key={site.url} delayMs={index * 70}>
-                    <article className="group flex h-full flex-col rounded-2xl border border-white/[0.1] bg-gradient-to-b from-white/[0.06] to-black/44 p-5 shadow-[0_18px_52px_rgba(0,0,0,0.3)] transition duration-300 hover:border-white/[0.16] hover:shadow-[0_28px_64px_rgba(0,0,0,0.38)] sm:p-6">
+                    <article className="group flex h-full flex-col rounded-2xl border border-white/[0.1] bg-gradient-to-b from-white/[0.06] to-black/48 p-5 shadow-[0_16px_48px_rgba(0,0,0,0.28)] transition duration-300 hover:border-white/[0.17] hover:shadow-[0_24px_60px_rgba(0,0,0,0.36)] sm:p-6">
                       <div className="flex items-start justify-between gap-3 border-b border-white/[0.08] pb-4">
                         <div className="flex min-w-0 items-center gap-3">
                           <div
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-950/90 text-[11px] font-bold tabular-nums tracking-tight text-orange-300/95 ring-1 ring-white/12"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-950/95 text-[11px] font-bold tabular-nums tracking-tight text-orange-300/95 ring-1 ring-white/14"
                             aria-hidden
                           >
                             {stlSiteInitials(site.name)}
@@ -44,7 +44,7 @@ export function StlLibraryGrid() {
                           </div>
                         </div>
                       </div>
-                      <p className="mt-4 flex-1 text-[0.8125rem] leading-[1.62] text-white/54">{site.description}</p>
+                      <p className="mt-4 flex-1 text-[0.8125rem] leading-[1.62] text-white/53">{site.description}</p>
                       <a
                         href={site.url}
                         target="_blank"
@@ -59,16 +59,15 @@ export function StlLibraryGrid() {
                 ))}
               </div>
 
-              <div className="mt-12 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] px-6 py-5 md:mt-14 md:px-8 md:py-6">
-                <p className="text-center text-[0.9375rem] leading-relaxed text-white/68">
-                  Ready for PLA?{" "}
+              <div className="mt-12 rounded-2xl border border-orange-500/22 bg-orange-500/[0.07] px-6 py-5 md:mt-14 md:px-8 md:py-6">
+                <p className="text-center text-[0.9375rem] leading-relaxed text-white/72">
+                  Have a file or a rough idea?{" "}
                   <Link
                     href="/custom-3d-printing"
-                    className="font-semibold text-orange-400 underline-offset-[3px] hover:text-orange-300 hover:underline"
+                    className="font-semibold text-orange-300 underline-offset-[3px] hover:text-orange-200 hover:underline"
                   >
-                    Submit a Request
-                  </Link>{" "}
-                  — we&apos;ll print, scale, or customize.
+                    Submit a request
+                  </Link>
                 </p>
               </div>
             </div>
