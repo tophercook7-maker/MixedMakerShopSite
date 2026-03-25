@@ -39,6 +39,7 @@ export type PrintDashboardLead = {
   print_pipeline_status?: string | null;
   price_charged?: unknown;
   filament_cost?: unknown;
+  print_labor_cost?: unknown;
   source?: string | null;
   lead_source?: string | null;
   category?: string | null;
@@ -470,7 +471,11 @@ function profitForLeads(ids: Set<string>, byId: Map<string, PrintDashboardLead>)
   for (const id of Array.from(ids)) {
     const row = byId.get(id);
     if (!row) continue;
-    const { profit } = computePrintJobFinancials(num(row.price_charged), num(row.filament_cost));
+    const { profit } = computePrintJobFinancials(
+      num(row.price_charged),
+      num(row.filament_cost),
+      num(row.print_labor_cost),
+    );
     if (profit != null) s += profit;
   }
   return Math.round(s * 100) / 100;

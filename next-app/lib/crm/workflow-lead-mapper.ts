@@ -74,6 +74,8 @@ export type LeadRowForWorkflow = {
   print_timer_running?: boolean | null;
   print_tracked_minutes?: number | null;
   print_manual_time_minutes?: number | null;
+  print_labor_level?: string | null;
+  print_labor_cost?: number | null;
   price_charged?: number | null;
   filament_cost?: number | null;
   filament_grams_used?: number | null;
@@ -306,6 +308,8 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
       row.print_timer_running === null || row.print_timer_running === undefined ? null : Boolean(row.print_timer_running),
     print_tracked_minutes: numOrNull(row.print_tracked_minutes),
     print_manual_time_minutes: numOrNull(row.print_manual_time_minutes),
+    print_labor_level: String(row.print_labor_level || "").trim() || null,
+    print_labor_cost: numOrNull(row.print_labor_cost),
     price_charged: numOrNull(row.price_charged),
     filament_cost: numOrNull(row.filament_cost),
     filament_grams_used: numOrNull(row.filament_grams_used),

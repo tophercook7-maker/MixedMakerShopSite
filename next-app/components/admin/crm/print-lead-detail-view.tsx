@@ -28,6 +28,12 @@ import {
 } from "@/lib/crm/print-message-templates";
 import { elapsedWholeMinutesSince, formatMinutesHuman } from "@/lib/crm/print-job-timer";
 import {
+  computePrintPriceEstimateUsd,
+  normalizePrintLaborLevel,
+  PRINT_LABOR_LEVELS,
+  printLaborCostForLevel,
+} from "@/lib/crm/print-labor-pricing";
+import {
   computeFilamentCostUsd,
   computePrintJobFinancials,
   extractPrintRequestDescription,
@@ -128,6 +134,9 @@ export function PrintLeadDetailView({
   printTimerRunning,
   printTrackedMinutes,
   printManualTimeMinutes,
+  printLaborLevel,
+  printLaborCost,
+  laborRateUsdPerHour,
   cashAppPaymentUrl,
   cashAppDisplayLine,
 }: {
@@ -170,6 +179,10 @@ export function PrintLeadDetailView({
   printTimerRunning: boolean | null;
   printTrackedMinutes: number | null;
   printManualTimeMinutes: number | null;
+  printLaborLevel: string | null;
+  printLaborCost: number | null;
+  /** Reference $/hr from env (brackets are fixed USD amounts). */
+  laborRateUsdPerHour: number;
   cashAppPaymentUrl: string | null;
   /** Cashtag / line for customer copy; env NEXT_PUBLIC_CASHAPP_HANDLE or payment URL. */
   cashAppDisplayLine: string | null;
@@ -192,6 +205,10 @@ export function PrintLeadDetailView({
   const [materialBusy, setMaterialBusy] = useState(false);
   const [materialErr, setMaterialErr] = useState<string | null>(null);
   const [materialOk, setMaterialOk] = useState(false);
+  const [laborLevel, setLaborLevel] = useState(() => String(printLaborLevel || "").trim());
+  const [laborBusy, setLaborBusy] = useState(false);
+  const [laborErr, setLaborErr] = useState<string | null>(null);
+  const [laborOk, setLaborOk] = useState(false);
   const [hoursStr, setHoursStr] = useState(() => (estimatedTimeHours != null ? String(estimatedTimeHours) : ""));
   const [pricingBusy, setPricingBusy] = useState(false);
   const [pricingErr, setPricingErr] = useState<string | null>(null);
@@ -266,6 +283,10 @@ export function PrintLeadDetailView({
       filamentCostPerKg != null ? String(filamentCostPerKg) : String(defaultFilamentCostPerKg),
     );
   }, [filamentCostPerKg, defaultFilamentCostPerKg]);
+
+  useEffect(() => {
+    setLaborLevel(String(printLaborLevel || "").trim());
+  }, [printLaborLevel]);
   useEffect(() => {
     setHoursStr(estimatedTimeHours != null ? String(estimatedTimeHours) : "");
   }, [estimatedTimeHours]);
@@ -306,6 +327,22 @@ export function PrintLeadDetailView({
     return parseMoneyInput(filamentStr);
   }, [useWeightCalc, liveComputedFilamentUsd, filamentStr]);
 
+  const laborUsdLive = useMemo(() => {
+    if (!String(laborLevel || "").trim()) return null;
+    const n = normalizePrintLaborLevel(laborLevel);
+    if (n != null) return printLaborCostForLevel(n);
+    return printLaborCost;
+  }, [laborLevel, printLaborCost]);
+
+  const printEstimate = useMemo(
+    () =>
+      computePrintPriceEstimateUsd({
+        laborCostUsd: laborUsdLive,
+        filamentCostUsd: filamentForProfitN,
+      }),
+    [laborUsdLive, filamentForProfitN],
+  );
+
   useEffect(() => {
     if (!useWeightCalc) return;
     if (liveComputedFilamentUsd == null) return;
@@ -315,6 +352,7 @@ export function PrintLeadDetailView({
   const { totalCost: liveTotalCost, profit: liveProfit } = computePrintJobFinancials(
     priceInputN,
     filamentForProfitN,
+    laborUsdLive,
   );
 
   function tagHaystack(): string {
@@ -426,6 +464,26 @@ export function PrintLeadDetailView({
       return;
     }
     setMaterialOk(true);
+    router.refresh();
+  }
+
+  async function saveLaborCost() {
+    setLaborBusy(true);
+    setLaborErr(null);
+    setLaborOk(false);
+    const n = normalizePrintLaborLevel(laborLevel);
+    const print_tags = mergePrintKeywordTags(printTags, tagHaystack());
+    const r = await patchLeadApi(leadId, {
+      print_labor_level: n,
+      print_labor_cost: n != null ? printLaborCostForLevel(n) : null,
+      print_tags,
+    });
+    setLaborBusy(false);
+    if (!r.ok) {
+      setLaborErr(r.error);
+      return;
+    }
+    setLaborOk(true);
     router.refresh();
   }
 
@@ -1097,15 +1155,84 @@ export function PrintLeadDetailView({
         </div>
       </section>
 
+      <section className="admin-card space-y-3 border-cyan-500/25">
+        <h2 className="text-sm font-semibold text-cyan-200/95">Labor</h2>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Pick a time bracket for quick labor pricing. Reference rate is{" "}
+          <strong className="text-cyan-200/85">{formatPrintUsd(laborRateUsdPerHour)}</strong>/hr (
+          <code className="text-[10px]">PRINT_LABOR_RATE_USD_PER_HOUR</code> or{" "}
+          <code className="text-[10px]">NEXT_PUBLIC_PRINT_LABOR_RATE_USD_PER_HOUR</code>; default 40). Dollar amounts per
+          level are fixed for speed.
+        </p>
+        <div>
+          <label
+            htmlFor="print-labor-level"
+            className="text-[10px] font-semibold uppercase tracking-wide block mb-1"
+            style={{ color: "var(--admin-muted)" }}
+          >
+            Labor level
+          </label>
+          <select
+            id="print-labor-level"
+            aria-label="Labor level"
+            className="w-full max-w-xl rounded-lg border px-3 py-2 text-sm"
+            style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.25)", color: "var(--admin-fg)" }}
+            value={laborLevel}
+            onChange={(e) => {
+              setLaborLevel(e.target.value);
+              setLaborOk(false);
+            }}
+          >
+            <option value="">— None —</option>
+            {PRINT_LABOR_LEVELS.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.label} — {formatPrintUsd(x.laborCostUsd)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div
+          className="rounded-lg border px-4 py-3 text-sm space-y-1"
+          style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,0.22)" }}
+        >
+          <p className="text-[var(--admin-fg)]">
+            <span className="font-semibold text-cyan-200/90">Labor cost: </span>
+            {formatPrintUsd(laborUsdLive)}
+          </p>
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Material: {formatPrintUsd(filamentForProfitN)} · Labor + material (exact):{" "}
+            <span className="tabular-nums">{formatPrintUsd(printEstimate.subtotal)}</span> ·{" "}
+            <span className="font-semibold text-[var(--admin-fg)]">
+              Suggested total: {formatPrintUsd(printEstimate.rounded)}
+            </span>{" "}
+            (rounded to cleaner $5 / $10)
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={laborBusy}
+            className="rounded-lg border border-cyan-500/45 bg-cyan-500/10 px-3 py-2 text-xs font-medium text-cyan-100 hover:bg-cyan-500/20 disabled:opacity-45"
+            onClick={() => void saveLaborCost()}
+          >
+            Save labor
+          </button>
+          {laborOk ? <span className="text-xs text-emerald-400">Saved.</span> : null}
+          {laborErr ? (
+            <span className="text-xs text-red-400" role="alert">
+              {laborErr}
+            </span>
+          ) : null}
+        </div>
+      </section>
+
       {/* Profit & cost (stored fields + live totals) */}
       <section className="admin-card space-y-3 border-emerald-500/25">
         <h2 className="text-sm font-semibold text-emerald-200/95">Profit tracking</h2>
         <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-          <strong className="text-emerald-200/80">Cost</strong> is{" "}
-          <code className="text-[10px] opacity-80">filament_cost</code> for now (
-          <code className="text-[10px] opacity-80">total_cost = filament_cost</code>
-          — labor can extend this later). <strong className="text-emerald-200/80">Profit</strong> = price charged −
-          total cost.
+          <strong className="text-emerald-200/80">Total cost</strong> = filament + labor (each optional until set).{" "}
+          <strong className="text-emerald-200/80">Profit</strong> = price charged − total cost. Use the Labor section
+          suggested total as a quick quote anchor alongside material.
         </p>
         <div
           className="flex flex-wrap gap-4 rounded-lg border px-4 py-3 text-sm"

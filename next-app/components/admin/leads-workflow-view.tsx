@@ -188,6 +188,8 @@ export type WorkflowLead = {
   print_timer_running?: boolean | null;
   print_tracked_minutes?: number | null;
   print_manual_time_minutes?: number | null;
+  print_labor_level?: string | null;
+  print_labor_cost?: number | null;
   /** Deterministic lane (no Google) — see `lib/crm/lead-lane.ts` */
   crm_lane?: CrmLeadLane | null;
   crm_lane_label?: string | null;

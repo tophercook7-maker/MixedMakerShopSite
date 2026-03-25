@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import {
   PRINT_QUOTE_FOLLOWUP_1,
@@ -105,7 +106,7 @@ function firstFollowUpDueAt(lead: LeadRow | null, submissionCreatedAt: string): 
 }
 
 async function loadPrintQuoteLead(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   emailRaw: string,
   submittedAt: string,
 ): Promise<LeadRow | null> {

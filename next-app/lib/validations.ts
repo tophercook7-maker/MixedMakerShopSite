@@ -160,6 +160,8 @@ export const leadSchema = z.object({
   print_timer_running: z.boolean().optional().nullable(),
   print_tracked_minutes: z.number().int().min(0).max(999_999).optional().nullable(),
   print_manual_time_minutes: z.number().int().min(0).max(999_999).optional().nullable(),
+  print_labor_level: z.string().max(40).optional().nullable(),
+  print_labor_cost: z.number().min(0).optional().nullable(),
   quoted_amount: z.number().min(0).optional().nullable(),
   deposit_amount: z.number().min(0).optional().nullable(),
   final_amount: z.number().min(0).optional().nullable(),

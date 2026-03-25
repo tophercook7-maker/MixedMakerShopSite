@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const SELECT_FULL =
-  "id,business_name,contact_name,primary_contact_name,created_at,last_contacted_at,last_reply_at,last_response_at,last_updated_at,print_pipeline_status,price_charged,filament_cost,quoted_amount,deposit_amount,final_amount,payment_request_type,payment_method,payment_link,payment_status,paid_at,source,lead_source,category,lead_tags";
+  "id,business_name,contact_name,primary_contact_name,created_at,last_contacted_at,last_reply_at,last_response_at,last_updated_at,print_pipeline_status,price_charged,filament_cost,print_labor_cost,quoted_amount,deposit_amount,final_amount,payment_request_type,payment_method,payment_link,payment_status,paid_at,source,lead_source,category,lead_tags";
 
 const SELECT_FALLBACK =
   "id,business_name,contact_name,primary_contact_name,created_at,last_contacted_at,last_reply_at,last_response_at,print_pipeline_status,price_charged,filament_cost,source,lead_source,category,lead_tags";

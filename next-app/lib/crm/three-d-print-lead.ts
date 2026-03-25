@@ -207,19 +207,28 @@ export function resolveFilamentCostPerKg(jobPerKg: number | null | undefined, de
   return Number.isFinite(d) && d >= 0 ? d : 22;
 }
 
-/** total_cost = filament_cost only for now; profit = price_charged - total_cost. Labor can extend total_cost later. */
+/**
+ * total_cost = sum of known line items (filament + labor); null only when neither line is set.
+ * profit = price_charged − total_cost when both price and at least one cost line exist.
+ */
 export function computePrintJobFinancials(
   priceCharged: number | null | undefined,
   filamentCost: number | null | undefined,
+  laborCost?: number | null | undefined,
 ): { totalCost: number | null; profit: number | null } {
-  const fc =
-    filamentCost == null || Number.isNaN(Number(filamentCost)) ? null : Number(filamentCost);
+  const hasMat = filamentCost != null && Number.isFinite(Number(filamentCost));
+  const hasLab = laborCost != null && Number.isFinite(Number(laborCost));
+  const mat = hasMat ? Math.max(0, Number(filamentCost)) : 0;
+  const lab = hasLab ? Math.max(0, Number(laborCost)) : 0;
+  const totalCostRounded = Math.round((mat + lab) * 100) / 100;
+  const totalCost = hasMat || hasLab ? totalCostRounded : null;
+
   const pc =
     priceCharged == null || Number.isNaN(Number(priceCharged)) ? null : Number(priceCharged);
-  const totalCost = fc;
-  if (pc == null && fc == null) return { totalCost: null, profit: null };
-  if (pc != null && fc != null) return { totalCost: fc, profit: pc - fc };
-  return { totalCost: fc, profit: null };
+
+  if (pc == null && totalCost == null) return { totalCost: null, profit: null };
+  if (pc != null && totalCost != null) return { totalCost, profit: pc - totalCost };
+  return { totalCost, profit: null };
 }
 
 export function formatPrintUsd(n: number | null | undefined): string {

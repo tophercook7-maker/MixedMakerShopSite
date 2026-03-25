@@ -168,6 +168,8 @@ export const LEAD_INSERT_COLUMN_WHITELIST = [
   "print_timer_running",
   "print_tracked_minutes",
   "print_manual_time_minutes",
+  "print_labor_level",
+  "print_labor_cost",
   "quoted_amount",
   "deposit_amount",
   "final_amount",

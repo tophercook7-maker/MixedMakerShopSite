@@ -26,6 +26,7 @@ import { isTopPickLead } from "@/lib/crm/manual-pick-leads";
 import { PrintLeadDetailView } from "@/components/admin/crm/print-lead-detail-view";
 import { isThreeDPrintLead } from "@/lib/crm/three-d-print-lead";
 import { printCashAppDisplayLineFromEnv, printCashAppPaymentUrlFromEnv } from "@/lib/crm/print-cashapp-config";
+import { printLaborBaseRateUsdPerHourFromEnv } from "@/lib/crm/print-labor-pricing";
 
 function numericLeadField(value: unknown): number | null {
   if (value == null || value === "") return null;
@@ -116,6 +117,8 @@ type LeadRow = {
   print_timer_running?: boolean | null;
   print_tracked_minutes?: number | null;
   print_manual_time_minutes?: number | null;
+  print_labor_level?: string | null;
+  print_labor_cost?: number | string | null;
   price_charged?: number | string | null;
   filament_cost?: number | string | null;
   filament_grams_used?: number | string | null;
@@ -1642,6 +1645,9 @@ Want me to show you a quick idea?`;
           printTimerRunning={lead.print_timer_running ?? null}
           printTrackedMinutes={numericLeadField(lead.print_tracked_minutes)}
           printManualTimeMinutes={numericLeadField(lead.print_manual_time_minutes)}
+          printLaborLevel={lead.print_labor_level ?? null}
+          printLaborCost={numericLeadField(lead.print_labor_cost)}
+          laborRateUsdPerHour={printLaborBaseRateUsdPerHourFromEnv()}
           cashAppPaymentUrl={printCashAppPaymentUrlFromEnv()}
           cashAppDisplayLine={printCashAppDisplayLineFromEnv()}
         />
