@@ -177,76 +177,59 @@ export default function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
-        <div className={`${shell} py-16 md:py-24`}>
-          <h2 className={`home-reveal home-section-title ${h2}`}>Simple pricing. Real growth.</h2>
-          <p className={`home-reveal mt-4 ${body} max-w-[640px]`}>
-            No guessing. No piecing things together. Just a system that helps bring in more customers over time.
+      <section className="pricing-section home-band">
+        <div className="pricing-container">
+          <h2 className="home-reveal pricing-title">Simple pricing. Real growth.</h2>
+          <p className="home-reveal pricing-sub">
+            Most businesses don&apos;t need just a website — they need a system that actually brings in customers.
           </p>
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1040px]">
-            <div className="home-reveal home-card home-card--glass rounded-2xl p-8 md:p-9 text-center lg:text-left">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#9FB5AD]">One-time</p>
-              <p className="mt-2 text-5xl font-bold tracking-tight text-[#E8FDF5]">$600</p>
-              <p className="mt-1 text-[#9FB5AD] text-base md:text-lg">Website build</p>
-              <ul className={`mt-6 space-y-2.5 text-left ${body} text-sm md:text-base`}>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Clean, mobile-friendly design</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>High-converting layout</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Built to turn visitors into customers</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Structured to support SEO from the start</span>
-                </li>
+
+          <div className="pricing-grid">
+            <div className="home-reveal pricing-card starter">
+              <h3>$400</h3>
+              <p className="label">Starter Website</p>
+              <ul>
+                <li>1–3 page website</li>
+                <li>Mobile-friendly design</li>
+                <li>Basic SEO setup</li>
+                <li>Google Business connection</li>
               </ul>
+              <span className="tag">Gets you online</span>
             </div>
-            <div className="home-reveal home-card home-card--glass home-card--featured rounded-2xl p-8 md:p-9 text-center lg:text-left">
-              <p className="inline-block rounded-full border border-[rgba(255,209,102,0.4)] bg-[rgba(255,209,102,0.1)] px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-[#FFD166]">
-                Where growth happens
-              </p>
-              <p className="mt-4 text-xs font-bold uppercase tracking-widest text-[#9FB5AD]">Monthly</p>
-              <p className="mt-2 text-5xl font-bold tracking-tight text-[#E8FDF5]">
-                <span className="text-lg md:text-xl font-semibold text-[#9FB5AD] align-middle mr-1">Starting at</span>
-                $89<span className="text-2xl font-semibold text-[#9FB5AD]">/mo</span>
-              </p>
-              <p className="mt-1 text-[#9FB5AD] text-base md:text-lg">Ongoing growth support</p>
-              <ul className={`mt-6 space-y-2.5 text-left ${body} text-sm md:text-base`}>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>SEO improvements</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Google Business optimization</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Local visibility support</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Occasional ads and content help</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-[#00FFB2] shrink-0">✓</span>
-                  <span>Ongoing updates as your business grows</span>
-                </li>
+
+            <div className="home-reveal pricing-card growth">
+              <div className="badge">Most popular</div>
+              <h3>$600</h3>
+              <p className="label">Growth Website</p>
+              <ul>
+                <li>Full website build</li>
+                <li>High-converting layout</li>
+                <li>Strong SEO setup</li>
+                <li>Google Business optimization</li>
+                <li>Built to generate calls</li>
               </ul>
+              <span className="tag">Where results start</span>
+            </div>
+
+            <div className="home-reveal pricing-card monthly">
+              <h3>
+                $89<span>/mo+</span>
+              </h3>
+              <p className="label">Growth System</p>
+              <ul>
+                <li>Ongoing SEO improvements</li>
+                <li>Google Business updates</li>
+                <li>Content + ads support</li>
+                <li>Local visibility growth</li>
+                <li>Continuous optimization</li>
+              </ul>
+              <span className="tag">This drives customers</span>
             </div>
           </div>
-          <div className={`home-reveal mt-8 space-y-3 max-w-[720px] ${body} text-sm md:text-base`}>
-            <p>
-              You can also roll the setup into your monthly service when you get started. The $89/month level is the
-              base entry point — as your needs grow, your support can grow with it.
-            </p>
-          </div>
+
+          <p className="home-reveal pricing-note">
+            You can roll your website cost into your monthly plan when you get started.
+          </p>
           <div className="home-reveal home-pricing-strip mt-10 rounded-2xl border border-[rgba(0,255,178,0.16)] bg-[rgba(0,255,178,0.04)] px-6 py-5 md:px-10 md:py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 text-center md:text-left">
               <p className="text-base md:text-lg text-[#9FB5AD]">

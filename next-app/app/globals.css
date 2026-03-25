@@ -3990,6 +3990,192 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+/* Homepage pricing section — radial band + tier cards */
+.pricing-section {
+  padding: clamp(48px, 10vw, 100px) clamp(20px, 4vw, 40px);
+  background: radial-gradient(circle at top, #062a24, #021312);
+  border-top: 1px solid rgba(232, 253, 245, 0.06);
+  border-bottom: 1px solid rgba(232, 253, 245, 0.06);
+}
+
+.pricing-section .pricing-container {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.pricing-section .pricing-title {
+  font-size: clamp(1.75rem, 4vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e8fff8;
+  margin: 0 0 10px;
+}
+
+.pricing-section .pricing-sub {
+  color: #9fd6c9;
+  margin: 0 auto 60px;
+  max-width: 42rem;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.55;
+}
+
+.pricing-section .pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+@media (max-width: 1023px) {
+  .pricing-section .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+
+  .pricing-section .pricing-card.growth {
+    transform: none;
+  }
+
+  .pricing-section .pricing-card.growth:hover {
+    transform: translateY(-10px);
+  }
+}
+
+.pricing-section .pricing-card {
+  background: rgba(0, 20, 18, 0.8);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: left;
+  position: relative;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-section .pricing-card h3 {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #00ffcc;
+  margin: 0;
+}
+
+.pricing-section .pricing-card h3 span {
+  font-size: 0.5em;
+  font-weight: 600;
+  color: #9fd6c9;
+}
+
+.pricing-section .pricing-card .label {
+  color: #b6fff1;
+  margin: 8px 0 20px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.pricing-section .pricing-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+.pricing-section .pricing-card li {
+  margin-bottom: 10px;
+  color: #d9fff7;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.pricing-section .pricing-card .tag {
+  display: inline-block;
+  margin-top: auto;
+  padding-top: 20px;
+  color: #00ffcc;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pricing-section .pricing-card:hover {
+  transform: translateY(-10px);
+}
+
+.pricing-section .pricing-card.starter {
+  border: 1px solid rgba(255, 150, 50, 0.3);
+  box-shadow: 0 0 20px rgba(255, 150, 50, 0.15);
+}
+
+.pricing-section .pricing-card.starter:hover {
+  box-shadow: 0 0 28px rgba(255, 150, 50, 0.22);
+}
+
+.pricing-section .pricing-card.growth {
+  padding-top: 48px;
+  border: 1px solid rgba(0, 255, 200, 0.5);
+  box-shadow: 0 0 40px rgba(0, 255, 200, 0.3);
+  transform: scale(1.05);
+}
+
+.pricing-section .pricing-card.growth:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 0 48px rgba(0, 255, 200, 0.38);
+}
+
+.pricing-section .pricing-card .badge {
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  background: #00ffcc;
+  color: #002b25;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pricing-section .pricing-card.monthly {
+  border: 1px solid rgba(0, 200, 150, 0.3);
+  box-shadow: 0 0 25px rgba(0, 255, 200, 0.15);
+}
+
+.pricing-section .pricing-card.monthly:hover {
+  box-shadow: 0 0 32px rgba(0, 255, 200, 0.22);
+}
+
+.pricing-section .pricing-note {
+  margin-top: 40px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 36rem;
+  color: #8debd6;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pricing-section .pricing-card,
+  .pricing-section .pricing-card.growth {
+    transition: none;
+    transform: none !important;
+  }
+
+  .pricing-section .pricing-card:hover,
+  .pricing-section .pricing-card.growth:hover {
+    transform: none !important;
+  }
+}
+
 .home-system-flow {
   display: flex;
   flex-wrap: wrap;
