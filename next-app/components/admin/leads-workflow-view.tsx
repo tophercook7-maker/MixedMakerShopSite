@@ -155,6 +155,39 @@ export type WorkflowLead = {
   has_website?: boolean | null;
   lead_tags?: string[] | null;
   opportunity_reason?: string | null;
+  /** 3D print workflow — see `lib/crm/three-d-print-lead.ts` */
+  print_pipeline_status?: string | null;
+  print_request_type?: string | null;
+  print_tags?: string[] | null;
+  print_material?: string | null;
+  print_dimensions?: string | null;
+  print_quantity?: string | null;
+  print_deadline?: string | null;
+  print_attachment_url?: string | null;
+  print_estimate_summary?: string | null;
+  print_request_summary?: string | null;
+  print_design_help_requested?: boolean | null;
+  price_charged?: number | null;
+  filament_cost?: number | null;
+  filament_grams_used?: number | null;
+  filament_cost_per_kg?: number | null;
+  filament_use_weight_calc?: boolean | null;
+  estimated_time_hours?: number | null;
+  quoted_amount?: number | null;
+  deposit_amount?: number | null;
+  final_amount?: number | null;
+  /** deposit | full — customer payment request framing */
+  payment_request_type?: string | null;
+  payment_status?: string | null;
+  payment_method?: string | null;
+  payment_link?: string | null;
+  paid_at?: string | null;
+  last_response_at?: string | null;
+  /** 3D print job timer — see `lib/crm/print-job-timer.ts` */
+  print_timer_started_at?: string | null;
+  print_timer_running?: boolean | null;
+  print_tracked_minutes?: number | null;
+  print_manual_time_minutes?: number | null;
   /** Deterministic lane (no Google) — see `lib/crm/lead-lane.ts` */
   crm_lane?: CrmLeadLane | null;
   crm_lane_label?: string | null;

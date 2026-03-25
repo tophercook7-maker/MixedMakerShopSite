@@ -22,10 +22,28 @@ const leadStatuses = [
 const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
 const dealStages = ["new", "interested", "pricing", "closing", "won"] as const;
 const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
+const printPipelineStatuses = [
+  "new",
+  "need_info",
+  "quoted",
+  "approved",
+  "printing",
+  "ready",
+  "delivered",
+  "closed",
+] as const;
 const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;
 const paymentStatuses = ["pending", "paid", "overdue"] as const;
+const printLeadPaymentStatuses = [
+  "unpaid",
+  "deposit_requested",
+  "partially_paid",
+  "paid",
+  "refunded",
+] as const;
+const printPaymentRequestTypes = ["deposit", "full"] as const;
 
 /** ISO-ish timestamps: empty string → undefined; JSON `null` kept (PATCH clears column). */
 const optionalTimestamp = z.preprocess(
@@ -121,6 +139,36 @@ export const leadSchema = z.object({
   automation_paused: z.boolean().optional(),
   last_reply_at: optionalTimestamp,
   last_reply_preview: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  print_attachment_url: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  print_estimate_summary: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  print_request_summary: z.string().max(2000).optional().transform((v) => (v === "" ? undefined : v)),
+  print_pipeline_status: z.union([z.enum(printPipelineStatuses), z.null()]).optional(),
+  print_request_type: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  print_tags: z.array(z.string().max(120)).max(80).optional(),
+  print_material: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  print_dimensions: z.string().max(500).optional().transform((v) => (v === "" ? undefined : v)),
+  print_quantity: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
+  print_deadline: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
+  print_design_help_requested: z.boolean().optional().nullable(),
+  price_charged: z.number().min(0).optional().nullable(),
+  filament_cost: z.number().min(0).optional().nullable(),
+  filament_grams_used: z.number().min(0).max(1_000_000).optional().nullable(),
+  filament_cost_per_kg: z.number().min(0).max(1_000_000).optional().nullable(),
+  filament_use_weight_calc: z.boolean().optional().nullable(),
+  estimated_time_hours: z.number().min(0).optional().nullable(),
+  print_timer_started_at: optionalTimestamp,
+  print_timer_running: z.boolean().optional().nullable(),
+  print_tracked_minutes: z.number().int().min(0).max(999_999).optional().nullable(),
+  print_manual_time_minutes: z.number().int().min(0).max(999_999).optional().nullable(),
+  quoted_amount: z.number().min(0).optional().nullable(),
+  deposit_amount: z.number().min(0).optional().nullable(),
+  final_amount: z.number().min(0).optional().nullable(),
+  payment_request_type: z.union([z.enum(printPaymentRequestTypes), z.null()]).optional(),
+  payment_status: z.union([z.enum(printLeadPaymentStatuses), z.null()]).optional(),
+  payment_method: z.string().max(40).optional().transform((v) => (v === "" ? undefined : v)),
+  payment_link: z.string().max(4000).optional().transform((v) => (v === "" ? undefined : v)),
+  paid_at: optionalTimestamp,
+  last_response_at: optionalTimestamp,
   unread_reply_count: z.number().int().min(0).optional().nullable(),
   recommended_next_action: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
 });

@@ -7,10 +7,12 @@ import { LeadsWorkflowView } from "@/components/admin/leads-workflow-view";
 import { LeadsCardBrowser } from "@/components/admin/crm/leads-card-browser";
 import { CapturedLeadsSection } from "@/components/admin/crm/captured-leads-section";
 import { computeCapturedLeads } from "@/lib/crm/captured-leads";
+import { parsePrintPaymentFilterQuery, parsePrintStageQuery } from "@/lib/crm/print-dashboard-metrics";
 import {
   FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM,
   matchesFacebookNoWebsiteReachableFromRow,
 } from "@/lib/crm/facebook-no-website-reachable";
+import { printCashAppDisplayLineFromEnv, printCashAppPaymentUrlFromEnv } from "@/lib/crm/print-cashapp-config";
 import { isMissingColumnError, toWorkflowLead, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
 
 export const dynamic = "force-dynamic";
@@ -32,9 +34,31 @@ export default async function AdminLeadsPage({
     target?: string;
     /** Lead pool: `all` | `top_picks` | `scout` — card view reads this via URL */
     pool?: string;
+    /** Deep-link card view to 3D print lane: `3d_printing` */
+    crm_source?: string;
+    /** 3D print pipeline preset: `new`, `quoted`, `approved`, … */
+    print_stage?: string;
+    /** 3D print payment filter: `unpaid`, `deposit_requested`, … */
+    print_payment?: string;
+    /** `1` = reply / follow-up queue filter */
+    needs_reply?: string;
   }>;
 }) {
-  const { error, detail, add, view, density, highlight, lane, sort: sortParam, target } = await searchParams;
+  const {
+    error,
+    detail,
+    add,
+    view,
+    density,
+    highlight,
+    lane,
+    sort: sortParam,
+    target,
+    crm_source,
+    print_stage,
+    print_payment,
+    needs_reply,
+  } = await searchParams;
   const highlightLeadId = String(highlight || "").trim() || null;
   const classicWorkflow = String(view || "").toLowerCase() === "workflow";
   const cardDensity = String(density || "").toLowerCase() === "detailed" ? "detailed" : "compact";
@@ -42,6 +66,14 @@ export default async function AdminLeadsPage({
   const initialListSort =
     sortRaw === "score" || sortRaw === "follow_up" || sortRaw === "business" ? sortRaw : ("created" as const);
   const targetFacebookMode = String(target || "").trim().toLowerCase() === FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM;
+  const crmSourceRaw = String(crm_source || "").trim().toLowerCase().replace(/-/g, "_");
+  const initialCrmSourceTab =
+    crmSourceRaw === "3d_printing" || crmSourceRaw === "three_d_printing" ? "three_d_printing" : null;
+  const initialPrintPipelineTab = parsePrintStageQuery(String(print_stage || "").trim());
+  const initialPrintPaymentFilter = parsePrintPaymentFilterQuery(String(print_payment || "").trim());
+  const initialNeedsReply = String(needs_reply || "").trim() === "1";
+  const printCashAppPaymentUrl = printCashAppPaymentUrlFromEnv();
+  const printCashAppDisplayLine = printCashAppDisplayLineFromEnv();
   const supabase = await createClient();
   const {
     data: { user },
@@ -92,7 +124,7 @@ export default async function AdminLeadsPage({
   try {
     const selectVariants = [
       "*",
-      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,lead_source,source_url,source_label,lead_tags",
+      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,lead_source,source_url,source_label,lead_tags,print_pipeline_status,print_request_type,print_tags,print_material,print_dimensions,print_quantity,print_deadline,print_attachment_url,print_estimate_summary,print_request_summary,print_design_help_requested,print_timer_started_at,print_timer_running,print_tracked_minutes,print_manual_time_minutes,price_charged,filament_cost,filament_grams_used,filament_cost_per_kg,filament_use_weight_calc,estimated_time_hours,quoted_amount,deposit_amount,final_amount,payment_request_type,payment_status,payment_method,payment_link,paid_at,last_response_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,last_contacted_at,next_follow_up_at,source,lead_source,source_url,source_label",
@@ -209,6 +241,12 @@ export default async function AdminLeadsPage({
             initialHighlightLeadId={highlightLeadId}
             initialLane={String(lane || "").trim() || null}
             initialSort={initialListSort}
+            initialSourceTab={initialCrmSourceTab}
+            initialPrintPipelineTab={initialPrintPipelineTab}
+            initialPrintPaymentFilter={initialPrintPaymentFilter}
+            initialNeedsReply={initialNeedsReply}
+            printCashAppPaymentUrl={printCashAppPaymentUrl}
+            printCashAppDisplayLine={printCashAppDisplayLine}
           />
         </Suspense>
       )}

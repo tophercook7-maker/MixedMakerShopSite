@@ -4,8 +4,8 @@ import { STL_LIBRARY_SITES, stlSiteInitials } from "@/lib/stl-sites";
 import { PrintingSection, PrintingSectionHeader } from "@/components/printing/printing-section";
 import { printingContentClass, printingSectionSurfaceClass } from "@/components/printing/printing-layout";
 import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
+import { cn } from "@/lib/utils";
 
-/** Curated picks — full list lives in `@/lib/stl-sites`. */
 const STL_HIGHLIGHTS = STL_LIBRARY_SITES.slice(0, 4);
 
 function tagLine(tags: string[]): string {
@@ -16,54 +16,59 @@ export function StlLibraryGrid() {
   return (
     <PrintingSection
       id="stl-library-resources"
-      className="scroll-mt-24 border-b border-white/[0.06] bg-[radial-gradient(ellipse_80%_50%_at_100%_0%,rgba(16,185,129,0.055),transparent)] py-[4.25rem] md:py-[5.5rem] lg:py-[6.25rem]"
+      className="scroll-mt-24 border-b border-white/[0.06] bg-[radial-gradient(ellipse_80%_50%_at_100%_0%,rgba(16,185,129,0.055),transparent)]"
     >
       <div className={printingContentClass}>
         <RevealOnScroll>
           <div className={printingSectionSurfaceClass}>
-            <div className="relative z-[2] p-7 md:p-9 lg:p-10">
+            <div className="relative z-[2] p-7 md:p-9 lg:p-10 xl:p-11">
               <PrintingSectionHeader
                 align="left"
-                title="Need a reference file?"
-                subtitle="Skim a library for ideas. We print your file, remix it, or model from your photos — whichever fits."
-                className="mb-5 max-w-2xl md:mb-6"
+                title="STL libraries"
+                subtitle="Need inspiration first? Browse a few of the major STL libraries before having us print, tweak, or customize something for you."
+                className="mb-6 max-w-2xl md:mb-8"
               />
-              <p className="mb-7 max-w-2xl text-[0.75rem] leading-relaxed text-white/42 md:mb-8">
-                Licensing is on you if you didn&apos;t create the model and plan to sell or redistribute it.
+              <p className="mb-8 max-w-2xl text-[0.78rem] leading-relaxed text-white/44 md:mb-9">
+                Licensing stays with you if you didn&apos;t model it and plan to sell or redistribute.
               </p>
 
-              <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
                 {STL_HIGHLIGHTS.map((site, index) => (
-                  <RevealOnScroll key={site.url} delayMs={index * 45}>
-                    <article className="group flex h-full flex-col rounded-xl border border-white/[0.1] bg-gradient-to-b from-white/[0.05] to-black/44 px-4 py-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.22)] transition duration-300 hover:border-white/[0.16] sm:px-4 sm:py-4">
-                      <div className="flex min-w-0 items-center gap-2.5">
+                  <RevealOnScroll key={site.url} delayMs={index * 50}>
+                    <article
+                      className={cn(
+                        "printing-premium-card group flex h-full flex-col rounded-2xl border border-white/[0.1]",
+                        "bg-black/35 px-4 py-4 shadow-[0_14px_40px_rgba(0,0,0,0.28)] backdrop-blur-[2px] sm:px-5 sm:py-[1.125rem]",
+                      )}
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
                         <div
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-950/95 text-[9px] font-bold tabular-nums tracking-tight text-orange-300/95 ring-1 ring-white/14"
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-950/95 text-[9px] font-bold tabular-nums tracking-tight text-orange-300/95 ring-1 ring-white/14"
                           aria-hidden
                         >
                           {stlSiteInitials(site.name)}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="truncate text-[0.8125rem] font-semibold tracking-[-0.02em] text-white">{site.name}</h3>
-                          <p className="mt-0.5 truncate text-[9px] leading-snug text-white/35">{tagLine(site.tags)}</p>
+                          <h3 className="truncate text-[0.85rem] font-semibold tracking-[-0.02em] text-white">{site.name}</h3>
+                          <p className="mt-0.5 truncate text-[10px] leading-snug text-white/36">{tagLine(site.tags)}</p>
                         </div>
                       </div>
                       <a
                         href={site.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.04] py-2 text-[0.75rem] font-semibold text-white/90 transition duration-200 hover:border-orange-500/45 hover:bg-orange-500/[0.12] hover:text-orange-50"
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] py-2.5 text-[0.8125rem] font-semibold text-white/92 transition duration-200 hover:border-orange-500/42 hover:bg-orange-500/[0.12] hover:text-orange-50"
                       >
                         Open
-                        <ExternalLink className="h-3 w-3 opacity-70" strokeWidth={2} aria-hidden />
+                        <ExternalLink className="h-3.5 w-3.5 opacity-70" strokeWidth={2} aria-hidden />
                       </a>
                     </article>
                   </RevealOnScroll>
                 ))}
               </div>
 
-              <p className="mt-5 text-[0.7rem] leading-relaxed text-white/38 md:mt-6">
-                Also try:{" "}
+              <p className="mt-6 text-[0.72rem] leading-relaxed text-white/36 md:mt-7">
+                More:{" "}
                 {STL_LIBRARY_SITES.slice(4).map((s, i) => (
                   <span key={s.url}>
                     {i > 0 ? " · " : null}
@@ -71,7 +76,7 @@ export function StlLibraryGrid() {
                       href={s.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white/55 underline-offset-2 hover:text-orange-200/95 hover:underline"
+                      className="text-white/50 underline-offset-2 hover:text-orange-200/95 hover:underline"
                     >
                       {s.name}
                     </a>
@@ -80,8 +85,8 @@ export function StlLibraryGrid() {
                 .
               </p>
 
-              <div className="mt-7 border-t border-white/[0.07] pt-7 text-center text-[0.875rem] text-white/55 md:mt-8 md:pt-8">
-                Already have an STL?{" "}
+              <div className="mt-8 border-t border-white/[0.07] pt-8 text-[0.875rem] text-white/52">
+                Have a file already?{" "}
                 <Link
                   href="/custom-3d-printing"
                   className="font-semibold text-orange-300 underline-offset-[3px] hover:text-orange-200 hover:underline"

@@ -23,6 +23,23 @@ import { BackToLeadsLink } from "@/components/admin/crm/back-to-leads-link";
 import { LeadDetailCleanupActions } from "@/components/admin/lead-detail-cleanup-actions";
 import { PromoteToTopPicksButton } from "@/components/admin/crm/promote-to-top-picks-button";
 import { isTopPickLead } from "@/lib/crm/manual-pick-leads";
+import { PrintLeadDetailView } from "@/components/admin/crm/print-lead-detail-view";
+import { isThreeDPrintLead } from "@/lib/crm/three-d-print-lead";
+import { printCashAppDisplayLineFromEnv, printCashAppPaymentUrlFromEnv } from "@/lib/crm/print-cashapp-config";
+
+function numericLeadField(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function defaultFilamentCostPerKgFromEnv(): number {
+  const raw =
+    process.env.DEFAULT_FILAMENT_COST_PER_KG?.trim() ||
+    process.env.NEXT_PUBLIC_DEFAULT_FILAMENT_COST_PER_KG?.trim();
+  const n = Number.parseFloat(String(raw ?? ""));
+  return Number.isFinite(n) && n >= 0 ? n : 22;
+}
 
 type LeadRow = {
   id: string;
@@ -82,6 +99,38 @@ type LeadRow = {
   best_contact_value?: string | null;
   suggested_template_key?: string | null;
   suggested_response?: string | null;
+  contact_name?: string | null;
+  last_contacted_at?: string | null;
+  print_pipeline_status?: string | null;
+  print_request_type?: string | null;
+  print_tags?: string[] | null;
+  print_material?: string | null;
+  print_dimensions?: string | null;
+  print_quantity?: string | null;
+  print_deadline?: string | null;
+  print_attachment_url?: string | null;
+  print_estimate_summary?: string | null;
+  print_request_summary?: string | null;
+  print_design_help_requested?: boolean | null;
+  print_timer_started_at?: string | null;
+  print_timer_running?: boolean | null;
+  print_tracked_minutes?: number | null;
+  print_manual_time_minutes?: number | null;
+  price_charged?: number | string | null;
+  filament_cost?: number | string | null;
+  filament_grams_used?: number | string | null;
+  filament_cost_per_kg?: number | string | null;
+  filament_use_weight_calc?: boolean | null;
+  estimated_time_hours?: number | string | null;
+  quoted_amount?: number | string | null;
+  deposit_amount?: number | string | null;
+  final_amount?: number | string | null;
+  payment_request_type?: string | null;
+  payment_status?: string | null;
+  payment_method?: string | null;
+  payment_link?: string | null;
+  paid_at?: string | null;
+  last_response_at?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -142,6 +191,38 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "has_website",
     "lead_tags",
     "opportunity_reason",
+    "contact_name",
+    "last_contacted_at",
+    "print_pipeline_status",
+    "print_request_type",
+    "print_tags",
+    "print_material",
+    "print_dimensions",
+    "print_quantity",
+    "print_deadline",
+    "print_attachment_url",
+    "print_estimate_summary",
+    "print_request_summary",
+    "print_design_help_requested",
+    "print_timer_started_at",
+    "print_timer_running",
+    "print_tracked_minutes",
+    "print_manual_time_minutes",
+    "price_charged",
+    "filament_cost",
+    "filament_grams_used",
+    "filament_cost_per_kg",
+    "filament_use_weight_calc",
+    "estimated_time_hours",
+    "quoted_amount",
+    "deposit_amount",
+    "final_amount",
+    "payment_request_type",
+    "payment_status",
+    "payment_method",
+    "payment_link",
+    "paid_at",
+    "last_response_at",
   ].join(","),
   [
     "id",
@@ -1411,6 +1492,7 @@ Want me to show you a quick idea?`;
     caseRow?.google_rating != null && String(caseRow.google_rating).trim() !== "";
 
   const showTopLoadWarningBanner = loadWarnings.length > 0 && !lead;
+  const isPrintLead = Boolean(lead && isThreeDPrintLead(lead));
 
   return (
     <div className="space-y-6">
@@ -1433,70 +1515,141 @@ Want me to show you a quick idea?`;
           </p>
         </section>
       ) : null}
-      <section className="admin-card space-y-3">
+      {isPrintLead ? (
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2 min-w-0 flex-1">
-            <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
-              {displayBusinessName}
-            </h1>
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
-              {displayScore != null ? (
-                <span style={{ color: "var(--admin-muted)" }}>
-                  Score <strong style={{ color: "var(--admin-fg)" }}>{displayScore}</strong>
-                </span>
-              ) : null}
-              <span
-                className="text-[10px] px-2 py-0.5 rounded border"
-                style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
-              >
-                {laneBundle.lead_bucket.replace(/_/g, " ")}
-              </span>
+          <BackToLeadsLink className="admin-btn-ghost text-sm whitespace-nowrap" />
+          {resolvedLeadId ? (
+            <div className="flex flex-col gap-2 items-end">
+              <PromoteToTopPicksButton
+                leadId={resolvedLeadId}
+                initialTags={lead?.lead_tags}
+                isTopPick={isTopPickLead({
+                  source: lead?.source,
+                  lead_source: lead?.lead_source,
+                  lead_tags: lead?.lead_tags,
+                })}
+                className="admin-btn-ghost text-sm px-3 py-2 rounded-lg border border-emerald-500/35 w-full sm:w-auto"
+              />
+              <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
             </div>
-            <p className="text-sm leading-snug" style={{ color: "var(--admin-fg)" }}>
-              {laneBundle.honest_headline}
-            </p>
-            <p className="text-sm font-semibold" style={{ color: "var(--admin-gold)" }}>
-              Next step: {nextStepLabel}
-            </p>
-            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-              Contact readiness: {laneBundle.contact_readiness} · {laneBundle.summary_line}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-3 shrink-0 self-start min-w-[200px]">
-            <BackToLeadsLink className="admin-btn-ghost text-sm whitespace-nowrap" />
-            {resolvedLeadId ? (
-              <div className="flex flex-col gap-2 w-full items-end">
-                <PromoteToTopPicksButton
-                  leadId={resolvedLeadId}
-                  initialTags={lead?.lead_tags}
-                  isTopPick={isTopPickLead({
-                    source: lead?.source,
-                    lead_source: lead?.lead_source,
-                    lead_tags: lead?.lead_tags,
-                  })}
-                  className="admin-btn-ghost text-sm px-3 py-2 rounded-lg border border-emerald-500/35 w-full sm:w-auto"
-                />
-                <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
-              </div>
-            ) : null}
-          </div>
+          ) : null}
         </div>
-      </section>
+      ) : (
+        <section className="admin-card space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-2 min-w-0 flex-1">
+              <h1 className="text-2xl font-bold" style={{ color: "var(--admin-fg)" }}>
+                {displayBusinessName}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className={`admin-badge ${leadStatusClass(displayStatus)}`}>{prettyLeadStatus(displayStatus)}</span>
+                {displayScore != null ? (
+                  <span style={{ color: "var(--admin-muted)" }}>
+                    Score <strong style={{ color: "var(--admin-fg)" }}>{displayScore}</strong>
+                  </span>
+                ) : null}
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded border"
+                  style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
+                >
+                  {laneBundle.lead_bucket.replace(/_/g, " ")}
+                </span>
+              </div>
+              <p className="text-sm leading-snug" style={{ color: "var(--admin-fg)" }}>
+                {laneBundle.honest_headline}
+              </p>
+              <p className="text-sm font-semibold" style={{ color: "var(--admin-gold)" }}>
+                Next step: {nextStepLabel}
+              </p>
+              <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+                Contact readiness: {laneBundle.contact_readiness} · {laneBundle.summary_line}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-3 shrink-0 self-start min-w-[200px]">
+              <BackToLeadsLink className="admin-btn-ghost text-sm whitespace-nowrap" />
+              {resolvedLeadId ? (
+                <div className="flex flex-col gap-2 w-full items-end">
+                  <PromoteToTopPicksButton
+                    leadId={resolvedLeadId}
+                    initialTags={lead?.lead_tags}
+                    isTopPick={isTopPickLead({
+                      source: lead?.source,
+                      lead_source: lead?.lead_source,
+                      lead_tags: lead?.lead_tags,
+                    })}
+                    className="admin-btn-ghost text-sm px-3 py-2 rounded-lg border border-emerald-500/35 w-full sm:w-auto"
+                  />
+                  <LeadDetailCleanupActions leadId={resolvedLeadId} initialTags={lead?.lead_tags} className="w-full" />
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      )}
 
-      <LeadContactNow
-        bestContactMethod={resolvedBest.method}
-        bestContactValue={resolvedBest.value}
-        advertisingPageUrl={resolvedAdvertising.url}
-        advertisingPageLabel={resolvedAdvertising.label}
-        email={displayEmail || null}
-        facebookUrl={displayFacebook || null}
-        phone={displayPhone || null}
-        contactPage={displayContactPage || null}
-        website={displayWebsite || null}
-      />
+      {!isPrintLead ? (
+        <LeadContactNow
+          bestContactMethod={resolvedBest.method}
+          bestContactValue={resolvedBest.value}
+          advertisingPageUrl={resolvedAdvertising.url}
+          advertisingPageLabel={resolvedAdvertising.label}
+          email={displayEmail || null}
+          facebookUrl={displayFacebook || null}
+          phone={displayPhone || null}
+          contactPage={displayContactPage || null}
+          website={displayWebsite || null}
+        />
+      ) : null}
+
+      {isPrintLead && resolvedLeadId && lead ? (
+        <PrintLeadDetailView
+          leadId={resolvedLeadId}
+          contactName={lead.contact_name ?? null}
+          businessName={lead.business_name ?? null}
+          email={lead.email ?? null}
+          phone={lead.phone ?? null}
+          printPipelineStatus={lead.print_pipeline_status ?? null}
+          printTags={lead.print_tags ?? null}
+          estimateRange={lead.print_estimate_summary ?? null}
+          notes={lead.notes ?? null}
+          printRequestSummary={lead.print_request_summary ?? null}
+          attachmentUrl={lead.print_attachment_url ?? null}
+          printDimensions={lead.print_dimensions ?? null}
+          printQuantity={lead.print_quantity ?? null}
+          printDeadline={lead.print_deadline ?? null}
+          designHelpRequested={lead.print_design_help_requested ?? null}
+          printRequestType={lead.print_request_type ?? null}
+          printMaterial={lead.print_material ?? null}
+          createdAt={lead.created_at ?? null}
+          lastContactedAt={lead.last_contacted_at ?? null}
+          lastResponseAt={lead.last_response_at ?? null}
+          priceCharged={numericLeadField(lead.price_charged)}
+          filamentCost={numericLeadField(lead.filament_cost)}
+          filamentGramsUsed={numericLeadField(lead.filament_grams_used)}
+          filamentCostPerKg={numericLeadField(lead.filament_cost_per_kg)}
+          filamentUseWeightCalc={lead.filament_use_weight_calc !== false}
+          defaultFilamentCostPerKg={defaultFilamentCostPerKgFromEnv()}
+          estimatedTimeHours={numericLeadField(lead.estimated_time_hours)}
+          quotedAmount={numericLeadField(lead.quoted_amount)}
+          depositAmount={numericLeadField(lead.deposit_amount)}
+          finalAmount={numericLeadField(lead.final_amount)}
+          paymentRequestType={lead.payment_request_type ?? null}
+          paymentStatus={lead.payment_status ?? null}
+          paymentMethod={lead.payment_method ?? null}
+          paymentLink={lead.payment_link ?? null}
+          paidAt={lead.paid_at ?? null}
+          printTimerStartedAt={lead.print_timer_started_at ?? null}
+          printTimerRunning={lead.print_timer_running ?? null}
+          printTrackedMinutes={numericLeadField(lead.print_tracked_minutes)}
+          printManualTimeMinutes={numericLeadField(lead.print_manual_time_minutes)}
+          cashAppPaymentUrl={printCashAppPaymentUrlFromEnv()}
+          cashAppDisplayLine={printCashAppDisplayLineFromEnv()}
+        />
+      ) : null}
 
       <div className="space-y-6">
+          {!isPrintLead ? (
+            <>
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
               What to do
@@ -1544,12 +1697,21 @@ Want me to show you a quick idea?`;
               showDoor={false}
             />
           </section>
+            </>
+          ) : null}
 
           <details className="admin-card">
             <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
               More details (optional)
             </summary>
             <div className="mt-3 space-y-4">
+            {isPrintLead ? (
+              <p className="text-sm rounded-lg border border-violet-500/20 bg-violet-500/[0.06] px-3 py-2" style={{ color: "var(--admin-muted)" }}>
+                <strong className="text-violet-200/95">3D print job</strong> — This lead uses the same CRM row as web-design prospects; the print workspace above is primary. Website assessment, previews, and the outreach builder in this drawer stay hidden to reduce clutter. Message history, activity, and shared notes remain below.
+              </p>
+            ) : null}
+            {!isPrintLead ? (
+            <>
             {assessment.matters_bullets.filter(Boolean).length > 0 ? (
           <section className="space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
@@ -1849,6 +2011,8 @@ Want me to show you a quick idea?`;
             </div>
           </section>
           ) : null}
+            </>
+            ) : null}
 
           {(messageRows || []).length > 0 ? (
           <section className="admin-card">
@@ -1879,6 +2043,8 @@ Want me to show you a quick idea?`;
             </div>
           ) : null}
 
+          {!isPrintLead ? (
+          <>
           <div className="pt-2">
             <Link href={recommendedActionHref} className="admin-btn-ghost text-sm">
               {assessment.recommended_next_action}
@@ -1956,6 +2122,8 @@ Want me to show you a quick idea?`;
               </section>
             )}
           </div>
+          </>
+          ) : null}
 
             </div>
           </details>

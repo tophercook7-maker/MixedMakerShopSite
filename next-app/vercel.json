@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/print-quote-followups",
+      "schedule": "15 * * * *"
+    }
+  ]
+}

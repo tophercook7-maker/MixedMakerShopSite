@@ -3,10 +3,19 @@
  * Optional `source_url` / `source_label` on the row for display.
  */
 
-export type SourceFilterTab = "all" | "extension" | "quick_add" | "scout" | "google" | "facebook" | "manual";
+export type SourceFilterTab =
+  | "all"
+  | "extension"
+  | "quick_add"
+  | "scout"
+  | "google"
+  | "facebook"
+  | "manual"
+  | "three_d_printing";
 
 export const SOURCE_FILTER_OPTIONS: { id: SourceFilterTab; label: string }[] = [
   { id: "all", label: "All" },
+  { id: "three_d_printing", label: "3D print requests" },
   { id: "extension", label: "Extension captures" },
   { id: "quick_add", label: "Quick Add" },
   { id: "scout", label: "Scout" },
@@ -39,6 +48,7 @@ export function normalizeLeadSourceValue(raw: string | null | undefined): string
   if (!s) return "";
   if (s === "bookmarklet") return "quick_add";
   if (s === "manual_local") return "manual";
+  if (s === "print_quote" || s === "print_request") return "3d_printing";
   if (s === "scout_simple_intake" || s === "scoutsimpleintake") return "scout_mixed";
   if (s === "opportunity_sync" || s === "opportunitysync") return "scout_mixed";
   return s;
@@ -103,6 +113,7 @@ const SOURCE_BADGE_BY_CANONICAL: Record<string, string> = {
   scout_mixed: "Scout",
   manual: "Manual",
   manual_pick: "Top Picks",
+  "3d_printing": "3D printing",
 };
 
 /** Small card line: canonical map + Extension (Label) when `source_label` is set. */
@@ -167,6 +178,8 @@ export function leadMatchesSourceFilter(
       return c === "scout_google";
     case "facebook":
       return c === "scout_facebook";
+    case "three_d_printing":
+      return c === "3d_printing";
     default:
       return true;
   }

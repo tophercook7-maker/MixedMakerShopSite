@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { leadSchema } from "@/lib/validations";
 import { canonicalizeLeadStatus, leadHasStandaloneWebsite, pickLeadPatchFields } from "@/lib/crm-lead-schema";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
+import { maybeAutoEmailPrintInvoiceOnPipelineChange } from "@/lib/crm/print-invoice-trigger";
+import { mapPrintPipelineToLeadStatus } from "@/lib/crm/three-d-print-lead";
 import { recordLeadActivity } from "@/lib/lead-activity";
 import { normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 
@@ -147,6 +149,17 @@ export async function PATCH(
   if (Object.prototype.hasOwnProperty.call(rawPayload, "status")) {
     rawPayload.status = canonicalizeLeadStatus(rawPayload.status);
   }
+  if (Object.prototype.hasOwnProperty.call(rawPayload, "print_pipeline_status")) {
+    const pp = rawPayload.print_pipeline_status;
+    if (pp === "" || pp === undefined) {
+      rawPayload.print_pipeline_status = null;
+    }
+    if (!Object.prototype.hasOwnProperty.call(rawPayload, "status")) {
+      rawPayload.status = mapPrintPipelineToLeadStatus(
+        pp === null || typeof pp === "undefined" ? null : String(pp),
+      );
+    }
+  }
   if (Object.prototype.hasOwnProperty.call(rawPayload, "website") || Object.prototype.hasOwnProperty.call(rawPayload, "facebook_url")) {
     if (Object.prototype.hasOwnProperty.call(rawPayload, "website")) {
       const w = String(rawPayload.website || "").trim() || undefined;
@@ -159,8 +172,14 @@ export async function PATCH(
     }
   }
 
-  const { data: beforeRow } = await supabase.from("leads").select("status").eq("id", id).eq("owner_id", ownerId).maybeSingle();
+  const { data: beforeRow } = await supabase
+    .from("leads")
+    .select("status,print_pipeline_status")
+    .eq("id", id)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
   const prevStatus = String((beforeRow as { status?: string } | null)?.status || "");
+  const prevPrintPipe = String((beforeRow as { print_pipeline_status?: string | null } | null)?.print_pipeline_status || "");
   const prevNorm = normalizeWorkflowLeadStatus(prevStatus);
 
   if (Object.prototype.hasOwnProperty.call(rawPayload, "status")) {
@@ -230,6 +249,31 @@ export async function PATCH(
         meta: { from: prevStatus, to: nextStatus },
       });
     }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, "print_pipeline_status")) {
+    const nextP = String(
+      (data as { print_pipeline_status?: string | null }).print_pipeline_status ?? "",
+    ).trim();
+    const nextNorm = nextP || "new";
+    const prevNorm = prevPrintPipe.trim() || "new";
+    if (nextNorm !== prevNorm) {
+      void recordLeadActivity(supabase, {
+        ownerId,
+        leadId: id,
+        eventType: "lead_status_changed",
+        message: `Print pipeline: ${prevPrintPipe || "new"} → ${nextP || "new"}`,
+        meta: { kind: "print_pipeline_status", from: prevPrintPipe || null, to: nextP || null },
+      });
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, "print_pipeline_status")) {
+    void maybeAutoEmailPrintInvoiceOnPipelineChange({
+      leadRow: data as Record<string, unknown>,
+      prevPrintPipeline: prevPrintPipe,
+      nextPrintPipeline: (data as { print_pipeline_status?: string | null }).print_pipeline_status,
+    });
   }
 
   console.info("[Lead API] response sent", {

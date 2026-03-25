@@ -56,8 +56,8 @@ export function RevealOnScroll({ children, className, delayMs = 0 }: RevealOnScr
     <div
       ref={ref}
       className={cn(
-        !reduceMotion && "transition-[opacity,transform] duration-[780ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-        visible ? "translate-y-0 opacity-100" : "translate-y-7 opacity-0",
+        !reduceMotion && "transition-[opacity,transform] duration-[680ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+        visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
         className,
       )}
       style={

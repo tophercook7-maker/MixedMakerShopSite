@@ -4890,3 +4890,72 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
       rgba(255, 255, 255, 0.017) 11px
     );
 }
+
+/* /3d-printing — “How it works”: subtle BG drift + premium card hover */
+@keyframes printing-how-bg-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-0.7%, 0.35%, 0) scale(1.02);
+  }
+}
+
+.printing-how-bg-drift {
+  animation: printing-how-bg-drift 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printing-how-bg-drift {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .printing-how-bg-drift {
+    animation-duration: 24s;
+  }
+}
+
+/* Shared premium hover for 3d-printing cards (process, story, why, STL links) */
+.printing-how-card,
+.printing-premium-card {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .printing-how-card:hover,
+  .printing-premium-card:hover {
+    border-color: rgba(249, 115, 22, 0.34);
+    box-shadow:
+      0 0 0 1px rgba(249, 115, 22, 0.1),
+      0 24px 52px rgba(0, 0, 0, 0.45),
+      0 0 36px -10px rgba(16, 185, 129, 0.06);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .printing-how-card:hover,
+    .printing-premium-card:hover {
+      transform: translateY(-5px);
+    }
+  }
+}
+
+details.printing-faq-details {
+  transition:
+    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+details.printing-faq-details[open] {
+  border-color: rgba(249, 115, 22, 0.32);
+  box-shadow:
+    0 0 0 1px rgba(249, 115, 22, 0.08),
+    0 20px 48px rgba(0, 0, 0, 0.38);
+}

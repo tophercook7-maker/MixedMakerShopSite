@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { Building2, DollarSign, FolderKanban, ListChecks, Users } from "lucide-react";
+import { Building2, DollarSign, FolderKanban, ListChecks, Printer, Users } from "lucide-react";
 import { CrmAlertsPanel } from "@/components/admin/crm-alerts-panel";
 
 const crmModules = [
+  {
+    title: "3D print dashboard",
+    href: "/admin/print-dashboard",
+    description: "Daily snapshot: pipeline counts, money, and jobs that need attention.",
+    icon: Printer,
+  },
   {
     title: "Leads",
     href: "/admin/leads",

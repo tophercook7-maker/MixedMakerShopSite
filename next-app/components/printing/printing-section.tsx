@@ -16,7 +16,7 @@ export function PrintingSection({
     <section
       id={id}
       className={cn(
-        "relative isolate py-[6rem] md:py-[9rem] lg:py-[10.75rem]",
+        "relative isolate py-[5.25rem] md:py-[7.25rem] lg:py-[8.5rem]",
         divider && "border-b border-white/[0.06]",
         className
       )}
@@ -41,7 +41,7 @@ export function PrintingSectionHeader({
 }) {
   const wrap = align === "center" ? "mx-auto text-center" : "text-left max-w-3xl";
   return (
-    <header className={cn("mb-14 md:mb-20 lg:mb-[5.25rem]", wrap, className)}>
+    <header className={cn("mb-10 md:mb-14 lg:mb-16", wrap, className)}>
       {eyebrow ? (
         <p
           className={cn(

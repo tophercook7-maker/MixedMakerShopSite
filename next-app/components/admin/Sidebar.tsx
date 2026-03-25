@@ -82,6 +82,12 @@ export default function Sidebar() {
         <a href="/admin/clients" className="block py-1 hover:text-[var(--admin-gold)]">
           Clients
         </a>
+        <a href="/admin/print-dashboard" className="block py-1 hover:text-[var(--admin-gold)]">
+          3D print dashboard
+        </a>
+        <a href="/admin/leads?crm_source=3d_printing" className="block py-1 hover:text-[var(--admin-gold)]">
+          3D print leads
+        </a>
         <a href="/admin/leads?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
           Top Picks
         </a>

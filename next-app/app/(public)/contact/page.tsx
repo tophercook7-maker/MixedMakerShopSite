@@ -85,7 +85,7 @@ export default function ContactPage() {
             <ol className="small" style={{ margin: "0 0 0 18px", color: "var(--muted)" }}>
               <li>I reply personally within one business day</li>
               <li>We confirm scope and next steps</li>
-              <li>If we&apos;re a good fit I send a deposit Stripe link to start</li>
+              <li>If we&apos;re a good fit I send a deposit request (often Cash App) to start</li>
             </ol>
           </div>
 

@@ -47,6 +47,24 @@ import {
 import { TopPicksStrip } from "@/components/admin/crm/top-picks-strip";
 import { DailyTenStrip } from "@/components/admin/crm/daily-ten-strip";
 import { PromoteToTopPicksButton } from "@/components/admin/crm/promote-to-top-picks-button";
+import { ThreeDPrintKanban } from "@/components/admin/crm/three-d-print-kanban";
+import { ThreeDPrintLeadsList } from "@/components/admin/crm/three-d-print-leads-list";
+import { ThreeDPrintRequestsTable } from "@/components/admin/crm/three-d-print-requests-table";
+import { QuotedPaymentRequestModal } from "@/components/admin/crm/quoted-payment-request-modal";
+import {
+  extractPrintRequestDescription,
+  mapPrintPipelineToLeadStatus,
+  printLastActivityMs,
+  THREE_D_PRINT_PIPELINE_FILTER_TABS,
+  type ThreeDPrintPipelineStatus,
+} from "@/lib/crm/three-d-print-lead";
+import {
+  PRINT_PAYMENT_VIEW_TABS,
+  parsePrintPaymentFilterQuery,
+  parsePrintStageQuery,
+  printLeadMatchesPaymentFilter,
+  type PrintPaymentViewFilter,
+} from "@/lib/crm/print-dashboard-metrics";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -170,6 +188,12 @@ export function LeadsCardBrowser({
   initialHighlightLeadId = null,
   initialLane = null,
   initialSort = "created",
+  initialSourceTab = null,
+  initialPrintPipelineTab = "all",
+  initialPrintPaymentFilter = "all",
+  initialNeedsReply = false,
+  printCashAppPaymentUrl = null,
+  printCashAppDisplayLine = null,
 }: {
   initialLeads: WorkflowLead[];
   emptyStateReason: string;
@@ -181,6 +205,16 @@ export function LeadsCardBrowser({
   initialLane?: string | null;
   /** From `?sort=` — list sort */
   initialSort?: SortKey;
+  /** From `?crm_source=3d_printing` — 3D print lane */
+  initialSourceTab?: SourceFilterTab | null;
+  /** From `?print_stage=` — 3D print pipeline column */
+  initialPrintPipelineTab?: "all" | ThreeDPrintPipelineStatus;
+  /** From `?print_payment=` — unpaid / deposit / … */
+  initialPrintPaymentFilter?: PrintPaymentViewFilter;
+  /** From `?needs_reply=1` — inbound / reply queue */
+  initialNeedsReply?: boolean;
+  printCashAppPaymentUrl?: string | null;
+  printCashAppDisplayLine?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -190,13 +224,23 @@ export function LeadsCardBrowser({
   const [stageTab, setStageTab] = useState<(typeof STAGE_TABS)[number]["id"]>("all");
   const [sortKey, setSortKey] = useState<SortKey>(() => initialSort);
   const [hotOnly, setHotOnly] = useState(false);
-  const [replyOnly, setReplyOnly] = useState(false);
+  const [replyOnly, setReplyOnly] = useState(() => initialNeedsReply === true);
   const [selected, setSelected] = useState<WorkflowLead | null>(null);
   const [adding, setAdding] = useState(initialAddOpen);
   const [density, setDensity] = useState<"compact" | "detailed">(initialDensity);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [sourceTab, setSourceTab] = useState<SourceFilterTab>("all");
+  const [quotedModalLead, setQuotedModalLead] = useState<WorkflowLead | null>(null);
+  const [sourceTab, setSourceTab] = useState<SourceFilterTab>(() => initialSourceTab || "all");
+  const [printPipelineTab, setPrintPipelineTab] = useState<"all" | ThreeDPrintPipelineStatus>(
+    () => initialPrintPipelineTab || "all",
+  );
+  const [printPaymentTab, setPrintPaymentTab] = useState<PrintPaymentViewFilter>(
+    () => initialPrintPaymentFilter || "all",
+  );
+  const [printTagFilter, setPrintTagFilter] = useState("");
+  const [printActivityFilter, setPrintActivityFilter] = useState<"all" | "7d" | "30d" | "stale14">("all");
+  const [printCrmView, setPrintCrmView] = useState<"board" | "table" | "list">("list");
   const [pulseLeadId, setPulseLeadId] = useState<string | null>(null);
   const [laneTab, setLaneTab] = useState<CrmLeadLane | "all">(() => parseLaneParam(initialLane));
 
@@ -232,6 +276,10 @@ export function LeadsCardBrowser({
       .toLowerCase() === FACEBOOK_NO_WEBSITE_REACHABLE_TARGET_PARAM;
 
   useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
+
+  useEffect(() => {
     setLaneTab(parseLaneParam(urlSearch?.get("lane")));
   }, [urlSearch?.toString()]);
 
@@ -246,6 +294,46 @@ export function LeadsCardBrowser({
     setDensity(d === "detailed" ? "detailed" : "compact");
   }, [urlSearch?.toString()]);
 
+  useEffect(() => {
+    const raw = String(urlSearch?.get("crm_source") || "")
+      .trim()
+      .toLowerCase()
+      .replace(/-/g, "_");
+    if (raw === "3d_printing" || raw === "three_d_printing") setSourceTab("three_d_printing");
+  }, [urlSearch?.toString()]);
+
+  useEffect(() => {
+    const stage = parsePrintStageQuery(urlSearch?.get("print_stage"));
+    setPrintPipelineTab(stage);
+  }, [urlSearch?.toString()]);
+
+  useEffect(() => {
+    setReplyOnly(String(urlSearch?.get("needs_reply") || "").trim() === "1");
+  }, [urlSearch?.toString()]);
+
+  useEffect(() => {
+    setPrintPaymentTab(parsePrintPaymentFilterQuery(urlSearch?.get("print_payment")));
+  }, [urlSearch?.toString()]);
+
+  useEffect(() => {
+    const id = String(urlSearch?.get("print_pay_request") || "").trim();
+    if (!id) return;
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    p.delete("print_pay_request");
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+    const lead = leads.find((l) => String(l.id) === id);
+    if (lead) setQuotedModalLead(lead);
+  }, [urlSearch?.toString(), leads, pathname, router]);
+
+  const replaceUrlCrmSource = (next: SourceFilterTab) => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "three_d_printing") p.set("crm_source", "3d_printing");
+    else p.delete("crm_source");
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
   const replaceUrlSort = (next: SortKey) => {
     const p = new URLSearchParams(urlSearch?.toString() || "");
     if (next === "created") p.delete("sort");
@@ -258,6 +346,14 @@ export function LeadsCardBrowser({
     const p = new URLSearchParams(urlSearch?.toString() || "");
     if (next === "compact") p.delete("density");
     else p.set("density", "detailed");
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
+
+  const replaceUrlPrintPayment = (next: PrintPaymentViewFilter) => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    if (next === "all") p.delete("print_payment");
+    else p.set("print_payment", next);
     const q = p.toString();
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   };
@@ -330,14 +426,33 @@ export function LeadsCardBrowser({
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const sortKeyEffective = sourceTabEffective === "extension" ? "created" : sortKey;
+    const now = Date.now();
     return [...listBase]
       .filter((l) => {
         if (laneTab !== "all" && effectiveCrmLane(l) !== laneTab) return false;
-        if (stageTab !== "all" && l.status !== stageTab) return false;
+        if (sourceTabEffective === "three_d_printing") {
+          if (printPaymentTab !== "all" && !printLeadMatchesPaymentFilter(l, printPaymentTab)) return false;
+          if (printPipelineTab !== "all") {
+            const p = String(l.print_pipeline_status || "new").toLowerCase();
+            if (p !== printPipelineTab) return false;
+          }
+          const tf = printTagFilter.trim().toLowerCase();
+          if (tf) {
+            const tags = (l.print_tags || []).map((t) => String(t).toLowerCase());
+            if (!tags.some((t) => t.includes(tf))) return false;
+          }
+          const ms = printLastActivityMs(l);
+          if (printActivityFilter === "7d" && (!ms || now - ms > 7 * 86400000)) return false;
+          if (printActivityFilter === "30d" && (!ms || now - ms > 30 * 86400000)) return false;
+          if (printActivityFilter === "stale14" && ms && now - ms <= 14 * 86400000) return false;
+        } else if (stageTab !== "all" && l.status !== stageTab) {
+          return false;
+        }
         if (!leadMatchesSourceFilter(l, sourceTabEffective)) return false;
         if (hotOnly && !l.is_hot_lead) return false;
         if (replyOnly && !(Number(l.unread_reply_count) > 0) && !String(l.last_reply_preview || "").trim()) return false;
         if (!q) return true;
+        const tagHay = (l.print_tags || []).join(" ").toLowerCase();
         const hay = [
           l.business_name,
           l.known_owner_name,
@@ -347,6 +462,9 @@ export function LeadsCardBrowser({
           l.city,
           l.category,
           l.last_reply_preview,
+          l.print_request_summary,
+          l.print_estimate_summary,
+          tagHay,
           formatLeadSourceLine(l),
           l.lead_source,
           l.source,
@@ -368,7 +486,20 @@ export function LeadsCardBrowser({
         }
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
-  }, [listBase, search, stageTab, sourceTabEffective, sortKey, hotOnly, replyOnly, laneTab]);
+  }, [
+    listBase,
+    search,
+    stageTab,
+    sourceTabEffective,
+    sortKey,
+    hotOnly,
+    replyOnly,
+    laneTab,
+    printPipelineTab,
+    printPaymentTab,
+    printTagFilter,
+    printActivityFilter,
+  ]);
 
   const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
     setBusyId(leadId);
@@ -394,6 +525,16 @@ export function LeadsCardBrowser({
         if (typeof patch.unread_reply_count === "number" && Number.isFinite(patch.unread_reply_count)) {
           next.unread_reply_count = Math.max(0, patch.unread_reply_count);
         }
+        if (Object.prototype.hasOwnProperty.call(patch, "print_pipeline_status")) {
+          const pp = patch.print_pipeline_status;
+          next.print_pipeline_status =
+            pp === null || pp === undefined ? null : String(pp || "").trim() || null;
+          if (!Object.prototype.hasOwnProperty.call(patch, "status")) {
+            next.status = mapPrintPipelineToLeadStatus(
+              pp === null || pp === undefined ? null : String(pp),
+            ) as WorkflowLead["status"];
+          }
+        }
         return next;
       })
     );
@@ -402,6 +543,39 @@ export function LeadsCardBrowser({
 
   return (
     <div className="space-y-4">
+      {quotedModalLead ? (
+        <QuotedPaymentRequestModal
+          open={Boolean(quotedModalLead)}
+          onClose={() => setQuotedModalLead(null)}
+          leadId={quotedModalLead.id}
+          contactName={quotedModalLead.known_owner_name ?? null}
+          businessName={quotedModalLead.business_name ?? null}
+          email={quotedModalLead.email ?? null}
+          currentPrintPipeline={quotedModalLead.print_pipeline_status ?? null}
+          initialQuotedAmount={quotedModalLead.quoted_amount ?? null}
+          initialDepositAmount={quotedModalLead.deposit_amount ?? null}
+          initialFinalAmount={quotedModalLead.final_amount ?? null}
+          initialPriceCharged={quotedModalLead.price_charged ?? null}
+          initialPaymentRequestType={quotedModalLead.payment_request_type ?? null}
+          existingPaymentLink={quotedModalLead.payment_link ?? null}
+          existingPaymentMethod={quotedModalLead.payment_method ?? null}
+          cashAppPaymentUrl={printCashAppPaymentUrl}
+          cashAppDisplayLine={printCashAppDisplayLine}
+          printTags={quotedModalLead.print_tags ?? null}
+          keywordHaystack={[
+            extractPrintRequestDescription(
+              Array.isArray(quotedModalLead.notes) && quotedModalLead.notes.length
+                ? quotedModalLead.notes.join("\n")
+                : null,
+              quotedModalLead.print_request_summary ?? null,
+            ),
+            String(quotedModalLead.print_request_type || ""),
+            String(quotedModalLead.print_material || ""),
+          ].join("\n")}
+          onCommitted={() => router.refresh()}
+        />
+      ) : null}
+
       {toast ? (
         <div
           role="status"
@@ -688,7 +862,11 @@ export function LeadsCardBrowser({
             style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
             value={sourceTabEffective}
             disabled={poolTab !== "all"}
-            onChange={(e) => setSourceTab(e.target.value as SourceFilterTab)}
+            onChange={(e) => {
+              const v = e.target.value as SourceFilterTab;
+              setSourceTab(v);
+              replaceUrlCrmSource(v);
+            }}
           >
             {SOURCE_FILTER_OPTIONS.map((o) => (
               <option key={o.id} value={o.id}>
@@ -702,18 +880,85 @@ export function LeadsCardBrowser({
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {STAGE_TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={stageTab === t.id ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
-            onClick={() => setStageTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {sourceTabEffective === "three_d_printing" ? (
+        <div className="space-y-2 rounded-xl border border-violet-500/35 bg-black/15 p-3">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-violet-200/90">3D print pipeline</p>
+          <div className="flex flex-wrap gap-2">
+            {THREE_D_PRINT_PIPELINE_FILTER_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={
+                  printPipelineTab === t.id ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs border-violet-500/30"
+                }
+                onClick={() => setPrintPipelineTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wide text-amber-200/85 mt-3">Payment</p>
+          <div className="flex flex-wrap gap-2">
+            {PRINT_PAYMENT_VIEW_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={
+                  printPaymentTab === t.id
+                    ? "admin-btn-primary text-xs"
+                    : "admin-btn-ghost text-xs border-amber-500/30"
+                }
+                onClick={() => {
+                  setPrintPaymentTab(t.id);
+                  replaceUrlPrintPayment(t.id);
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div>
+              <label className="text-[10px] font-semibold block mb-1 text-violet-200/80">Tag contains</label>
+              <input
+                className="rounded-lg border px-2 py-1.5 text-xs min-w-[140px]"
+                style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
+                placeholder="mount, organizer…"
+                value={printTagFilter}
+                onChange={(e) => setPrintTagFilter(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold block mb-1 text-violet-200/80">Last activity</label>
+              <select
+                aria-label="Filter by last activity"
+                className="rounded-lg border px-2 py-1.5 text-xs"
+                style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.2)", color: "var(--admin-fg)" }}
+                value={printActivityFilter}
+                onChange={(e) => setPrintActivityFilter(e.target.value as "all" | "7d" | "30d" | "stale14")}
+              >
+                <option value="all">Any</option>
+                <option value="7d">Active within 7 days</option>
+                <option value="30d">Active within 30 days</option>
+                <option value="stale14">Quiet 14+ days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {STAGE_TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={stageTab === t.id ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+              onClick={() => setStageTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {adding ? (
         <section className="admin-card">
@@ -735,9 +980,76 @@ export function LeadsCardBrowser({
         </section>
       ) : null}
 
-      <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
-        These are businesses you saved. Open one to work it.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
+          {sourceTabEffective === "three_d_printing"
+            ? "3D print requests from /3d-printing — drag jobs between stages or open a card for the full view."
+            : "These are businesses you saved. Open one to work it."}
+        </p>
+        {sourceTabEffective === "three_d_printing" && filtered.length > 0 ? (
+          <div
+            className="inline-flex rounded-lg border border-violet-500/35 p-0.5"
+            role="group"
+            aria-label="3D print list layout"
+          >
+            <button
+              type="button"
+              className={
+                printCrmView === "list"
+                  ? "rounded-md bg-violet-600/35 px-3 py-1.5 text-xs font-semibold text-violet-50"
+                  : "rounded-md px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-violet-200"
+              }
+              onClick={() => setPrintCrmView("list")}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              className={
+                printCrmView === "board"
+                  ? "rounded-md bg-violet-600/35 px-3 py-1.5 text-xs font-semibold text-violet-50"
+                  : "rounded-md px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-violet-200"
+              }
+              onClick={() => setPrintCrmView("board")}
+            >
+              Board
+            </button>
+            <button
+              type="button"
+              className={
+                printCrmView === "table"
+                  ? "rounded-md bg-violet-600/35 px-3 py-1.5 text-xs font-semibold text-violet-50"
+                  : "rounded-md px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-violet-200"
+              }
+              onClick={() => setPrintCrmView("table")}
+            >
+              Table
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "list" ? (
+        <section className="rounded-xl border border-violet-500/25 bg-black/15 p-3">
+          <ThreeDPrintLeadsList leads={filtered} />
+        </section>
+      ) : null}
+      {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "board" ? (
+        <ThreeDPrintKanban
+          leads={filtered}
+          busyId={busyId}
+          patchLead={patchLead}
+          onQuotedPaymentRequest={(lead) => setQuotedModalLead(lead)}
+        />
+      ) : null}
+      {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "table" ? (
+        <ThreeDPrintRequestsTable
+          leads={filtered}
+          busyId={busyId}
+          patchLead={patchLead}
+          onQuotedPaymentRequest={(lead) => setQuotedModalLead(lead)}
+        />
+      ) : null}
 
       {filtered.length === 0 ? (
         <section className="admin-card space-y-2">
@@ -776,7 +1088,7 @@ export function LeadsCardBrowser({
             </p>
           ) : null}
         </section>
-      ) : density === "compact" ? (
+      ) : sourceTabEffective === "three_d_printing" ? null : density === "compact" ? (
         <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3 list-none p-0 m-0">
           {filtered.map((lead) => {
             const busy = busyId === lead.id;

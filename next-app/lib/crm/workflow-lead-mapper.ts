@@ -7,6 +7,7 @@ import {
   type ContactReadiness,
 } from "@/lib/crm/lead-lane";
 import { normalizeWorkflowLeadStatus } from "@/lib/crm/stage-normalize";
+import { resolvedCaptureSource } from "@/lib/crm/lead-source";
 
 export type LeadRowForWorkflow = {
   id: string;
@@ -58,7 +59,43 @@ export type LeadRowForWorkflow = {
   source_label?: string | null;
   /** CRM tags from `leads.lead_tags` (e.g. `no_website_opportunity`). */
   lead_tags?: string[] | null;
+  print_pipeline_status?: string | null;
+  print_request_type?: string | null;
+  print_tags?: string[] | null;
+  print_material?: string | null;
+  print_dimensions?: string | null;
+  print_quantity?: string | null;
+  print_deadline?: string | null;
+  print_attachment_url?: string | null;
+  print_estimate_summary?: string | null;
+  print_request_summary?: string | null;
+  print_design_help_requested?: boolean | null;
+  print_timer_started_at?: string | null;
+  print_timer_running?: boolean | null;
+  print_tracked_minutes?: number | null;
+  print_manual_time_minutes?: number | null;
+  price_charged?: number | null;
+  filament_cost?: number | null;
+  filament_grams_used?: number | null;
+  filament_cost_per_kg?: number | null;
+  filament_use_weight_calc?: boolean | null;
+  estimated_time_hours?: number | null;
+  quoted_amount?: number | null;
+  deposit_amount?: number | null;
+  final_amount?: number | null;
+  payment_request_type?: string | null;
+  payment_status?: string | null;
+  payment_method?: string | null;
+  payment_link?: string | null;
+  paid_at?: string | null;
+  last_response_at?: string | null;
 };
+
+function numOrNull(v: unknown): number | null {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export function isMissingColumnError(message: string): boolean {
   const text = String(message || "").toLowerCase();
@@ -143,7 +180,7 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     isLocalOnly: false,
     workspace_id: String(row.workspace_id || "").trim() || null,
     related_case_id: null,
-    lead_source: String(row.source || row.lead_source || "").trim() || null,
+    lead_source: String(resolvedCaptureSource(row) || "").trim() || null,
     source_url: String(row.source_url || "").trim() || null,
     source_label: String(row.source_label || "").trim() || null,
     opportunity_id: null,
@@ -250,5 +287,42 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
     has_website: row.has_website ?? null,
     lead_tags: Array.isArray(row.lead_tags) ? row.lead_tags : null,
     opportunity_reason: String(row.opportunity_reason || "").trim() || null,
+    print_pipeline_status: String(row.print_pipeline_status || "").trim() || null,
+    print_request_type: String(row.print_request_type || "").trim() || null,
+    print_tags: Array.isArray(row.print_tags) ? row.print_tags : null,
+    print_material: String(row.print_material || "").trim() || null,
+    print_dimensions: String(row.print_dimensions || "").trim() || null,
+    print_quantity: String(row.print_quantity || "").trim() || null,
+    print_deadline: String(row.print_deadline || "").trim() || null,
+    print_attachment_url: String(row.print_attachment_url || "").trim() || null,
+    print_estimate_summary: String(row.print_estimate_summary || "").trim() || null,
+    print_request_summary: String(row.print_request_summary || "").trim() || null,
+    print_design_help_requested:
+      row.print_design_help_requested === null || row.print_design_help_requested === undefined
+        ? null
+        : Boolean(row.print_design_help_requested),
+    print_timer_started_at: String(row.print_timer_started_at || "").trim() || null,
+    print_timer_running:
+      row.print_timer_running === null || row.print_timer_running === undefined ? null : Boolean(row.print_timer_running),
+    print_tracked_minutes: numOrNull(row.print_tracked_minutes),
+    print_manual_time_minutes: numOrNull(row.print_manual_time_minutes),
+    price_charged: numOrNull(row.price_charged),
+    filament_cost: numOrNull(row.filament_cost),
+    filament_grams_used: numOrNull(row.filament_grams_used),
+    filament_cost_per_kg: numOrNull(row.filament_cost_per_kg),
+    filament_use_weight_calc:
+      row.filament_use_weight_calc === null || row.filament_use_weight_calc === undefined
+        ? null
+        : Boolean(row.filament_use_weight_calc),
+    estimated_time_hours: numOrNull(row.estimated_time_hours),
+    quoted_amount: numOrNull(row.quoted_amount),
+    deposit_amount: numOrNull(row.deposit_amount),
+    final_amount: numOrNull(row.final_amount),
+    payment_request_type: String(row.payment_request_type || "").trim() || null,
+    payment_status: String(row.payment_status || "").trim() || null,
+    payment_method: String(row.payment_method || "").trim() || null,
+    payment_link: String(row.payment_link || "").trim() || null,
+    paid_at: String(row.paid_at || "").trim() || null,
+    last_response_at: String(row.last_response_at || "").trim() || null,
   };
 }
