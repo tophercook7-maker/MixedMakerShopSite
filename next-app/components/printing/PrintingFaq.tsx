@@ -5,7 +5,7 @@ import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 const FAQ = [
   {
     q: "What kinds of things can you print?",
-    a: "Useful custom PLA work — holders, mounts, organizers, replacements, and one-off fixes.",
+    a: "Replacement parts, tool holders, wall mounts, and odd one-offs — practical PLA work, not figurines.",
   },
   {
     q: "Do I need an STL file first?",

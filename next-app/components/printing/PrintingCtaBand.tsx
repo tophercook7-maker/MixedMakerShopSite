@@ -36,11 +36,14 @@ export function PrintingCtaBand() {
                 </div>
                 <div className="max-w-2xl lg:max-w-2xl">
                   <h2 className="text-[1.65rem] font-bold leading-[1.15] tracking-[-0.035em] text-white sm:text-[2rem] md:text-[2.35rem] [text-shadow:0_4px_48px_rgba(0,0,0,0.45)]">
-                    Got a problem? We&apos;ll build the solution.
+                    Ready to fix it?
                   </h2>
                   <p className="mt-5 max-w-xl text-[0.9375rem] leading-relaxed text-white/62 md:mt-6 md:text-[1.02rem]">
-                    Tell us what you need, share a photo or idea, and submit your request through the site — or call
-                    and we&apos;ll talk it through.
+                    Send photos or a quick description — or call{" "}
+                    <a href={PHONE_TEL} className="font-semibold text-orange-200/95 underline-offset-2 hover:underline">
+                      {PHONE}
+                    </a>
+                    . You&apos;ll get a clear next step, not a black hole.
                   </p>
                 </div>
               </div>
