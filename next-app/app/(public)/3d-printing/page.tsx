@@ -10,12 +10,12 @@ import { PrintingFaq } from "@/components/printing/PrintingFaq";
 export const metadata: Metadata = {
   title: "Custom 3D Printing | MixedMakerShop",
   description:
-    "MixedMakerShop creates useful custom PLA parts, mounts, organizers, and one-off solutions. Submit a request or browse STL libraries for inspiration.",
+    "Custom PLA 3D printing in Hot Springs, Arkansas — parts, mounts, organizers, replacements, and one-off fixes. Submit a request or browse STL libraries for ideas.",
 };
 
 export default function ThreeDPrintingPage() {
   return (
-    <article className="relative min-h-screen overflow-x-hidden">
+    <article className="printing-page relative min-h-screen overflow-x-hidden">
       <PrintingHero />
       <WhatWeMake />
       <PrintingWhy />

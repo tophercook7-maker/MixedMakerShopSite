@@ -16,8 +16,8 @@ export function PrintingSection({
     <section
       id={id}
       className={cn(
-        "relative isolate py-[4.5rem] md:py-[6.5rem] lg:py-[7.5rem]",
-        divider && "border-b border-white/[0.07]",
+        "relative isolate py-[6rem] md:py-[9rem] lg:py-[10.75rem]",
+        divider && "border-b border-white/[0.06]",
         className
       )}
     >
@@ -41,25 +41,25 @@ export function PrintingSectionHeader({
 }) {
   const wrap = align === "center" ? "mx-auto text-center" : "text-left max-w-3xl";
   return (
-    <header className={cn("mb-12 md:mb-16", wrap, className)}>
+    <header className={cn("mb-14 md:mb-20 lg:mb-[5.25rem]", wrap, className)}>
       {eyebrow ? (
         <p
           className={cn(
-            "mb-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-orange-400/95 md:text-xs",
+            "mb-4 text-[11px] font-semibold uppercase tracking-[0.34em] text-orange-400/90 md:text-xs",
             align === "center" && "mx-auto max-w-max"
           )}
         >
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-[1.65rem] font-bold leading-[1.15] tracking-[-0.03em] text-white sm:text-3xl md:text-[2.125rem] lg:text-[2.375rem]">
+      <h2 className="text-[1.7rem] font-bold leading-[1.12] tracking-[-0.035em] text-white sm:text-[1.85rem] md:text-[2.2rem] lg:text-[2.5rem] lg:leading-[1.1] [text-shadow:0_1px_40px_rgba(0,0,0,0.35)]">
         {title}
       </h2>
       {subtitle ? (
         <p
           className={cn(
-            "mt-4 text-[0.9375rem] leading-relaxed text-white/55 md:text-base md:leading-[1.65]",
-            align === "center" ? "mx-auto max-w-2xl" : "max-w-2xl"
+            "mt-5 max-w-[44rem] text-[0.9375rem] leading-[1.65] text-white/50 md:mt-6 md:text-base md:leading-[1.7]",
+            align === "center" ? "mx-auto" : ""
           )}
         >
           {subtitle}

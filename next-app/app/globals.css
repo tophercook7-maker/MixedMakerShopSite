@@ -4874,3 +4874,19 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
     border-color: hsl(var(--border));
   }
 }
+
+/* 3D printing service page — depth + fabrication shell (no external assets) */
+.public-site--dark .printing-page {
+  background-color: #090d0c;
+  background-image:
+    radial-gradient(ellipse 120% 70% at 50% -15%, rgba(249, 115, 22, 0.075), transparent 52%),
+    radial-gradient(ellipse 55% 45% at 0% 35%, rgba(16, 185, 129, 0.045), transparent 48%),
+    radial-gradient(ellipse 50% 40% at 100% 75%, rgba(251, 191, 36, 0.03), transparent 50%),
+    repeating-linear-gradient(
+      -11deg,
+      transparent 0,
+      transparent 10px,
+      rgba(255, 255, 255, 0.017) 10px,
+      rgba(255, 255, 255, 0.017) 11px
+    );
+}
