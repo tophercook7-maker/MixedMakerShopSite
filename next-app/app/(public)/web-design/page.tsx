@@ -8,11 +8,14 @@ export const metadata = {
 
 export default function WebDesignPage() {
   return (
-    <div className="web-design-page">
+    <div className="web-design-page web-design-page--immersive">
+      <div className="web-design-page__bg" aria-hidden />
+      <div className="web-design-page__veil" aria-hidden />
+      <div className="web-design-page__inner">
       {/* 1. Hero */}
-      <section className="hero wd-hero">
+      <section className="hero wd-hero wd-motion-scope wd-hero--immersive">
         <div className="container">
-          <div className="hero-copy">
+          <div className="hero-copy wd-hero-copy">
             <div className="kicker">
               <span className="dot" /> Work With Topher
             </div>
@@ -206,6 +209,7 @@ export default function WebDesignPage() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }

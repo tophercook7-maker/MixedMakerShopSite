@@ -1191,6 +1191,139 @@ main .section .transformation-card:not(.motion-reveal-target):hover {
 .web-design-page .wd-hero .btn-row {
   margin-top: 1.75rem;
 }
+
+/* Work With Topher — fixed workspace backdrop + veil (mobile: fixed layer, not background-attachment) */
+.web-design-page--immersive {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  /* Work With Topher immersive backdrop: public/images/mixedmaker-workspace-hero.png */
+  --wd-workspace-img: url("/images/mixedmaker-workspace-hero.png");
+}
+
+.web-design-page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #0b0f0e;
+  background-image: var(--wd-workspace-img);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.web-design-page__veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      105deg,
+      rgba(1, 8, 7, 0.78) 0%,
+      rgba(1, 10, 9, 0.48) 38%,
+      rgba(2, 14, 12, 0.4) 62%,
+      rgba(2, 12, 10, 0.46) 100%
+    ),
+    radial-gradient(ellipse 95% 75% at 72% 32%, transparent 0%, rgba(1, 6, 5, 0.52) 62%, rgba(1, 8, 7, 0.74) 100%);
+}
+
+@media (max-width: 768px) {
+  .web-design-page__veil {
+    background:
+      linear-gradient(180deg, rgba(1, 8, 7, 0.74) 0%, rgba(1, 9, 8, 0.52) 42%, rgba(1, 11, 10, 0.62) 100%),
+      radial-gradient(ellipse 100% 55% at 50% 28%, transparent 0%, rgba(1, 6, 5, 0.55) 100%);
+  }
+}
+
+.web-design-page__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.web-design-page--immersive .hero {
+  background: transparent;
+}
+
+.web-design-page--immersive .wd-hero-copy {
+  padding: clamp(1.35rem, 3.5vw, 2rem) clamp(1.25rem, 3vw, 1.85rem);
+  border-radius: 22px;
+  border: 1px solid rgba(0, 255, 178, 0.15);
+  background: linear-gradient(125deg, rgba(11, 15, 14, 0.9) 0%, rgba(11, 15, 14, 0.58) 55%, rgba(11, 15, 14, 0.5) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 28px 64px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .web-design-page--immersive .wd-hero-copy {
+    background: rgba(11, 15, 14, 0.92);
+  }
+}
+
+.web-design-page--immersive .section {
+  background: transparent;
+}
+
+.web-design-page--immersive .how-it-works-card {
+  background: rgba(17, 26, 23, 0.58);
+  border-color: rgba(0, 255, 178, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.web-design-page--immersive .panel {
+  background: rgba(17, 26, 23, 0.62);
+  border-color: rgba(0, 255, 178, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.32);
+}
+
+.web-design-page--immersive .price-card {
+  background: rgba(12, 18, 16, 0.62);
+  border-color: rgba(232, 253, 245, 0.09);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.web-design-page--immersive .price-card--featured {
+  background: rgba(0, 38, 32, 0.52);
+  border-color: rgba(0, 255, 178, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 102, 0.11),
+    0 0 52px rgba(0, 255, 178, 0.14),
+    0 22px 52px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.web-design-page--immersive .price-card__monthly-block {
+  background: rgba(0, 12, 11, 0.48);
+}
+
+.web-design-page--immersive .wd-cta-panel {
+  background: rgba(17, 26, 23, 0.66);
+  border-color: rgba(0, 255, 178, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.web-design-page--immersive .motion-reveal-target {
+  transition-duration: 0.65s, 0.65s, 0.22s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.22, 1, 0.36, 1), ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .web-design-page--immersive .motion-reveal-target {
+    transition-duration: 0.01ms, 0.01ms, 0.01ms;
+  }
+}
 .wd-lead {
   font-size: 1.0625rem;
   line-height: 1.65;

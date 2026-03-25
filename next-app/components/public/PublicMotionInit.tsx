@@ -18,19 +18,35 @@ const REVEAL_SELECTOR = [
   "main .offer-page .offer-reveal-line",
   "main .offer-page .offer-card",
   "main .home-premium .home-reveal",
+  "main .web-design-page--immersive .price-card",
+  "main .web-design-page--immersive .wd-cta-panel",
+  "main .web-design-page--immersive .wd-lead",
+  "main .web-design-page--immersive .wd-punch",
+  "main .web-design-page--immersive .wd-monthly-body",
+  "main .web-design-page--immersive .wd-scan-list",
+  "main .web-design-page--immersive .web-design-pricing-intro",
+  "main .web-design-page--immersive .hero .hero-copy > *",
 ].join(", ");
 
 function assignStaggerDelays(nodes: HTMLElement[]) {
   const byScope = new Map<Element, HTMLElement[]>();
   for (const el of nodes) {
-    const scope = el.closest(".section") ?? el.closest(".sample-section") ?? el.closest(".home-band");
+    const scope =
+      el.closest(".section") ??
+      el.closest(".sample-section") ??
+      el.closest(".home-band") ??
+      el.closest(".wd-motion-scope");
     if (!scope) continue;
     if (!byScope.has(scope)) byScope.set(scope, []);
     byScope.get(scope)!.push(el);
   }
   Array.from(byScope.entries()).forEach(([scope, list]) => {
     const step =
-      scope instanceof HTMLElement && scope.classList.contains("home-band--hero") ? 0.11 : 0.07;
+      scope instanceof HTMLElement && scope.classList.contains("home-band--hero")
+        ? 0.11
+        : scope instanceof HTMLElement && scope.classList.contains("wd-motion-scope")
+          ? 0.09
+          : 0.07;
     list.forEach((el: HTMLElement, i: number) => {
       el.style.setProperty("--motion-delay", `${Math.min(i, 14) * step}s`);
     });
@@ -42,7 +58,10 @@ export function PublicMotionInit() {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const found = Array.from(document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR));
+    const found = Array.from(document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR)).filter((el) => {
+      if (!el.classList.contains("panel")) return true;
+      return !el.querySelector(".price-card");
+    });
     if (!found.length) return;
 
     assignStaggerDelays(found);
