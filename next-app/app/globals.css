@@ -1066,6 +1066,216 @@ main .section .transformation-card:not(.motion-reveal-target):hover {
   flex-wrap: wrap;
   margin-top: 12px;
 }
+
+/* Featured tier — Work With Topher / pricing pages */
+.price-card--featured {
+  position: relative;
+  border-color: rgba(0, 255, 178, 0.38);
+  background: rgba(0, 255, 178, 0.065);
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 102, 0.12),
+    0 0 48px rgba(0, 255, 178, 0.12),
+    0 20px 48px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@media (min-width: 981px) {
+  .price-card--featured {
+    transform: scale(1.03);
+    padding: 20px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-card--featured {
+    transform: none;
+  }
+}
+
+.price-card__title {
+  margin: 12px 0 8px;
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--pub-fg);
+}
+
+.price-card__title-price {
+  color: rgba(0, 255, 178, 0.95);
+}
+
+.price-card__title-plus {
+  font-weight: 700;
+  color: var(--pub-muted);
+}
+
+.price-card__monthly-block {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 255, 178, 0.18);
+  background: rgba(0, 15, 13, 0.45);
+}
+
+.price-card__monthly-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(232, 253, 245, 0.88);
+}
+
+.price-card__monthly-block ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--pub-muted);
+}
+
+.price-card__foot {
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--pub-fg);
+}
+
+.price-card__payment-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--pub-muted);
+}
+
+.web-design-pricing .price-grid {
+  gap: clamp(16px, 2.2vw, 22px);
+  align-items: stretch;
+}
+
+.web-design-pricing .subhead {
+  max-width: 46rem;
+  line-height: 1.6;
+}
+.web-design-pricing .subhead.web-design-pricing-intro {
+  margin: 0 0 1.5rem;
+}
+.price-card__title--first {
+  margin-top: 14px;
+}
+.price-card__blurb {
+  margin: 0.75rem 0 0;
+  max-width: 38ch;
+}
+.price-card__blurb--mid {
+  max-width: 40ch;
+}
+.price-card__blurb--narrow {
+  max-width: 36ch;
+}
+
+.web-design-pricing-cta {
+  margin-top: 28px;
+  padding: 22px 20px;
+  border: 1px solid rgba(0, 255, 178, 0.14);
+  border-radius: 18px;
+  background: rgba(0, 255, 178, 0.04);
+}
+
+/* Work With Topher — full service page */
+.web-design-page section[id] {
+  scroll-margin-top: 5.75rem;
+}
+.web-design-page .wd-hero .btn-row {
+  margin-top: 1.75rem;
+}
+.wd-lead {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--pub-muted);
+  margin: 0 0 1rem;
+  max-width: 42rem;
+}
+.wd-lead:last-child {
+  margin-bottom: 0;
+}
+.wd-lead--narrow {
+  max-width: 36rem;
+}
+p.wd-lead.wd-lead--spaced {
+  margin-bottom: 1.25rem;
+}
+.wd-punch {
+  margin: 1.15rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--pub-fg-heading);
+  max-width: 34rem;
+}
+.wd-punch--after-list {
+  margin-top: 1.5rem;
+}
+.wd-problem-cards .how-it-works-card {
+  min-height: 0;
+}
+.wd-problem-cards .how-it-works-title {
+  color: rgba(255, 209, 102, 0.95);
+  font-size: 1.125rem;
+}
+.wd-scan-list {
+  margin: 1rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--pub-muted);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  max-width: 38rem;
+}
+.wd-scan-list li {
+  margin-bottom: 0.45rem;
+}
+.wd-monthly-body p {
+  margin: 0 0 0.8rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--pub-muted);
+  max-width: 40rem;
+}
+.wd-monthly-body p:last-child {
+  margin-bottom: 0;
+}
+.wd-monthly-body strong.wd-em {
+  color: var(--pub-fg-heading);
+  font-weight: 600;
+}
+.wd-process-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 28px);
+}
+@media (max-width: 900px) {
+  .wd-process-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.wd-cta-panel {
+  padding: clamp(28px, 4vw, 40px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 255, 178, 0.16);
+  background: rgba(0, 255, 178, 0.05);
+  text-align: center;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.wd-cta-panel .section-heading {
+  margin-bottom: 0.75rem;
+}
+.wd-cta-panel .wd-lead {
+  margin-left: auto;
+  margin-right: auto;
+}
 .mini {
   padding: 10px 12px;
   border-radius: 999px;
