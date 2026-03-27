@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -14,37 +16,87 @@ import {
   Box,
   Hammer,
 } from "lucide-react";
-import Link from "next/link";
+import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
+import { publicGatewayPageBgClass } from "@/lib/public-brand";
+import { trackGatewayNav } from "@/lib/public-analytics";
+import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
+import { cn } from "@/lib/utils";
 
-function BrowserMockup() {
+const PRINT_HERO = [
+  { src: "/images/mixedmaker-workspace-hero.png", alt: "MixedMaker 3D printing workspace and setup" },
+  { src: "/images/printing/printing-case-repair.png", alt: "Custom 3D-printed repair part" },
+  { src: "/images/printing/printing-process-printing.png", alt: "FDM 3D print on the build plate" },
+] as const;
+
+function WebPathPhotoCollage({ href }: { href: string }) {
+  const land = getPortfolioSampleBySlug("landscaping");
+  const pw = getPortfolioSampleBySlug("pressure-washing");
+  const detail = getPortfolioSampleBySlug("auto-detailing");
+  const slices: { src: string; alt: string }[] = [];
+  if (land) slices.push({ src: land.cardImageUrl, alt: `${land.title} sample preview` });
+  if (pw) slices.push({ src: pw.cardImageUrl, alt: `${pw.title} sample preview` });
+  if (detail) slices.push({ src: detail.cardImageUrl, alt: `${detail.title} sample preview` });
+  while (slices.length < 3) {
+    const fb =
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
+    slices.push({ src: fb, alt: "Website and analytics — local business online presence" });
+    if (slices.length >= 3) break;
+  }
+
   return (
-    <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-white/20 bg-slate-950 shadow-2xl">
-      <div className="flex items-center gap-2 border-b border-white/10 bg-white/5 px-4 py-3">
-        <span className="h-2.5 w-2.5 rounded-full bg-white/40" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/30" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-        <div className="ml-3 h-7 flex-1 rounded-full bg-white/10" />
-      </div>
-      <div className="grid h-[calc(100%-52px)] grid-cols-[1.1fr_0.9fr] gap-3 p-4">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-400/25 via-sky-300/15 to-transparent p-4">
-          <div className="mb-3 h-3 w-24 rounded-full bg-white/20" />
-          <div className="mb-2 h-8 w-4/5 rounded-lg bg-white/15" />
-          <div className="mb-4 h-8 w-3/5 rounded-lg bg-white/10" />
-          <div className="grid grid-cols-3 gap-2">
-            <div className="h-16 rounded-lg bg-emerald-300/20" />
-            <div className="h-16 rounded-lg bg-sky-300/15" />
-            <div className="h-16 rounded-lg bg-white/10" />
+    <Link
+      href={href}
+      onClick={() => trackGatewayNav("web_design", "hero_visual")}
+      className="group/hero relative mb-5 block overflow-hidden rounded-2xl border border-white/15 shadow-2xl outline-none ring-emerald-400/0 transition ring-offset-2 ring-offset-[#07111f] focus-visible:ring-2 focus-visible:ring-emerald-400/40"
+    >
+      <div className="grid h-48 grid-cols-3 gap-px bg-white/10 sm:h-56 md:h-64">
+        {slices.slice(0, 3).map((item) => (
+          <div key={item.src} className="relative min-h-[8rem] sm:min-h-0">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              fill
+              className="object-cover transition duration-500 group-hover/hero:scale-[1.04]"
+              sizes="(max-width:1024px) 34vw, 380px"
+            />
           </div>
-        </div>
-        <div className="rounded-xl bg-white/5 p-3">
-          <div className="mb-3 h-24 rounded-xl bg-gradient-to-b from-sky-300/20 to-emerald-300/10" />
-          <div className="mb-2 h-3 w-3/4 rounded-full bg-white/20" />
-          <div className="mb-2 h-3 w-1/2 rounded-full bg-white/15" />
-          <div className="mt-4 h-10 rounded-xl bg-emerald-400/25" />
-        </div>
+        ))}
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(52,211,153,0.18),transparent_35%)]" />
-    </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#07111f]/92 via-[#07111f]/35 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_0%,transparent_42%,rgba(7,17,31,0.55)_100%)]" />
+      <p className="pointer-events-none absolute bottom-3 left-3 right-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75 md:text-xs">
+        Sample sites &amp; pages — open web design
+      </p>
+    </Link>
+  );
+}
+
+function PrintPathPhotoCollage({ href }: { href: string }) {
+  return (
+    <Link
+      href={href}
+      onClick={() => trackGatewayNav("3d_printing", "hero_visual")}
+      className="group/hero relative mb-5 block overflow-hidden rounded-2xl border border-white/15 shadow-2xl outline-none ring-sky-400/0 transition ring-offset-2 ring-offset-[#07111f] focus-visible:ring-2 focus-visible:ring-sky-400/40"
+    >
+      <div className="grid h-48 grid-cols-3 gap-px bg-white/10 sm:h-56 md:h-64">
+        {PRINT_HERO.map((item) => (
+          <div key={item.src} className="relative min-h-[8rem] sm:min-h-0">
+            <Image
+              src={item.src}
+              alt={item.alt}
+              fill
+              className="object-cover transition duration-500 group-hover/hero:scale-[1.04]"
+              sizes="(max-width:1024px) 34vw, 380px"
+            />
+          </div>
+        ))}
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#07111f]/92 via-[#07111f]/35 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_0%,transparent_42%,rgba(7,17,31,0.55)_100%)]" />
+      <p className="pointer-events-none absolute bottom-3 left-3 right-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75 md:text-xs">
+        Real prints &amp; workspace — open 3D printing
+      </p>
+    </Link>
   );
 }
 
@@ -93,57 +145,6 @@ function LeadFormTile() {
         <div className="h-7 rounded-lg bg-white/10" />
         <div className="h-8 rounded-lg bg-emerald-400/25" />
       </div>
-    </div>
-  );
-}
-
-function PrinterScene() {
-  return (
-    <div className="relative h-44 w-full overflow-hidden rounded-2xl border border-white/20 bg-slate-950 shadow-2xl">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(96,165,250,0.10)_1px,transparent_1px),linear-gradient(90deg,rgba(96,165,250,0.10)_1px,transparent_1px)] bg-[size:24px_24px]" />
-      <svg viewBox="0 0 420 220" className="absolute inset-0 h-full w-full">
-        <defs>
-          <linearGradient id="printerGlow" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="rgba(96,165,250,0.85)" />
-            <stop offset="100%" stopColor="rgba(52,211,153,0.75)" />
-          </linearGradient>
-        </defs>
-        <rect
-          x="70"
-          y="42"
-          width="280"
-          height="128"
-          rx="18"
-          fill="rgba(255,255,255,0.05)"
-          stroke="rgba(255,255,255,0.15)"
-        />
-        <rect
-          x="95"
-          y="58"
-          width="230"
-          height="84"
-          rx="12"
-          fill="rgba(15,23,42,0.95)"
-          stroke="rgba(96,165,250,0.25)"
-        />
-        <rect x="125" y="76" width="160" height="10" rx="5" fill="rgba(255,255,255,0.12)" />
-        <rect x="150" y="86" width="110" height="38" rx="8" fill="rgba(52,211,153,0.18)" />
-        <rect x="166" y="96" width="78" height="18" rx="6" fill="rgba(96,165,250,0.28)" />
-        <rect x="110" y="148" width="200" height="8" rx="4" fill="url(#printerGlow)" opacity="0.8" />
-        <rect
-          x="188"
-          y="30"
-          width="44"
-          height="32"
-          rx="10"
-          fill="rgba(255,255,255,0.10)"
-          stroke="rgba(255,255,255,0.15)"
-        />
-        <rect x="198" y="42" width="24" height="42" rx="10" fill="rgba(96,165,250,0.25)" />
-        <circle cx="340" cy="66" r="10" fill="rgba(52,211,153,0.30)" />
-        <circle cx="355" cy="102" r="6" fill="rgba(96,165,250,0.30)" />
-      </svg>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(96,165,250,0.2),transparent_35%)]" />
     </div>
   );
 }
@@ -215,7 +216,12 @@ function BenefitList({ items }: { items: string[] }) {
 
 export function UmbrellaGateway() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_35%),linear-gradient(180deg,#07111f_0%,#08131c_100%)] px-4 py-12 text-white md:px-6 md:py-16">
+    <div
+      className={cn(
+        publicGatewayPageBgClass,
+        "min-h-screen px-4 py-12 text-white md:px-6 md:py-16",
+      )}
+    >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-3xl text-center md:mb-16">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300/80">Choose your path</p>
@@ -227,7 +233,7 @@ export function UmbrellaGateway() {
         </div>
 
         <div className="mb-4 text-center text-sm font-medium uppercase tracking-[0.2em] text-slate-400">
-          Two powerful ways to work with MixedMakerShop
+          Pick the path that matches your project
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -251,10 +257,9 @@ export function UmbrellaGateway() {
                   legit, and turn clicks into real paying customers.
                 </p>
 
+                <WebPathPhotoCollage href="/web-design" />
+
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <BrowserMockup />
-                  </div>
                   <MobileWebsiteTile />
                   <div className="grid gap-3">
                     <SearchTile />
@@ -281,10 +286,38 @@ export function UmbrellaGateway() {
                   <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-400/10 to-sky-400/5 p-4">
                     <div className="mb-3 text-sm font-medium text-emerald-200">Examples &amp; ideas</div>
                     <div className="grid gap-2 text-sm text-slate-200/90">
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Landscaping website demo</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Pressure washing landing page</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Quote calculator or booking tool</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Free mockup to show a better direction</div>
+                      <TrackedPublicLink
+                        href="/samples/landscaping"
+                        eventName="public_web_design_sample_click"
+                        eventProps={{ location: "gateway", label: "landscaping_demo" }}
+                        className="block min-h-11 rounded-xl bg-black/20 px-3 py-2.5 text-left transition hover:bg-black/30 sm:min-h-0"
+                      >
+                        Landscaping website demo
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/samples/pressure-washing"
+                        eventName="public_web_design_sample_click"
+                        eventProps={{ location: "gateway", label: "pressure_washing" }}
+                        className="block min-h-11 rounded-xl bg-black/20 px-3 py-2.5 text-left transition hover:bg-black/30 sm:min-h-0"
+                      >
+                        Pressure washing landing page
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/samples/quote-calculator"
+                        eventName="public_web_design_sample_click"
+                        eventProps={{ location: "gateway", label: "quote_calculator" }}
+                        className="block min-h-11 rounded-xl bg-black/20 px-3 py-2.5 text-left transition hover:bg-black/30 sm:min-h-0"
+                      >
+                        Quote calculator or booking tool
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/free-mockup"
+                        eventName="public_web_design_sample_click"
+                        eventProps={{ location: "gateway", label: "free_mockup" }}
+                        className="block min-h-11 rounded-xl bg-black/20 px-3 py-2.5 text-left transition hover:bg-black/30 sm:min-h-0"
+                      >
+                        Free mockup to show a better direction
+                      </TrackedPublicLink>
                     </div>
                   </div>
                 </div>
@@ -298,7 +331,10 @@ export function UmbrellaGateway() {
                     asChild
                     className="w-full gap-2 rounded-2xl bg-emerald-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-emerald-300 sm:w-auto"
                   >
-                    <Link href="/web-design">
+                    <Link
+                      href="/web-design"
+                      onClick={() => trackGatewayNav("web_design", "primary_cta")}
+                    >
                       Show Me How This Works <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -327,10 +363,9 @@ export function UmbrellaGateway() {
                   already have a print file or just need help figuring out the solution.
                 </p>
 
+                <PrintPathPhotoCollage href="/3d-printing" />
+
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <PrinterScene />
-                  </div>
                   <PartTile />
                   <div className="grid gap-3">
                     <FixTile />
@@ -357,10 +392,54 @@ export function UmbrellaGateway() {
                   <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-sky-400/10 to-emerald-400/5 p-4">
                     <div className="mb-3 text-sm font-medium text-sky-200">Examples &amp; ideas</div>
                     <div className="grid gap-2 text-sm text-slate-200/90">
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Replacement part for something discontinued</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Truck, tool, or workspace organizer</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Custom bracket, clip, or holder</div>
-                      <div className="rounded-xl bg-black/20 px-3 py-2">Prototype or one-off practical solution</div>
+                      <TrackedPublicLink
+                        href="/3d-printing#replacement-parts"
+                        eventName="public_3d_sample_click"
+                        eventProps={{ location: "gateway", label: "replacement_parts" }}
+                        className="group/ex flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-black/20 px-3 py-2.5 text-left transition hover:border-sky-400/25 hover:bg-black/35 sm:min-h-0"
+                      >
+                        <span className="min-w-0 flex-1">Replacement part for something discontinued</span>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-sky-300/65 transition group-hover/ex:translate-x-0.5 group-hover/ex:text-sky-200"
+                          aria-hidden
+                        />
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/3d-printing#functional-prints"
+                        eventName="public_3d_sample_click"
+                        eventProps={{ location: "gateway", label: "functional_prints" }}
+                        className="group/ex flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-black/20 px-3 py-2.5 text-left transition hover:border-sky-400/25 hover:bg-black/35 sm:min-h-0"
+                      >
+                        <span className="min-w-0 flex-1">Truck, tool, or workspace organizer</span>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-sky-300/65 transition group-hover/ex:translate-x-0.5 group-hover/ex:text-sky-200"
+                          aria-hidden
+                        />
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/3d-printing#custom-solutions"
+                        eventName="public_3d_sample_click"
+                        eventProps={{ location: "gateway", label: "custom_solutions" }}
+                        className="group/ex flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-black/20 px-3 py-2.5 text-left transition hover:border-sky-400/25 hover:bg-black/35 sm:min-h-0"
+                      >
+                        <span className="min-w-0 flex-1">Custom bracket, clip, or holder</span>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-sky-300/65 transition group-hover/ex:translate-x-0.5 group-hover/ex:text-sky-200"
+                          aria-hidden
+                        />
+                      </TrackedPublicLink>
+                      <TrackedPublicLink
+                        href="/3d-printing#prototypes"
+                        eventName="public_3d_sample_click"
+                        eventProps={{ location: "gateway", label: "prototypes" }}
+                        className="group/ex flex min-h-12 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-black/20 px-3 py-2.5 text-left transition hover:border-sky-400/25 hover:bg-black/35 sm:min-h-0"
+                      >
+                        <span className="min-w-0 flex-1">Prototype or one-off practical solution</span>
+                        <ArrowRight
+                          className="h-4 w-4 shrink-0 text-sky-300/65 transition group-hover/ex:translate-x-0.5 group-hover/ex:text-sky-200"
+                          aria-hidden
+                        />
+                      </TrackedPublicLink>
                     </div>
                   </div>
                 </div>
@@ -374,7 +453,7 @@ export function UmbrellaGateway() {
                     asChild
                     className="w-full gap-2 rounded-2xl bg-sky-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-sky-300 sm:w-auto"
                   >
-                    <Link href="/3d-printing">
+                    <Link href="/3d-printing" onClick={() => trackGatewayNav("3d_printing", "primary_cta")}>
                       Start a Print Project <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>

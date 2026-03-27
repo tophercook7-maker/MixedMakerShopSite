@@ -2009,7 +2009,7 @@ a.sample-contact-v:hover {
 
 /* /free-mockup funnel: side-by-side form + wide live preview */
 .free-mockup-funnel {
-  padding: 0 0 56px;
+  padding: 0 0 max(56px, calc(env(safe-area-inset-bottom, 0px) + 48px));
 }
 .free-mockup-funnel .free-mockup-funnel-grid {
   display: grid;
@@ -2047,6 +2047,16 @@ a.sample-contact-v:hover {
   text-align: center;
   background: rgba(255, 255, 255, 0.03);
   color: var(--pub-muted);
+}
+
+@media (max-width: 639px) {
+  .free-mockup-placeholder {
+    min-height: min(56vh, 520px);
+    padding: 32px 16px;
+  }
+  .free-mockup-funnel .free-mockup-funnel-grid {
+    gap: 28px;
+  }
 }
 
 .sample-site-nav {
@@ -3414,13 +3424,17 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
     display: flex;
   }
   .menu-toggle {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
     background: none;
     border: none;
     font-size: 28px;
     color: var(--pub-fg-heading);
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 0;
     line-height: 1;
   }
   section {
@@ -3447,6 +3461,14 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(232, 253, 245, 0.08);
+}
+
+/* Home gateway (/) — blue-navy shell aligned with UmbrellaGateway gradient */
+.nav.nav--premium.nav--gateway {
+  background: linear-gradient(180deg, rgba(7, 17, 31, 0.94) 0%, rgba(8, 19, 28, 0.92) 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .nav.nav--premium .brand-title .name {
@@ -3559,9 +3581,15 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   text-decoration: none;
 }
 
-/* In-page anchors clear fixed premium nav */
+/* In-page anchors clear fixed premium nav (desktop); mobile nav is static in base theme */
 .home-premium section[id] {
   scroll-margin-top: 5.75rem;
+}
+
+@media (min-width: 769px) {
+  .printing-page section[id] {
+    scroll-margin-top: 6rem;
+  }
 }
 
 .home-hero-copy--readable {
@@ -3850,6 +3878,12 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   position: relative;
   overflow: hidden;
   padding: clamp(5rem, 12vw, 9rem) 0;
+}
+
+@media (max-width: 639px) {
+  .home-final-cta {
+    padding-bottom: max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.25rem));
+  }
 }
 
 .home-final-cta::before {

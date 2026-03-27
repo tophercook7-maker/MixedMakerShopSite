@@ -29,7 +29,7 @@ const bucketCard =
 
 export function PrintingExamplesBuckets() {
   return (
-    <section id="examples-3d" className="scroll-mt-24 border-b border-white/[0.06] bg-[#060908] py-16 md:py-20">
+    <section id="examples-3d" className="scroll-mt-28 border-b border-white/[0.06] bg-[#060908] py-16 md:py-20 md:scroll-mt-32">
       <div className={cn(printingContentClass, "relative")}>
         <RevealOnScroll>
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-orange-400/85">Examples</p>

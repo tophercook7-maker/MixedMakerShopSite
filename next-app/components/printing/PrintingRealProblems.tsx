@@ -8,24 +8,28 @@ import { PrintingScrollToQuoteCta } from "@/components/printing/PrintingScrollTo
 
 const CASES = [
   {
+    id: "replacement-parts" as const,
     title: "Broken part → fixed",
     sentence: "Instead of replacing the whole unit, we recreate the part and get it working again.",
     src: PRINTING_CASE_IMAGES.repair,
     alt: "Cracked plastic part beside a solid 3D-printed PLA replacement on a workbench",
   },
   {
+    id: "functional-prints" as const,
     title: "Messy setup → organized",
     sentence: "Custom holders and organizers that actually fit your bench or wall.",
     src: PRINTING_CASE_IMAGES.organize,
     alt: "Workbench tools and a custom printed organizer holding tools in real workspace context",
   },
   {
+    id: "custom-solutions" as const,
     title: "No mount → clean install",
     sentence: "Mount anything exactly where you need it.",
     src: PRINTING_CASE_IMAGES.mount,
     alt: "Wall-mounted 3D-printed bracket holding gear in a real installation context",
   },
   {
+    id: "prototypes" as const,
     title: "One-off problem → solved",
     sentence: "Weird angle, obsolete gear, or no SKU — we model and print the fix.",
     src: PRINTING_PROCESS_IMAGES.printing,
@@ -69,11 +73,12 @@ export function PrintingRealProblems() {
             </div>
 
             <div className="mt-12 grid gap-5 sm:grid-cols-2 sm:gap-6 lg:mt-14 xl:grid-cols-4 xl:gap-5">
-              {CASES.map(({ title, sentence, src, alt }, index) => (
+              {CASES.map(({ id, title, sentence, src, alt }, index) => (
                 <RevealOnScroll key={title} delayMs={index * 65}>
                   <article
+                    id={id}
                     className={cn(
-                      "printing-premium-card group flex h-full flex-col overflow-hidden rounded-2xl",
+                      "scroll-mt-28 printing-premium-card group flex h-full flex-col overflow-hidden rounded-2xl",
                       "border border-white/[0.11] bg-black/40 backdrop-blur-md supports-[backdrop-filter]:bg-black/35",
                       "shadow-[0_18px_50px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.04)]",
                     )}

@@ -9,6 +9,7 @@ import {
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
 import { BUSINESS_TYPE_OPTIONS } from "@/lib/lead-samples";
+import { trackPublicEvent } from "@/lib/public-analytics";
 
 const STYLE_PRESETS = [
   { id: "clean-modern", label: "Clean / Modern" },
@@ -177,6 +178,7 @@ export function FreeMockupFunnelClient() {
         return;
       }
       setSavedUrl(String(data.previewUrl || ""));
+      trackPublicEvent("public_free_mockup_submit");
       setPhase("success");
     } catch {
       setError("Network error. Try again.");

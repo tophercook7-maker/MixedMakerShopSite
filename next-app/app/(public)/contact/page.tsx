@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { trackPublicEvent } from "@/lib/public-analytics";
 
 export default function ContactPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function ContactPage() {
         }),
       });
       if (!res.ok) throw new Error("Submit failed");
+      trackPublicEvent("public_contact_form_submit");
       router.push("/contact/success");
     } catch {
       setError("Something went wrong. Please try again.");

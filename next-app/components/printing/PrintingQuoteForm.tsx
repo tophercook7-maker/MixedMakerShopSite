@@ -13,6 +13,7 @@ import { PRINTING_QUOTE_FORM_ID } from "@/components/printing/printing-quote-anc
 import { PrintingPriceEstimator } from "@/components/printing/PrintingPriceEstimator";
 import { type PriceEstimateSnapshot, estimateSummaryRows } from "@/components/printing/printing-price-estimate";
 import { buildPrintQuoteSmsHref, PRINTING_QUOTE_PHONE_DISPLAY } from "@/components/printing/printing-sms";
+import { trackPublicEvent } from "@/lib/public-analytics";
 
 const QUOTE_REQUEST_FIELDS_ID = "printing-quote-request-fields";
 
@@ -159,6 +160,7 @@ export function PrintingQuoteForm() {
         setError(data.error || "Something went wrong. Please try again.");
         return;
       }
+      trackPublicEvent("public_print_request_submit");
       setSuccess(true);
       setFile(null);
       setFileError("");

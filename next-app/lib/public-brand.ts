@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
 
+/** Umbrella homepage (/) background — matches sticky nav when `nav--gateway` is applied */
+export const publicGatewayPageBgClass =
+  "bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.05),transparent_35%),linear-gradient(180deg,#07111f_0%,#08131c_100%)]";
+
 /** Content max width + horizontal padding — shared by umbrella, web funnel, and 3D funnel */
 export const publicShellClass =
   "mx-auto w-full max-w-[min(100%,87.5rem)] px-5 sm:px-8 md:px-10 lg:px-12";

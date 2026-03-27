@@ -3,6 +3,9 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, LayoutTemplate, Sparkles, Wrench } from "lucide-react";
 import { HomeSalesVisual } from "@/components/public/HomeSalesVisual";
+import { WebDesignProofStrip } from "@/components/public/WebDesignProofStrip";
+import { WebDesignMockupNextSteps } from "@/components/public/WebDesignMockupNextSteps";
+import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
 import { publicBodyMutedClass, publicCardGlassWebClass, publicSectionDividerClass, publicShellClass } from "@/lib/public-brand";
 
@@ -69,7 +72,7 @@ const exampleBuckets = [
     title: "Simple business tools",
     blurb: "Interactive ideas you can start small and grow.",
     links: [
-      { label: "Instant quote-style flow (example)", href: "/3d-printing#printing-quote-form" },
+      { label: "Instant quote-style flow (example)", href: "/samples/quote-calculator" },
       { label: "Website check tool", href: "/free-website-check" },
       { label: "Contact for custom tools", href: "/contact" },
     ],
@@ -136,14 +139,14 @@ export function WebDesignSalesPage() {
       imageAlt: "Pressure washing landing page sample preview",
     },
     {
-      label: "Instant Quote Calculator",
-      href: "/3d-printing",
+      label: "Instant quote-style tool (sample)",
+      href: "/samples/quote-calculator",
       imageUrl: QUOTE_CALC_IMAGE,
       imageAlt: "Laptop and estimating — example of an interactive quote tool",
     },
     {
-      label: "Simple Job Tracker App",
-      href: "/contact",
+      label: "Simple Job Tracker App (concept)",
+      href: "/web-design#what-i-build",
       imageUrl: JOB_TRACKER_IMAGE,
       imageAlt: "Task board — example of a simple job tracking tool",
     },
@@ -180,9 +183,14 @@ export function WebDesignSalesPage() {
                 <Link href="#examples" className="home-btn-secondary--hero">
                   View Examples
                 </Link>
-                <Link href="/contact" className="home-btn-secondary--hero">
+                <TrackedPublicLink
+                  href="/contact"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "web_design_hero" }}
+                  className="home-btn-secondary--hero"
+                >
                   Contact
-                </Link>
+                </TrackedPublicLink>
               </div>
               <ul className="home-reveal home-hero-trust mt-8" aria-label="What to expect">
                 <li>Free mockup — see a real direction before you commit</li>
@@ -197,6 +205,8 @@ export function WebDesignSalesPage() {
         </div>
         <div className="home-band-hero-foot pointer-events-none absolute inset-x-0 bottom-0 z-[1]" aria-hidden />
       </section>
+
+      <WebDesignProofStrip />
 
       <section id="problem" className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
         <div className={`${shell} ${sectionY}`}>
@@ -272,12 +282,14 @@ export function WebDesignSalesPage() {
                   <ul className="mt-4 space-y-2">
                     {bucket.links.map((l) => (
                       <li key={l.href}>
-                        <Link
+                        <TrackedPublicLink
                           href={l.href}
+                          eventName="public_web_design_sample_click"
+                          eventProps={{ location: "web_design_examples_bucket", label: l.label }}
                           className="text-[15px] font-medium text-[#00FFB2] hover:text-[#35ffc1] underline-offset-2 hover:underline"
                         >
                           {l.label}
-                        </Link>
+                        </TrackedPublicLink>
                       </li>
                     ))}
                   </ul>
@@ -301,9 +313,11 @@ export function WebDesignSalesPage() {
 
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
             {spotlightExamples.map((item) => (
-              <Link
+              <TrackedPublicLink
                 key={item.label}
                 href={item.href}
+                eventName="public_web_design_sample_click"
+                eventProps={{ location: "web_design_spotlight", label: item.label }}
                 className="home-reveal home-sample-card group flex flex-col overflow-hidden rounded-2xl border border-[rgba(0,255,178,0.14)] transition-[transform,box-shadow] duration-200 hover:-translate-y-1"
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#0F1513]">
@@ -322,7 +336,7 @@ export function WebDesignSalesPage() {
                     View example
                   </span>
                 </div>
-              </Link>
+              </TrackedPublicLink>
             ))}
           </div>
         </div>
@@ -433,6 +447,8 @@ export function WebDesignSalesPage() {
         </div>
       </section>
 
+      <WebDesignMockupNextSteps />
+
       <section className="home-band home-band--final home-final-cta">
         <div className={shell}>
           <div className="home-reveal home-final-cta__frame max-w-[48rem]">
@@ -451,9 +467,14 @@ export function WebDesignSalesPage() {
               <Link href="/free-mockup" className="home-btn-primary home-btn-primary--final">
                 Get My Free Mockup
               </Link>
-              <Link href="/contact" className="home-btn-secondary--hero w-full sm:w-auto justify-center">
+              <TrackedPublicLink
+                href="/contact"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "web_design_final" }}
+                className="home-btn-secondary--hero w-full sm:w-auto justify-center"
+              >
                 Contact
-              </Link>
+              </TrackedPublicLink>
             </div>
           </div>
         </div>

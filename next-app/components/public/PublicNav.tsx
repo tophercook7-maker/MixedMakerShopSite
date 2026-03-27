@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import { trackPublicEvent } from "@/lib/public-analytics";
 
 export function PublicNav() {
+  const pathname = usePathname();
+  const isGatewayHome = pathname === "/" || pathname === "";
   const [logoFailed, setLogoFailed] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -19,7 +24,7 @@ export function PublicNav() {
   }, []);
 
   return (
-    <header className="nav nav--premium">
+    <header className={cn("nav nav--premium", isGatewayHome && "nav--gateway")}>
       <div className="nav-inner">
         <Link href="/" className="brand">
           {logoFailed ? (
@@ -59,10 +64,20 @@ export function PublicNav() {
           <Link href="/examples" className="pill">
             Examples
           </Link>
-          <Link href="/contact" className="pill">
+          <Link
+            href="/contact"
+            className="pill"
+            onClick={() => trackPublicEvent("public_contact_cta_click", { location: "nav" })}
+          >
             Contact
           </Link>
-          <Link href="/free-mockup" className="pill cta">
+          <Link
+            href="/free-mockup"
+            className="pill cta"
+            onClick={() =>
+              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
+            }
+          >
             Free mockup
           </Link>
           <Link href="/auth/login" className="pill pill--muted">

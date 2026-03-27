@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 
 export function PublicFooter() {
   return (
@@ -52,7 +53,13 @@ export function PublicFooter() {
           <Link href="/">Home</Link> • <Link href="/web-design">Web Design</Link> •{" "}
           <Link href="/3d-printing">3D Printing</Link> • <Link href="/examples">Examples</Link> •{" "}
           <Link href="/free-mockup">Free Mockup</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
-          <Link href="/contact">Contact</Link>
+          <TrackedPublicLink
+            href="/contact"
+            eventName="public_contact_cta_click"
+            eventProps={{ location: "footer" }}
+          >
+            Contact
+          </TrackedPublicLink>
         </div>
       </div>
     </footer>
