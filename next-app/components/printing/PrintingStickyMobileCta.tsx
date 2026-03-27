@@ -56,4 +56,5 @@ export function PrintingStickyMobileCta() {
 }
 
 /** Extra page bottom padding so content isn’t hidden behind the two-row sticky bar. */
-export const PRINTING_STICKY_MOBILE_BOTTOM_PAD_CLASS = "pb-[6.75rem] md:pb-0";
+/** Three-row sticky bar: request, text, call — keep generous clearance */
+export const PRINTING_STICKY_MOBILE_BOTTOM_PAD_CLASS = "pb-[7.5rem] md:pb-0";

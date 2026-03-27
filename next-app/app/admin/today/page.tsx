@@ -5,6 +5,9 @@ import { CRM_STAGE_LABELS } from "@/lib/crm/stages";
 import { prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { computeWorkTodayLeads } from "@/lib/crm/work-today-leads";
 import { TodayWorkspace } from "@/components/admin/today-workspace";
+import { isThreeDPrintLead, normalizePrintPipelineStatus } from "@/lib/crm/three-d-print-lead";
+import { resolvePrintUiLane } from "@/lib/crm/three-d-print-ui-lanes";
+import { isFollowUpDueTodayUtc, simpleLeadStatusLabel } from "@/lib/crm/simple-lead-status-ui";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,6 +40,7 @@ export default async function TodayCommandPage() {
 
   let rows: LeadRowForWorkflow[] = [];
   const selectVariants = [
+    "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags,service_type,lead_source,source,print_pipeline_status,first_outreach_sent_at,email_sent,facebook_sent,text_sent",
     "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags",
     "id,business_name,status,email,phone,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count",
     "id,business_name,status,email,phone,website,city,category,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview",
@@ -111,8 +115,87 @@ export default async function TodayCommandPage() {
     number
   >;
 
+  const webFuToday = leads.filter(
+    (l) =>
+      !isThreeDPrintLead(l) &&
+      isFollowUpDueTodayUtc(l.next_follow_up_at) &&
+      l.status !== "won" &&
+      l.status !== "lost" &&
+      l.status !== "replied",
+  ).length;
+  const printFuToday = leads.filter(
+    (l) =>
+      isThreeDPrintLead(l) &&
+      isFollowUpDueTodayUtc(l.next_follow_up_at) &&
+      normalizePrintPipelineStatus(l.print_pipeline_status) !== "closed",
+  ).length;
+  const newMockupLeads = leads.filter((l) => {
+    if (isThreeDPrintLead(l)) return false;
+    const st = String(l.service_type || "").toLowerCase();
+    const src = `${l.lead_source || ""} ${(l.lead_tags || []).join(" ")}`.toLowerCase();
+    if (st === "web_design") return l.status === "new";
+    return l.status === "new" && (src.includes("mockup") || src.includes("web_design"));
+  }).length;
+  const newPrintLeads = leads.filter(
+    (l) => isThreeDPrintLead(l) && normalizePrintPipelineStatus(l.print_pipeline_status) === "new",
+  ).length;
+  const waitingOnReply = leads.filter((l) => {
+    if (isThreeDPrintLead(l)) return false;
+    return (
+      simpleLeadStatusLabel({
+        status: l.status,
+        next_follow_up_at: l.next_follow_up_at,
+        first_outreach_sent_at: l.first_outreach_sent_at,
+      }) === "Waiting on Reply"
+    );
+  }).length;
+  const waitingOnCustomer = leads.filter((l) => isThreeDPrintLead(l) && resolvePrintUiLane(l) === "waiting_customer").length;
+  const wonOrCompleted =
+    leads.filter((l) => l.status === "won").length +
+    leads.filter(
+      (l) => isThreeDPrintLead(l) && ["delivered", "closed"].includes(normalizePrintPipelineStatus(l.print_pipeline_status)),
+    ).length;
+
   return (
     <TodayWorkspace workTodayLeads={workTodayLeads}>
+      <section className="admin-card space-y-3 mb-2">
+        <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
+          At a glance
+        </h2>
+        <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+          Mix of web CRM and 3D print pipeline — counts are from your saved leads (this workspace).
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
+          {[
+            { label: "Web F/U today", value: webFuToday, href: "/admin/leads?follow_up_today=1" },
+            {
+              label: "3D F/U today",
+              value: printFuToday,
+              href: "/admin/leads?crm_source=3d_printing&follow_up_today=1",
+            },
+            { label: "New mockup", value: newMockupLeads, href: "/admin/leads" },
+            { label: "New print", value: newPrintLeads, href: "/admin/leads?crm_source=3d_printing&print_stage=new_print" },
+            { label: "Waiting reply", value: waitingOnReply, href: "/admin/leads" },
+            { label: "Waiting customer (3D)", value: waitingOnCustomer, href: "/admin/leads?crm_source=3d_printing&print_stage=waiting_customer" },
+            { label: "Won / completed", value: wonOrCompleted, href: "/admin/leads" },
+          ].map((c) => (
+            <Link
+              key={c.label}
+              href={c.href}
+              className="rounded-lg border px-2 py-2 no-underline transition hover:opacity-95"
+              style={{ borderColor: "var(--admin-border)" }}
+            >
+              <div className="text-[10px] leading-tight" style={{ color: "var(--admin-muted)" }}>
+                {c.label}
+              </div>
+              <div className="text-lg font-bold tabular-nums" style={{ color: "var(--admin-gold)" }}>
+                {c.value}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="admin-stats-grid">
         {[
           { label: "New businesses to contact", value: newLeads, href: "/admin/leads" },

@@ -59,13 +59,20 @@ type TimelineEntry = {
 
 export type WorkflowLead = {
   id: string;
-  source?: "server" | "local" | "optimistic";
+  /** Client-only: whether this row came from the API, localStorage, or an optimistic create. */
+  record_origin?: "server" | "local" | "optimistic";
   isLocalOnly?: boolean;
   workspace_id?: string | null;
   related_case_id?: string | null;
   lead_source?: string | null;
+  /** DB `leads.source` capture channel when present — extension, quick_add, etc. */
+  source?: string | null;
   source_url?: string | null;
   source_label?: string | null;
+  /** web_design | 3d_printing */
+  service_type?: string | null;
+  first_outreach_message?: string | null;
+  first_outreach_sent_at?: string | null;
   opportunity_id: string | null;
   business_name: string;
   category: string | null;
@@ -278,11 +285,11 @@ function websiteStatusDisplay(status: string | null | undefined): string {
   return s ? s.replace(/_/g, " ") : "unknown";
 }
 
-function isLocalOnlyLead(lead: Pick<WorkflowLead, "id" | "source" | "isLocalOnly">): boolean {
+function isLocalOnlyLead(lead: Pick<WorkflowLead, "id" | "record_origin" | "isLocalOnly">): boolean {
   return (
     Boolean(lead.isLocalOnly) ||
-    String(lead.source || "") === "local" ||
-    String(lead.source || "") === "optimistic" ||
+    String(lead.record_origin || "") === "local" ||
+    String(lead.record_origin || "") === "optimistic" ||
     String(lead.id || "").startsWith("local-") ||
     String(lead.id || "").startsWith("optimistic-")
   );
@@ -323,11 +330,11 @@ export function LeadsWorkflowView({
   const [localFallbackLeads, setLocalFallbackLeads] = useState<WorkflowLead[]>([]);
   const LOCAL_WORKFLOW_LEADS_KEY = "mixedmakershop.local_workflow_leads";
 
-  function withLeadSource(lead: WorkflowLead, source: "server" | "local" | "optimistic"): WorkflowLead {
+  function withLeadSource(lead: WorkflowLead, record_origin: "server" | "local" | "optimistic"): WorkflowLead {
     return {
       ...lead,
-      source,
-      isLocalOnly: source !== "server",
+      record_origin,
+      isLocalOnly: record_origin !== "server",
     };
   }
 
@@ -374,10 +381,10 @@ export function LeadsWorkflowView({
     payload: Record<string, unknown>,
     options?: {
       fallbackId?: string;
-      source?: "server" | "local" | "optimistic";
+      record_origin?: "server" | "local" | "optimistic";
     }
   ): WorkflowLead {
-    const source = options?.source || "server";
+    const record_origin = options?.record_origin || "server";
     const now = new Date().toISOString();
     const status = normalizeWorkflowLeadStatus(String(payload.status || "new")) as WorkflowLead["status"];
     const email = String(payload.email || "").trim();
@@ -388,11 +395,12 @@ export function LeadsWorkflowView({
     const hasContactAvailable = Boolean(contactPage || facebook || phone);
     return {
       id: String(payload.id || options?.fallbackId || `local-${Date.now()}`),
-      source,
-      isLocalOnly: source !== "server",
+      record_origin,
+      isLocalOnly: record_origin !== "server",
       workspace_id: String(payload.workspace_id || "").trim() || null,
       related_case_id: null,
       lead_source: String(payload.lead_source || "").trim() || "manual",
+      source: String(payload.source || "").trim() || null,
       opportunity_id: null,
       business_name: String(payload.business_name || "").trim() || "Untitled business",
       category: String(payload.category || payload.industry || "").trim() || null,
@@ -483,7 +491,7 @@ export function LeadsWorkflowView({
     const optimisticId = `optimistic-${Date.now()}`;
     const optimisticLead = toWorkflowLeadFromPayload(payload, {
       fallbackId: optimisticId,
-      source: "optimistic",
+      record_origin: "optimistic",
     });
     console.info("[LeadsWorkflowView] Add Lead save start", { optimistic_id: optimisticId, payload });
     setOptimisticLeads((prev) => [optimisticLead, ...prev.filter((lead) => lead.id !== optimisticId)]);
@@ -507,7 +515,7 @@ export function LeadsWorkflowView({
               : "Unknown backend error";
         const localLead = toWorkflowLeadFromPayload(payload, {
           fallbackId: `local-${Date.now()}`,
-          source: "local",
+          record_origin: "local",
         });
         setLocalFallbackLeads((prev) => {
           const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
@@ -522,13 +530,13 @@ export function LeadsWorkflowView({
           reason: body.reason || null,
           backend_error: backendError,
           local_lead_id: localLead.id,
-          source: localLead.source,
+          record_origin: localLead.record_origin,
         });
         return true;
       }
       const createdLead = toWorkflowLeadFromPayload(body, {
         fallbackId: String(body.id || `created-${Date.now()}`),
-        source: "server",
+        record_origin: "server",
       });
       setLeads((prev) => [createdLead, ...prev.filter((lead) => lead.id !== createdLead.id)]);
       setOptimisticLeads((prev) => prev.filter((lead) => lead.id !== optimisticId));
@@ -541,13 +549,13 @@ export function LeadsWorkflowView({
       setSubmitMessage("Lead added successfully (saved to backend).");
       console.info("[LeadsWorkflowView] Add Lead save succeeded", {
         leadId: createdLead.id,
-        source: createdLead.source,
+        record_origin: createdLead.record_origin,
       });
       return true;
     } catch (error) {
       const localLead = toWorkflowLeadFromPayload(payload, {
         fallbackId: `local-${Date.now()}`,
-        source: "local",
+        record_origin: "local",
       });
       setLocalFallbackLeads((prev) => {
         const next = [localLead, ...prev.filter((lead) => lead.id !== localLead.id)];
@@ -560,7 +568,7 @@ export function LeadsWorkflowView({
       console.info("[LeadsWorkflowView] Add Lead network fallback save used", {
         error: error instanceof Error ? error.message : "unknown_error",
         local_lead_id: localLead.id,
-        source: localLead.source,
+        record_origin: localLead.record_origin,
       });
       return true;
     }
@@ -611,7 +619,7 @@ export function LeadsWorkflowView({
     const payload = toCreatePayload(lead);
     console.info("[LeadsWorkflowView] backend save attempted", {
       lead_id: lead.id,
-      source: lead.source || null,
+      record_origin: lead.record_origin || null,
       payload,
     });
     try {
@@ -638,7 +646,7 @@ export function LeadsWorkflowView({
       }
       const promotedLead = toWorkflowLeadFromPayload(body, {
         fallbackId: String(body.id || lead.id),
-        source: "server",
+        record_origin: "server",
       });
       setLeads((prev) => [promotedLead, ...prev.filter((row) => row.id !== promotedLead.id && row.id !== lead.id)]);
       setLocalFallbackLeads((prev) => {
@@ -1008,7 +1016,7 @@ export function LeadsWorkflowView({
   }
 
   async function navigateToLeadWithGuard(
-    lead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly">,
+    lead: Pick<WorkflowLead, "id" | "business_name" | "record_origin" | "isLocalOnly">,
     query?: string,
     options?: { actionName?: string; showSaveBlockOnPromotionFailure?: boolean }
   ) {
@@ -1016,11 +1024,11 @@ export function LeadsWorkflowView({
     console.info("[LeadsWorkflowView] navigation action clicked", {
       action: actionName,
       lead_id: lead.id,
-      source: lead.source || "server",
+      record_origin: lead.record_origin || "server",
       is_local_only: Boolean(lead.isLocalOnly),
       query: query || null,
     });
-    let resolvedLead: Pick<WorkflowLead, "id" | "business_name" | "source" | "isLocalOnly"> = lead;
+    let resolvedLead: Pick<WorkflowLead, "id" | "business_name" | "record_origin" | "isLocalOnly"> = lead;
     if (isLocalOnlyLead(lead)) {
       const candidate = mergedLeads.find((entry) => entry.id === lead.id);
       if (!candidate) {
@@ -1107,7 +1115,7 @@ export function LeadsWorkflowView({
     if (typeof window !== "undefined") window.location.assign(destination);
   }
 
-  async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id" | "source" | "isLocalOnly">) {
+  async function openPreviewWithGuard(lead: Pick<WorkflowLead, "id" | "record_origin" | "isLocalOnly">) {
     let resolvedLead = lead;
     if (isLocalOnlyLead(lead)) {
       const candidate = mergedLeads.find((entry) => entry.id === lead.id);
@@ -1688,9 +1696,9 @@ export function LeadsWorkflowView({
                 {(() => {
                   const bucket = canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score);
                   const sourceLabel =
-                    lead.source === "local"
+                    lead.record_origin === "local"
                       ? "Local only"
-                      : lead.source === "optimistic"
+                      : lead.record_origin === "optimistic"
                         ? "Saving..."
                         : "Saved";
                   return (
@@ -1908,7 +1916,7 @@ export function LeadsWorkflowView({
                       event.preventDefault();
                       actionDebug("Open Lead clicked", {
                         leadId: lead.id,
-                        source: lead.source || "server",
+                        record_origin: lead.record_origin || "server",
                         isLocalOnly: Boolean(lead.isLocalOnly),
                       });
                       void navigateToLeadWithGuard(lead);
@@ -1922,7 +1930,7 @@ export function LeadsWorkflowView({
                     onClick={() => {
                       actionDebug("Build Sample clicked", {
                         leadId: lead.id,
-                        source: lead.source || "server",
+                        record_origin: lead.record_origin || "server",
                         isLocalOnly: Boolean(lead.isLocalOnly),
                       });
                       void navigateToLeadWithGuard(lead, "sample=1", {
@@ -2275,7 +2283,12 @@ export function LeadsWorkflowView({
                     <td>
                       <span className={`admin-badge ${leadStatusClass(lead.status)}`}>{prettyLeadStatus(lead.status)}</span>
                       <div className="text-[10px] mt-1" style={{ color: "var(--admin-muted)" }}>
-                        Source: {lead.source === "local" ? "local" : lead.source === "optimistic" ? "optimistic" : "server"}
+                        Source:{" "}
+                        {lead.record_origin === "local"
+                          ? "local"
+                          : lead.record_origin === "optimistic"
+                            ? "optimistic"
+                            : "server"}
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {getLeadPriorityBadges({
@@ -2346,7 +2359,7 @@ export function LeadsWorkflowView({
                           onClick={() => {
                             actionDebug("Build Sample clicked", {
                               leadId: lead.id,
-                              source: lead.source || "server",
+                              record_origin: lead.record_origin || "server",
                               isLocalOnly: Boolean(lead.isLocalOnly),
                             });
                             void navigateToLeadWithGuard(lead, "sample=1", {

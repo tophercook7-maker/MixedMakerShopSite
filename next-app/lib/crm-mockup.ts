@@ -425,6 +425,7 @@ export type FunnelFormSnapshot = {
   state: string;
   phone: string;
   email: string;
+  website_url: string;
   facebook_url: string;
   services_text: string;
   template_mode: string;
@@ -469,6 +470,7 @@ export function buildFunnelPublicMockupRow(snapshot: FunnelFormSnapshot): Public
     state: snapshot.state || null,
     phone: snapshot.phone || null,
     email: snapshot.email || null,
+    website: snapshot.website_url || null,
     facebook_url: snapshot.facebook_url || null,
   };
   let tpl = resolveFunnelTemplateChoice(snapshot.template_mode, leadLike);

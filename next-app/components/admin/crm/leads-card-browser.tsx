@@ -6,10 +6,14 @@ import { LeadsListReturnLink } from "@/components/admin/crm/leads-list-return-li
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { buildLeadPath } from "@/lib/lead-route";
-import { leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
+import { leadStatusClass } from "@/components/admin/lead-visuals";
 import { LeadForm } from "@/components/admin/lead-form";
 import { CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
 import { patchLeadApi } from "@/lib/crm/patch-lead-client";
+import { applyWorkflowLeadPatch } from "@/lib/crm/apply-workflow-lead-patch";
+import { simpleLeadStatusLabel } from "@/lib/crm/simple-lead-status-ui";
+import { LeadServiceTypeBadge, resolveServiceTypeForDisplay } from "@/components/admin/crm/lead-service-type-badge";
+import { LeadWorkflowDrawer } from "@/components/admin/crm/lead-workflow-drawer";
 import { addBusinessDaysIso } from "@/lib/crm/business-days";
 import {
   formatLeadSourceBadge,
@@ -51,20 +55,21 @@ import { ThreeDPrintKanban } from "@/components/admin/crm/three-d-print-kanban";
 import { ThreeDPrintLeadsList } from "@/components/admin/crm/three-d-print-leads-list";
 import { ThreeDPrintRequestsTable } from "@/components/admin/crm/three-d-print-requests-table";
 import { QuotedPaymentRequestModal } from "@/components/admin/crm/quoted-payment-request-modal";
-import {
-  extractPrintRequestDescription,
-  mapPrintPipelineToLeadStatus,
-  printLastActivityMs,
-  THREE_D_PRINT_PIPELINE_FILTER_TABS,
-  type ThreeDPrintPipelineStatus,
-} from "@/lib/crm/three-d-print-lead";
+import { extractPrintRequestDescription, printLastActivityMs } from "@/lib/crm/three-d-print-lead";
 import {
   PRINT_PAYMENT_VIEW_TABS,
   parsePrintPaymentFilterQuery,
   parsePrintStageQuery,
   printLeadMatchesPaymentFilter,
+  type PrintCrmStageFilter,
   type PrintPaymentViewFilter,
 } from "@/lib/crm/print-dashboard-metrics";
+import {
+  printCrmStageFiltersEqual,
+  printLeadMatchesCrmStageFilter,
+  THREE_D_PRINT_CRM_FILTER_TABS,
+  serializePrintCrmStageFilter,
+} from "@/lib/crm/three-d-print-ui-lanes";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -189,7 +194,7 @@ export function LeadsCardBrowser({
   initialLane = null,
   initialSort = "created",
   initialSourceTab = null,
-  initialPrintPipelineTab = "all",
+  initialPrintStageFilter = { kind: "all" },
   initialPrintPaymentFilter = "all",
   initialNeedsReply = false,
   printCashAppPaymentUrl = null,
@@ -208,7 +213,7 @@ export function LeadsCardBrowser({
   /** From `?crm_source=3d_printing` — 3D print lane */
   initialSourceTab?: SourceFilterTab | null;
   /** From `?print_stage=` — 3D print pipeline column */
-  initialPrintPipelineTab?: "all" | ThreeDPrintPipelineStatus;
+  initialPrintStageFilter?: PrintCrmStageFilter;
   /** From `?print_payment=` — unpaid / deposit / … */
   initialPrintPaymentFilter?: PrintPaymentViewFilter;
   /** From `?needs_reply=1` — inbound / reply queue */
@@ -225,15 +230,15 @@ export function LeadsCardBrowser({
   const [sortKey, setSortKey] = useState<SortKey>(() => initialSort);
   const [hotOnly, setHotOnly] = useState(false);
   const [replyOnly, setReplyOnly] = useState(() => initialNeedsReply === true);
-  const [selected, setSelected] = useState<WorkflowLead | null>(null);
+  const [workflowDrawerLead, setWorkflowDrawerLead] = useState<WorkflowLead | null>(null);
   const [adding, setAdding] = useState(initialAddOpen);
   const [density, setDensity] = useState<"compact" | "detailed">(initialDensity);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [quotedModalLead, setQuotedModalLead] = useState<WorkflowLead | null>(null);
   const [sourceTab, setSourceTab] = useState<SourceFilterTab>(() => initialSourceTab || "all");
-  const [printPipelineTab, setPrintPipelineTab] = useState<"all" | ThreeDPrintPipelineStatus>(
-    () => initialPrintPipelineTab || "all",
+  const [printStageFilter, setPrintStageFilter] = useState<PrintCrmStageFilter>(
+    () => initialPrintStageFilter || { kind: "all" },
   );
   const [printPaymentTab, setPrintPaymentTab] = useState<PrintPaymentViewFilter>(
     () => initialPrintPaymentFilter || "all",
@@ -304,8 +309,17 @@ export function LeadsCardBrowser({
 
   useEffect(() => {
     const stage = parsePrintStageQuery(urlSearch?.get("print_stage"));
-    setPrintPipelineTab(stage);
+    setPrintStageFilter(stage);
   }, [urlSearch?.toString()]);
+
+  const replaceUrlPrintStage = (next: PrintCrmStageFilter) => {
+    const p = new URLSearchParams(urlSearch?.toString() || "");
+    const s = serializePrintCrmStageFilter(next);
+    if (!s) p.delete("print_stage");
+    else p.set("print_stage", s);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  };
 
   useEffect(() => {
     setReplyOnly(String(urlSearch?.get("needs_reply") || "").trim() === "1");
@@ -432,10 +446,7 @@ export function LeadsCardBrowser({
         if (laneTab !== "all" && effectiveCrmLane(l) !== laneTab) return false;
         if (sourceTabEffective === "three_d_printing") {
           if (printPaymentTab !== "all" && !printLeadMatchesPaymentFilter(l, printPaymentTab)) return false;
-          if (printPipelineTab !== "all") {
-            const p = String(l.print_pipeline_status || "new").toLowerCase();
-            if (p !== printPipelineTab) return false;
-          }
+          if (printStageFilter.kind !== "all" && !printLeadMatchesCrmStageFilter(l, printStageFilter)) return false;
           const tf = printTagFilter.trim().toLowerCase();
           if (tf) {
             const tags = (l.print_tags || []).map((t) => String(t).toLowerCase());
@@ -495,11 +506,16 @@ export function LeadsCardBrowser({
     hotOnly,
     replyOnly,
     laneTab,
-    printPipelineTab,
+    printStageFilter,
     printPaymentTab,
     printTagFilter,
     printActivityFilter,
   ]);
+
+  const mergeWorkflowPatch = (leadId: string, patch: Record<string, unknown>) => {
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? applyWorkflowLeadPatch(l, patch) : l)));
+    setWorkflowDrawerLead((cur) => (cur && cur.id === leadId ? applyWorkflowLeadPatch(cur, patch) : cur));
+  };
 
   const patchLead = async (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => {
     setBusyId(leadId);
@@ -511,33 +527,7 @@ export function LeadsCardBrowser({
     }
     setToast(okMsg);
     if (log) void logAutomation(leadId, log, {});
-    setLeads((prev) =>
-      prev.map((l) => {
-        if (l.id !== leadId) return l;
-        const next = { ...l } as WorkflowLead;
-        if (typeof patch.status === "string") next.status = patch.status as WorkflowLead["status"];
-        if ("next_follow_up_at" in patch) next.next_follow_up_at = String(patch.next_follow_up_at || "") || null;
-        if (patch.automation_paused === true) (next as { automation_paused?: boolean }).automation_paused = true;
-        if (typeof patch.last_reply_preview === "string")
-          next.last_reply_preview = String(patch.last_reply_preview || "").trim() || null;
-        if (typeof patch.last_reply_at === "string")
-          (next as { last_reply_at?: string | null }).last_reply_at = String(patch.last_reply_at || "").trim() || null;
-        if (typeof patch.unread_reply_count === "number" && Number.isFinite(patch.unread_reply_count)) {
-          next.unread_reply_count = Math.max(0, patch.unread_reply_count);
-        }
-        if (Object.prototype.hasOwnProperty.call(patch, "print_pipeline_status")) {
-          const pp = patch.print_pipeline_status;
-          next.print_pipeline_status =
-            pp === null || pp === undefined ? null : String(pp || "").trim() || null;
-          if (!Object.prototype.hasOwnProperty.call(patch, "status")) {
-            next.status = mapPrintPipelineToLeadStatus(
-              pp === null || pp === undefined ? null : String(pp),
-            ) as WorkflowLead["status"];
-          }
-        }
-        return next;
-      })
-    );
+    mergeWorkflowPatch(leadId, patch);
     router.refresh();
   };
 
@@ -884,14 +874,19 @@ export function LeadsCardBrowser({
         <div className="space-y-2 rounded-xl border border-violet-500/35 bg-black/15 p-3">
           <p className="text-[10px] font-bold uppercase tracking-wide text-violet-200/90">3D print pipeline</p>
           <div className="flex flex-wrap gap-2">
-            {THREE_D_PRINT_PIPELINE_FILTER_TABS.map((t) => (
+            {THREE_D_PRINT_CRM_FILTER_TABS.map((t) => (
               <button
-                key={t.id}
+                key={t.label + (t.filter.kind === "ui" ? t.filter.lane : t.filter.kind === "pipeline" ? t.filter.pipeline : "all")}
                 type="button"
                 className={
-                  printPipelineTab === t.id ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs border-violet-500/30"
+                  printCrmStageFiltersEqual(printStageFilter, t.filter)
+                    ? "admin-btn-primary text-xs"
+                    : "admin-btn-ghost text-xs border-violet-500/30"
                 }
-                onClick={() => setPrintPipelineTab(t.id)}
+                onClick={() => {
+                  setPrintStageFilter(t.filter);
+                  replaceUrlPrintStage(t.filter);
+                }}
               >
                 {t.label}
               </button>
@@ -1031,7 +1026,13 @@ export function LeadsCardBrowser({
 
       {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "list" ? (
         <section className="rounded-xl border border-violet-500/25 bg-black/15 p-3">
-          <ThreeDPrintLeadsList leads={filtered} />
+          <ThreeDPrintLeadsList
+            leads={filtered}
+            busyId={busyId}
+            patchLead={patchLead}
+            onOpenWorkflow={(l) => setWorkflowDrawerLead(l)}
+            onQuotedPaymentRequest={(l) => setQuotedModalLead(l)}
+          />
         </section>
       ) : null}
       {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "board" ? (
@@ -1040,6 +1041,7 @@ export function LeadsCardBrowser({
           busyId={busyId}
           patchLead={patchLead}
           onQuotedPaymentRequest={(lead) => setQuotedModalLead(lead)}
+          onOpenWorkflow={(l) => setWorkflowDrawerLead(l)}
         />
       ) : null}
       {sourceTabEffective === "three_d_printing" && filtered.length > 0 && printCrmView === "table" ? (
@@ -1048,6 +1050,7 @@ export function LeadsCardBrowser({
           busyId={busyId}
           patchLead={patchLead}
           onQuotedPaymentRequest={(lead) => setQuotedModalLead(lead)}
+          onOpenWorkflow={(l) => setWorkflowDrawerLead(l)}
         />
       ) : null}
 
@@ -1111,13 +1114,27 @@ export function LeadsCardBrowser({
                     type="button"
                     className="text-left font-semibold text-sm leading-tight hover:underline"
                     style={{ color: "var(--admin-fg)" }}
-                    onClick={() => setSelected(lead)}
+                    onClick={() => setWorkflowDrawerLead(lead)}
                   >
                     {lead.business_name}
                   </button>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
-                    {prettyLeadStatus(lead.status)}
+                    {simpleLeadStatusLabel({
+                      status: lead.status,
+                      next_follow_up_at: lead.next_follow_up_at,
+                      first_outreach_sent_at: lead.first_outreach_sent_at,
+                    })}
                   </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <LeadServiceTypeBadge
+                    serviceType={resolveServiceTypeForDisplay({
+                      service_type: lead.service_type,
+                      lead_source: lead.lead_source,
+                      source: lead.source,
+                      lead_tags: lead.lead_tags,
+                    })}
+                  />
                 </div>
                 <p className="text-[10px] leading-snug opacity-90" style={{ color: "var(--admin-muted)" }}>
                   {folderBucketLine(lead)}
@@ -1214,6 +1231,16 @@ export function LeadsCardBrowser({
                           Open
                         </LeadsListReturnLink>
                       ) : null}
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setWorkflowDrawerLead(lead);
+                        }}
+                      >
+                        Workflow
+                      </button>
                     </>
                   ) : (
                     <>
@@ -1269,17 +1296,11 @@ export function LeadsCardBrowser({
                             void createReplyReminder(lead.id, lead.business_name || "Lead");
                             void logAutomation(lead.id, "mark_replied", {});
                             setToast("Marked as replied.");
-                            setLeads((prev) =>
-                              prev.map((l) =>
-                                l.id === lead.id
-                                  ? ({
-                                      ...l,
-                                      status: "replied",
-                                      unread_reply_count: Math.max(0, Number(lead.unread_reply_count || 0)) + 1,
-                                    } as WorkflowLead)
-                                  : l
-                              )
-                            );
+                            const repliedPatch = buildMarkLeadRepliedPatch({
+                              currentUnread: lead.unread_reply_count,
+                              alreadyReplied: false,
+                            });
+                            mergeWorkflowPatch(lead.id, repliedPatch);
                             router.refresh();
                           }}
                         >
@@ -1300,6 +1321,16 @@ export function LeadsCardBrowser({
                         }}
                       >
                         Follow up
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs px-2 py-1.5 border border-[var(--admin-border)]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setWorkflowDrawerLead(lead);
+                        }}
+                      >
+                        Workflow
                       </button>
                       <PromoteToTopPicksButton
                         leadId={lead.id}
@@ -1335,7 +1366,7 @@ export function LeadsCardBrowser({
                   <button
                     type="button"
                     className="text-left"
-                    onClick={() => setSelected(lead)}
+                    onClick={() => setWorkflowDrawerLead(lead)}
                   >
                     <p className="font-semibold text-base" style={{ color: "var(--admin-fg)" }}>
                       {lead.business_name}
@@ -1346,8 +1377,22 @@ export function LeadsCardBrowser({
                     </p>
                   </button>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
-                    {prettyLeadStatus(lead.status)}
+                    {simpleLeadStatusLabel({
+                      status: lead.status,
+                      next_follow_up_at: lead.next_follow_up_at,
+                      first_outreach_sent_at: lead.first_outreach_sent_at,
+                    })}
                   </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <LeadServiceTypeBadge
+                    serviceType={resolveServiceTypeForDisplay({
+                      service_type: lead.service_type,
+                      lead_source: lead.lead_source,
+                      source: lead.source,
+                      lead_tags: lead.lead_tags,
+                    })}
+                  />
                 </div>
                 <p className="text-[10px] mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
                   {folderBucketLine(lead)}
@@ -1461,6 +1506,13 @@ export function LeadsCardBrowser({
                           Open
                         </LeadsListReturnLink>
                       ) : null}
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                        onClick={() => setWorkflowDrawerLead(lead)}
+                      >
+                        Workflow
+                      </button>
                     </>
                   ) : (
                     <>
@@ -1507,17 +1559,11 @@ export function LeadsCardBrowser({
                             void createReplyReminder(lead.id, lead.business_name || "Lead");
                             void logAutomation(lead.id, "mark_replied", {});
                             setToast("Marked as replied.");
-                            setLeads((prev) =>
-                              prev.map((l) =>
-                                l.id === lead.id
-                                  ? ({
-                                      ...l,
-                                      status: "replied",
-                                      unread_reply_count: Math.max(0, Number(lead.unread_reply_count || 0)) + 1,
-                                    } as WorkflowLead)
-                                  : l
-                              )
-                            );
+                            const repliedPatchDetailed = buildMarkLeadRepliedPatch({
+                              currentUnread: lead.unread_reply_count,
+                              alreadyReplied: false,
+                            });
+                            mergeWorkflowPatch(lead.id, repliedPatchDetailed);
                             router.refresh();
                           }}
                         >
@@ -1539,6 +1585,13 @@ export function LeadsCardBrowser({
                       >
                         Follow up
                       </button>
+                      <button
+                        type="button"
+                        className="admin-btn-ghost text-xs border border-[var(--admin-border)]"
+                        onClick={() => setWorkflowDrawerLead(lead)}
+                      >
+                        Workflow
+                      </button>
                       <PromoteToTopPicksButton
                         leadId={lead.id}
                         initialTags={lead.lead_tags}
@@ -1554,78 +1607,13 @@ export function LeadsCardBrowser({
         </div>
       )}
 
-      {selected ? (
-        <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/60"
-          role="dialog"
-          aria-modal
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="w-full max-w-lg h-full overflow-y-auto admin-card rounded-none border-l"
-            style={{ borderColor: "var(--admin-border)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <h2 className="text-lg font-bold" style={{ color: "var(--admin-fg)" }}>
-                {selected.business_name}
-              </h2>
-              <button type="button" className="admin-btn-ghost text-xs" onClick={() => setSelected(null)}>
-                Close
-              </button>
-            </div>
-            <p className="text-xs mb-4" style={{ color: "var(--admin-muted)" }}>
-              Scores, full notes, and outreach tools are on the workspace page.
-            </p>
-            <dl className="space-y-2 text-sm" style={{ color: "var(--admin-muted)" }}>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Status</dt>
-                <dd className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${leadStatusClass(selected.status)}`}>
-                  {prettyLeadStatus(selected.status)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Why they’re here</dt>
-                <dd style={{ color: "var(--admin-fg)" }} className="mt-1">
-                  {opportunityLine(selected)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Contact</dt>
-                <dd style={{ color: "var(--admin-fg)" }} className="mt-1">
-                  {selected.known_owner_name || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Email / Phone</dt>
-                <dd style={{ color: "var(--admin-fg)" }} className="mt-1">
-                  {selected.email || "—"} · {selected.phone_from_site || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Website</dt>
-                <dd style={{ color: "var(--admin-fg)" }} className="mt-1 break-all">
-                  {selected.website || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide">Notes</dt>
-                <dd style={{ color: "var(--admin-fg)" }} className="mt-1 whitespace-pre-wrap">
-                  {(selected.notes || []).join("\n") || "—"}
-                </dd>
-              </div>
-            </dl>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <LeadsListReturnLink href={buildLeadPath(selected.id, selected.business_name)} className="admin-btn-primary text-sm">
-                Open workspace
-              </LeadsListReturnLink>
-              <Link href={`/admin/conversations?leadId=${encodeURIComponent(selected.id)}`} className="admin-btn-ghost text-sm">
-                Conversation
-              </Link>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <LeadWorkflowDrawer
+        lead={workflowDrawerLead}
+        open={Boolean(workflowDrawerLead)}
+        onClose={() => setWorkflowDrawerLead(null)}
+        onLeadUpdated={mergeWorkflowPatch}
+        onRequestPrintQuoteModal={(l) => setQuotedModalLead(l)}
+      />
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function PrintingSection({
     <section
       id={id}
       className={cn(
-        "relative isolate py-[5.25rem] md:py-[7.25rem] lg:py-[8.5rem]",
+        "relative isolate py-20 md:py-28 lg:py-[8.5rem]",
         divider && "border-b border-white/[0.06]",
         className
       )}
@@ -52,13 +52,13 @@ export function PrintingSectionHeader({
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-[1.7rem] font-bold leading-[1.12] tracking-[-0.035em] text-white sm:text-[1.85rem] md:text-[2.2rem] lg:text-[2.5rem] lg:leading-[1.1] [text-shadow:0_1px_40px_rgba(0,0,0,0.35)]">
+      <h2 className="text-3xl font-semibold leading-[1.1] tracking-[-0.03em] text-white sm:text-[1.95rem] md:text-4xl lg:text-[2.75rem] lg:leading-[1.08] [text-shadow:0_1px_40px_rgba(0,0,0,0.35)]">
         {title}
       </h2>
       {subtitle ? (
         <p
           className={cn(
-            "mt-5 max-w-[44rem] text-[0.9375rem] leading-[1.65] text-white/50 md:mt-6 md:text-base md:leading-[1.7]",
+            "mt-5 max-w-[44rem] text-base leading-[1.65] text-white/55 md:mt-6 md:text-[1.0625rem] md:leading-[1.7]",
             align === "center" ? "mx-auto" : ""
           )}
         >

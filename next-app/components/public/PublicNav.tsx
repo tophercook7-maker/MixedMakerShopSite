@@ -38,7 +38,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Custom 3D printing &amp; web design</strong>
+              <strong>Web design &amp; 3D printing</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -51,22 +51,19 @@ export function PublicNav() {
             Home
           </Link>
           <Link href="/web-design" className="pill">
-            Work With Topher
-          </Link>
-          <Link href="/website-samples" className="pill">
-            Website Samples
-          </Link>
-          <Link href="/offer" className="pill">
-            Website + SEO Offer
+            Web Design
           </Link>
           <Link href="/3d-printing" className="pill">
             3D Printing
           </Link>
-          <Link href="/upload-print" className="pill">
-            Upload Print
+          <Link href="/examples" className="pill">
+            Examples
+          </Link>
+          <Link href="/contact" className="pill">
+            Contact
           </Link>
           <Link href="/free-mockup" className="pill cta">
-            Get My Free Website Preview
+            Free mockup
           </Link>
           <Link href="/auth/login" className="pill pill--muted">
             Admin

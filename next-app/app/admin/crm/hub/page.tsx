@@ -63,6 +63,33 @@ export default function AdminCrmHubPage() {
 
       <CrmAlertsPanel />
 
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
+          Quick workflow views
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/leads" className="admin-btn-ghost text-xs">
+            All leads
+          </Link>
+          <Link href="/admin/leads?follow_up_today=1" className="admin-btn-ghost text-xs">
+            Follow up today
+          </Link>
+          <Link href="/admin/leads?needs_reply=1" className="admin-btn-ghost text-xs">
+            Waiting on reply
+          </Link>
+          <Link href="/admin/leads?crm_source=3d_printing" className="admin-btn-ghost text-xs">
+            3D print leads
+          </Link>
+          <Link href="/admin/print-dashboard" className="admin-btn-ghost text-xs">
+            3D print dashboard
+          </Link>
+        </div>
+        <p className="text-xs mt-3" style={{ color: "var(--admin-muted)" }}>
+          &quot;Follow up today&quot; matches <code className="text-[11px]">next_follow_up_at</code> to today&apos;s UTC
+          date. Refine in lead detail as your workflow evolves.
+        </p>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {crmModules.map(({ title, href, description, icon: Icon }) => (
           <Link key={href} href={href} className="admin-card block transition hover:-translate-y-0.5">

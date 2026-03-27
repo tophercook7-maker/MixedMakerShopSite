@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
-/** Wide editorial max (~1920px cap) + responsive horizontal rhythm */
-export const printingWidthClass = "max-w-[min(100%,120rem)]";
+/** Align with public funnel max width (MixedMakerShop umbrella + web design) */
+export const printingWidthClass = "max-w-[min(100%,87.5rem)]";
 
-export const printingPadClass = "px-5 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-28";
+export const printingPadClass = "px-5 sm:px-8 md:px-10 lg:px-12";
 
 export const printingContentClass = cn("mx-auto w-full", printingWidthClass, printingPadClass);
 

@@ -25,17 +25,19 @@ export const SOURCE_FILTER_OPTIONS: { id: SourceFilterTab; label: string }[] = [
 ];
 
 /**
- * Prefer DB `source` when present; ignore WorkflowLead `source` ("server" | "local" | "optimistic").
- * Falls back to `lead_source`.
+ * Prefer DB `leads.source` when it holds a capture channel (extension, quick_add, …).
+ * For local/optimistic client rows, falls back to `lead_source`.
  */
 export function resolvedCaptureSource(lead: {
   source?: string | null;
+  record_origin?: string | null;
   lead_source?: string | null;
 }): string {
-  const s = String(lead.source || "").trim();
   const l = String(lead.lead_source || "").trim();
-  if (s === "server" || s === "local" || s === "optimistic") return l;
-  if (s) return s;
+  const db = String(lead.source || "").trim();
+  const ro = String(lead.record_origin || "").trim();
+  if (ro === "local" || ro === "optimistic") return l || db;
+  if (db) return db;
   return l;
 }
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { PrintingHero } from "@/components/printing/PrintingHero";
+import { PrintingIntakePaths } from "@/components/printing/PrintingIntakePaths";
+import { PrintingExamplesBuckets } from "@/components/printing/PrintingExamplesBuckets";
 import { PrintingRealProblems } from "@/components/printing/PrintingRealProblems";
 import { PrintingWhy } from "@/components/printing/PrintingWhy";
 import { PrintingHow } from "@/components/printing/PrintingHow";
@@ -14,9 +16,9 @@ import {
 } from "@/components/printing/PrintingStickyMobileCta";
 
 export const metadata: Metadata = {
-  title: "Custom 3D Printing | MixedMakerShop",
+  title: "3D Printing & Problem Solving | MixedMakerShop",
   description:
-    "PLA 3D printing in Hot Springs — replacement parts, holders, mounts, organizers, and one-off fixes when something breaks or doesn't exist. Submit a request or browse STL libraries for ideas.",
+    "Custom 3D printing in Hot Springs — files, broken parts, prototypes, and practical solves. Upload a model or describe what you need.",
 };
 
 export default function ThreeDPrintingPage() {
@@ -28,6 +30,8 @@ export default function ThreeDPrintingPage() {
       )}
     >
       <PrintingHero />
+      <PrintingIntakePaths />
+      <PrintingExamplesBuckets />
       <PrintingRealProblems />
       <PrintingWhy />
       <PrintingHow />

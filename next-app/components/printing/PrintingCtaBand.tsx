@@ -39,11 +39,12 @@ export function PrintingCtaBand() {
                   />
                 </div>
                 <div className="max-w-xl lg:max-w-2xl">
-                  <h2 className="text-[1.75rem] font-bold leading-[1.12] tracking-[-0.038em] text-white sm:text-[2.15rem] md:text-[2.5rem] [text-shadow:0_4px_48px_rgba(0,0,0,0.5)]">
+                  <h2 className="text-[1.85rem] font-semibold leading-[1.1] tracking-[-0.03em] text-white sm:text-[2.15rem] md:text-[2.6rem] md:leading-[1.08] [text-shadow:0_4px_48px_rgba(0,0,0,0.5)]">
                     Got a problem? Let&apos;s build the solution.
                   </h2>
-                  <p className="mt-5 max-w-lg text-[0.96875rem] leading-relaxed text-white/65 md:mt-6 md:text-[1.05rem]">
-                    Send a photo, broken part, sketch, or rough idea and I&apos;ll take a look.
+                  <p className="mt-5 max-w-lg text-base leading-relaxed text-white/65 md:mt-6 md:text-[1.0625rem]">
+                    Send a photo, broken part, STL, sketch, or rough idea — I&apos;ll tell you what&apos;s realistic and
+                    what I&apos;d do next.
                   </p>
                 </div>
               </div>

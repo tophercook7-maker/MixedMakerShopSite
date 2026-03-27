@@ -54,6 +54,7 @@ export function FreeMockupFunnelClient() {
   const [stateUS, setStateUS] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const [facebookUrl, setFacebookUrl] = useState("");
   const [servicesText, setServicesText] = useState("");
   const [templateMode, setTemplateMode] = useState("auto");
@@ -85,6 +86,7 @@ export function FreeMockupFunnelClient() {
       state: stateUS,
       phone,
       email,
+      website_url: websiteUrl,
       facebook_url: facebookUrl,
       services_text: servicesText,
       template_mode: templateMode,
@@ -102,6 +104,7 @@ export function FreeMockupFunnelClient() {
       stateUS,
       phone,
       email,
+      websiteUrl,
       facebookUrl,
       servicesText,
       templateMode,
@@ -129,13 +132,16 @@ export function FreeMockupFunnelClient() {
     setError(null);
     const cn = contactName.trim();
     const em = submitEmail.trim();
-    const ph = submitPhone.trim();
     if (!cn) {
       setError("Please enter your name.");
       return;
     }
-    if (!em && !ph) {
-      setError("Add an email or phone so we can save your preview and follow up.");
+    if (!em) {
+      setError("Add your email so we can save your preview and follow up.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      setError("Please enter a valid email.");
       return;
     }
     setLoading(true);
@@ -145,8 +151,11 @@ export function FreeMockupFunnelClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contact_name: cn,
-          email: em || undefined,
-          phone: ph || undefined,
+          email: em,
+          business_email: email.trim() || undefined,
+          business_phone: phone.trim() || undefined,
+          phone: submitPhone.trim() || undefined,
+          website_url: websiteUrl.trim() || undefined,
           business_name: businessName.trim(),
           category: category.trim(),
           city: city.trim(),
@@ -209,7 +218,7 @@ export function FreeMockupFunnelClient() {
             If you entered an email, we&apos;ve sent your link there too (check spam just in case).
           </p>
           <Link href="/web-design" className="btn ghost">
-            Learn about working with Topher
+            Web design services
           </Link>
         </div>
       </div>
@@ -222,6 +231,9 @@ export function FreeMockupFunnelClient() {
         <div className="free-mockup-funnel-form card" style={{ padding: "20px 18px" }}>
           <p className="text-sm font-semibold" style={{ marginBottom: 12 }}>
             Your business
+          </p>
+          <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 14 }}>
+            Details here only power your sample preview — not a contract, not a mailing list signup.
           </p>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             Business name *
@@ -279,7 +291,7 @@ export function FreeMockupFunnelClient() {
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Email (optional — shows on preview)
+            Email for the preview only (optional)
             <input
               className="form-input mt-1 w-full"
               type="email"
@@ -288,8 +300,20 @@ export function FreeMockupFunnelClient() {
               placeholder="you@business.com"
             />
           </label>
+          <p className="small" style={{ color: "var(--muted)", marginTop: -10, marginBottom: 12 }}>
+            If you add it, it can appear on the preview card — not the same as the email below for saving your link.
+          </p>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Facebook URL (optional)
+            Website (optional)
+            <input
+              className="form-input mt-1 w-full"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="yourbusiness.com"
+            />
+          </label>
+          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+            Facebook page (optional)
             <input
               className="form-input mt-1 w-full"
               value={facebookUrl}
@@ -298,12 +322,12 @@ export function FreeMockupFunnelClient() {
             />
           </label>
           <label className="block text-xs mb-4" style={{ color: "var(--muted)" }}>
-            Services (optional — one per line or comma-separated)
+            What do you need help with? (optional)
             <textarea
               className="form-textarea mt-1 w-full min-h-[72px]"
               value={servicesText}
               onChange={(e) => setServicesText(e.target.value)}
-              placeholder="Driveway washing&#10;House washing&#10;Deck cleaning"
+              placeholder="e.g. better Google visibility, new landing page, clearer calls-to-action…"
             />
           </label>
 
@@ -410,7 +434,8 @@ export function FreeMockupFunnelClient() {
               Save your preview
             </p>
             <p className="small" style={{ color: "var(--muted)", marginBottom: 12 }}>
-              Required to get a shareable link. You can explore the preview first — fill this when you&apos;re ready.
+              To get a shareable link, add your name and the email you check most often — that&apos;s the main channel for
+              your preview link and follow-up. You can play with the preview first and fill this when you&apos;re ready.
             </p>
             <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
               Your name *
@@ -422,17 +447,21 @@ export function FreeMockupFunnelClient() {
               />
             </label>
             <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-              Email (for your link)
+              Email <span style={{ color: "#f87171" }}>*</span> — where we&apos;ll send your link
               <input
                 className="form-input mt-1 w-full"
                 type="email"
                 value={submitEmail}
                 onChange={(e) => setSubmitEmail(e.target.value)}
                 placeholder="you@gmail.com"
+                required
               />
             </label>
+            <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 10 }}>
+              Replies and next steps go to this address first — keep it one you actually read.
+            </p>
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-              Or phone
+              Phone (optional)
               <input
                 className="form-input mt-1 w-full"
                 value={submitPhone}
@@ -440,9 +469,6 @@ export function FreeMockupFunnelClient() {
                 placeholder="(501) 555-0199"
               />
             </label>
-            <p className="small" style={{ color: "var(--muted)", margin: "-6px 0 12px" }}>
-              We need at least one: email or phone.
-            </p>
             {error ? (
               <p className="small" style={{ color: "#f87171", marginBottom: 10 }}>
                 {error}

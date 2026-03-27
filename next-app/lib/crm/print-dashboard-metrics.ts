@@ -640,12 +640,11 @@ export function formatDashboardUsd(n: number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 }
 
-export function parsePrintStageQuery(raw: string | null | undefined): "all" | ThreeDPrintPipelineStatus {
-  const k = String(raw || "").toLowerCase().trim();
-  if (!k) return "all";
-  if ((THREE_D_PRINT_PIPELINE_ORDER as readonly string[]).includes(k)) return k as ThreeDPrintPipelineStatus;
-  return "all";
-}
+export type { PrintCrmStageFilter } from "@/lib/crm/three-d-print-ui-lanes";
+export {
+  parsePrintCrmStageQuery as parsePrintStageQuery,
+  serializePrintCrmStageFilter as serializePrintStageQuery,
+} from "@/lib/crm/three-d-print-ui-lanes";
 
 export type PrintPaymentViewFilter =
   | "all"

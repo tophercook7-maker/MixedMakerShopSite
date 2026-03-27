@@ -44,6 +44,9 @@ function notifyEmail(): string {
 }
 
 function buildMessageBody(opts: {
+  projectTitle: string;
+  referenceUrl: string;
+  materialPreference: string;
   description: string;
   dimensions: string;
   quantity: string;
@@ -59,6 +62,9 @@ function buildMessageBody(opts: {
     `Submitted from: /3d-printing`,
     `Submitted at: ${opts.submittedAtIso}`,
     "",
+    `Project / item: ${opts.projectTitle || "(not provided)"}`,
+    `Reference link: ${opts.referenceUrl || "(not provided)"}`,
+    `Material preference: ${opts.materialPreference || "(not provided)"}`,
     `What they need: ${opts.description}`,
     `Dimensions / size: ${opts.dimensions || "(not provided)"}`,
     `Quantity: ${opts.quantity || "(not provided)"}`,
@@ -82,6 +88,9 @@ function buildOwnerNotifyEmailText(opts: {
   name: string;
   email: string;
   phone: string;
+  projectTitle: string;
+  referenceUrl: string;
+  materialPreference: string;
   description: string;
   dimensions: string;
   quantity: string;
@@ -134,6 +143,9 @@ function buildOwnerNotifyEmailText(opts: {
       .join("\n") || "  (empty)",
     "",
     "DETAILS",
+    `  Project / item: ${opts.projectTitle || "(not provided)"}`,
+    `  Reference link: ${opts.referenceUrl || "(not provided)"}`,
+    `  Material preference: ${opts.materialPreference || "(not provided)"}`,
     `  Dimensions / size: ${opts.dimensions || "(not provided)"}`,
     `  Quantity: ${opts.quantity || "(not provided)"}`,
     `  Deadline: ${opts.deadline || "(not provided)"}`,
@@ -155,6 +167,9 @@ async function sendOwnerNotifyEmail(opts: {
   replyTo: string | null;
   phone: string;
   email: string;
+  projectTitle: string;
+  referenceUrl: string;
+  materialPreference: string;
   description: string;
   dimensions: string;
   quantity: string;
@@ -181,6 +196,9 @@ async function sendOwnerNotifyEmail(opts: {
     name: opts.name,
     email: opts.email,
     phone: opts.phone,
+    projectTitle: opts.projectTitle,
+    referenceUrl: opts.referenceUrl,
+    materialPreference: opts.materialPreference,
     description: opts.description,
     dimensions: opts.dimensions,
     quantity: opts.quantity,
@@ -295,6 +313,9 @@ export async function POST(request: Request) {
   const name = String(form.get("name") || "").trim();
   const emailRaw = String(form.get("email") || "").trim();
   const phone = String(form.get("phone") || "").trim();
+  const projectTitle = String(form.get("project_title") || "").trim();
+  const referenceUrl = String(form.get("reference_url") || "").trim();
+  const materialPreference = String(form.get("material_preference") || "").trim();
   const description = String(form.get("description") || "").trim();
   const dimensions = String(form.get("dimensions") || "").trim();
   const quantity = String(form.get("quantity") || "").trim();
@@ -306,17 +327,23 @@ export async function POST(request: Request) {
   const pricingEstimateFallback =
     !estimateDetailsBlock && pricingEstimateRaw ? pricingEstimateRaw : null;
   const file = form.get("file");
+  const hasProvidedAttachment = file instanceof File && file.size > 0;
 
   if (!name) {
     return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
   }
-  if (!description) {
-    return NextResponse.json({ error: "Please describe what you need." }, { status: 400 });
+  if (!description && !hasProvidedAttachment) {
+    return NextResponse.json(
+      { error: "Please add a short description or upload a photo / 3D file." },
+      { status: 400 },
+    );
   }
-  if (!emailRaw && !phone) {
-    return NextResponse.json({ error: "Please enter an email or a phone number." }, { status: 400 });
+  const descriptionForOutbound =
+    description || "See uploaded attachment — no written description provided.";
+  if (!emailRaw) {
+    return NextResponse.json({ error: "Please enter your email so I can reply." }, { status: 400 });
   }
-  if (emailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw)) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
   }
 
@@ -375,7 +402,10 @@ export async function POST(request: Request) {
   const submittedAtIso = new Date().toISOString();
 
   const messageBody = buildMessageBody({
-    description,
+    projectTitle,
+    referenceUrl,
+    materialPreference,
+    description: descriptionForOutbound,
     dimensions,
     quantity,
     deadline,
@@ -417,18 +447,19 @@ export async function POST(request: Request) {
   }
 
   let newLeadId: string | null = null;
-  const autoPrintTags = deriveThreeDPrintAutoTags(description);
-  const requestSummaryOneLine = summarizePrintRequestDescription(description, 280);
+  const autoPrintTags = deriveThreeDPrintAutoTags(descriptionForOutbound);
+  const requestSummaryOneLine = summarizePrintRequestDescription(descriptionForOutbound, 280);
 
   if (ownerId) {
     const leadPayload = pickLeadInsertFields({
-      business_name: `3D Print Quote — ${name}`,
+      business_name: projectTitle ? `${projectTitle} — ${name}` : `3D Print Quote — ${name}`,
       contact_name: name,
       email: emailRaw || null,
       phone: phone || null,
       notes: messageBody,
       source: "3d_printing",
       lead_source: "3d_printing",
+      service_type: "3d_printing",
       category: "print_request",
       source_label: "/3d-printing",
       source_url: sourceUrl,
@@ -437,6 +468,7 @@ export async function POST(request: Request) {
       print_pipeline_status: "new",
       print_request_type: printRequestTypeFromEstimator(parsedEstimate),
       print_tags: autoPrintTags,
+      print_material: materialPreference || null,
       print_dimensions: dimensions || null,
       print_quantity: quantity || null,
       print_deadline: deadline || null,
@@ -484,7 +516,10 @@ export async function POST(request: Request) {
     replyTo: emailRaw || null,
     phone,
     email: emailRaw,
-    description,
+    projectTitle,
+    referenceUrl,
+    materialPreference,
+    description: descriptionForOutbound,
     dimensions,
     quantity,
     deadline,

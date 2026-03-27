@@ -140,7 +140,7 @@ export function PrintingPriceEstimator({
   return (
     <div className="mb-10 border-b border-white/[0.08] pb-10 md:mb-12 md:pb-12">
       <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-orange-400/85">Ballpark only</p>
-      <h2 className="mt-2 text-[1.35rem] font-bold leading-tight tracking-[-0.032em] text-white sm:text-[1.5rem] [text-shadow:0_2px_24px_rgba(0,0,0,0.4)]">
+      <h2 className="mt-2 text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-[1.5rem] [text-shadow:0_2px_24px_rgba(0,0,0,0.4)]">
         Quick price estimate
       </h2>
       <p className="mt-2 text-[0.875rem] leading-relaxed text-white/50">

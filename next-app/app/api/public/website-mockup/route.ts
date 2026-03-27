@@ -8,6 +8,16 @@ import {
 } from "@/lib/crm-mockup";
 import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
 
+function normalizeWebsiteUrl(raw: string): string | null {
+  const t = String(raw || "").trim();
+  if (!t) return null;
+  try {
+    return new URL(t.startsWith("http") ? t : `https://${t}`).toString();
+  } catch {
+    return t;
+  }
+}
+
 function requestOrigin(request: Request): string {
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
   const proto = request.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
@@ -15,44 +25,44 @@ function requestOrigin(request: Request): string {
   return String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
 }
 
-const bodySchema = z
-  .object({
-    contact_name: z.string().min(1, "Name is required"),
-    email: z.string().optional(),
-    phone: z.string().optional(),
-    business_name: z.string().min(1, "Business name is required"),
-    category: z.string().min(1, "Category is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().optional(),
-    facebook_url: z.string().optional(),
-    services_text: z.string().optional(),
-    template_mode: z.string().optional(),
-    headline_override: z.string().optional(),
-    subheadline_override: z.string().optional(),
-    cta_override: z.string().optional(),
-    style_preset: z.string().optional(),
-    color_preset: z.string().optional(),
-    hero_preset: z.string().optional(),
-  })
-  .superRefine((v, ctx) => {
-    const em = String(v.email || "").trim();
-    const ph = String(v.phone || "").trim();
-    if (!em && !ph) {
-      ctx.addIssue({ code: "custom", message: "Add an email or phone so we can send your preview.", path: ["email"] });
-    }
-    if (em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-      ctx.addIssue({ code: "custom", message: "Please enter a valid email.", path: ["email"] });
-    }
-  });
+const bodySchema = z.object({
+  contact_name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email."),
+  /** Optional email shown on the sample preview; defaults to `email` when omitted */
+  business_email: z.string().optional(),
+  /** Submitter / follow-up phone (optional) */
+  phone: z.string().optional(),
+  /** Phone shown on the sample preview (optional) — kept distinct from submitter phone */
+  business_phone: z.string().optional(),
+  business_name: z.string().min(1, "Business name is required"),
+  category: z.string().min(1, "Category is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().optional(),
+  website_url: z.string().optional(),
+  facebook_url: z.string().optional(),
+  services_text: z.string().optional(),
+  template_mode: z.string().optional(),
+  headline_override: z.string().optional(),
+  subheadline_override: z.string().optional(),
+  cta_override: z.string().optional(),
+  style_preset: z.string().optional(),
+  color_preset: z.string().optional(),
+  hero_preset: z.string().optional(),
+});
 
 function toSnapshot(parsed: z.infer<typeof bodySchema>): FunnelFormSnapshot {
+  const submitPhone = String(parsed.phone || "").trim();
+  const businessPhone = String(parsed.business_phone || "").trim();
+  const submitEmail = String(parsed.email || "").trim();
+  const businessEmail = String(parsed.business_email || "").trim();
   return {
     business_name: parsed.business_name.trim(),
     category: parsed.category.trim(),
     city: parsed.city.trim(),
     state: String(parsed.state || "").trim(),
-    phone: String(parsed.phone || "").trim(),
-    email: String(parsed.email || "").trim(),
+    phone: businessPhone || submitPhone,
+    email: businessEmail || submitEmail,
+    website_url: String(parsed.website_url || "").trim(),
     facebook_url: String(parsed.facebook_url || "").trim(),
     services_text: String(parsed.services_text || ""),
     template_mode: String(parsed.template_mode || "auto").trim() || "auto",
@@ -125,6 +135,10 @@ export async function POST(request: Request) {
   const slug = generateMockupSlug();
   const origin = requestOrigin(request);
   const previewUrl = `${origin.replace(/\/$/, "")}/mockup/${encodeURIComponent(slug)}`;
+  const submitPhone = String(parsed.data.phone || "").trim();
+  const submitEmail = String(parsed.data.email || "").trim();
+  const businessPhoneForNotes = String(parsed.data.business_phone || "").trim();
+  const businessEmailForNotes = String(parsed.data.business_email || "").trim();
 
   const supabase = createClient(url, key);
 
@@ -139,6 +153,13 @@ export async function POST(request: Request) {
     "Inbound: website mockup funnel (/free-mockup)",
     `Shareable preview: ${previewUrl}`,
     `Contact: ${parsed.data.contact_name.trim()}`,
+    submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes ? `Submitter phone: ${submitPhone}` : "",
+    submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
+      ? `Business line (preview): ${businessPhoneForNotes}`
+      : "",
+    businessEmailForNotes && businessEmailForNotes.toLowerCase() !== submitEmail.toLowerCase()
+      ? `Preview contact email (on sample): ${businessEmailForNotes}`
+      : "",
     `Template: ${mockRow.template_key}`,
     `Headline: ${mockRow.headline}`,
     `Subheadline: ${mockRow.subheadline}`,
@@ -155,12 +176,14 @@ export async function POST(request: Request) {
     business_name: mockRow.business_name,
     primary_contact_name: parsed.data.contact_name.trim(),
     contact_name: parsed.data.contact_name.trim(),
-    email: snapshot.email || null,
-    phone: snapshot.phone || null,
+    email: submitEmail || null,
+    phone: submitPhone || null,
+    website: normalizeWebsiteUrl(snapshot.website_url),
     category: mockRow.category,
     city: snapshot.city,
     state: snapshot.state || null,
     facebook_url: mockRow.facebook_url,
+    service_type: "web_design",
     source: "mockup_request",
     lead_source: "mockup_request",
     lead_tags: ["inbound", "mockup_request"],
@@ -218,13 +241,11 @@ export async function POST(request: Request) {
     );
   }
 
-  if (snapshot.email) {
-    void sendPreviewEmail({
-      to: snapshot.email,
-      name: parsed.data.contact_name.trim(),
-      previewUrl,
-    });
-  }
+  void sendPreviewEmail({
+    to: submitEmail,
+    name: parsed.data.contact_name.trim(),
+    previewUrl,
+  });
 
   return NextResponse.json({
     ok: true,

@@ -54,6 +54,10 @@ export type LeadRowForWorkflow = {
   unread_reply_count?: number | null;
   /** DB column: canonical capture channel (extension, quick_add, …). */
   source?: string | null;
+  /** Product line: web_design | 3d_printing */
+  service_type?: string | null;
+  first_outreach_message?: string | null;
+  first_outreach_sent_at?: string | null;
   lead_source?: string | null;
   source_url?: string | null;
   source_label?: string | null;
@@ -178,11 +182,12 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
 
   return {
     id: String(row.id || ""),
-    source: "server",
+    record_origin: "server",
     isLocalOnly: false,
     workspace_id: String(row.workspace_id || "").trim() || null,
     related_case_id: null,
     lead_source: String(resolvedCaptureSource(row) || "").trim() || null,
+    source: String(row.source || "").trim() || null,
     source_url: String(row.source_url || "").trim() || null,
     source_label: String(row.source_label || "").trim() || null,
     opportunity_id: null,
@@ -282,6 +287,9 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
         ? row.last_outreach_status
         : null,
     last_outreach_sent_at: String(row.last_outreach_sent_at || "").trim() || null,
+    service_type: String(row.service_type || "").trim() || null,
+    first_outreach_message: String(row.first_outreach_message || "").trim() || null,
+    first_outreach_sent_at: String(row.first_outreach_sent_at || "").trim() || null,
     preview_sent: Boolean(row.preview_sent),
     email_sent: Boolean(row.email_sent),
     facebook_sent: Boolean(row.facebook_sent),

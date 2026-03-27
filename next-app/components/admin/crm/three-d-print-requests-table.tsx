@@ -11,12 +11,16 @@ import {
   PRINT_PAYMENT_REQUEST_LABELS,
   PRINT_PAYMENT_STATUS_LABELS,
 } from "@/lib/crm/print-payment";
+import { isFollowUpDueTodayUtc } from "@/lib/crm/simple-lead-status-ui";
+import { LeadServiceTypeBadge } from "@/components/admin/crm/lead-service-type-badge";
 import {
-  normalizePrintPipelineStatus,
-  printLastActivityMs,
-  PRINT_PIPELINE_QUICK_ACTIONS,
-  THREE_D_PRINT_PIPELINE_LABELS,
-} from "@/lib/crm/three-d-print-lead";
+  buildPrintQuickActionPatch,
+  PRINT_QUICK_ACTION_BUTTONS,
+  type PrintQuickActionId,
+  suggestedPrintQuickActions,
+} from "@/lib/crm/three-d-print-quick-actions";
+import { normalizePrintPipelineStatus, printLastActivityMs } from "@/lib/crm/three-d-print-lead";
+import { resolvePrintUiLane, THREE_D_PRINT_UI_LANE_LABELS } from "@/lib/crm/three-d-print-ui-lanes";
 
 function displayName(lead: WorkflowLead): string {
   const n = String(lead.known_owner_name || "").trim();
@@ -51,9 +55,11 @@ function fmtActivity(lead: WorkflowLead): string {
   }
 }
 
-function pipelineLabel(lead: WorkflowLead): string {
-  const raw = normalizePrintPipelineStatus(lead.print_pipeline_status);
-  return THREE_D_PRINT_PIPELINE_LABELS[raw];
+function fmtFu(iso: string | null | undefined): string {
+  if (!iso || !String(iso).trim()) return "—";
+  const d = new Date(String(iso));
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, { month: "short", day: "numeric" });
 }
 
 function PaymentMoneyCell({ lead }: { lead: WorkflowLead }) {
@@ -87,17 +93,19 @@ export function ThreeDPrintRequestsTable({
   busyId,
   patchLead,
   onQuotedPaymentRequest,
+  onOpenWorkflow,
 }: {
   leads: WorkflowLead[];
   busyId: string | null;
   patchLead: (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => Promise<void>;
   onQuotedPaymentRequest?: (lead: WorkflowLead) => void;
+  onOpenWorkflow: (lead: WorkflowLead) => void;
 }) {
   if (leads.length === 0) return null;
 
   return (
     <div className="overflow-x-auto rounded-xl border-2 border-violet-500/35 bg-black/20">
-      <table className="w-full min-w-[1040px] border-collapse text-left text-sm">
+      <table className="w-full min-w-[1100px] border-collapse text-left text-sm">
         <thead>
           <tr className="border-b" style={{ borderColor: "var(--admin-border)" }}>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
@@ -110,19 +118,22 @@ export function ThreeDPrintRequestsTable({
               Request
             </th>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
+              Lane
+            </th>
+            <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
+              Next F/U
+            </th>
+            <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
               Tags
             </th>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
               Estimate
             </th>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
-              Status
-            </th>
-            <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
               Payment
             </th>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
-              Last activity
+              Activity
             </th>
             <th className="py-2.5 px-3 font-semibold text-xs uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
               Open
@@ -137,14 +148,38 @@ export function ThreeDPrintRequestsTable({
             const busy = busyId === lead.id;
             const href = buildLeadPath(lead.id, lead.business_name);
             const tags = (lead.print_tags || []).filter(Boolean);
+            const lane = resolvePrintUiLane(lead);
+            const fuToday = isFollowUpDueTodayUtc(lead.next_follow_up_at);
+            const suggested = suggestedPrintQuickActions(lead);
+
+            async function runQuick(id: PrintQuickActionId) {
+              if (
+                id === "mark_reviewed" &&
+                onQuotedPaymentRequest &&
+                normalizePrintPipelineStatus(lead.print_pipeline_status) !== "quoted"
+              ) {
+                onQuotedPaymentRequest(lead);
+                return;
+              }
+              const patch = buildPrintQuickActionPatch(id);
+              const label = PRINT_QUICK_ACTION_BUTTONS.find((b) => b.id === id)?.label ?? id;
+              await patchLead(lead.id, patch, `Print: ${label}`, `print_quick_${id}`);
+            }
+
             return (
               <tr
                 key={lead.id}
-                className="border-b transition hover:bg-violet-500/[0.06]"
+                className={`border-b transition hover:bg-violet-500/[0.06] ${fuToday ? "bg-amber-500/[0.07]" : ""}`}
                 style={{ borderColor: "var(--admin-border)" }}
               >
                 <td className="py-2 px-3 align-top font-medium" style={{ color: "var(--admin-fg)" }}>
-                  {displayName(lead)}
+                  <div className="flex flex-col gap-1">
+                    {fuToday ? (
+                      <span className="text-[9px] font-bold uppercase text-amber-200/95 w-fit">Due today</span>
+                    ) : null}
+                    {displayName(lead)}
+                    <LeadServiceTypeBadge serviceType="3d_printing" />
+                  </div>
                 </td>
                 <td className="py-2 px-3 align-top text-xs max-w-[200px]" style={{ color: "var(--admin-muted)" }}>
                   {contactCell(lead)}
@@ -152,44 +187,42 @@ export function ThreeDPrintRequestsTable({
                 <td className="py-2 px-3 align-top text-xs max-w-[240px]" style={{ color: "var(--admin-fg)" }}>
                   {requestSummary(lead)}
                 </td>
+                <td className="py-2 px-3 align-top text-[11px] font-medium text-violet-200/95 max-w-[140px]">
+                  {THREE_D_PRINT_UI_LANE_LABELS[lane]}
+                  <div className="text-[9px] font-mono opacity-70 mt-0.5">{normalizePrintPipelineStatus(lead.print_pipeline_status)}</div>
+                </td>
+                <td className="py-2 px-3 align-top text-[11px]" style={{ color: "var(--admin-muted)" }}>
+                  {fmtFu(lead.next_follow_up_at)}
+                </td>
                 <td className="py-2 px-3 align-top text-[11px]" style={{ color: "var(--admin-muted)" }}>
                   {tags.length ? tags.join(", ") : "—"}
                 </td>
                 <td className="py-2 px-3 align-top text-[11px] max-w-[160px]" style={{ color: "var(--admin-muted)" }}>
                   {String(lead.print_estimate_summary || "").trim() || "—"}
                 </td>
-                <td className="py-2 px-3 align-top text-[11px] font-medium text-violet-200/95">{pipelineLabel(lead)}</td>
                 <td className="py-2 px-3 align-top max-w-[150px]">
                   <PaymentMoneyCell lead={lead} />
                 </td>
                 <td className="py-2 px-3 align-top text-[11px]" style={{ color: "var(--admin-muted)" }}>
                   {fmtActivity(lead)}
                 </td>
-                <td className="py-2 px-3 align-top">
-                  <Link href={href} className="text-sky-400 hover:underline text-xs font-medium">
-                    Open
+                <td className="py-2 px-3 align-top space-y-1">
+                  <button type="button" className="block text-sky-400 hover:underline text-xs font-medium" onClick={() => onOpenWorkflow(lead)}>
+                    Workflow
+                  </button>
+                  <Link href={href} className="block text-violet-300 hover:underline text-xs font-medium">
+                    Workspace →
                   </Link>
                 </td>
                 <td className="py-2 px-3 align-top">
-                  <div className="flex flex-wrap gap-1 max-w-[280px]">
-                    {PRINT_PIPELINE_QUICK_ACTIONS.map((a) => (
+                  <div className="flex flex-wrap gap-1 max-w-[320px]">
+                    {PRINT_QUICK_ACTION_BUTTONS.filter((b) => suggested.includes(b.id)).map((a) => (
                       <button
-                        key={a.pipeline}
+                        key={a.id}
                         type="button"
                         disabled={busy}
                         className="rounded border border-violet-500/40 px-1.5 py-0.5 text-[10px] font-medium text-violet-100/95 hover:bg-violet-500/20 disabled:opacity-40"
-                        onClick={() => {
-                          if (a.pipeline === "quoted" && onQuotedPaymentRequest) {
-                            onQuotedPaymentRequest(lead);
-                            return;
-                          }
-                          void patchLead(
-                            lead.id,
-                            { print_pipeline_status: a.pipeline },
-                            `Print: ${a.label}`,
-                            `print_pipeline_${String(a.pipeline)}`,
-                          );
-                        }}
+                        onClick={() => void runQuick(a.id)}
                       >
                         {a.label}
                       </button>

@@ -130,12 +130,17 @@ export function PrintingQuoteForm() {
     const fd = new FormData(e.currentTarget);
     const email = String(fd.get("email") || "").trim();
     const phone = String(fd.get("phone") || "").trim();
+    const desc = String(fd.get("description") || "").trim();
     fd.delete("file");
-    if (!email && !phone) {
-      setError("Please enter an email or a phone number.");
+    if (!desc && !file) {
+      setError("Add a short description or upload a photo / 3D file.");
       return;
     }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
+      setError("Please enter your email so I can reply.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -219,10 +224,11 @@ export function PrintingQuoteForm() {
                   <div id={QUOTE_REQUEST_FIELDS_ID} className="scroll-mt-28">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-orange-400/85">Quote</p>
                     <h2 className="mt-3 text-[1.5rem] font-bold leading-tight tracking-[-0.035em] text-white sm:text-[1.65rem] md:text-[1.85rem] [text-shadow:0_2px_32px_rgba(0,0,0,0.45)]">
-                      Get a quote
+                      Send your file or describe what you need
                     </h2>
                     <p className="mt-3 text-[0.875rem] leading-relaxed text-white/55">
-                      Send a photo or describe what you need — I&apos;ll take a look and get back to you.
+                      Upload a file, drop a photo, write a few lines, or do all three — whatever gets the idea across. I
+                      reply by email first.
                     </p>
                   </div>
 
@@ -244,12 +250,13 @@ export function PrintingQuoteForm() {
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
                       <label className={labelClass} htmlFor={`${formId}-email`}>
-                        Email (so I can reply)
+                        Email <span className="text-orange-400/90">*</span>
                       </label>
                       <input
                         id={`${formId}-email`}
                         name="email"
                         type="email"
+                        required
                         autoComplete="email"
                         className={inputClass}
                         placeholder="you@example.com"
@@ -269,27 +276,78 @@ export function PrintingQuoteForm() {
                       />
                     </div>
                   </div>
-                  <p className="-mt-1 text-[0.75rem] text-white/42">
-                    I need at least an email or a phone number so I can reach you.
-                  </p>
+
+                  <div>
+                    <label className={labelClass} htmlFor={`${formId}-project`}>
+                      Project name / item needed
+                    </label>
+                    <input
+                      id={`${formId}-project`}
+                      name="project_title"
+                      type="text"
+                      className={inputClass}
+                      placeholder="e.g. dishwasher wheel bracket, mower chute adapter…"
+                    />
+                  </div>
 
                   <div>
                     <label className={labelClass} htmlFor={`${formId}-desc`}>
-                      What do you need? <span className="text-orange-400/90">*</span>
+                      Describe what you need
+                      {file ? (
+                        <span className="font-normal text-white/45"> (optional — use if you didn&apos;t attach a file)</span>
+                      ) : (
+                        <span className="text-orange-400/90"> *</span>
+                      )}
                     </label>
                     <textarea
                       ref={descriptionRef}
                       id={`${formId}-desc`}
                       name="description"
-                      required
+                      required={!file}
                       rows={4}
                       className={cn(inputClass, "min-h-[7.5rem] resize-y py-3 leading-relaxed")}
-                      placeholder="Example: broken plastic bracket for lawn mower, about 4 inches wide"
+                      placeholder="Problem, size, how it should work, what broke, or what you want to achieve…"
                     />
+                    <p className="mt-2 text-[0.72rem] leading-relaxed text-white/40">
+                      If you only have a sketch or a broken part, a photo in the upload area below often tells the story —
+                      then you can keep this short.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label className={labelClass} htmlFor={`${formId}-material`}>
+                        Material preference (optional)
+                      </label>
+                      <input
+                        id={`${formId}-material`}
+                        name="material_preference"
+                        type="text"
+                        className={inputClass}
+                        placeholder="e.g. standard PLA, prefer black…"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass} htmlFor={`${formId}-ref`}>
+                        Reference link or image URL (optional)
+                      </label>
+                      <input
+                        id={`${formId}-ref`}
+                        name="reference_url"
+                        type="url"
+                        className={inputClass}
+                        placeholder="https://…"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-3">
-                    <p className={labelClass}>Upload a photo</p>
+                    <p className={labelClass}>
+                      Upload a photo or 3D file <span className="font-normal text-white/45">(optional)</span>
+                    </p>
+                    <p className="-mt-1 text-[0.72rem] leading-relaxed text-white/40">
+                      Not required if your description above covers it — many people send both.
+                    </p>
 
                     <input
                       ref={imageInputRef}
