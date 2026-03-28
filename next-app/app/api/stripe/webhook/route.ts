@@ -3,10 +3,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { fulfillPrintCheckoutSession } from "@/lib/stripe/fulfill-print-checkout";
-import {
-  fulfillWorldWatchMembershipCheckout,
-  updateEntitlementBySubscriptionId,
-} from "@/lib/stripe/sync-member-entitlement";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,24 +42,9 @@ function serviceSupabase(): WebhookSupabase | null {
   return createClient(url, key) as WebhookSupabase;
 }
 
-async function markEntitlementCanceled(supabase: WebhookSupabase, sub: Stripe.Subscription): Promise<void> {
-  const now = new Date().toISOString();
-  const { error } = await supabase
-    .from("member_entitlements")
-    .update({
-      subscription_status: "canceled",
-      updated_at: now,
-    })
-    .eq("stripe_subscription_id", sub.id);
-  if (error) {
-    console.warn("[stripe webhook] member_entitlements cancel update", error.message);
-  }
-}
-
 /**
  * Stripe webhook — raw body + Stripe-Signature. Idempotent via stripe_webhook_events.
- * World Watch membership: subscription lifecycle + subscription Checkout.
- * 3D print leads: payment-mode checkout.session.completed.
+ * 3D print leads: payment-mode checkout.session.completed only (see fulfill-print-checkout).
  */
 export async function POST(request: Request) {
   const secret = String(process.env.STRIPE_SECRET_KEY || "").trim();
@@ -107,54 +88,13 @@ export async function POST(request: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode === "subscription") {
-          const wr = await fulfillWorldWatchMembershipCheckout(supabase, stripe, session);
-          if (!wr.ok) {
-            console.error("[stripe webhook] world watch checkout", wr.reason, session.id);
-            return NextResponse.json({ received: false, error: wr.reason }, { status: 500 });
-          }
+          console.info("[stripe webhook] ignoring subscription checkout (not used by this app)", session.id);
           break;
         }
         const print = await fulfillPrintCheckoutSession(supabase, session);
         if (!print.ok && print.reason !== "missing_metadata") {
           console.error("[stripe webhook] print fulfill", print.reason, session.id);
           return NextResponse.json({ received: false, error: print.reason }, { status: 500 });
-        }
-        break;
-      }
-      case "customer.subscription.created":
-      case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
-        try {
-          await updateEntitlementBySubscriptionId(supabase, stripe, sub.id);
-        } catch (e) {
-          console.error("[stripe webhook] subscription sync failed", sub.id, e);
-          return NextResponse.json({ received: false }, { status: 500 });
-        }
-        break;
-      }
-      case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-        await markEntitlementCanceled(supabase, sub);
-        break;
-      }
-      case "invoice.payment_succeeded":
-      case "invoice.payment_failed": {
-        const inv = event.data.object as Stripe.Invoice;
-        const subRef = inv.subscription;
-        const subId = typeof subRef === "string" ? subRef : subRef?.id;
-        if (subId) {
-          try {
-            await updateEntitlementBySubscriptionId(supabase, stripe, subId);
-          } catch (e) {
-            console.error("[stripe webhook] invoice subscription sync", subId, e);
-            return NextResponse.json({ received: false }, { status: 500 });
-          }
-        }
-        if (event.type === "invoice.payment_failed") {
-          console.info("[stripe webhook] invoice.payment_failed", {
-            invoice: inv.id,
-            subscription: subId,
-          });
         }
         break;
       }

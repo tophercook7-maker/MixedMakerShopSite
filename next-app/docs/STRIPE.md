@@ -80,6 +80,6 @@ For end-to-end tests, prefer real test Checkout completes so the session metadat
 
 ## Assumptions
 
-- **One-time payments** only (no subscriptions in this flow).
+- **One-time payments** only (no subscriptions in this flow). If `checkout.session.completed` arrives with `mode: subscription`, the webhook logs and skips it so other products can share the same Stripe account without failing.
 - **USD** line items computed server amounts from lead quote fields (`quoted_amount`, `deposit_amount`, `final_amount`, `price_charged`).
 - Fulfillment sets `payment_method` to `stripe`, `payment_status` to `partially_paid` (deposit) or `paid` + `paid_at` (full).

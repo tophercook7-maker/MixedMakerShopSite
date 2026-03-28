@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { isActiveMember } from "@/lib/auth/isActiveMember";
 import { UmbrellaGateway } from "@/components/public/UmbrellaGateway";
 
 export const metadata: Metadata = {
@@ -21,7 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function HomePage() {
-  const worldWatchMember = await isActiveMember();
-  return <UmbrellaGateway worldWatchMember={worldWatchMember} />;
+export default function HomePage() {
+  return <UmbrellaGateway />;
 }
