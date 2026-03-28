@@ -201,10 +201,11 @@ export function FreeMockupFunnelClient() {
       <div className="container free-mockup-success" style={{ maxWidth: 640, padding: "48px 20px 80px" }}>
         <div className="panel" style={{ padding: "28px 24px" }}>
           <h2 className="section-heading" style={{ marginBottom: 12 }}>
-            Got it — your preview has been saved.
+            Got it — your mockup is saved and sent.
           </h2>
           <p className="subhead" style={{ marginBottom: 20 }}>
-            We&apos;ll follow up with you shortly. Your sample page is ready whenever you want to open or share it.
+            I&apos;ll review what you shared and follow up by email. Your preview is ready whenever you want to open or
+            share it — no need for every detail to be finished yet.
           </p>
           {savedUrl ? (
             <div className="btn-row" style={{ flexWrap: "wrap", marginBottom: 16 }}>
@@ -228,7 +229,7 @@ export function FreeMockupFunnelClient() {
   }
 
   return (
-    <div className="free-mockup-funnel">
+    <div id="free-mockup-start" className="free-mockup-funnel scroll-mt-24">
       <div className="free-mockup-funnel-grid">
         <div className="free-mockup-funnel-form card" style={{ padding: "20px 18px" }}>
           <p className="text-sm font-semibold" style={{ marginBottom: 12 }}>
@@ -433,11 +434,17 @@ export function FreeMockupFunnelClient() {
             }}
           >
             <p className="text-sm font-semibold" style={{ marginBottom: 8 }}>
-              Save your preview
+              Save &amp; Send Your Mockup
             </p>
-            <p className="small" style={{ color: "var(--muted)", marginBottom: 12 }}>
-              To get a shareable link, add your name and the email you check most often — that&apos;s the main channel for
-              your preview link and follow-up. You can play with the preview first and fill this when you&apos;re ready.
+            <p className="small" style={{ color: "var(--muted)", marginBottom: 12, lineHeight: 1.55 }}>
+              Not ready to finish everything right now? You can save your mockup and send it to MixedMakerShop so I can
+              review it and help finish building it for you. This gives you a simple way to get your ideas started first,
+              then hand it off once you&apos;re ready to add the remaining details.
+            </p>
+            <p className="small" style={{ color: "var(--muted)", marginBottom: 14, lineHeight: 1.55, opacity: 0.92 }}>
+              Your mockup does not need to be fully complete before sending it over. Once I receive it, I can help finish
+              the build after you provide the rest of the content, business details, images, and preferences needed to
+              complete the site.
             </p>
             <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
               Your name *
@@ -449,7 +456,7 @@ export function FreeMockupFunnelClient() {
               />
             </label>
             <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-              Email <span style={{ color: "#f87171" }}>*</span> — where we&apos;ll send your link
+              Email <span style={{ color: "#f87171" }}>*</span> — where I&apos;ll reach you
               <input
                 className="form-input mt-1 w-full"
                 type="email"
@@ -460,7 +467,7 @@ export function FreeMockupFunnelClient() {
               />
             </label>
             <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 10 }}>
-              Replies and next steps go to this address first — keep it one you actually read.
+              Use an address you check often so you don&apos;t miss your link or follow-up.
             </p>
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
               Phone (optional)
@@ -477,7 +484,7 @@ export function FreeMockupFunnelClient() {
               </p>
             ) : null}
             <button type="button" className="btn gold w-full" disabled={loading} onClick={() => void submit()}>
-              {loading ? "Saving…" : "Save my preview & get my link"}
+              {loading ? "Sending…" : "Save & Send My Mockup"}
             </button>
           </div>
         </div>
@@ -494,7 +501,7 @@ export function FreeMockupFunnelClient() {
                 secondaryHref: "#services",
                 portfolioFooter: true,
                 portfolioFooterMessage:
-                  "Sample preview only — not a live site. Save your preview below to get a link you can share.",
+                  "Sample preview only — not a live site. Save & send your mockup below when you're ready for me to review it.",
                 portfolioCopy: true,
                 imageCategoryKey: preview.imageCategoryKey,
                 wideLayout: true,
