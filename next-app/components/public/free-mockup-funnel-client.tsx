@@ -69,6 +69,7 @@ export function FreeMockupFunnelClient() {
   const [contactName, setContactName] = useState("");
   const [submitEmail, setSubmitEmail] = useState("");
   const [submitPhone, setSubmitPhone] = useState("");
+  const [visitorNotes, setVisitorNotes] = useState("");
 
   const [phase, setPhase] = useState<"form" | "success">("form");
   const [savedUrl, setSavedUrl] = useState("");
@@ -147,32 +148,53 @@ export function FreeMockupFunnelClient() {
     }
     setLoading(true);
     try {
+      const notesTrim = visitorNotes.trim();
+      const mockupData = {
+        funnelVersion: 1,
+        contactName: cn,
+        submitPhone: submitPhone.trim(),
+        snapshot: {
+          business_name: businessName.trim(),
+          category: category.trim(),
+          city: city.trim(),
+          state: stateUS.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          website_url: websiteUrl.trim(),
+          facebook_url: facebookUrl.trim(),
+          services_text: servicesText,
+          template_mode: templateMode,
+          headline_override: headlineOverride,
+          subheadline_override: subheadOverride,
+          cta_override: ctaOverride,
+          style_preset: stylePreset,
+          color_preset: colorPreset,
+          hero_preset: heroPreset,
+        },
+        preview: preview
+          ? {
+              stylePreset: preview.stylePreset,
+              colorPreset: preview.colorPreset,
+              imageCategoryKey: preview.imageCategoryKey,
+              draft: preview.draft,
+            }
+          : null,
+      };
+
       const res = await fetch("/api/public/website-mockup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contact_name: cn,
           email: em,
-          business_email: email.trim() || undefined,
-          business_phone: phone.trim() || undefined,
-          phone: submitPhone.trim() || undefined,
-          website_url: websiteUrl.trim() || undefined,
-          business_name: businessName.trim(),
-          category: category.trim(),
-          city: city.trim(),
-          state: stateUS.trim() || undefined,
-          facebook_url: facebookUrl.trim() || undefined,
-          services_text: servicesText,
-          template_mode: templateMode,
-          headline_override: headlineOverride || undefined,
-          subheadline_override: subheadOverride || undefined,
-          cta_override: ctaOverride || undefined,
-          style_preset: stylePreset || undefined,
-          color_preset: colorPreset || undefined,
-          hero_preset: heroPreset || undefined,
+          notes: notesTrim || undefined,
+          mockupData,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; previewUrl?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        previewUrl?: string;
+        error?: string;
+      };
       if (!res.ok) {
         setError(String(data.error || "Something went wrong."));
         return;
@@ -204,8 +226,8 @@ export function FreeMockupFunnelClient() {
             Got it — your mockup is saved and sent.
           </h2>
           <p className="subhead" style={{ marginBottom: 20 }}>
-            I&apos;ll review what you shared and follow up by email. Your preview is ready whenever you want to open or
-            share it — no need for every detail to be finished yet.
+            I&apos;ve got your mockup saved on my end, and I can review it when it&apos;s time to move forward. Your
+            preview link is below — open or copy it anytime. You don&apos;t need every detail finished yet.
           </p>
           {savedUrl ? (
             <div className="btn-row" style={{ flexWrap: "wrap", marginBottom: 16 }}>
@@ -218,7 +240,7 @@ export function FreeMockupFunnelClient() {
             </div>
           ) : null}
           <p className="small" style={{ color: "var(--muted)", marginBottom: 20 }}>
-            If you entered an email, we&apos;ve sent your link there too (check spam just in case).
+            Keep this link handy — no automatic messages from me unless we connect about next steps.
           </p>
           <Link href="/web-design" className="btn ghost">
             Web design services
@@ -456,7 +478,7 @@ export function FreeMockupFunnelClient() {
               />
             </label>
             <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-              Email <span style={{ color: "#f87171" }}>*</span> — where I&apos;ll reach you
+              Best email to reach you <span style={{ color: "#f87171" }}>*</span>
               <input
                 className="form-input mt-1 w-full"
                 type="email"
@@ -467,7 +489,7 @@ export function FreeMockupFunnelClient() {
               />
             </label>
             <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 10 }}>
-              Use an address you check often so you don&apos;t miss your link or follow-up.
+              Use an inbox you actually check so I can follow up when you&apos;re ready to move ahead.
             </p>
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
               Phone (optional)
@@ -476,6 +498,15 @@ export function FreeMockupFunnelClient() {
                 value={submitPhone}
                 onChange={(e) => setSubmitPhone(e.target.value)}
                 placeholder="(501) 555-0199"
+              />
+            </label>
+            <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+              Anything else? (optional)
+              <textarea
+                className="form-textarea mt-1 w-full min-h-[64px]"
+                value={visitorNotes}
+                onChange={(e) => setVisitorNotes(e.target.value)}
+                placeholder="Timing, goals, links to inspiration — short notes are perfect."
               />
             </label>
             {error ? (
@@ -501,7 +532,7 @@ export function FreeMockupFunnelClient() {
                 secondaryHref: "#services",
                 portfolioFooter: true,
                 portfolioFooterMessage:
-                  "Sample preview only — not a live site. Save & send your mockup below when you're ready for me to review it.",
+                  "Like what you're seeing? Save & send your mockup below and I'll help you turn it into a real site.",
                 portfolioCopy: true,
                 imageCategoryKey: preview.imageCategoryKey,
                 wideLayout: true,
