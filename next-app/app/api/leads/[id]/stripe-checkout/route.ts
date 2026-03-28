@@ -7,10 +7,11 @@
  * If the secret is absent, returns 503 + { code: "STRIPE_NOT_CONFIGURED" } — no fake payment flow.
  */
 
+import type Stripe from "stripe";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
+import { requireStripe } from "@/lib/stripe/server";
 import {
   publicSiteBase,
   resolveCheckoutAmountUsd,
@@ -36,8 +37,10 @@ export async function POST(
     return NextResponse.json({ error: "Lead id is required." }, { status: 400 });
   }
 
-  const secret = String(process.env.STRIPE_SECRET_KEY || "").trim();
-  if (!secret) {
+  let stripe: ReturnType<typeof requireStripe>;
+  try {
+    stripe = requireStripe();
+  } catch {
     return NextResponse.json(
       {
         error:
@@ -116,7 +119,6 @@ export async function POST(
     );
   }
 
-  const stripe = new Stripe(secret);
   const businessName = String((lead as { business_name?: string }).business_name || "3D print job").trim();
   const lineName = forKind === "deposit" ? "3D print — deposit" : "3D print — payment";
 
@@ -124,7 +126,8 @@ export async function POST(
   try {
     session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: `${base}/admin/leads/${encodeURIComponent(leadId)}?payment=success`,
+      client_reference_id: leadId,
+      success_url: `${base}/admin/leads/${encodeURIComponent(leadId)}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/admin/leads/${encodeURIComponent(leadId)}?payment=cancel`,
       metadata: {
         lead_id: leadId,

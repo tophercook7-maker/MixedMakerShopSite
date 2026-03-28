@@ -64,6 +64,15 @@ export function PublicNav() {
           <Link href="/examples" className="pill">
             Examples
           </Link>
+          <Link href="/world-watch" className="pill">
+            World Watch
+          </Link>
+          <Link href="/membership" className="pill pill--muted">
+            Membership
+          </Link>
+          <Link href="/account" className="pill pill--muted">
+            Account
+          </Link>
           <Link
             href="/contact"
             className="pill"

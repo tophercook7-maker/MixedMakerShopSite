@@ -139,6 +139,8 @@ export function PrintLeadDetailView({
   laborRateUsdPerHour,
   cashAppPaymentUrl,
   cashAppDisplayLine,
+  stripePaymentReturn = null,
+  stripeCheckoutSessionId = null,
 }: {
   leadId: string;
   contactName: string | null;
@@ -186,8 +188,16 @@ export function PrintLeadDetailView({
   cashAppPaymentUrl: string | null;
   /** Cashtag / line for customer copy; env NEXT_PUBLIC_CASHAPP_HANDLE or payment URL. */
   cashAppDisplayLine: string | null;
+  /** After Stripe Checkout redirect: success | cancel (display only; fulfillment is webhook-driven). */
+  stripePaymentReturn?: "success" | "cancel" | null;
+  /** Checkout Session id from success_url (optional display via /api/stripe/session). */
+  stripeCheckoutSessionId?: string | null;
 }) {
   const router = useRouter();
+  const showStripe =
+    typeof process !== "undefined" &&
+    process.env.NEXT_PUBLIC_SHOW_STRIPE_PRINT_PAYMENTS === "true";
+
   const [pipe, setPipe] = useState<ThreeDPrintPipelineStatus>(() => normalizePrintPipelineStatus(printPipelineStatus));
   const [busy, setBusy] = useState(false);
   const [pipeErr, setPipeErr] = useState<string | null>(null);
@@ -230,6 +240,13 @@ export function PrintLeadDetailView({
   const [payRequestKind, setPayRequestKind] = useState<PrintPaymentRequestType>(() =>
     normalizePrintPaymentRequestType(paymentRequestType),
   );
+  const [stripeCheckoutKind, setStripeCheckoutKind] = useState<"deposit" | "full" | null>(null);
+  const [stripeCheckoutErr, setStripeCheckoutErr] = useState<string | null>(null);
+  const [stripeSessionPreview, setStripeSessionPreview] = useState<{
+    payment_status?: string | null;
+    amount_total?: number | null;
+    currency?: string | null;
+  } | null>(null);
 
   const trackedMinutesBase = Math.max(0, Math.floor(Number(printTrackedMinutes) || 0));
   const manualMinutesBase = Math.max(0, Math.floor(Number(printManualTimeMinutes) || 0));
@@ -306,6 +323,31 @@ export function PrintLeadDetailView({
   useEffect(() => {
     setPayRequestKind(normalizePrintPaymentRequestType(paymentRequestType));
   }, [paymentRequestType]);
+
+  useEffect(() => {
+    if (!showStripe) return;
+    if (stripePaymentReturn !== "success" || !stripeCheckoutSessionId) {
+      setStripeSessionPreview(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const r = await fetch(
+        `/api/stripe/session?session_id=${encodeURIComponent(stripeCheckoutSessionId)}`,
+        { credentials: "same-origin" },
+      );
+      const j = (await r.json().catch(() => null)) as Record<string, unknown> | null;
+      if (cancelled || !r.ok || !j) return;
+      setStripeSessionPreview({
+        payment_status: typeof j.payment_status === "string" ? j.payment_status : null,
+        amount_total: typeof j.amount_total === "number" ? j.amount_total : null,
+        currency: typeof j.currency === "string" ? j.currency : null,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showStripe, stripePaymentReturn, stripeCheckoutSessionId]);
 
   const requestDescription = extractPrintRequestDescription(notes, printRequestSummary);
   const currentIdx = THREE_D_PRINT_PIPELINE_ORDER.indexOf(pipe);
@@ -645,6 +687,80 @@ export function PrintLeadDetailView({
 
   function canCopyCashAppRequest(): boolean {
     return Boolean(cashAppLineForMessages());
+  }
+
+  const stripeDepositUsd = resolveCheckoutAmountUsd({
+    for: "deposit",
+    deposit_amount: parseMoneyInput(depositStr),
+    final_amount: parseMoneyInput(finalStr),
+    price_charged: priceForCheckout,
+    quoted_amount: parseMoneyInput(quotedStr),
+  }).usd;
+  const stripeFullUsd = resolveCheckoutAmountUsd({
+    for: "full",
+    deposit_amount: parseMoneyInput(depositStr),
+    final_amount: parseMoneyInput(finalStr),
+    price_charged: priceInputN,
+    quoted_amount: parseMoneyInput(quotedStr),
+  }).usd;
+
+  async function startStripeCheckout(forKind: "deposit" | "full") {
+    if (!showStripe) return;
+    if (stripeCheckoutKind) return;
+    setStripeCheckoutErr(null);
+    setStripeCheckoutKind(forKind);
+    try {
+      const q = parseMoneyInput(quotedStr);
+      const dIn = parseMoneyInput(depositStr);
+      const depositToStore =
+        payRequestKind === "deposit"
+          ? resolveEffectiveDepositAmountUsd({ deposit_amount: dIn, quoted_amount: q })
+          : dIn;
+      const print_tags = mergePrintKeywordTags(printTags, tagHaystack());
+      const saveR = await patchLeadApi(leadId, {
+        quoted_amount: q,
+        deposit_amount: depositToStore,
+        final_amount: parseMoneyInput(finalStr),
+        payment_request_type: payRequestKind,
+        payment_status: payStatusLocal,
+        print_tags,
+      });
+      if (!saveR.ok) {
+        setStripeCheckoutErr(saveR.error);
+        setStripeCheckoutKind(null);
+        return;
+      }
+      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/stripe-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ for: forKind === "deposit" ? "deposit" : "full" }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        url?: string;
+        code?: string;
+      };
+      const url = typeof body.url === "string" ? body.url : "";
+      if (!url) {
+        setStripeCheckoutErr(
+          body.error ||
+            (body.code === "STRIPE_NOT_CONFIGURED"
+              ? "Stripe is not configured on the server."
+              : "Could not start checkout."),
+        );
+        setStripeCheckoutKind(null);
+        return;
+      }
+      if (res.ok || res.status === 207) {
+        window.location.assign(url);
+        return;
+      }
+      setStripeCheckoutErr(body.error || "Could not start checkout.");
+      setStripeCheckoutKind(null);
+    } catch (e) {
+      setStripeCheckoutErr(e instanceof Error ? e.message : "Could not start checkout.");
+      setStripeCheckoutKind(null);
+    }
   }
 
   function copyQuickTemplate(id: PrintMessageTemplateId) {
@@ -1378,8 +1494,93 @@ export function PrintLeadDetailView({
           <strong className="text-sky-100/80">Cash App</strong> is the default for 3D print jobs. Configure{" "}
           <code className="text-[10px] opacity-85">NEXT_PUBLIC_CASHAPP_PAYMENT_URL</code> and optional{" "}
           <code className="text-[10px] opacity-85">NEXT_PUBLIC_CASHAPP_HANDLE</code> for customer-facing copy. Deposit and
-          full payment requests both use the same message templates (Stripe can be reintroduced later if needed).
+          full payment requests both use the same message templates. Optional Stripe Checkout is available when{" "}
+          <code className="text-[10px] opacity-85">NEXT_PUBLIC_SHOW_STRIPE_PRINT_PAYMENTS=true</code> (see{" "}
+          <code className="text-[10px] opacity-85">docs/STRIPE.md</code>).
         </p>
+
+        {showStripe && stripePaymentReturn === "success" ? (
+          <div
+            className="rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-100/95 space-y-1"
+            role="status"
+          >
+            <p className="font-semibold">Stripe checkout finished.</p>
+            <p style={{ color: "var(--admin-muted)" }}>
+              Payment status on this lead updates when Stripe delivers the webhook (usually within seconds). Refresh if you
+              do not see a change yet.
+            </p>
+            {stripeSessionPreview?.payment_status ? (
+              <p className="tabular-nums opacity-90">
+                Session: {stripeSessionPreview.payment_status}
+                {stripeSessionPreview.amount_total != null
+                  ? ` · ${(stripeSessionPreview.amount_total / 100).toFixed(2)} ${String(
+                      stripeSessionPreview.currency || "usd",
+                    ).toUpperCase()}`
+                  : null}
+              </p>
+            ) : stripeCheckoutSessionId ? (
+              <p className="opacity-80">Loading session details…</p>
+            ) : null}
+          </div>
+        ) : null}
+        {showStripe && stripePaymentReturn === "cancel" ? (
+          <div
+            className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-100/90"
+            role="status"
+          >
+            Checkout was cancelled. You can try Stripe again below or use Cash App.
+          </div>
+        ) : null}
+
+        {showStripe ? (
+          <div className="rounded-xl border border-violet-500/30 bg-black/20 p-3 space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-200/90">Stripe Checkout</p>
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Card payments. Your quote fields are saved automatically before opening Checkout. Fulfillment runs on the server
+              webhook, not from this page alone.
+            </p>
+            {stripeCheckoutErr ? (
+              <p className="text-xs text-red-400" role="alert">
+                {stripeCheckoutErr}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={
+                  Boolean(stripeCheckoutKind) ||
+                  paymentFieldsBusy ||
+                  stripeDepositUsd == null ||
+                  stripeDepositUsd < 0.5
+                }
+                className="rounded-lg border border-violet-500/45 bg-violet-500/15 px-3 py-2 text-xs font-medium text-violet-100 hover:bg-violet-500/25 disabled:opacity-45"
+                onClick={() => void startStripeCheckout("deposit")}
+              >
+                {stripeCheckoutKind === "deposit" ? "Opening Stripe…" : "Pay deposit (Stripe)"}
+              </button>
+              <button
+                type="button"
+                disabled={
+                  Boolean(stripeCheckoutKind) || paymentFieldsBusy || stripeFullUsd == null || stripeFullUsd < 0.5
+                }
+                className="rounded-lg border border-violet-500/45 bg-violet-500/15 px-3 py-2 text-xs font-medium text-violet-100 hover:bg-violet-500/25 disabled:opacity-45"
+                onClick={() => void startStripeCheckout("full")}
+              >
+                {stripeCheckoutKind === "full" ? "Opening Stripe…" : "Pay full balance (Stripe)"}
+              </button>
+            </div>
+            {stripeDepositUsd == null || stripeDepositUsd < 0.5 ? (
+              <p className="text-[11px] text-amber-200/85">
+                Deposit checkout needs quoted / deposit amounts so the total is at least $0.50.
+              </p>
+            ) : null}
+            {stripeFullUsd == null || stripeFullUsd < 0.5 ? (
+              <p className="text-[11px] text-amber-200/85">
+                Full checkout needs final, price charged, or quoted amount so the total is at least $0.50.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         <div
           className="rounded-xl border border-sky-500/25 bg-black/25 p-3 sm:p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm"

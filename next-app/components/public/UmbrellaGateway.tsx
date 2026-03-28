@@ -21,6 +21,7 @@ import { publicGatewayPageBgClass } from "@/lib/public-brand";
 import { trackGatewayNav } from "@/lib/public-analytics";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { cn } from "@/lib/utils";
+import { WorldWatchHomePreview } from "@/components/world-watch/world-watch-home-preview";
 
 const PRINT_HERO = [
   { src: "/images/mixedmaker-workspace-hero.png", alt: "MixedMaker 3D printing workspace and setup" },
@@ -214,7 +215,7 @@ function BenefitList({ items }: { items: string[] }) {
   );
 }
 
-export function UmbrellaGateway() {
+export function UmbrellaGateway({ worldWatchMember = false }: { worldWatchMember?: boolean }) {
   return (
     <div
       className={cn(
@@ -462,6 +463,8 @@ export function UmbrellaGateway() {
             </Card>
           </motion.div>
         </div>
+
+        <WorldWatchHomePreview isMember={worldWatchMember} />
 
         <div className="mx-auto mt-10 max-w-4xl rounded-[28px] border border-white/10 bg-white/5 p-5 text-center shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl md:p-6">
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Not sure which path?</p>

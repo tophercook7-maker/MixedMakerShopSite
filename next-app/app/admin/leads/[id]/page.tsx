@@ -594,10 +594,17 @@ export default async function AdminLeadDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ generate?: string; compose?: string; sample?: string; focus?: string }>;
+  searchParams: Promise<{
+    generate?: string;
+    compose?: string;
+    sample?: string;
+    focus?: string;
+    payment?: string;
+    session_id?: string;
+  }>;
 }) {
   const { id } = await params;
-  const { generate, compose, sample, focus } = await searchParams;
+  const { generate, compose, sample, focus, payment, session_id } = await searchParams;
   const focusOutreach = String(focus || "").toLowerCase() === "outreach";
   const supabase = await createClient();
   const {
@@ -1650,6 +1657,10 @@ Want me to show you a quick idea?`;
           laborRateUsdPerHour={printLaborBaseRateUsdPerHourFromEnv()}
           cashAppPaymentUrl={printCashAppPaymentUrlFromEnv()}
           cashAppDisplayLine={printCashAppDisplayLineFromEnv()}
+          stripePaymentReturn={
+            payment === "success" || payment === "cancel" ? payment : null
+          }
+          stripeCheckoutSessionId={typeof session_id === "string" ? session_id : null}
         />
       ) : null}
 

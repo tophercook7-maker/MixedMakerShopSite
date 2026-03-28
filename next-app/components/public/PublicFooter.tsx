@@ -51,7 +51,7 @@ export function PublicFooter() {
         </div>
         <div className="small" style={{ marginTop: 10 }}>
           <Link href="/">Home</Link> • <Link href="/web-design">Web Design</Link> •{" "}
-          <Link href="/3d-printing">3D Printing</Link> • <Link href="/examples">Examples</Link> •{" "}
+          <Link href="/3d-printing">3D Printing</Link> •           <Link href="/examples">Examples</Link> • <Link href="/world-watch">World Watch</Link> •{" "}
           <Link href="/free-mockup">Free Mockup</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
           <TrackedPublicLink
             href="/contact"
