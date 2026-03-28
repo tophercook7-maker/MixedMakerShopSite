@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
@@ -6,10 +7,14 @@ import {
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
 import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
-import { getServiceRoleSupabase } from "@/lib/supabase/service-role";
 
 export async function GET() {
   return NextResponse.json({ error: "Method not allowed." }, { status: 405 });
+}
+
+/** Ensures payload is JSON-serializable for PostgREST / jsonb (drops undefined, cycles throw). */
+function jsonSafeForJsonb<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 function normalizeWebsiteUrl(raw: string): string | null {
@@ -85,187 +90,183 @@ function normalizeSnapshot(
 }
 
 export async function POST(request: Request) {
-  const supabaseConfig = getServiceRoleSupabase();
-  if (!supabaseConfig.ok) {
-    console.error("Mockup submit config error: missing env", supabaseConfig.missing);
-    return NextResponse.json(
-      {
-        error: "Server configuration error.",
-        missing_env: supabaseConfig.missing,
-        hint:
-          supabaseConfig.missing === "SUPABASE_SERVICE_ROLE_KEY"
-            ? "Add SUPABASE_SERVICE_ROLE_KEY to your server environment (Supabase Dashboard → Project Settings → API → service_role secret). Never expose it to the client."
-            : "Set NEXT_PUBLIC_SUPABASE_URL to your Supabase project URL.",
-      },
-      { status: 500 }
-    );
-  }
-  const supabase = supabaseConfig.supabase;
-
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-  }
+    const supabaseUrl = String(process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+    const supabaseServiceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 
-  if (!body || typeof body !== "object" || Array.isArray(body)) {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
-  }
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error("Mockup submit config error:", {
+        hasSupabaseUrl: Boolean(supabaseUrl),
+        hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
+      });
 
-  const raw = body as Record<string, unknown>;
-  const email = String(raw.email ?? "").trim();
-  const visitorNotes =
-    typeof raw.notes === "string" && raw.notes.trim().length > 0 ? raw.notes.trim() : null;
-  const mockupDataRaw = raw.mockupData ?? null;
+      return NextResponse.json({ error: "Server configuration error." }, { status: 500 });
+    }
 
-  if (!email) {
-    return NextResponse.json({ error: "Email is required." }, { status: 400 });
-  }
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
-  }
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    }
 
-  if (!mockupDataRaw || typeof mockupDataRaw !== "object" || Array.isArray(mockupDataRaw)) {
-    return NextResponse.json({ error: "Mockup data is required." }, { status: 400 });
-  }
+    const raw = body as Record<string, unknown>;
+    const email = String(raw.email || "").trim();
+    const notes =
+      typeof raw.notes === "string" && raw.notes.trim().length > 0 ? raw.notes.trim() : null;
+    const mockupData = raw.mockupData ?? null;
 
-  const parsed = mockupDataSchema.safeParse(mockupDataRaw);
-  if (!parsed.success) {
-    const msg =
-      parsed.error.flatten().formErrors[0] ||
-      parsed.error.errors[0]?.message ||
-      "Invalid mockup data";
-    return NextResponse.json({ error: msg, details: parsed.error.flatten() }, { status: 400 });
-  }
+    console.log("Mockup submit payload received", {
+      emailPresent: Boolean(email),
+      notesPresent: Boolean(notes),
+      mockupDataType: typeof mockupData,
+      mockupDataIsArray: Array.isArray(mockupData),
+      mockupDataKeys:
+        mockupData && typeof mockupData === "object" && !Array.isArray(mockupData)
+          ? Object.keys(mockupData).slice(0, 20)
+          : [],
+    });
 
-  const mockupDataIn = parsed.data as z.infer<typeof mockupDataSchema> & Record<string, unknown>;
-  const submitPhone = String((mockupDataIn as { submitPhone?: unknown }).submitPhone ?? "").trim();
-  const snapshotIn = parsed.data.snapshot;
-  const businessPhoneForNotes = String(snapshotIn.phone || "").trim();
-  const businessEmailForNotes = String(snapshotIn.email || "").trim();
-  const snapshot = normalizeSnapshot(snapshotIn, email, submitPhone);
-  const contactName = String(parsed.data.contactName || "").trim();
+    if (!email) {
+      return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    }
 
-  const mockRow = buildFunnelPublicMockupRow(snapshot);
-  const slug = generateMockupSlug();
-  const origin = requestOrigin(request);
-  const previewUrl = `${origin.replace(/\/$/, "")}/mockup/${encodeURIComponent(slug)}`;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
+    }
 
-  const { data: ownerProfile, error: ownerErr } = await supabase.from("profiles").select("id").limit(1).maybeSingle();
-  if (ownerErr || !ownerProfile?.id) {
-    console.error("[website-mockup] owner profile missing", ownerErr?.message);
-    return NextResponse.json({ error: "CRM is not configured (no owner profile)." }, { status: 503 });
-  }
-  const ownerId = String(ownerProfile.id);
+    if (!mockupData || typeof mockupData !== "object" || Array.isArray(mockupData)) {
+      return NextResponse.json({ error: "Mockup data is required." }, { status: 400 });
+    }
 
-  let notes = [
-    "Inbound: website mockup funnel (/free-mockup)",
-    `Shareable preview: ${previewUrl}`,
-    `Contact: ${contactName}`,
-    submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
-      ? `Submitter phone: ${submitPhone}`
-      : "",
-    submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
-      ? `Business line (preview): ${businessPhoneForNotes}`
-      : "",
-    businessEmailForNotes && businessEmailForNotes.toLowerCase() !== email.toLowerCase()
-      ? `Preview contact email (on sample): ${businessEmailForNotes}`
-      : "",
-    `Template: ${mockRow.template_key}`,
-    `Headline: ${mockRow.headline}`,
-    `Subheadline: ${mockRow.subheadline}`,
-    `CTA: ${mockRow.cta_text}`,
-    mockRow.raw_payload && Array.isArray((mockRow.raw_payload as { services?: unknown }).services)
-      ? `Services: ${JSON.stringify((mockRow.raw_payload as { services: string[] }).services)}`
-      : "",
-    `Style / color: ${String((mockRow.raw_payload as { style_preset?: string }).style_preset)} / ${String((mockRow.raw_payload as { color_preset?: string }).color_preset)}`,
-    visitorNotes ? `Visitor note: ${visitorNotes}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+    const parsed = mockupDataSchema.safeParse(mockupData);
+    if (!parsed.success) {
+      const flat = parsed.error.flatten();
+      const msg =
+        flat.formErrors[0] || parsed.error.errors[0]?.message || "Invalid mockup data";
+      console.error("[website-mockup] mockupData validation failed", {
+        message: msg,
+        formErrors: flat.fieldErrors,
+        issues: parsed.error.issues.slice(0, 15),
+      });
+      return NextResponse.json({ error: msg, details: flat }, { status: 400 });
+    }
 
-  const leadPayload = pickLeadInsertFields({
-    business_name: mockRow.business_name,
-    primary_contact_name: contactName,
-    contact_name: contactName,
-    email: email || null,
-    phone: submitPhone || null,
-    website: normalizeWebsiteUrl(snapshot.website_url),
-    category: mockRow.category,
-    city: snapshot.city,
-    state: snapshot.state || null,
-    facebook_url: mockRow.facebook_url,
-    service_type: "web_design",
-    source: "mockup_request",
-    lead_source: "mockup_request",
-    lead_tags: ["inbound", "mockup_request"],
-    notes,
-    preview_url: previewUrl,
-    why_this_lead_is_here: "Submitted free website preview on the MixedMakerShop funnel",
-    status: "new",
-    owner_id: ownerId,
-    conversion_score: 78,
-    opportunity_score: 78,
-    last_updated_at: new Date().toISOString(),
-  });
+    const validatedMockupData = parsed.data as z.infer<typeof mockupDataSchema> &
+      Record<string, unknown>;
+    const submitPhone = String(
+      (validatedMockupData as { submitPhone?: unknown }).submitPhone ?? ""
+    ).trim();
+    const snapshotIn = parsed.data.snapshot;
+    const businessPhoneForNotes = String(snapshotIn.phone || "").trim();
+    const businessEmailForNotes = String(snapshotIn.email || "").trim();
+    const snapshot = normalizeSnapshot(snapshotIn, email, submitPhone);
+    const contactName = String(parsed.data.contactName || "").trim();
 
-  const { data: leadRow, error: leadErr } = await supabase.from("leads").insert(leadPayload).select("id").single();
-  if (leadErr || !leadRow?.id) {
-    console.error("[website-mockup] lead insert failed", leadErr?.message);
-    return NextResponse.json({ error: "Could not save your request. Try again or contact us directly." }, { status: 500 });
-  }
+    const mockRow = buildFunnelPublicMockupRow(snapshot);
+    const slug = generateMockupSlug();
+    const origin = requestOrigin(request);
+    const previewUrl = `${origin.replace(/\/$/, "")}/mockup/${encodeURIComponent(slug)}`;
 
-  const leadId = String(leadRow.id);
-  const now = new Date().toISOString();
-  const rawPayload = {
-    ...(typeof mockRow.raw_payload === "object" && mockRow.raw_payload ? mockRow.raw_payload : {}),
-    funnel_contact_name: contactName,
-    source: "mockup_request",
-  };
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-  const crmInsert = {
-    lead_id: leadId,
-    owner_id: ownerId,
-    template_key: mockRow.template_key,
-    business_name: mockRow.business_name,
-    city: mockRow.city,
-    category: mockRow.category,
-    phone: mockRow.phone,
-    email: mockRow.email,
-    facebook_url: mockRow.facebook_url,
-    headline: mockRow.headline,
-    subheadline: mockRow.subheadline,
-    cta_text: mockRow.cta_text,
-    mockup_slug: slug,
-    mockup_url: previewUrl,
-    raw_payload: rawPayload,
-    created_at: now,
-    updated_at: now,
-  };
+    const { data: ownerProfile, error: ownerErr } = await supabase.from("profiles").select("id").limit(1).maybeSingle();
+    if (ownerErr || !ownerProfile?.id) {
+      console.error("[website-mockup] owner profile missing", {
+        message: ownerErr?.message,
+        code: ownerErr?.code,
+        details: ownerErr?.details,
+        hint: ownerErr?.hint,
+      });
+      return NextResponse.json({ error: "CRM is not configured (no owner profile)." }, { status: 503 });
+    }
+    const ownerId = String(ownerProfile.id);
 
-  const { error: mockErr } = await supabase.from("crm_mockups").insert(crmInsert);
-  if (mockErr) {
-    console.error("[website-mockup] crm_mockups insert failed", mockErr.message);
-    await supabase.from("leads").delete().eq("id", leadId);
-    return NextResponse.json(
-      { error: "Could not create your preview link. Please try again." },
-      { status: 500 }
-    );
-  }
+    const leadNotes = [
+      "Inbound: website mockup funnel (/free-mockup)",
+      `Shareable preview: ${previewUrl}`,
+      `Contact: ${contactName}`,
+      submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
+        ? `Submitter phone: ${submitPhone}`
+        : "",
+      submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
+        ? `Business line (preview): ${businessPhoneForNotes}`
+        : "",
+      businessEmailForNotes && businessEmailForNotes.toLowerCase() !== email.toLowerCase()
+        ? `Preview contact email (on sample): ${businessEmailForNotes}`
+        : "",
+      `Template: ${mockRow.template_key}`,
+      `Headline: ${mockRow.headline}`,
+      `Subheadline: ${mockRow.subheadline}`,
+      `CTA: ${mockRow.cta_text}`,
+      mockRow.raw_payload && Array.isArray((mockRow.raw_payload as { services?: unknown }).services)
+        ? `Services: ${JSON.stringify((mockRow.raw_payload as { services: string[] }).services)}`
+        : "",
+      `Style / color: ${String((mockRow.raw_payload as { style_preset?: string }).style_preset)} / ${String((mockRow.raw_payload as { color_preset?: string }).color_preset)}`,
+      notes ? `Visitor note: ${notes}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-  const mockup_data: Record<string, unknown> = {
-    ...mockupDataIn,
-    contact_name: contactName,
-    submitter: {
-      email,
+    // Do not write preview_url to leads until the production schema includes that column.
+    // Preview link is still stored on crm_mockups.mockup_url and in mockup_submissions.mockup_data.
+    const leadPayload = pickLeadInsertFields({
+      business_name: mockRow.business_name,
+      primary_contact_name: contactName,
+      contact_name: contactName,
+      email: email || null,
       phone: submitPhone || null,
-      business_email: businessEmailForNotes || null,
-      business_phone: businessPhoneForNotes || null,
-    },
-    snapshot,
-    mock_row: {
+      website: normalizeWebsiteUrl(snapshot.website_url),
+      category: mockRow.category,
+      city: snapshot.city,
+      state: snapshot.state || null,
+      facebook_url: mockRow.facebook_url,
+      service_type: "web_design",
+      source: "mockup_request",
+      lead_source: "mockup_request",
+      lead_tags: ["inbound", "mockup_request"],
+      notes: leadNotes,
+      why_this_lead_is_here: "Submitted free website preview on the MixedMakerShop funnel",
+      status: "new",
+      owner_id: ownerId,
+      conversion_score: 78,
+      opportunity_score: 78,
+      last_updated_at: new Date().toISOString(),
+    });
+
+    // Production `leads` may omit these columns; restore only after matching migrations are applied.
+    delete leadPayload.preview_url;
+    delete leadPayload.automation_paused;
+
+    const { data: leadRow, error: leadErr } = await supabase.from("leads").insert(leadPayload).select("id").single();
+    if (leadErr || !leadRow?.id) {
+      console.error("[website-mockup] lead insert failed", {
+        message: leadErr?.message,
+        details: leadErr?.details,
+        hint: leadErr?.hint,
+        code: leadErr?.code,
+      });
+      return NextResponse.json(
+        { error: "Could not save your request. Try again or contact us directly." },
+        { status: 500 }
+      );
+    }
+
+    const leadId = String(leadRow.id);
+    const now = new Date().toISOString();
+    const rawPayload = {
+      ...(typeof mockRow.raw_payload === "object" && mockRow.raw_payload ? mockRow.raw_payload : {}),
+      funnel_contact_name: contactName,
+      source: "mockup_request",
+    };
+
+    const crmInsert = {
+      lead_id: leadId,
+      owner_id: ownerId,
       template_key: mockRow.template_key,
       business_name: mockRow.business_name,
       city: mockRow.city,
@@ -276,41 +277,104 @@ export async function POST(request: Request) {
       headline: mockRow.headline,
       subheadline: mockRow.subheadline,
       cta_text: mockRow.cta_text,
-      raw_payload: mockRow.raw_payload ?? {},
-    },
-    mockup_slug: slug,
-    preview_url: previewUrl,
-    lead_id: leadId,
-  };
+      mockup_slug: slug,
+      mockup_url: previewUrl,
+      raw_payload: rawPayload,
+      created_at: now,
+      updated_at: now,
+    };
 
-  const { data: submissionRow, error: submissionErr } = await supabase
-    .from("mockup_submissions")
-    .insert({
-      email,
-      mockup_data,
-      notes: visitorNotes,
-      status: "new",
-      source: "free-mockup",
-    })
-    .select("id")
-    .single();
+    const { error: mockErr } = await supabase.from("crm_mockups").insert(crmInsert);
+    if (mockErr) {
+      console.error("[website-mockup] crm_mockups insert failed", {
+        message: mockErr.message,
+        details: mockErr.details,
+        hint: mockErr.hint,
+        code: mockErr.code,
+      });
+      await supabase.from("leads").delete().eq("id", leadId);
+      return NextResponse.json(
+        { error: "Could not create your preview link. Please try again." },
+        { status: 500 }
+      );
+    }
 
-  if (submissionErr || !submissionRow?.id) {
-    console.error("Mockup submit insert failed:", submissionErr);
-    await supabase.from("crm_mockups").delete().eq("lead_id", leadId);
-    await supabase.from("leads").delete().eq("id", leadId);
+    const mockup_data: Record<string, unknown> = {
+      ...validatedMockupData,
+      contact_name: contactName,
+      submitter: {
+        email,
+        phone: submitPhone || null,
+        business_email: businessEmailForNotes || null,
+        business_phone: businessPhoneForNotes || null,
+      },
+      snapshot,
+      mock_row: {
+        template_key: mockRow.template_key,
+        business_name: mockRow.business_name,
+        city: mockRow.city,
+        category: mockRow.category,
+        phone: mockRow.phone,
+        email: mockRow.email,
+        facebook_url: mockRow.facebook_url,
+        headline: mockRow.headline,
+        subheadline: mockRow.subheadline,
+        cta_text: mockRow.cta_text,
+        raw_payload: mockRow.raw_payload ?? {},
+      },
+      mockup_slug: slug,
+      preview_url: previewUrl,
+      lead_id: leadId,
+    };
+
+    let mockupDataForDb: Record<string, unknown>;
+    try {
+      mockupDataForDb = jsonSafeForJsonb(mockup_data);
+    } catch (serializeErr) {
+      console.error("[website-mockup] mockup_data JSON serialization failed", serializeErr);
+      await supabase.from("crm_mockups").delete().eq("lead_id", leadId);
+      await supabase.from("leads").delete().eq("id", leadId);
+      return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
+    }
+
+    const { data: submissionRow, error: submissionErr } = await supabase
+      .from("mockup_submissions")
+      .insert({
+        email,
+        mockup_data: mockupDataForDb,
+        notes,
+        status: "new",
+        source: "free-mockup",
+      })
+      .select("id")
+      .single();
+
+    if (submissionErr || !submissionRow?.id) {
+      console.error("Mockup submit insert failed:", {
+        message: submissionErr?.message,
+        details: submissionErr?.details,
+        hint: submissionErr?.hint,
+        code: submissionErr?.code,
+      });
+      await supabase.from("crm_mockups").delete().eq("lead_id", leadId);
+      await supabase.from("leads").delete().eq("id", leadId);
+      return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      id: submissionRow.id,
+      message: "Got it — your mockup is saved and sent.",
+      detail:
+        "I've got your mockup saved on my end, and I can review it when it's time to move forward.",
+      previewUrl,
+      mockup_slug: slug,
+      lead_id: leadId,
+      submission_id: String(submissionRow.id),
+    });
+  } catch (error) {
+    console.error("Mockup submit failed:", error);
+
     return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
   }
-
-  return NextResponse.json({
-    ok: true,
-    id: submissionRow.id,
-    message: "Got it — your mockup is saved and sent.",
-    detail:
-      "I've got your mockup saved on my end, and I can review it when it's time to move forward.",
-    previewUrl,
-    mockup_slug: slug,
-    lead_id: leadId,
-    submission_id: String(submissionRow.id),
-  });
 }
