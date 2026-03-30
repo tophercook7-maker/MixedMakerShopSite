@@ -1,4 +1,4 @@
-import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
+import type { SampleDraft } from "@/lib/sample-draft-types";
 import { PORTFOLIO_PRESSURE_WASHING_HERO_PRIMARY } from "@/lib/sample-fallback-images";
 
 /** Full-page website examples for common local trades (public pages). */

@@ -10,6 +10,12 @@ type MockupApiRow = {
   template_key?: string;
   updated_at?: string;
   raw_payload?: Record<string, unknown> | null;
+  /** Full HTML document from admin “Generate HTML” (stored on crm_mockups). */
+  generated_html?: string | null;
+  html_generated_at?: string | null;
+  /** When the preview link was last emailed from admin. */
+  sent_at?: string | null;
+  last_sent_to?: string | null;
 };
 
 function buildPreviewUrl(slug: string): string {
@@ -20,12 +26,17 @@ function buildPreviewUrl(slug: string): string {
 export function LeadMockupSharePanel({
   leadId,
   businessName,
+  leadEmail = "",
 }: {
   leadId: string;
   businessName: string;
+  /** Lead email from CRM; required to enable Send mockup. */
+  leadEmail?: string;
 }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [htmlGenerating, setHtmlGenerating] = useState(false);
   const [mockup, setMockup] = useState<MockupApiRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -33,6 +44,9 @@ export function LeadMockupSharePanel({
   const resolvedUrl = String(mockup?.mockup_url_resolved || mockup?.mockup_url || "").trim();
   const slug = String(mockup?.mockup_slug || "").trim();
   const shareUrl = resolvedUrl || (slug ? buildPreviewUrl(slug) : "");
+  const leadEmailTrim = String(leadEmail || "").trim();
+  const canSendPreview = Boolean(mockup && shareUrl && slug && leadEmailTrim);
+  const sentAt = mockup?.sent_at ? String(mockup.sent_at).trim() : "";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,6 +94,59 @@ export function LeadMockupSharePanel({
       setError("Network error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function sendPreviewToLead() {
+    if (!canSendPreview) return;
+    setSendingEmail(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/crm-mockup/send`, {
+        method: "POST",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        mockup?: MockupApiRow;
+        error?: string;
+        reason?: string;
+      };
+      if (!res.ok || !body.ok) {
+        setError(String(body.error || "Could not send email"));
+        return;
+      }
+      if (body.mockup) setMockup((prev) => ({ ...(prev ?? {}), ...body.mockup }));
+      setToast("Mockup sent.");
+    } catch {
+      setError("Network error sending email");
+    } finally {
+      setSendingEmail(false);
+    }
+  }
+
+  async function generateStaticHtml() {
+    setHtmlGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/crm-mockup/generate-html`, {
+        method: "POST",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        mockup?: MockupApiRow;
+        error?: string;
+        reason?: string;
+      };
+      if (!res.ok || !body.ok) {
+        setError(String(body.error || "Could not generate HTML"));
+        return;
+      }
+      if (body.mockup) setMockup((prev) => ({ ...(prev ?? {}), ...body.mockup }));
+      setToast("Static HTML generated and saved.");
+    } catch {
+      setError("Network error");
+    } finally {
+      setHtmlGenerating(false);
     }
   }
 
@@ -151,10 +218,35 @@ export function LeadMockupSharePanel({
             >
               Copy mockup link
             </button>
+            {shareUrl && slug ? (
+              <>
+                {canSendPreview ? (
+                  <button
+                    type="button"
+                    className="admin-btn-primary text-xs"
+                    disabled={sendingEmail}
+                    onClick={() => void sendPreviewToLead()}
+                  >
+                    {sendingEmail ? "Sending…" : sentAt ? "Resend mockup" : "Send Mockup"}
+                  </button>
+                ) : (
+                  <span className="text-[11px] self-center" style={{ color: "var(--admin-muted)" }}>
+                    Add a lead email to send this preview.
+                  </span>
+                )}
+              </>
+            ) : null}
             <button type="button" className="admin-btn-ghost text-xs" disabled={saving} onClick={() => void generateOrRefresh()}>
               {saving ? "Refreshing…" : "Regenerate mockup"}
             </button>
           </div>
+          {sentAt ? (
+            <p className="text-[11px]" style={{ color: "var(--admin-gold)" }}>
+              Mockup sent
+              {mockup?.last_sent_to ? ` to ${mockup.last_sent_to}` : ""}
+              {` · ${new Date(sentAt).toLocaleString()}`}
+            </p>
+          ) : null}
           <p className="text-[11px] break-all" style={{ color: "var(--admin-muted)" }}>
             {adminTitle ? (
               <>
@@ -217,6 +309,51 @@ export function LeadMockupSharePanel({
               </div>
             </div>
           ) : null}
+
+          <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Static HTML export
+            </p>
+            <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+              Produces a standalone HTML document (same content as the shareable preview layout) for reuse outside the app.
+              Regenerate after you change the mockup.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="admin-btn-primary text-xs"
+                disabled={htmlGenerating}
+                onClick={() => void generateStaticHtml()}
+              >
+                {htmlGenerating ? "Generating…" : "Generate HTML"}
+              </button>
+              <button
+                type="button"
+                className="admin-btn-ghost text-xs"
+                disabled={!String(mockup?.generated_html || "").trim()}
+                onClick={() => void copyText("HTML", String(mockup?.generated_html || ""))}
+              >
+                Copy HTML
+              </button>
+            </div>
+            {mockup?.html_generated_at ? (
+              <p className="text-[11px]" style={{ color: "var(--admin-muted)" }}>
+                Last generated: {new Date(mockup.html_generated_at).toLocaleString()}
+              </p>
+            ) : null}
+            <textarea
+              readOnly
+              className="w-full text-[11px] font-mono rounded p-2 resize-y min-h-[140px] max-h-[min(50vh,320px)]"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--admin-border)",
+                color: "var(--admin-fg)",
+              }}
+              value={String(mockup?.generated_html || "")}
+              placeholder="Generate HTML to populate this field. It is also saved on the mockup record."
+              spellCheck={false}
+            />
+          </div>
 
           {share ? (
             <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>

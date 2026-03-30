@@ -1,11 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   buildFunnelPublicMockupRow,
   generateMockupSlug,
+  parseServicesLines,
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
+import { FUNNEL_DESIRED_OUTCOME_LABELS, normalizeDesiredOutcomeIds } from "@/lib/funnel-desired-outcomes";
 import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
 
@@ -35,11 +37,19 @@ function requestOrigin(request: Request): string {
   return String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
 }
 
+const funnelDirectionEnum = z.enum([
+  "clean-professional",
+  "bold-modern",
+  "local-trust",
+  "premium-polished",
+  "simple-direct",
+]);
+
 const snapshotSchema = z
   .object({
     business_name: z.string().min(1, "Business name is required"),
-    category: z.string().min(1, "Category is required"),
-    city: z.string().min(1, "City is required"),
+    category: z.string().min(1, "Business type / industry is required"),
+    city: z.string().min(1, "City or service area is required"),
     state: z.string().optional(),
     phone: z.string().optional(),
     email: z.string().optional(),
@@ -53,8 +63,26 @@ const snapshotSchema = z
     style_preset: z.string().optional(),
     color_preset: z.string().optional(),
     hero_preset: z.string().optional(),
+    selected_template_key: funnelDirectionEnum.optional().default("clean-professional"),
+    desired_outcomes: z.array(z.string()).max(12).optional().default([]),
+    top_services_to_feature: z.string().optional(),
+    what_makes_you_different: z.string().optional(),
+    special_offer_or_guarantee: z.string().optional(),
+    anything_to_avoid: z.string().optional(),
+    anything_else_i_should_know: z.string().optional(),
   })
-  .passthrough();
+  .passthrough()
+  .superRefine((snap, ctx) => {
+    const top = parseServicesLines(String(snap.top_services_to_feature || ""));
+    const leg = parseServicesLines(String(snap.services_text || ""));
+    if (!top.length && !leg.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Add at least one service to feature (or legacy services text).",
+        path: ["top_services_to_feature"],
+      });
+    }
+  });
 
 const mockupDataSchema = z
   .object({
@@ -70,6 +98,8 @@ function normalizeSnapshot(
 ): FunnelFormSnapshot {
   const businessPhone = String(s.phone || "").trim();
   const businessEmail = String(s.email || "").trim();
+  const topSvc = String(s.top_services_to_feature || "").trim();
+  const legacySvc = String(s.services_text || "").trim();
   return {
     business_name: s.business_name.trim(),
     category: s.category.trim(),
@@ -79,7 +109,7 @@ function normalizeSnapshot(
     email: businessEmail || submitEmail,
     website_url: String(s.website_url || "").trim(),
     facebook_url: String(s.facebook_url || "").trim(),
-    services_text: String(s.services_text || ""),
+    services_text: legacySvc || topSvc,
     template_mode: String(s.template_mode || "auto").trim() || "auto",
     headline_override: String(s.headline_override || ""),
     subheadline_override: String(s.subheadline_override || ""),
@@ -87,8 +117,59 @@ function normalizeSnapshot(
     style_preset: String(s.style_preset || ""),
     color_preset: String(s.color_preset || ""),
     hero_preset: String(s.hero_preset || ""),
+    selected_template_key: String(s.selected_template_key || "clean-professional").trim(),
+    desired_outcomes: normalizeDesiredOutcomeIds(s.desired_outcomes),
+    top_services_to_feature: topSvc,
+    what_makes_you_different: String(s.what_makes_you_different || "").trim(),
+    special_offer_or_guarantee: String(s.special_offer_or_guarantee || "").trim(),
+    anything_to_avoid: String(s.anything_to_avoid || "").trim(),
+    anything_else_i_should_know: String(s.anything_else_i_should_know || "").trim(),
   };
 }
+
+async function findRecentMockupDuplicate(
+  supabase: SupabaseClient,
+  emailNorm: string,
+  businessName: string
+): Promise<"email_cooldown" | "business_cooldown" | null> {
+  const bnNorm = businessName.trim().toLowerCase();
+  const since = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  const { data: rows, error } = await supabase
+    .from("mockup_submissions")
+    .select("created_at, mockup_data")
+    .eq("email", emailNorm)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(40);
+
+  if (error || !rows?.length) return null;
+
+  const now = Date.now();
+  const sixH = 6 * 3600 * 1000;
+  for (const r of rows) {
+    const t = new Date(r.created_at).getTime();
+    if (now - t < sixH) return "email_cooldown";
+  }
+
+  for (const r of rows) {
+    const t = new Date(r.created_at).getTime();
+    if (t < now - 48 * 3600 * 1000) continue;
+    if (!bnNorm) continue;
+    const md = r.mockup_data as Record<string, unknown> | null;
+    const snap = md && typeof md.snapshot === "object" && md.snapshot && !Array.isArray(md.snapshot) ? (md.snapshot as Record<string, unknown>) : null;
+    const prev = String(snap?.business_name || "").trim().toLowerCase();
+    if (prev && prev === bnNorm) return "business_cooldown";
+  }
+
+  return null;
+}
+
+const DUPLICATE_RESPONSE: Record<"email_cooldown" | "business_cooldown", string> = {
+  email_cooldown:
+    "We already received a request from this email in the last few hours. If you need to add details, reply to your confirmation email or reach out directly — one solid submission is enough for me to build your strongest direction.",
+  business_cooldown:
+    "It looks like you recently requested a preview for this business. I focus on one strong direction first, then we refine if needed — please wait for my follow-up rather than submitting again.",
+};
 
 export async function POST(request: Request) {
   try {
@@ -116,7 +197,7 @@ export async function POST(request: Request) {
     }
 
     const raw = body as Record<string, unknown>;
-    const email = String(raw.email || "").trim();
+    const email = String(raw.email || "").trim().toLowerCase();
     const notes =
       typeof raw.notes === "string" && raw.notes.trim().length > 0 ? raw.notes.trim() : null;
     const mockupData = raw.mockupData ?? null;
@@ -175,6 +256,18 @@ export async function POST(request: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+    const duplicateKind = await findRecentMockupDuplicate(supabase, email, snapshot.business_name);
+    if (duplicateKind) {
+      return NextResponse.json(
+        {
+          error: DUPLICATE_RESPONSE[duplicateKind],
+          code: duplicateKind,
+          ok: false,
+        },
+        { status: 409 },
+      );
+    }
+
     const { data: ownerProfile, error: ownerErr } = await supabase.from("profiles").select("id").limit(1).maybeSingle();
     if (ownerErr || !ownerProfile?.id) {
       console.error("[website-mockup] owner profile missing", {
@@ -208,6 +301,19 @@ export async function POST(request: Request) {
         ? `Services: ${JSON.stringify((mockRow.raw_payload as { services: string[] }).services)}`
         : "",
       `Style / color: ${String((mockRow.raw_payload as { style_preset?: string }).style_preset)} / ${String((mockRow.raw_payload as { color_preset?: string }).color_preset)}`,
+      `Design direction (visitor): ${snapshot.selected_template_key}`,
+      snapshot.desired_outcomes?.length
+        ? `Desired outcomes: ${normalizeDesiredOutcomeIds(snapshot.desired_outcomes)
+            .map((id) => FUNNEL_DESIRED_OUTCOME_LABELS[id])
+            .join("; ")}`
+        : "",
+      snapshot.top_services_to_feature?.trim()
+        ? `Top services to feature: ${snapshot.top_services_to_feature.trim()}`
+        : "",
+      snapshot.what_makes_you_different ? `Differentiator: ${snapshot.what_makes_you_different}` : "",
+      snapshot.special_offer_or_guarantee ? `Offer / guarantee: ${snapshot.special_offer_or_guarantee}` : "",
+      snapshot.anything_to_avoid ? `Please avoid: ${snapshot.anything_to_avoid}` : "",
+      snapshot.anything_else_i_should_know ? `Other notes: ${snapshot.anything_else_i_should_know}` : "",
       notes ? `Visitor note: ${notes}` : "",
     ]
       .filter(Boolean)
@@ -338,6 +444,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
     }
 
+    const desiredOutcomesJson = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
+
     const { data: submissionRow, error: submissionErr } = await supabase
       .from("mockup_submissions")
       .insert({
@@ -346,6 +454,13 @@ export async function POST(request: Request) {
         notes,
         status: "new",
         source: "free-mockup",
+        selected_template_key: snapshot.selected_template_key,
+        desired_outcomes: desiredOutcomesJson,
+        top_services_to_feature: snapshot.top_services_to_feature?.trim() || null,
+        what_makes_you_different: snapshot.what_makes_you_different?.trim() || null,
+        special_offer_or_guarantee: snapshot.special_offer_or_guarantee?.trim() || null,
+        anything_to_avoid: snapshot.anything_to_avoid?.trim() || null,
+        anything_else_i_should_know: snapshot.anything_else_i_should_know?.trim() || null,
       })
       .select("id")
       .single();

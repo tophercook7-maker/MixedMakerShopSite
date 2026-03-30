@@ -1,4 +1,10 @@
-import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
+import type { SampleDraft } from "@/lib/sample-draft-types";
+import {
+  FUNNEL_DESIRED_OUTCOME_WHY_LINES,
+  normalizeDesiredOutcomeIds,
+  type FunnelDesiredOutcomeId,
+} from "@/lib/funnel-desired-outcomes";
+import { presetsForDesignDirection } from "@/lib/funnel-design-directions";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
 import {
   autofillLeadSample,
@@ -197,6 +203,31 @@ export function buildMockupContentFromLead(lead: LeadRowForMockup, template: Crm
   };
 }
 
+function enrichMockupContentFromFunnelFields(
+  content: MockupContentFields,
+  snapshot: FunnelFormSnapshot
+): MockupContentFields {
+  const outcomes = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
+  let sub = content.subheadline;
+  const bits: string[] = [];
+  if (outcomes.includes("explain_services_clearly")) {
+    bits.push("The layout emphasizes clear service explanations and scannable sections.");
+  }
+  if (outcomes.includes("show_up_better_online")) {
+    bits.push("The direction supports a stronger first impression where people look you up.");
+  }
+  if (outcomes.includes("get_more_calls") || outcomes.includes("make_contact_easier")) {
+    bits.push("Contact paths stay obvious so visitors know what to do next.");
+  }
+  if (outcomes.includes("look_more_professional") || outcomes.includes("replace_outdated_site")) {
+    bits.push("The presentation aims for a current, professional feel.");
+  }
+  if (bits.length) {
+    sub = `${sub} ${bits.join(" ")}`.trim().slice(0, 520);
+  }
+  return { ...content, subheadline: sub };
+}
+
 function isPortfolioKey(key: string): key is PortfolioMockupTemplateKey {
   return (PORTFOLIO_MOCKUP_TEMPLATE_KEYS as readonly string[]).includes(key);
 }
@@ -358,6 +389,45 @@ function finalizeDraftWithPayload(draft: SampleDraft, payload: Record<string, un
   return applyHeroImageKeyToDraft(draft, readHeroImageKey(payload));
 }
 
+function readFunnelContext(payload: Record<string, unknown>): Record<string, unknown> | null {
+  const fc = payload.funnel_context;
+  if (!fc || typeof fc !== "object" || Array.isArray(fc)) return null;
+  return fc as Record<string, unknown>;
+}
+
+function applyDraftFunnelPatches(draft: SampleDraft, payload: Record<string, unknown>): SampleDraft {
+  const fc = readFunnelContext(payload);
+  if (!fc) return draft;
+
+  const diff = String(fc.what_makes_you_different || "").trim();
+  const offer = String(fc.special_offer_or_guarantee || "").trim();
+  const outcomes = normalizeDesiredOutcomeIds(fc.desired_outcomes);
+
+  let aboutText = draft.aboutText;
+  if (diff) {
+    const leadIn = diff.endsWith(".") ? diff : `${diff}.`;
+    aboutText = `${leadIn}\n\n${aboutText}`.trim();
+  }
+
+  const whyFromOutcomes = outcomes
+    .map((id) => FUNNEL_DESIRED_OUTCOME_WHY_LINES[id as FunnelDesiredOutcomeId])
+    .filter(Boolean) as string[];
+  const existingWhy = draft.whyChooseBullets || [];
+  const whyChooseBullets = [...whyFromOutcomes, ...existingWhy].filter(Boolean).slice(0, 7);
+
+  let finalSub = draft.finalSub;
+  if (offer) {
+    finalSub = `${offer}${finalSub ? ` — ${finalSub}` : ""}`.trim().slice(0, 320);
+  }
+
+  return {
+    ...draft,
+    aboutText,
+    whyChooseBullets,
+    finalSub,
+  };
+}
+
 /**
  * Builds the presentation SampleDraft for a stored CRM mockup (server or client).
  */
@@ -381,7 +451,7 @@ export function buildSampleDraftFromPublicMockup(row: PublicCrmMockupRow): {
         (readPreset(payload, "color_preset", found.colorPreset) as MockupColorPreset) ||
         (found.colorPreset as MockupColorPreset);
       return {
-        draft: finalizeDraftWithPayload(merged, payload),
+        draft: applyDraftFunnelPatches(finalizeDraftWithPayload(merged, payload), payload),
         imageCategoryKey: imageCategoryFromPortfolioRouteSlug(row.template_key),
         stylePreset,
         colorPreset,
@@ -411,7 +481,7 @@ export function buildSampleDraftFromPublicMockup(row: PublicCrmMockupRow): {
   else if (row.template_key === "wellness") imageKey = "wellness";
 
   return {
-    draft: finalizeDraftWithPayload(enriched, payload),
+    draft: applyDraftFunnelPatches(finalizeDraftWithPayload(enriched, payload), payload),
     imageCategoryKey: imageKey,
     stylePreset,
     colorPreset,
@@ -435,6 +505,14 @@ export type FunnelFormSnapshot = {
   style_preset: string;
   color_preset: string;
   hero_preset: string;
+  /** Guided design direction id (clean-professional, bold-modern, …). */
+  selected_template_key: string;
+  desired_outcomes: string[];
+  top_services_to_feature: string;
+  what_makes_you_different: string;
+  special_offer_or_guarantee: string;
+  anything_to_avoid: string;
+  anything_else_i_should_know: string;
 };
 
 export function parseServicesLines(text: string): string[] {
@@ -474,30 +552,56 @@ export function buildFunnelPublicMockupRow(snapshot: FunnelFormSnapshot): Public
     facebook_url: snapshot.facebook_url || null,
   };
   let tpl = resolveFunnelTemplateChoice(snapshot.template_mode, leadLike);
-  const sp = String(snapshot.style_preset || "").trim();
-  const cp = String(snapshot.color_preset || "").trim();
-  if (
-    sp &&
-    (["clean-modern", "bold-premium", "friendly-local", "minimal-elegant"] as const).includes(sp as MockupStylePreset)
-  ) {
-    tpl = { ...tpl, stylePreset: sp as MockupStylePreset };
+
+  const direction = presetsForDesignDirection(String(snapshot.selected_template_key || "").trim());
+  if (direction) {
+    tpl = {
+      ...tpl,
+      stylePreset: direction.stylePreset as MockupStylePreset,
+      colorPreset: direction.colorPreset as MockupColorPreset,
+    };
+  } else {
+    const sp = String(snapshot.style_preset || "").trim();
+    const cp = String(snapshot.color_preset || "").trim();
+    if (
+      sp &&
+      (["clean-modern", "bold-premium", "friendly-local", "minimal-elegant"] as const).includes(sp as MockupStylePreset)
+    ) {
+      tpl = { ...tpl, stylePreset: sp as MockupStylePreset };
+    }
+    if (
+      cp &&
+      (["blue", "green", "dark", "warm-neutral", "bold-accent", "wellness"] as const).includes(cp as MockupColorPreset)
+    ) {
+      tpl = { ...tpl, colorPreset: cp as MockupColorPreset };
+    }
   }
-  if (
-    cp &&
-    (["blue", "green", "dark", "warm-neutral", "bold-accent", "wellness"] as const).includes(cp as MockupColorPreset)
-  ) {
-    tpl = { ...tpl, colorPreset: cp as MockupColorPreset };
-  }
-  const content = buildMockupContentFromLead(leadLike, tpl);
-  const parsedServices = parseServicesLines(snapshot.services_text);
-  const services = parsedServices.length ? parsedServices : content.services;
+
+  let content = buildMockupContentFromLead(leadLike, tpl);
+  content = enrichMockupContentFromFunnelFields(content, snapshot);
+
+  const fromTop = parseServicesLines(snapshot.top_services_to_feature || "");
+  const parsedLegacy = parseServicesLines(snapshot.services_text || "");
+  const services = fromTop.length ? fromTop : parsedLegacy.length ? parsedLegacy : content.services;
+
   const headline = String(snapshot.headline_override || "").trim() || content.headline;
   const subheadline = String(snapshot.subheadline_override || "").trim() || content.subheadline;
   const cta_text = String(snapshot.cta_override || "").trim() || content.cta_text;
+  const outcomes = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
+  const funnel_context = {
+    desired_outcomes: outcomes,
+    what_makes_you_different: String(snapshot.what_makes_you_different || "").trim(),
+    special_offer_or_guarantee: String(snapshot.special_offer_or_guarantee || "").trim(),
+    anything_to_avoid: String(snapshot.anything_to_avoid || "").trim(),
+    anything_else_i_should_know: String(snapshot.anything_else_i_should_know || "").trim(),
+    selected_template_key: String(snapshot.selected_template_key || "").trim(),
+  };
+
   const raw: Record<string, unknown> = {
     services,
     style_preset: tpl.stylePreset,
     color_preset: tpl.colorPreset,
+    funnel_context,
   };
   const hp = String(snapshot.hero_preset || "").trim();
   if (hp && IMAGE_POOLS[hp]?.length) raw.hero_image_key = hp;

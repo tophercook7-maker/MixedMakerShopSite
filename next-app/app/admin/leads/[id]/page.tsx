@@ -2074,7 +2074,11 @@ Want me to show you a quick idea?`;
             </p>
             {resolvedLeadId ? (
               <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
-                <LeadMockupSharePanel leadId={resolvedLeadId} businessName={displayBusinessName} />
+                <LeadMockupSharePanel
+                  leadId={resolvedLeadId}
+                  businessName={displayBusinessName}
+                  leadEmail={displayEmail || ""}
+                />
                 <LeadWorkspaceActions
                   leadId={resolvedLeadId}
                   linkedOpportunityId={oppId || null}

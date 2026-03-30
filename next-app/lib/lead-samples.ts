@@ -1,4 +1,4 @@
-import type { SampleDraft } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
+import type { SampleDraft } from "@/lib/sample-draft-types";
 
 export type LeadSampleStatus = "draft" | "ready" | "sent";
 export type LeadSampleSource = "server" | "local";
