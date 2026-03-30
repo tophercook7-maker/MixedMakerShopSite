@@ -2,21 +2,21 @@ import type { Metadata } from "next";
 import { UmbrellaGateway } from "@/components/public/UmbrellaGateway";
 
 export const metadata: Metadata = {
-  title: "MixedMakerShop | Custom Websites for Small Businesses",
+  title: "MixedMakerShop | Web Design & Digital Tools for Small Businesses",
   description:
-    "Custom websites for small businesses — better sites, messaging, and digital tools to help you grow. Free mockup. Hot Springs, Arkansas.",
+    "Web design and digital tools by Topher for small businesses — clearer messaging, faster sites, and lead-focused builds. Free homepage mockup. Hot Springs, Arkansas.",
   openGraph: {
-    title: "Custom Websites for Small Businesses | MixedMakerShop",
+    title: "Web Design & Digital Tools for Small Business | MixedMakerShop",
     description:
-      "I help small businesses grow with better websites, messaging, and useful digital tools. Request a free mockup.",
+      "Websites, landing pages, and practical digital tools built to get you more leads. By Topher — start with a free mockup.",
     url: "https://mixedmakershop.com",
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Custom Websites for Small Businesses | MixedMakerShop",
+    title: "Web Design & Digital Tools for Small Business | MixedMakerShop",
     description:
-      "Better websites and digital tools for small businesses — clarity, leads, and growth. By Topher.",
+      "Small business web design and digital tools — clarity, conversions, and growth. By Topher.",
     images: ["/og-image"],
   },
 };

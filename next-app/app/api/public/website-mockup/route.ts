@@ -7,6 +7,7 @@ import {
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
 import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
 
 export async function GET() {
   return NextResponse.json({ error: "Method not allowed." }, { status: 405 });
@@ -361,16 +362,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
     }
 
+    const confirmation = await sendMockupRequestConfirmationEmail({
+      to: email,
+      contactName,
+      businessName: mockRow.business_name,
+    });
+    if (!confirmation.ok) {
+      console.error(
+        "[website-mockup] confirmation email failed (submission was saved OK):",
+        confirmation.error,
+      );
+    }
+
     return NextResponse.json({
       ok: true,
       id: submissionRow.id,
-      message: "Got it — your mockup is saved and sent.",
+      message: "You're in — I've got your request.",
       detail:
-        "I've got your mockup saved on my end, and I can review it when it's time to move forward.",
+        "I'm going to start putting together your custom homepage mockup. You'll hear from me soon.",
       previewUrl,
       mockup_slug: slug,
       lead_id: leadId,
       submission_id: String(submissionRow.id),
+      confirmation_email_sent: confirmation.ok,
     });
   } catch (error) {
     console.error("Mockup submit failed:", error);

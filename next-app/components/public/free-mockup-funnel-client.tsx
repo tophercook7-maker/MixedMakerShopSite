@@ -23,6 +23,7 @@ export function FreeMockupFunnelClient() {
 
   const [phase, setPhase] = useState<"form" | "success">("form");
   const [savedUrl, setSavedUrl] = useState("");
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -140,6 +141,7 @@ export function FreeMockupFunnelClient() {
       const data = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
         previewUrl?: string;
+        confirmation_email_sent?: boolean;
         error?: string;
       };
       if (!res.ok) {
@@ -147,6 +149,7 @@ export function FreeMockupFunnelClient() {
         return;
       }
       setSavedUrl(String(data.previewUrl || ""));
+      setConfirmationEmailSent(Boolean(data.confirmation_email_sent));
       trackPublicEvent("public_free_mockup_submit");
       setPhase("success");
     } catch {
@@ -170,11 +173,22 @@ export function FreeMockupFunnelClient() {
       <div className="container free-mockup-success" style={{ maxWidth: 640, padding: "48px 20px 80px" }}>
         <div className="panel" style={{ padding: "28px 24px" }}>
           <h2 className="section-heading" style={{ marginBottom: 12 }}>
-            Got it — your mockup is saved and sent.
+            You&apos;re in — I&apos;ve got your request
           </h2>
-          <p className="subhead" style={{ marginBottom: 20 }}>
-            I&apos;ve got your mockup saved on my end, and I can review it when it&apos;s time to move forward. Your
-            preview link is below — open or copy it anytime. You don&apos;t need every detail finished yet.
+          <div className="subhead" style={{ marginBottom: 20, lineHeight: 1.6 }}>
+            <p style={{ margin: "0 0 12px" }}>
+              I&apos;m going to start putting together your custom homepage mockup.
+            </p>
+            <p style={{ margin: "0 0 12px" }}>If you included your website, I&apos;ll review it.</p>
+            <p style={{ margin: "0 0 12px" }}>
+              If not, I&apos;ll build something based on your business and goals.
+            </p>
+            <p style={{ margin: 0 }}>You&apos;ll hear from me soon.</p>
+          </div>
+          <p className="small" style={{ color: "var(--muted)", marginBottom: 16, lineHeight: 1.55 }}>
+            {confirmationEmailSent
+              ? "Check your inbox for a quick confirmation email. Your live preview link is below whenever you want it."
+              : "Your live preview link is below whenever you want it."}
           </p>
           {savedUrl ? (
             <div className="btn-row" style={{ flexWrap: "wrap", marginBottom: 16 }}>
@@ -187,7 +201,7 @@ export function FreeMockupFunnelClient() {
             </div>
           ) : null}
           <p className="small" style={{ color: "var(--muted)", marginBottom: 20 }}>
-            Keep this link handy — no automatic messages from me unless we connect about next steps.
+            Save the link if you want to peek at your sample mockup again before I follow up.
           </p>
           <Link href="/web-design" className="btn ghost">
             Web design services

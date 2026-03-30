@@ -43,7 +43,7 @@ export default function ContactPage() {
         <div className="panel">
           <h1 style={{ margin: "0 0 8px" }}>Start a project, ask a question, pitch an idea</h1>
           <p className="subhead">
-            Web design, custom builds, 3D printing — tell me what you&apos;re working on and I&apos;ll reply personally.
+            Web design and digital tools — tell me what you&apos;re working on and I&apos;ll reply personally.
           </p>
 
           <form onSubmit={handleSubmit} className="card form-card" style={{ maxWidth: 520, marginTop: 20 }}>
@@ -68,7 +68,6 @@ export default function ContactPage() {
                 <option>Free Website Check</option>
                 <option>Hosting & Support ($89/mo)</option>
                 <option>Website Updates</option>
-                <option>3D Printing Project</option>
                 <option>Other</option>
               </select>
             </div>
@@ -106,9 +105,15 @@ export default function ContactPage() {
               <h3>Browse</h3>
               <p className="small">Want to show a style you like? Link a demo site and I&apos;ll match the direction.</p>
               <div className="btn-row">
-                <Link href="/3d-printing" className="btn">3D Printing</Link>
-                <Link href="/pricing" className="btn">Pricing</Link>
-                <Link href="/web-design" className="btn">Web Design</Link>
+                <Link href="/free-mockup" className="btn">
+                  Free mockup
+                </Link>
+                <Link href="/pricing" className="btn">
+                  Pricing
+                </Link>
+                <Link href="/web-design" className="btn">
+                  Web Design
+                </Link>
               </div>
             </div>
           </div>

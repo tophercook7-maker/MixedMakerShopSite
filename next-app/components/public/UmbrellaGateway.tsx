@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Homepage: web design & digital tools (primary). Former 3D column preserved in
- * `./archived/homepage-3d-column.tsx` for reuse — not rendered here.
+ * Homepage: web design & digital tools by Topher (public-facing).
+ * Optional legacy column is preserved in `./archived/homepage-3d-column.tsx` — not imported here.
  */
 
 import Image from "next/image";

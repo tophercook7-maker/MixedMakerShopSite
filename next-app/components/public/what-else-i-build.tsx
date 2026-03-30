@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 /**
- * Secondary positioning on the gateway homepage — does not replace or restyle primary path cards above.
+ * Secondary “what else I build” section (web + legacy 3D card).
+ * Not imported on the live homepage — kept for reuse; `/3d-printing` remains available as a route.
  */
 export function WhatElseIBuild() {
   return (
