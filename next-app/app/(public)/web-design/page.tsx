@@ -4,9 +4,9 @@ import { WebDesignSalesPage } from "@/components/public/WebDesignSalesPage";
 export const metadata: Metadata = {
   title: "Topher's Web Design | MixedMakerShop",
   description:
-    "Websites, landing pages, and lightweight tools for local businesses — show up clearly online and turn visitors into customers.",
+    "Web design for small businesses: sites that look better, load faster, and turn visitors into leads. Start with a free mockup.",
   openGraph: {
-    title: "Get more customers online — without the tech headache",
+    title: "Web design that brings you customers | MixedMakerShop",
     url: "https://mixedmakershop.com/web-design",
   },
 };

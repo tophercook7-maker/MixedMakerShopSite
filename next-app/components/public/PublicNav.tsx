@@ -43,7 +43,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Web design &amp; 3D printing</strong>
+              <strong>Web design &amp; digital tools by Topher</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -58,19 +58,6 @@ export function PublicNav() {
           <Link href="/web-design" className="pill">
             Web Design
           </Link>
-          <Link href="/3d-printing" className="pill">
-            3D Printing
-          </Link>
-          <Link href="/examples" className="pill">
-            Examples
-          </Link>
-          <Link
-            href="/contact"
-            className="pill"
-            onClick={() => trackPublicEvent("public_contact_cta_click", { location: "nav" })}
-          >
-            Contact
-          </Link>
           <Link
             href="/free-mockup"
             className="pill cta"
@@ -78,7 +65,14 @@ export function PublicNav() {
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
             }
           >
-            Free mockup
+            Mockup Tool
+          </Link>
+          <Link
+            href="/contact"
+            className="pill"
+            onClick={() => trackPublicEvent("public_contact_cta_click", { location: "nav" })}
+          >
+            Contact
           </Link>
           <Link href="/auth/login" className="pill pill--muted">
             Admin

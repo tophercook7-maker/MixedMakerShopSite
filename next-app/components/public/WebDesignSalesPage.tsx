@@ -17,11 +17,10 @@ const body = publicBodyMutedClass;
 const sectionY = "py-20 md:py-28";
 
 const solutionBullets = [
-  "Customer-focused websites that make calls and messages obvious",
-  "Landing pages built to turn clicks into leads",
-  "Lightweight apps and tools (calculators, booking, trackers)",
-  "A simpler online presence — less noise, clearer next steps",
-  "Local business clarity: who you help, where you work, how to hire you",
+  "Clear messaging — visitors understand what you do in seconds",
+  "Clean design — professional look that builds trust",
+  "Conversion-focused — built to turn visitors into leads",
+  "Mobile-first — fast, readable, easy to use on phones",
 ];
 
 const whatIBuild: { title: string; description: string; icon: LucideIcon }[] = [
@@ -170,11 +169,10 @@ export function WebDesignSalesPage() {
             <div className="home-hero-copy home-hero-copy--readable lg:pr-2">
               <p className="home-reveal home-hero-eyebrow">Topher&apos;s Web Design</p>
               <h1 className="home-reveal home-hero-headline home-section-title">
-                Get More Customers Online — Without the Tech Headache
+                Web Design That Brings You Customers
               </h1>
               <p className="home-reveal home-hero-sub">
-                I help local businesses show up clearly online and turn visitors into real customers with simple
-                websites, landing pages, and lightweight tools.
+                I build websites for small businesses that look better, load faster, and actually turn visitors into leads.
               </p>
               <div className="home-reveal home-hero-ctas">
                 <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero">
@@ -193,9 +191,9 @@ export function WebDesignSalesPage() {
                 </TrackedPublicLink>
               </div>
               <ul className="home-reveal home-hero-trust mt-8" aria-label="What to expect">
-                <li>Free mockup — see a real direction before you commit</li>
-                <li>Founder-led — you work directly with the person building it</li>
-                <li>Local businesses — sites shaped for calls, trust, and clarity</li>
+                <li>Results-focused — sites built to bring leads, not just look pretty</li>
+                <li>Mockup first — see a real homepage preview before you commit</li>
+                <li>Practical — clear messaging, fast pages, no fluff</li>
               </ul>
             </div>
             <div className="home-reveal home-hero-visual-slot w-full min-w-0 flex justify-center lg:justify-end">
@@ -211,23 +209,30 @@ export function WebDesignSalesPage() {
       <section id="problem" className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
         <div className={`${shell} ${sectionY}`}>
           <h2 className={`home-reveal home-section-title ${h2} ${read}`}>
-            If You&apos;re Easy to Miss Online — You&apos;re Losing Jobs
+            Most websites don&apos;t do anything
           </h2>
           <div className={`home-reveal mt-8 space-y-4 ${body} ${read}`}>
-            <p>Many owners still rely mostly on Facebook or word of mouth.</p>
-            <p>Meanwhile, your customers are searching Google every day.</p>
+            <p>Too many small business sites are outdated — they don&apos;t look trustworthy.</p>
+            <p>They&apos;re confusing — visitors can&apos;t tell what you offer or what to do next.</p>
             <p className="font-medium text-[#E8FDF5]/88">
-              Weak Google visibility means they never see you — and they call a competitor instead.
+              So nothing happens — people leave and you never get the lead.
             </p>
-            <p>An outdated or confusing website can erase trust even when they do find you.</p>
-            <p className="font-medium text-[#E8FDF5]/90">You do good work. Your online presence should show that clearly.</p>
+            <p className="font-medium text-[#E8FDF5]/90">
+              Your business deserves a site that earns attention and turns clicks into real conversations.
+            </p>
           </div>
         </div>
       </section>
 
       <section id="solution" className="home-band home-band--deep">
         <div className={`${shell} ${sectionY}`}>
-          <h2 className={`home-reveal home-section-title ${h2} ${read}`}>What I Focus On</h2>
+          <h2 className={`home-reveal home-section-title ${h2} ${read}`}>I build websites that work</h2>
+          <p className={`home-reveal mt-5 ${body} ${read}`}>
+            Built for <span className="text-[#E8FDF5]/90 font-medium">small businesses</span>,{" "}
+            <span className="text-[#E8FDF5]/90 font-medium">local services</span>, and{" "}
+            <span className="text-[#E8FDF5]/90 font-medium">lead-focused businesses</span> that need more from their site
+            than a placeholder.
+          </p>
           <ul className="home-reveal mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 max-w-[880px]">
             {solutionBullets.map((text) => (
               <li
@@ -344,18 +349,34 @@ export function WebDesignSalesPage() {
 
       <section className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
         <div className={`${shell} ${sectionY}`}>
-          <h2 className={`home-reveal home-section-title ${h2} ${read}`}>Founder-Led, Straightforward, Honest</h2>
+          <h2 className={`home-reveal home-section-title ${h2} ${read}`}>No templates. No guessing.</h2>
           <p className={`home-reveal mt-5 ${body} ${read}`}>
-            You work directly with me — no layered agency handoffs, no surprise stacks of software. I keep the plan
-            practical so your business can actually use what we ship.
+            I start with a <span className="text-[#E8FDF5]/90 font-medium">custom mockup</span> — a real homepage
+            direction for <em>your</em> business — not a generic template you have to reverse-engineer. You see how it
+            could look and read before you invest in a full build, so there&apos;s no mystery about what you&apos;re
+            getting.
           </p>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6">
-            {["No expensive agency fees", "No confusing systems", "No long-term lock-in"].map((t) => (
+            {[
+              {
+                t: "Mockup first",
+                d: "Preview layout and messaging early — not after money has changed hands.",
+              },
+              {
+                t: "Built for you",
+                d: "Your offers, your area, your goals — not a one-size-fits-all theme.",
+              },
+              {
+                t: "You sign off",
+                d: "Review the design, then we move to launch when you are ready.",
+              },
+            ].map((item) => (
               <div
-                key={t}
+                key={item.t}
                 className="home-reveal home-card home-card--glass rounded-2xl p-6 md:p-8 text-center sm:text-left"
               >
-                <p className="text-xl md:text-2xl font-semibold text-[#FFD166]">{t}</p>
+                <p className="text-xl md:text-2xl font-semibold text-[#FFD166]">{item.t}</p>
+                <p className={`mt-3 text-sm md:text-[15px] ${body}`}>{item.d}</p>
               </div>
             ))}
           </div>
@@ -418,18 +439,18 @@ export function WebDesignSalesPage() {
             {[
               {
                 n: "1",
-                title: "Tell me about your business",
-                body: "Share what you do, who you serve, and what a win looks like for you.",
+                title: "Request your mockup",
+                body: "Share your business basics — I will return a custom homepage preview you can react to.",
               },
               {
                 n: "2",
-                title: "I build a mockup or first direction",
-                body: "You'll see a concrete direction early — not a vague promise — before we go all-in.",
+                title: "Review the design",
+                body: "You give feedback on layout and messaging; we align it with how you actually work.",
               },
               {
                 n: "3",
-                title: "We refine and launch",
-                body: "We tighten copy and layout, then launch something you can actually maintain and build on.",
+                title: "Launch",
+                body: "When you are ready, we ship a fast, mobile-friendly site built to bring in leads.",
               },
             ].map((step) => (
               <li
@@ -455,13 +476,12 @@ export function WebDesignSalesPage() {
             <p className="mx-auto mb-4 max-w-[28rem] text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-[rgba(0,255,178,0.8)]">
               Next step
             </p>
-            <h2 className="home-reveal home-final-cta__title">Send Me Your Business Details</h2>
+            <h2 className="home-reveal home-final-cta__title">Get My Free Mockup</h2>
             <p className={`home-reveal mt-5 ${body} max-w-[36rem] mx-auto`}>
-              I&apos;ll show you a clearer direction — starting with the free mockup when it fits.
+              See a custom homepage direction for your business — practical, low-pressure, focused on results.
             </p>
             <p className="home-reveal mx-auto mt-4 max-w-[34rem] text-center text-sm leading-relaxed text-[#9FB5AD]/88">
-              The mockup funnel saves a shareable preview and puts your details in one place — no pressure, just a
-              concrete first look you can react to.
+              No obligation. Just a real preview so you can decide if moving forward makes sense.
             </p>
             <div className="home-final-cta__ctas">
               <Link href="/free-mockup" className="home-btn-primary home-btn-primary--final">

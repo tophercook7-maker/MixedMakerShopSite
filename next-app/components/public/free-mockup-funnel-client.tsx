@@ -1,125 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
-import {
-  buildFunnelPreviewFromSnapshot,
-  FUNNEL_HERO_PRESET_KEYS,
-  type FunnelFormSnapshot,
-} from "@/lib/crm-mockup";
-import { BUSINESS_TYPE_OPTIONS } from "@/lib/lead-samples";
+import { buildFunnelPreviewFromSnapshot, type FunnelFormSnapshot } from "@/lib/crm-mockup";
+import { SITE_GOAL_OPTIONS } from "@/lib/lead-samples";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
-const STYLE_PRESETS = [
-  { id: "clean-modern", label: "Clean / Modern" },
-  { id: "bold-premium", label: "Bold / Premium" },
-  { id: "friendly-local", label: "Friendly / Local" },
-  { id: "minimal-elegant", label: "Minimal / Elegant" },
-] as const;
-
-const COLOR_PRESETS = [
-  { id: "blue", label: "Blue" },
-  { id: "green", label: "Green" },
-  { id: "dark", label: "Dark" },
-  { id: "warm-neutral", label: "Warm neutral" },
-  { id: "bold-accent", label: "Bold accent" },
-  { id: "wellness", label: "Wellness (sand & sage layers)" },
-] as const;
-
-const TEMPLATES = [
-  { value: "auto", label: "Auto — from your category" },
-  { value: "generic-local", label: "Versatile local business" },
-  { value: "pressure-washing", label: "Pressure washing" },
-  { value: "auto-detailing", label: "Auto detailing" },
-  { value: "landscaping", label: "Landscaping / lawn" },
-  { value: "plumbing", label: "Plumbing / HVAC / trades" },
-  { value: "restaurant", label: "Restaurant / food" },
-  { value: "wellness", label: "Wellness / massage / yoga" },
-] as const;
-
-function heroPresetLabel(key: string): string {
-  const m: Record<string, string> = {
-    detailing: "Auto detailing",
-    pressure_washing: "Pressure washing",
-    landscaping: "Landscaping",
-    service_business: "General service",
-  };
-  return m[key] || key.replace(/_/g, " ");
-}
+/** Satisfies API + preview builder when visitors skip location/category pickers. */
+const DEFAULT_CATEGORY = "Small Business";
+const DEFAULT_CITY = "Not specified";
 
 export function FreeMockupFunnelClient() {
-  const [businessName, setBusinessName] = useState("");
-  const [category, setCategory] = useState("");
-  const [city, setCity] = useState("");
-  const [stateUS, setStateUS] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [websiteUrl, setWebsiteUrl] = useState("");
-  const [facebookUrl, setFacebookUrl] = useState("");
-  const [servicesText, setServicesText] = useState("");
-  const [templateMode, setTemplateMode] = useState("auto");
-  const [headlineOverride, setHeadlineOverride] = useState("");
-  const [subheadOverride, setSubheadOverride] = useState("");
-  const [ctaOverride, setCtaOverride] = useState("");
-  const [stylePreset, setStylePreset] = useState("");
-  const [colorPreset, setColorPreset] = useState("");
-  const [heroPreset, setHeroPreset] = useState("");
-
   const [contactName, setContactName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [servicesText, setServicesText] = useState("");
+  const [hasWebsite, setHasWebsite] = useState<"yes" | "no">("no");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [mainGoal, setMainGoal] = useState("");
   const [submitEmail, setSubmitEmail] = useState("");
   const [submitPhone, setSubmitPhone] = useState("");
-  const [visitorNotes, setVisitorNotes] = useState("");
 
   const [phase, setPhase] = useState<"form" | "success">("form");
   const [savedUrl, setSavedUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (email.trim() && !submitEmail.trim()) setSubmitEmail(email.trim());
-  }, [email, submitEmail]);
-
   const snapshot: FunnelFormSnapshot = useMemo(
     () => ({
       business_name: businessName,
-      category,
-      city,
-      state: stateUS,
-      phone,
-      email,
-      website_url: websiteUrl,
-      facebook_url: facebookUrl,
+      category: DEFAULT_CATEGORY,
+      city: DEFAULT_CITY,
+      state: "",
+      phone: submitPhone.trim(),
+      email: submitEmail.trim(),
+      website_url: hasWebsite === "yes" ? websiteUrl.trim() : "",
+      facebook_url: "",
       services_text: servicesText,
-      template_mode: templateMode,
-      headline_override: headlineOverride,
-      subheadline_override: subheadOverride,
-      cta_override: ctaOverride,
-      style_preset: stylePreset,
-      color_preset: colorPreset,
-      hero_preset: heroPreset,
+      template_mode: "auto",
+      headline_override: "",
+      subheadline_override: "",
+      cta_override: "",
+      style_preset: "",
+      color_preset: "",
+      hero_preset: "",
     }),
-    [
-      businessName,
-      category,
-      city,
-      stateUS,
-      phone,
-      email,
-      websiteUrl,
-      facebookUrl,
-      servicesText,
-      templateMode,
-      headlineOverride,
-      subheadOverride,
-      ctaOverride,
-      stylePreset,
-      colorPreset,
-      heroPreset,
-    ]
+    [businessName, hasWebsite, servicesText, submitEmail, submitPhone, websiteUrl]
   );
 
-  const canPreview = Boolean(businessName.trim() && category.trim() && city.trim());
+  const canPreview = Boolean(businessName.trim() && servicesText.trim());
 
   const preview = useMemo(() => {
     if (!canPreview) return null;
@@ -134,42 +63,60 @@ export function FreeMockupFunnelClient() {
     setError(null);
     const cn = contactName.trim();
     const em = submitEmail.trim();
+    const bn = businessName.trim();
+    const svc = servicesText.trim();
     if (!cn) {
       setError("Please enter your name.");
       return;
     }
+    if (!bn) {
+      setError("Please enter your business name.");
+      return;
+    }
+    if (!svc) {
+      setError("Tell us briefly what your business does.");
+      return;
+    }
     if (!em) {
-      setError("Add your email so we can save your preview and follow up.");
+      setError("Please add your email so I can send your mockup.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
       setError("Please enter a valid email.");
       return;
     }
+    if (hasWebsite === "yes" && !websiteUrl.trim()) {
+      setError("Add your website URL, or choose “No” if you don’t have one yet.");
+      return;
+    }
+
+    const notesParts: string[] = [];
+    if (mainGoal.trim()) notesParts.push(`Main goal: ${mainGoal.trim()}`);
+    const notesTrim = notesParts.join("\n");
+
     setLoading(true);
     try {
-      const notesTrim = visitorNotes.trim();
       const mockupData = {
         funnelVersion: 1,
         contactName: cn,
         submitPhone: submitPhone.trim(),
         snapshot: {
-          business_name: businessName.trim(),
-          category: category.trim(),
-          city: city.trim(),
-          state: stateUS.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
-          website_url: websiteUrl.trim(),
-          facebook_url: facebookUrl.trim(),
-          services_text: servicesText,
-          template_mode: templateMode,
-          headline_override: headlineOverride,
-          subheadline_override: subheadOverride,
-          cta_override: ctaOverride,
-          style_preset: stylePreset,
-          color_preset: colorPreset,
-          hero_preset: heroPreset,
+          business_name: bn,
+          category: DEFAULT_CATEGORY,
+          city: DEFAULT_CITY,
+          state: "",
+          phone: submitPhone.trim(),
+          email: em,
+          website_url: hasWebsite === "yes" ? websiteUrl.trim() : "",
+          facebook_url: "",
+          services_text: svc,
+          template_mode: "auto",
+          headline_override: "",
+          subheadline_override: "",
+          cta_override: "",
+          style_preset: "",
+          color_preset: "",
+          hero_preset: "",
         },
         preview: preview
           ? {
@@ -254,12 +201,24 @@ export function FreeMockupFunnelClient() {
     <div id="free-mockup-start" className="free-mockup-funnel scroll-mt-24">
       <div className="free-mockup-funnel-grid">
         <div className="free-mockup-funnel-form card" style={{ padding: "20px 18px" }}>
-          <p className="text-sm font-semibold" style={{ marginBottom: 12 }}>
-            Your business
+          <h2 className="section-heading" style={{ marginBottom: 10, fontSize: "1.25rem" }}>
+            Get Your Free Website Mockup
+          </h2>
+          <p className="small" style={{ color: "var(--muted)", marginTop: 0, marginBottom: 16, lineHeight: 1.55 }}>
+            I&apos;ll design a custom homepage for your business so you can see exactly what your new site could look like
+            — before you commit to anything.
           </p>
-          <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 14 }}>
-            Details here only power your sample preview — not a contract, not a mailing list signup.
-          </p>
+
+          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+            Name *
+            <input
+              className="form-input mt-1 w-full"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              autoComplete="name"
+              placeholder="Your name"
+            />
+          </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             Business name *
             <input
@@ -271,253 +230,107 @@ export function FreeMockupFunnelClient() {
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Category *
+            What does your business do? *
+            <textarea
+              className="form-textarea mt-1 w-full min-h-[80px]"
+              value={servicesText}
+              onChange={(e) => setServicesText(e.target.value)}
+              required
+              placeholder="Short answer — what you offer and who you serve."
+            />
+          </label>
+
+          <fieldset className="mb-3 border-0 p-0 m-0">
+            <legend className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
+              Do you have a website?
+            </legend>
+            <div className="flex flex-wrap gap-4 text-sm" style={{ color: "var(--text)" }}>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="has-website"
+                  checked={hasWebsite === "yes"}
+                  onChange={() => setHasWebsite("yes")}
+                />
+                Yes
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="has-website"
+                  checked={hasWebsite === "no"}
+                  onChange={() => {
+                    setHasWebsite("no");
+                    setWebsiteUrl("");
+                  }}
+                />
+                No
+              </label>
+            </div>
+          </fieldset>
+          {hasWebsite === "yes" ? (
+            <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+              Website URL *
+              <input
+                className="form-input mt-1 w-full"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="yourbusiness.com or full https://…"
+              />
+            </label>
+          ) : null}
+
+          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+            What&apos;s your main goal? (optional)
             <select
               className="form-select mt-1 w-full"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
+              value={mainGoal}
+              onChange={(e) => setMainGoal(e.target.value)}
             >
               <option value="">Select…</option>
-              {BUSINESS_TYPE_OPTIONS.map((opt) => (
+              {SITE_GOAL_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
             </select>
           </label>
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <label className="block text-xs" style={{ color: "var(--muted)" }}>
-              City *
-              <input
-                className="form-input mt-1 w-full"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Hot Springs"
-              />
-            </label>
-            <label className="block text-xs" style={{ color: "var(--muted)" }}>
-              State
-              <input
-                className="form-input mt-1 w-full"
-                value={stateUS}
-                onChange={(e) => setStateUS(e.target.value)}
-                placeholder="AR"
-              />
-            </label>
-          </div>
-          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Phone (optional — shows on preview)
-            <input
-              className="form-input mt-1 w-full"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(501) 555-0100"
-            />
-          </label>
-          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Email for the preview only (optional)
+
+          <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
+            Email *
             <input
               className="form-input mt-1 w-full"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={submitEmail}
+              onChange={(e) => setSubmitEmail(e.target.value)}
               placeholder="you@business.com"
-            />
-          </label>
-          <p className="small" style={{ color: "var(--muted)", marginTop: -10, marginBottom: 12 }}>
-            If you add it, it can appear on the preview card — not the same as the email below for saving your link.
-          </p>
-          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Website (optional)
-            <input
-              className="form-input mt-1 w-full"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="yourbusiness.com"
+              autoComplete="email"
+              required
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Facebook page (optional)
+            Phone (optional)
             <input
               className="form-input mt-1 w-full"
-              value={facebookUrl}
-              onChange={(e) => setFacebookUrl(e.target.value)}
-              placeholder="https://facebook.com/…"
-            />
-          </label>
-          <label className="block text-xs mb-4" style={{ color: "var(--muted)" }}>
-            What do you need help with? (optional)
-            <textarea
-              className="form-textarea mt-1 w-full min-h-[72px]"
-              value={servicesText}
-              onChange={(e) => setServicesText(e.target.value)}
-              placeholder="e.g. better Google visibility, new landing page, clearer calls-to-action…"
+              type="tel"
+              value={submitPhone}
+              onChange={(e) => setSubmitPhone(e.target.value)}
+              placeholder="(501) 555-0100"
+              autoComplete="tel"
             />
           </label>
 
-          <p className="text-sm font-semibold" style={{ marginBottom: 10 }}>
-            Fine-tune the preview
+          {error ? (
+            <p className="small" style={{ color: "#f87171", marginBottom: 10 }}>
+              {error}
+            </p>
+          ) : null}
+          <button type="button" className="btn gold w-full" disabled={loading} onClick={() => void submit()}>
+            {loading ? "Sending…" : "Get My Free Mockup"}
+          </button>
+          <p className="small" style={{ color: "var(--muted)", marginTop: 12, marginBottom: 0, lineHeight: 1.55 }}>
+            No pressure. I&apos;ll send you a custom design — you decide if you want to move forward.
           </p>
-          <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-            Layout template
-            <select
-              className="form-select mt-1 w-full"
-              value={templateMode}
-              onChange={(e) => setTemplateMode(e.target.value)}
-            >
-              {TEMPLATES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-            Headline (optional override)
-            <input
-              className="form-input mt-1 w-full"
-              value={headlineOverride}
-              onChange={(e) => setHeadlineOverride(e.target.value)}
-              placeholder="Leave blank for a smart default"
-            />
-          </label>
-          <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-            Subheadline (optional)
-            <textarea
-              className="form-textarea mt-1 w-full min-h-[56px]"
-              value={subheadOverride}
-              onChange={(e) => setSubheadOverride(e.target.value)}
-              placeholder="Make it easy for customers to find you…"
-            />
-          </label>
-          <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-            Button text (optional)
-            <input
-              className="form-input mt-1 w-full"
-              value={ctaOverride}
-              onChange={(e) => setCtaOverride(e.target.value)}
-              placeholder="Call Now, Get a Quote…"
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <label className="block text-xs" style={{ color: "var(--muted)" }}>
-              Style
-              <select
-                className="form-select mt-1 w-full"
-                value={stylePreset}
-                onChange={(e) => setStylePreset(e.target.value)}
-              >
-                <option value="">Auto</option>
-                {STYLE_PRESETS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-xs" style={{ color: "var(--muted)" }}>
-              Color
-              <select
-                className="form-select mt-1 w-full"
-                value={colorPreset}
-                onChange={(e) => setColorPreset(e.target.value)}
-              >
-                <option value="">Auto</option>
-                {COLOR_PRESETS.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label className="block text-xs mb-4" style={{ color: "var(--muted)" }}>
-            Hero image style
-            <select
-              className="form-select mt-1 w-full"
-              value={heroPreset}
-              onChange={(e) => setHeroPreset(e.target.value)}
-            >
-              <option value="">Auto (from category)</option>
-              {FUNNEL_HERO_PRESET_KEYS.map((k) => (
-                <option key={k} value={k}>
-                  {heroPresetLabel(k)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div
-            style={{
-              borderTop: "1px solid var(--border)",
-              paddingTop: 16,
-              marginTop: 8,
-            }}
-          >
-            <p className="text-sm font-semibold" style={{ marginBottom: 8 }}>
-              Save &amp; Send Your Mockup
-            </p>
-            <p className="small" style={{ color: "var(--muted)", marginBottom: 12, lineHeight: 1.55 }}>
-              Not ready to finish everything right now? You can save your mockup and send it to MixedMakerShop so I can
-              review it and help finish building it for you. This gives you a simple way to get your ideas started first,
-              then hand it off once you&apos;re ready to add the remaining details.
-            </p>
-            <p className="small" style={{ color: "var(--muted)", marginBottom: 14, lineHeight: 1.55, opacity: 0.92 }}>
-              Your mockup does not need to be fully complete before sending it over. Once I receive it, I can help finish
-              the build after you provide the rest of the content, business details, images, and preferences needed to
-              complete the site.
-            </p>
-            <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-              Your name *
-              <input
-                className="form-input mt-1 w-full"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="Alex Johnson"
-              />
-            </label>
-            <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
-              Best email to reach you <span style={{ color: "#f87171" }}>*</span>
-              <input
-                className="form-input mt-1 w-full"
-                type="email"
-                value={submitEmail}
-                onChange={(e) => setSubmitEmail(e.target.value)}
-                placeholder="you@gmail.com"
-                required
-              />
-            </label>
-            <p className="small" style={{ color: "var(--muted)", marginTop: -6, marginBottom: 10 }}>
-              Use an inbox you actually check so I can follow up when you&apos;re ready to move ahead.
-            </p>
-            <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-              Phone (optional)
-              <input
-                className="form-input mt-1 w-full"
-                value={submitPhone}
-                onChange={(e) => setSubmitPhone(e.target.value)}
-                placeholder="(501) 555-0199"
-              />
-            </label>
-            <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-              Anything else? (optional)
-              <textarea
-                className="form-textarea mt-1 w-full min-h-[64px]"
-                value={visitorNotes}
-                onChange={(e) => setVisitorNotes(e.target.value)}
-                placeholder="Timing, goals, links to inspiration — short notes are perfect."
-              />
-            </label>
-            {error ? (
-              <p className="small" style={{ color: "#f87171", marginBottom: 10 }}>
-                {error}
-              </p>
-            ) : null}
-            <button type="button" className="btn gold w-full" disabled={loading} onClick={() => void submit()}>
-              {loading ? "Sending…" : "Save & Send My Mockup"}
-            </button>
-          </div>
         </div>
 
         <div className="free-mockup-funnel-preview">
@@ -532,7 +345,7 @@ export function FreeMockupFunnelClient() {
                 secondaryHref: "#services",
                 portfolioFooter: true,
                 portfolioFooterMessage:
-                  "Like what you're seeing? Save & send your mockup below and I'll help you turn it into a real site.",
+                  "Like what you're seeing? Submit the form with your email and I'll follow up with your saved mockup.",
                 portfolioCopy: true,
                 imageCategoryKey: preview.imageCategoryKey,
                 wideLayout: true,
@@ -545,7 +358,7 @@ export function FreeMockupFunnelClient() {
                   Live preview
                 </p>
                 <p className="small" style={{ color: "var(--muted)", maxWidth: 360, margin: 0 }}>
-                  Enter your business name, category, and city — your sample site appears here instantly.
+                  Add your business name and a short description of what you do — your sample homepage appears here.
                 </p>
               </div>
             </div>
