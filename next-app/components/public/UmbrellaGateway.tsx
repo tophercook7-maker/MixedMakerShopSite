@@ -21,6 +21,7 @@ import { publicGatewayPageBgClass } from "@/lib/public-brand";
 import { trackGatewayNav } from "@/lib/public-analytics";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { cn } from "@/lib/utils";
+import { WhatElseIBuild } from "@/components/public/what-else-i-build";
 
 const PRINT_HERO = [
   { src: "/images/mixedmaker-workspace-hero.png", alt: "MixedMaker 3D printing workspace and setup" },
@@ -224,16 +225,17 @@ export function UmbrellaGateway() {
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto mb-12 max-w-3xl text-center md:mb-16">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300/80">Choose your path</p>
-          <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">What are you trying to build?</h1>
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300/80">Ways I can help</p>
+          <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">Websites that help your business grow</h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-            Pick the direction that fits what you need — more customers for your business online, or custom 3D printing
-            and problem-solving that turns ideas into real parts.
+            Most clients come to me for websites that bring real customers. I also build custom 3D printed products,
+            prototypes, and practical parts when that&apos;s what you need. If you need a site, a physical product, or
+            both — I can help.
           </p>
         </div>
 
         <div className="mb-4 text-center text-sm font-medium uppercase tracking-[0.2em] text-slate-400">
-          Pick the path that matches your project
+          What I build
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -359,8 +361,8 @@ export function UmbrellaGateway() {
                 </div>
 
                 <p className="mb-6 max-w-2xl text-base leading-7 text-slate-300">
-                  Custom 3D printing for broken parts, replacements, functional tools, and custom ideas — whether you
-                  already have a print file or just need help figuring out the solution.
+                  Beyond websites: custom 3D printing for broken parts, replacements, functional tools, and custom ideas —
+                  whether you already have a print file or just need help figuring out the solution.
                 </p>
 
                 <PrintPathPhotoCollage href="/3d-printing" />
@@ -464,18 +466,20 @@ export function UmbrellaGateway() {
         </div>
 
         <div className="mx-auto mt-10 max-w-4xl rounded-[28px] border border-white/10 bg-white/5 p-5 text-center shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl md:p-6">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Not sure which path?</p>
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Still figuring it out?</p>
           <div className="grid gap-3 text-sm text-slate-300 md:grid-cols-2 md:text-base">
             <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/5 px-4 py-3">
-              Need more customers, visibility, or a better online setup?{" "}
-              <span className="font-semibold text-emerald-200">Choose Web Design.</span>
+              Most clients start with a stronger online presence — clearer messaging, better visibility, and more leads.{" "}
+              <span className="font-semibold text-emerald-200">Web design is the usual first step.</span>
             </div>
             <div className="rounded-2xl border border-sky-400/15 bg-sky-400/5 px-4 py-3">
-              Need a custom part, file printed, or help solving a physical problem?{" "}
-              <span className="font-semibold text-sky-200">Choose 3D Printing.</span>
+              Need a part printed, a prototype, or help with a physical problem?{" "}
+              <span className="font-semibold text-sky-200">3D printing is what you&apos;ll want to explore.</span>
             </div>
           </div>
         </div>
+
+        <WhatElseIBuild />
       </div>
     </div>
   );

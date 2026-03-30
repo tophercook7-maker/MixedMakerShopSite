@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { PrintingHero } from "@/components/printing/PrintingHero";
+import { PrintingCapabilitiesOverview } from "@/components/printing/PrintingCapabilitiesOverview";
 import { PrintingProofStrip } from "@/components/printing/PrintingProofStrip";
 import { PrintingRequestNextSteps } from "@/components/printing/PrintingRequestNextSteps";
 import { PrintingIntakePaths } from "@/components/printing/PrintingIntakePaths";
@@ -32,6 +33,7 @@ export default function ThreeDPrintingPage() {
       )}
     >
       <PrintingHero />
+      <PrintingCapabilitiesOverview />
       <PrintingProofStrip />
       <PrintingRequestNextSteps />
       <PrintingIntakePaths />
