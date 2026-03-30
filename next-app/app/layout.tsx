@@ -8,7 +8,8 @@ export const metadata: Metadata = {
     default: "MixedMakerShop",
     template: "%s | MixedMakerShop",
   },
-  description: "Web design, 3D printing, and custom builds that stand out.",
+  description:
+    "Web design, SEO, and digital growth support for small businesses — by Topher at MixedMakerShop.",
   applicationName: "MixedMakerShop",
   icons: {
     icon: "/favicon.ico",
@@ -19,7 +20,8 @@ export const metadata: Metadata = {
   themeColor: "#0b0f0e",
   openGraph: {
     title: "MixedMakerShop",
-    description: "Web design, 3D printing, and custom builds that stand out.",
+    description:
+      "Web design, SEO, and digital growth support for small businesses — by Topher at MixedMakerShop.",
     url: "https://mixedmakershop.com",
     siteName: "MixedMakerShop",
     locale: "en_US",
@@ -29,14 +31,15 @@ export const metadata: Metadata = {
         url: "/og-image",
         width: 1200,
         height: 630,
-        alt: "MixedMakerShop — Build bold. Print custom. Grow local.",
+        alt: "MixedMakerShop — Web design and digital growth for small businesses",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "MixedMakerShop",
-    description: "Web design, 3D printing, and custom builds that stand out.",
+    description:
+    "Web design, SEO, and digital growth support for small businesses — by Topher at MixedMakerShop.",
     images: ["/og-image"],
   },
 };

@@ -11,8 +11,8 @@ export function PublicFooter() {
               Contact
             </h2>
             <p className="small" style={{ margin: 0, opacity: 0.9 }}>
-              MixedMakerShop — web design and digital tools by Topher, built for small businesses that want more customers
-              online.
+              MixedMakerShop — web design, SEO, and digital growth support by Topher for small businesses that want more
+              leads online.
             </p>
             <p className="small" style={{ margin: "6px 0 0" }}>
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
@@ -52,7 +52,7 @@ export function PublicFooter() {
         </div>
         <div className="small" style={{ marginTop: 10 }}>
           <Link href="/">Home</Link> • <Link href="/web-design">Web Design</Link> •{" "}
-          <Link href="/free-mockup">Mockup Tool</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
+          <Link href="/free-mockup">Free preview</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
           <TrackedPublicLink
             href="/contact"
             eventName="public_contact_cta_click"

@@ -43,7 +43,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Web design &amp; digital tools by Topher</strong>
+              <strong>Web design, SEO &amp; digital growth by Topher</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -65,7 +65,7 @@ export function PublicNav() {
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
             }
           >
-            Mockup Tool
+            Free preview
           </Link>
           <Link
             href="/contact"
