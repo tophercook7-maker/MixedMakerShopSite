@@ -55,8 +55,8 @@ export function PublicNav() {
           <Link href="/" className="pill">
             Home
           </Link>
-          <Link href="/web-design" className="pill">
-            Web Design
+          <Link href="/#real-work" className="pill">
+            Showcase
           </Link>
           <Link
             href="/free-mockup"

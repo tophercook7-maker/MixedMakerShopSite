@@ -51,7 +51,7 @@ export function PublicFooter() {
           MixedMakerShop is the studio. Topher Web Design is the client-service side for business websites.
         </div>
         <div className="small" style={{ marginTop: 10 }}>
-          <Link href="/">Home</Link> • <Link href="/web-design">Web Design</Link> •{" "}
+          <Link href="/">Home</Link> • <Link href="/#real-work">Showcase</Link> •{" "}
           <Link href="/free-mockup">Free preview</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
           <TrackedPublicLink
             href="/contact"
