@@ -70,6 +70,7 @@ import {
   THREE_D_PRINT_CRM_FILTER_TABS,
   serializePrintCrmStageFilter,
 } from "@/lib/crm/three-d-print-ui-lanes";
+import { isLeadStaleNoContact, mockupDealStatusShortLabel } from "@/lib/mockup-deal-status";
 
 type SortKey = "created" | "score" | "follow_up" | "business";
 
@@ -92,6 +93,15 @@ function fmtShort(iso: string | null | undefined): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+/** Highlight web-design-ish leads with no touch in 3+ days (excludes won/lost / closed mockup / 3D print lane). */
+function cardStaleNeedsPing(lead: WorkflowLead): boolean {
+  if (lead.status === "won" || lead.status === "lost") return false;
+  const m = String(lead.mockup_deal_status || "").toLowerCase();
+  if (m === "closed_won" || m === "closed_lost") return false;
+  if (resolveServiceTypeForDisplay(lead) === "3d_printing") return false;
+  return isLeadStaleNoContact(lead.last_contacted_at, 3);
 }
 
 function websitePlain(lead: WorkflowLead): string {
@@ -1102,11 +1112,12 @@ export function LeadsCardBrowser({
             const canQuickContact = workflowLeadContactPath(lead);
             const workspaceHref = buildLeadPath(lead.id, lead.business_name);
             const primaryAction = resolveLeadPrimaryAction(lead, { workspaceHref });
+            const staleNoContact = cardStaleNeedsPing(lead);
             return (
               <li
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""}`}
+                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContact ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
                 style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.12)" }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -1118,13 +1129,22 @@ export function LeadsCardBrowser({
                   >
                     {lead.business_name}
                   </button>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
-                    {simpleLeadStatusLabel({
-                      status: lead.status,
-                      next_follow_up_at: lead.next_follow_up_at,
-                      first_outreach_sent_at: lead.first_outreach_sent_at,
-                    })}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${leadStatusClass(lead.status)}`}>
+                      {simpleLeadStatusLabel({
+                        status: lead.status,
+                        next_follow_up_at: lead.next_follow_up_at,
+                        first_outreach_sent_at: lead.first_outreach_sent_at,
+                      })}
+                    </span>
+                    <span
+                      className="text-[9px] px-2 py-0.5 rounded-full border"
+                      style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}
+                      title="Mockup deal status"
+                    >
+                      {mockupDealStatusShortLabel(lead.mockup_deal_status)}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <LeadServiceTypeBadge
@@ -1356,11 +1376,12 @@ export function LeadsCardBrowser({
             const canQuickContact = workflowLeadContactPath(lead);
             const workspaceHrefDetailed = buildLeadPath(lead.id, lead.business_name);
             const primaryActionDetailed = resolveLeadPrimaryAction(lead, { workspaceHref: workspaceHrefDetailed });
+            const staleNoContactDetailed = cardStaleNeedsPing(lead);
             return (
               <div
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""}`}
+                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContactDetailed ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <button
@@ -1376,13 +1397,22 @@ export function LeadsCardBrowser({
                       {lead.category ? ` · ${lead.category}` : ""}
                     </p>
                   </button>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${leadStatusClass(lead.status)}`}>
-                    {simpleLeadStatusLabel({
-                      status: lead.status,
-                      next_follow_up_at: lead.next_follow_up_at,
-                      first_outreach_sent_at: lead.first_outreach_sent_at,
-                    })}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${leadStatusClass(lead.status)}`}>
+                      {simpleLeadStatusLabel({
+                        status: lead.status,
+                        next_follow_up_at: lead.next_follow_up_at,
+                        first_outreach_sent_at: lead.first_outreach_sent_at,
+                      })}
+                    </span>
+                    <span
+                      className="text-[9px] px-2 py-0.5 rounded-full border"
+                      style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}
+                      title="Mockup deal status"
+                    >
+                      {mockupDealStatusShortLabel(lead.mockup_deal_status)}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <LeadServiceTypeBadge

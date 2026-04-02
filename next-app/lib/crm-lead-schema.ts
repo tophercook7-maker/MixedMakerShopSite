@@ -139,6 +139,7 @@ export const LEAD_INSERT_COLUMN_WHITELIST = [
   "last_updated_at",
   "is_recurring_client",
   "monthly_value",
+  "mockup_deal_status",
   "subscription_started_at",
   "referred_by",
   "referral_source",

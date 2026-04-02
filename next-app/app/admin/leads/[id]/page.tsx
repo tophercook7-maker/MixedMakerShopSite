@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { LeadMockupDealFollowupPanel } from "@/components/admin/lead-mockup-deal-followup-panel";
 import { LeadMockupSharePanel } from "@/components/admin/lead-mockup-share-panel";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
@@ -101,7 +102,9 @@ type LeadRow = {
   suggested_template_key?: string | null;
   suggested_response?: string | null;
   contact_name?: string | null;
+  primary_contact_name?: string | null;
   last_contacted_at?: string | null;
+  mockup_deal_status?: string | null;
   print_pipeline_status?: string | null;
   print_request_type?: string | null;
   print_tags?: string[] | null;
@@ -195,7 +198,9 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "lead_tags",
     "opportunity_reason",
     "contact_name",
+    "primary_contact_name",
     "last_contacted_at",
+    "mockup_deal_status",
     "print_pipeline_status",
     "print_request_type",
     "print_tags",
@@ -2074,6 +2079,13 @@ Want me to show you a quick idea?`;
             </p>
             {resolvedLeadId ? (
               <LeadWorkspaceScrollAnchor focusOutreach={focusOutreach}>
+                <LeadMockupDealFollowupPanel
+                  leadId={resolvedLeadId}
+                  contactName={lead?.contact_name?.trim() || lead?.primary_contact_name?.trim() || ""}
+                  businessName={displayBusinessName}
+                  initialMockupDealStatus={lead?.mockup_deal_status}
+                  initialLastContactedAt={lead?.last_contacted_at}
+                />
                 <LeadMockupSharePanel
                   leadId={resolvedLeadId}
                   businessName={displayBusinessName}

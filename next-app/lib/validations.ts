@@ -22,6 +22,14 @@ const leadStatuses = [
 const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
 const dealStages = ["new", "interested", "pricing", "closing", "won"] as const;
 const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
+const mockupDealStatuses = [
+  "new",
+  "mockup_sent",
+  "replied",
+  "interested",
+  "closed_won",
+  "closed_lost",
+] as const;
 const printPipelineStatuses = [
   "new",
   "need_info",
@@ -114,6 +122,7 @@ export const leadSchema = z.object({
   best_time_to_visit: z.string().max(120).optional().transform((v) => (v === "" ? undefined : v)),
   is_recurring_client: z.boolean().optional(),
   monthly_value: z.number().min(0).optional(),
+  mockup_deal_status: z.enum(mockupDealStatuses).optional(),
   subscription_started_at: optionalTimestamp,
   referred_by: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),
   referral_source: z.string().max(200).optional().transform((v) => (v === "" ? undefined : v)),

@@ -15,6 +15,8 @@ export function applyWorkflowLeadPatch(l: WorkflowLead, patch: Record<string, un
   if (typeof patch.first_outreach_sent_at === "string")
     next.first_outreach_sent_at = patch.first_outreach_sent_at || null;
   if (typeof patch.last_contacted_at === "string") next.last_contacted_at = patch.last_contacted_at || null;
+  if (typeof patch.mockup_deal_status === "string")
+    next.mockup_deal_status = String(patch.mockup_deal_status || "").trim() || null;
   if ("next_follow_up_at" in patch)
     next.next_follow_up_at = patch.next_follow_up_at ? String(patch.next_follow_up_at) : null;
   if (typeof patch.status === "string") next.status = patch.status as WorkflowLead["status"];

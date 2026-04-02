@@ -139,6 +139,8 @@ export type WorkflowLead = {
   last_reply_preview?: string | null;
   unread_reply_count?: number | null;
   last_contacted_at?: string | null;
+  /** Web mockup funnel status — see migration leads_mockup_deal_status */
+  mockup_deal_status?: string | null;
   follow_up_stage?: number;
   next_follow_up_at?: string | null;
   follow_up_status?: FollowUpStatus;

@@ -151,6 +151,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     meta: { to: leadEmail, mockup_slug: slug },
   });
 
+  const { data: dealRow } = await supabase
+    .from("leads")
+    .select("mockup_deal_status")
+    .eq("id", leadId)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+  const curDeal = String((dealRow as { mockup_deal_status?: string | null } | null)?.mockup_deal_status || "new");
+  const nextMockupDeal =
+    curDeal === "closed_won" || curDeal === "closed_lost" ? curDeal : "mockup_sent";
+
+  const { error: leadUpErr } = await supabase
+    .from("leads")
+    .update({
+      last_contacted_at: now,
+      mockup_deal_status: nextMockupDeal,
+      last_updated_at: now,
+    })
+    .eq("id", leadId)
+    .eq("owner_id", ownerId);
+  if (leadUpErr) {
+    console.warn("[crm-mockup send] lead last_contacted/mockup_deal_status update failed", leadUpErr.message);
+  }
+
   const resolved = mockupAbsoluteUrl(origin, slug);
   return NextResponse.json({
     ok: true,

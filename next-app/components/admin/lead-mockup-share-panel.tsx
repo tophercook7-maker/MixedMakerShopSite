@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { buildMockupShareMessages } from "@/lib/crm-mockup";
 
@@ -33,6 +34,7 @@ export function LeadMockupSharePanel({
   /** Lead email from CRM; required to enable Send mockup. */
   leadEmail?: string;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -117,6 +119,7 @@ export function LeadMockupSharePanel({
       }
       if (body.mockup) setMockup((prev) => ({ ...(prev ?? {}), ...body.mockup }));
       setToast("Mockup sent.");
+      router.refresh();
     } catch {
       setError("Network error sending email");
     } finally {

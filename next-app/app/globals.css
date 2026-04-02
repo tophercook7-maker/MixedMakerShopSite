@@ -1244,6 +1244,98 @@ main .section .transformation-card:not(.motion-reveal-target):hover {
   z-index: 2;
 }
 
+/* Homepage (/) — same fixed workspace photo; UmbrellaGateway content scrolls above */
+.home-page--immersive {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  --home-workspace-img: url("/images/mixedmaker-workspace-hero.png");
+}
+
+.home-page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #0b0f0e;
+  background-image: var(--home-workspace-img);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.home-page__veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      105deg,
+      rgba(1, 8, 7, 0.78) 0%,
+      rgba(1, 10, 9, 0.48) 38%,
+      rgba(2, 14, 12, 0.4) 62%,
+      rgba(2, 12, 10, 0.46) 100%
+    ),
+    radial-gradient(ellipse 95% 75% at 72% 32%, transparent 0%, rgba(1, 6, 5, 0.52) 62%, rgba(1, 8, 7, 0.74) 100%);
+}
+
+@media (max-width: 768px) {
+  .home-page__veil {
+    background:
+      linear-gradient(180deg, rgba(1, 8, 7, 0.74) 0%, rgba(1, 9, 8, 0.52) 42%, rgba(1, 11, 10, 0.62) 100%),
+      radial-gradient(ellipse 100% 55% at 50% 28%, transparent 0%, rgba(1, 6, 5, 0.55) 100%);
+  }
+}
+
+.home-page__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.public-site--dark main:has(.home-page--immersive) {
+  background: transparent;
+}
+
+/* Homepage scroll blocks — rise sharply from below (“pop”) */
+main .home-page--immersive .home-gateway-pop.motion-reveal-target {
+  opacity: 0;
+  transform: translateY(clamp(2.25rem, 9vh, 4.75rem)) scale(0.94);
+  clip-path: inset(100% 0 0 0 round 1.75rem);
+  transition-property: opacity, transform, clip-path, box-shadow;
+  transition-duration: 0.72s, 0.72s, 0.72s, 0.22s;
+  transition-timing-function:
+    cubic-bezier(0.22, 1.25, 0.38, 1),
+    cubic-bezier(0.22, 1.25, 0.38, 1),
+    cubic-bezier(0.22, 1.1, 0.36, 1),
+    ease-out;
+  transition-delay: var(--motion-delay, 0s), var(--motion-delay, 0s), var(--motion-delay, 0s), 0s;
+  will-change: opacity, transform, clip-path;
+}
+
+main .home-page--immersive .home-gateway-pop.motion-reveal-target.motion-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  clip-path: inset(0 0 0 0 round 1.75rem);
+}
+
+/* Hero has no card radius — reveal from bottom without tight corner rounding */
+main .home-page--immersive .home-gateway-pop--hero.motion-reveal-target {
+  clip-path: inset(100% 0 0 0);
+}
+main .home-page--immersive .home-gateway-pop--hero.motion-reveal-target.motion-visible {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main .home-page--immersive .home-gateway-pop.motion-reveal-target,
+  main .home-page--immersive .home-gateway-pop--hero.motion-reveal-target {
+    clip-path: none !important;
+  }
+}
+
 .web-design-page--immersive .hero {
   background: transparent;
 }
@@ -3463,10 +3555,10 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   border-bottom: 1px solid rgba(232, 253, 245, 0.08);
 }
 
-/* Home gateway (/) — blue-navy shell aligned with UmbrellaGateway gradient */
+/* Home gateway (/) — glass over fixed workspace photo */
 .nav.nav--premium.nav--gateway {
-  background: linear-gradient(180deg, rgba(7, 17, 31, 0.94) 0%, rgba(8, 19, 28, 0.92) 100%);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(180deg, rgba(11, 15, 14, 0.9) 0%, rgba(11, 15, 14, 0.84) 100%);
+  border-bottom: 1px solid rgba(232, 253, 245, 0.1);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
