@@ -29,7 +29,7 @@ export default function FreeMockupPage() {
             </p>
             <div className="btn-row" style={{ flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
               <a href="#free-mockup-start" className="btn gold">
-                Get My Free Mockup
+                Get My Free Website Preview
               </a>
             </div>
             <p className="small" style={{ margin: 0, marginBottom: 8, fontWeight: 500 }}>

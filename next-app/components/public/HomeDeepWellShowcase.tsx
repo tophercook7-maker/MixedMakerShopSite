@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
 import { ArrowRight, ExternalLink } from "lucide-react";
+import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { cn } from "@/lib/utils";
 
@@ -28,107 +27,104 @@ const PROJECTS = [
   },
 ] as const;
 
+const shell = publicShellClass;
+const sectionY = "py-20 md:py-28";
+const h2 =
+  "text-3xl md:text-4xl lg:text-[2.85rem] font-semibold tracking-tight text-[#E8FDF5] lg:leading-[1.08]";
+const body = publicBodyMutedClass;
+
 export function HomeDeepWellShowcase() {
   return (
     <section
-      className="mx-auto mb-16 max-w-6xl md:mb-24"
+      id="real-work"
+      className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]"
       aria-labelledby="real-work-heading"
     >
-      <div className="home-gateway-pop text-center">
+      <div className={cn(shell, sectionY)}>
         <h2
           id="real-work-heading"
-          className="text-2xl font-semibold tracking-tight text-white md:text-3xl"
+          className={cn("home-reveal home-section-title mx-auto max-w-[760px] text-center", h2)}
         >
           Real Work. Real Builds.
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 md:text-base">
-          Here are real websites I&apos;ve built — designed to look sharp, load fast,
-          and actually represent the business.
+        <p
+          className={cn(
+            "home-reveal mx-auto mt-5 max-w-[42rem] text-center text-base md:text-[17px] leading-relaxed",
+            body,
+          )}
+        >
+          Here are real websites I&apos;ve built — designed to look sharp, load fast, and represent the business
+          well.
         </p>
-      </div>
 
-      <div className="home-gateway-pop mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-        {PROJECTS.map((project) => (
-          <motion.div
-            key={project.analyticsId}
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.18 }}
-            className="min-w-0"
-          >
-            <Card
+        <div className="home-reveal mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+          {PROJECTS.map((project) => (
+            <div
+              key={project.analyticsId}
               className={cn(
-                "h-full overflow-hidden rounded-[28px] bg-white/5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl",
+                "home-card home-card--glass flex h-full flex-col rounded-2xl p-6 md:p-8 transition-[transform,box-shadow] duration-200 hover:-translate-y-1",
                 project.featured
-                  ? "border border-[rgba(232,149,92,0.38)] ring-1 ring-[rgba(201,97,44,0.28)]"
-                  : "border border-[rgba(232,149,92,0.22)]",
+                  ? "ring-1 ring-[rgba(232,149,92,0.38)] shadow-[0_0_0_1px_rgba(201,97,44,0.2)]"
+                  : "",
               )}
             >
-              <CardContent className="flex h-full flex-col p-5 text-left md:p-6">
-                <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#e8a065]/90">
-                  {project.badge}
-                </p>
-                <h3 className="mt-3 text-xl font-semibold tracking-tight text-white md:text-2xl">
-                  {project.title}
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300 md:text-base">
-                  {project.description}
-                </p>
-                <div className="mt-8 flex flex-col gap-3">
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() =>
-                      trackPublicEvent("public_external_project_click", {
-                        location: "gateway",
-                        section: "real_work",
-                        project: project.analyticsId,
-                      })
-                    }
-                    className="inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-2xl border border-white/18 bg-black/25 px-6 py-3 text-sm font-semibold text-slate-100 no-underline transition hover:border-[rgba(232,149,92,0.35)] hover:bg-black/35"
-                  >
-                    View Website
-                    <ExternalLink className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
-                  </a>
-                  <Link
-                    href="/free-mockup"
-                    onClick={() =>
-                      trackPublicEvent("public_contact_cta_click", {
-                        location: "gateway",
-                        target: "free_mockup",
-                        section: "real_work_card",
-                        project: project.analyticsId,
-                      })
-                    }
-                    className="btn gold inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline"
-                  >
-                    Get My Free Website Preview{" "}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#e09a5a]">{project.badge}</p>
+              <h3 className="mt-3 text-xl font-semibold tracking-tight text-[#E8FDF5] md:text-2xl">{project.title}</h3>
+              <p className={cn("mt-3 flex-1 text-sm leading-relaxed md:text-[15px]", body)}>{project.description}</p>
+              <div className="mt-8 flex flex-col gap-3">
+                <a
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() =>
+                    trackPublicEvent("public_external_project_click", {
+                      location: "web_design",
+                      section: "real_work",
+                      project: project.analyticsId,
+                    })
+                  }
+                  className="home-btn-secondary--hero inline-flex min-h-[52px] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline"
+                >
+                  View Website
+                  <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                </a>
+                <Link
+                  href="/free-mockup"
+                  onClick={() =>
+                    trackPublicEvent("public_contact_cta_click", {
+                      location: "web_design",
+                      target: "free_mockup",
+                      section: "real_work_card",
+                      project: project.analyticsId,
+                    })
+                  }
+                  className="home-btn-primary home-btn-primary--hero inline-flex min-h-[52px] w-full items-center justify-center gap-2 font-semibold text-[#0c0e0d] no-underline"
+                >
+                  Get My Free Website Preview
+                  <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
 
-      <div className="home-gateway-pop mx-auto mt-10 max-w-xl text-center">
-        <p className="text-base leading-relaxed text-slate-300">
-          Want something like this for your business?
-        </p>
-        <Link
-          href="/free-mockup"
-          onClick={() =>
-            trackPublicEvent("public_contact_cta_click", {
-              location: "gateway",
-              target: "free_mockup",
-              section: "real_work_footer",
-            })
-          }
-          className="btn gold mt-6 inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
-        >
-          Get My Free Website Preview <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="home-reveal mx-auto mt-12 max-w-xl text-center md:mt-14">
+          <p className={cn("text-base md:text-[17px]", body)}>Want something like this for your business?</p>
+          <Link
+            href="/free-mockup"
+            onClick={() =>
+              trackPublicEvent("public_contact_cta_click", {
+                location: "web_design",
+                target: "free_mockup",
+                section: "real_work_footer",
+              })
+            }
+            className="home-btn-primary home-btn-primary--hero mx-auto mt-6 inline-flex min-h-[52px] w-full max-w-md items-center justify-center gap-2 font-semibold text-[#0c0e0d] no-underline sm:w-auto"
+          >
+            Get My Free Website Preview
+            <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+          </Link>
+        </div>
       </div>
     </section>
   );

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const steps = [
   { n: "1", text: "You send your business details" },
   { n: "2", text: "I review what you have now" },
-  { n: "3", text: "I send you a better direction or mockup by email" },
+  { n: "3", text: "I send you a better direction or preview by email" },
 ] as const;
 
 export function WebDesignMockupNextSteps() {
@@ -15,7 +15,7 @@ export function WebDesignMockupNextSteps() {
     >
       <div className={cn(publicShellClass, "py-14 md:py-[4.5rem]")}>
         <h2 id="web-mockup-next-heading" className={cn("home-reveal max-w-[40rem] text-center mx-auto", publicH2WebClass)}>
-          What happens when you request a free mockup?
+          What happens when you request a free website preview?
         </h2>
 
         <div className={cn("home-reveal mt-8 md:mt-10", publicCardGlassWebClass, "p-6 md:p-8 lg:p-10")}>

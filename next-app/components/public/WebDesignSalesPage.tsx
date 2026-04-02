@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { CheckCircle2, LayoutTemplate, Sparkles, Wrench } from "lucide-react";
 import { HomeSalesVisual } from "@/components/public/HomeSalesVisual";
+import { HomeDeepWellShowcase } from "@/components/public/HomeDeepWellShowcase";
 import { WebDesignProofStrip } from "@/components/public/WebDesignProofStrip";
 import { WebDesignMockupNextSteps } from "@/components/public/WebDesignMockupNextSteps";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
@@ -145,7 +146,7 @@ export function WebDesignSalesPage() {
     },
     {
       label: "Simple Job Tracker App (concept)",
-      href: "/web-design#what-i-build",
+      href: "/#what-i-build",
       imageUrl: JOB_TRACKER_IMAGE,
       imageAlt: "Task board — example of a simple job tracking tool",
     },
@@ -176,7 +177,7 @@ export function WebDesignSalesPage() {
               </p>
               <div className="home-reveal home-hero-ctas">
                 <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero">
-                  Get My Free Mockup
+                  Get My Free Website Preview
                 </Link>
                 <Link href="#examples" className="home-btn-secondary--hero">
                   View Examples
@@ -470,13 +471,15 @@ export function WebDesignSalesPage() {
 
       <WebDesignMockupNextSteps />
 
+      <HomeDeepWellShowcase />
+
       <section className="home-band home-band--final home-final-cta">
         <div className={shell}>
           <div className="home-reveal home-final-cta__frame max-w-[48rem]">
             <p className="mx-auto mb-4 max-w-[28rem] text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-[rgba(0,255,178,0.8)]">
               Next step
             </p>
-            <h2 className="home-reveal home-final-cta__title">Get My Free Mockup</h2>
+            <h2 className="home-reveal home-final-cta__title">Get My Free Website Preview</h2>
             <p className={`home-reveal mt-5 ${body} max-w-[36rem] mx-auto`}>
               See a custom homepage direction for your business — practical, low-pressure, focused on results.
             </p>
@@ -485,7 +488,7 @@ export function WebDesignSalesPage() {
             </p>
             <div className="home-final-cta__ctas">
               <Link href="/free-mockup" className="home-btn-primary home-btn-primary--final">
-                Get My Free Mockup
+                Get My Free Website Preview
               </Link>
               <TrackedPublicLink
                 href="/contact"

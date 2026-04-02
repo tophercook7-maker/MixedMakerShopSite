@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
-import { UmbrellaGateway } from "@/components/public/UmbrellaGateway";
+import { WebDesignSalesPage } from "@/components/public/WebDesignSalesPage";
 
 export const metadata: Metadata = {
-  title: "MixedMakerShop | Web Design, SEO & Digital Growth for Small Businesses",
+  title: "Web Design That Brings You Customers | MixedMakerShop",
   description:
-    "Web design, SEO, and digital growth support by Topher — professional small business websites, Google visibility, and lead-focused builds. Free website preview. Hot Springs, Arkansas.",
+    "I build websites for small businesses that look better, load faster, and turn visitors into leads. Get your free website preview. Hot Springs, Arkansas.",
   openGraph: {
-    title: "Web Design, SEO & Digital Growth | MixedMakerShop",
+    title: "Web design that brings you customers | MixedMakerShop",
     description:
-      "Small business websites, search visibility, and ongoing digital support by Topher. Start with a free website preview.",
+      "Small business websites built for leads — clear messaging, fast pages, mockup first. By Topher.",
     url: "https://mixedmakershop.com",
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Web Design, SEO & Digital Growth | MixedMakerShop",
+    title: "Web Design That Brings You Customers | MixedMakerShop",
     description:
-      "Web design and SEO for small businesses — clearer sites, better rankings, and more leads. By Topher.",
+      "Websites for small businesses that turn visitors into leads. Free website preview. By Topher.",
     images: ["/og-image"],
   },
 };
 
 export default function HomePage() {
-  return <UmbrellaGateway />;
+  return <WebDesignSalesPage />;
 }
