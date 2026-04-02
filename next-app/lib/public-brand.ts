@@ -18,17 +18,18 @@ export const publicH2WebClass =
 export const publicH2PrintClass =
   "text-3xl font-semibold tracking-tight text-white md:text-4xl lg:text-[2.75rem] lg:leading-[1.08]";
 
-export const publicBodyMutedClass = "text-base md:text-lg leading-relaxed text-[#9FB5AD]";
+export const publicBodyMutedClass =
+  "text-base md:text-lg leading-relaxed text-[#9FB5AD]";
 
 export const publicEyebrowWebClass =
-  "text-[11px] font-semibold uppercase tracking-[0.22em] text-[rgba(0,255,178,0.88)] md:text-xs md:tracking-[0.26em]";
+  "text-[11px] font-semibold uppercase tracking-[0.22em] text-[rgba(232,149,92,0.92)] md:text-xs md:tracking-[0.26em]";
 
 export const publicEyebrowPrintClass =
   "text-[11px] font-semibold uppercase tracking-[0.26em] text-orange-400/95 md:text-xs";
 
 /** Premium card shell — glass panel (web path accent) */
 export const publicCardGlassWebClass = cn(
-  "rounded-[1.35rem] border border-[rgba(0,255,178,0.14)] bg-[rgba(17,26,23,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.35)] backdrop-blur-md",
+  "rounded-[1.35rem] border border-[rgba(232,149,92,0.18)] bg-[rgba(17,26,23,0.55)] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.35)] backdrop-blur-md",
 );
 
 /** Premium card shell — glass panel (print path accent) */
@@ -38,4 +39,4 @@ export const publicCardGlassPrintClass = cn(
 
 /** Section divider — gradient hairline */
 export const publicSectionDividerClass =
-  "pointer-events-none mx-auto h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-[rgba(232,253,245,0.14)] to-transparent";
+  "pointer-events-none mx-auto h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-[rgba(232,149,92,0.22)] to-transparent";

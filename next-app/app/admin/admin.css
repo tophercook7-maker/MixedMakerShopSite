@@ -1,4 +1,4 @@
-/* Admin premium dark theme - forest / gold */
+/* Admin premium dark theme — burnt orange / copper (matches public site) */
 
 .admin-root {
   --admin-bg: #0a1612;
@@ -6,9 +6,11 @@
   --admin-card: rgba(12, 28, 22, 0.95);
   --admin-card-hover: rgba(18, 38, 30, 0.98);
   --admin-border: rgba(255, 255, 255, 0.12);
-  --admin-gold: #f0a51a;
-  --admin-gold-dim: rgba(240, 165, 26, 0.85);
-  --admin-orange: #c65a1e;
+  --admin-ember: #c9612c;
+  --admin-ember-bright: #e09a5a;
+  --admin-gold: #e8a065;
+  --admin-gold-dim: rgba(232, 160, 101, 0.88);
+  --admin-orange: #9a481f;
   --admin-fg: #f5f3e7;
   --admin-muted: rgba(245, 243, 231, 0.7);
   --admin-muted-2: rgba(245, 243, 231, 0.5);
@@ -32,7 +34,7 @@
 .admin-sidebar .admin-brand-wrap {
   padding: 24px 20px 20px;
   border-bottom: 1px solid var(--admin-border);
-  background: linear-gradient(135deg, rgba(240, 165, 26, 0.08) 0%, transparent 50%);
+  background: linear-gradient(135deg, rgba(201, 97, 44, 0.1) 0%, transparent 50%);
 }
 
 .admin-sidebar .admin-brand {
@@ -82,11 +84,11 @@
 }
 
 .admin-sidebar nav a[data-active="true"] {
-  background: linear-gradient(135deg, rgba(240, 165, 26, 0.18) 0%, rgba(198, 90, 30, 0.12) 100%);
+  background: linear-gradient(135deg, rgba(201, 97, 44, 0.22) 0%, rgba(154, 72, 31, 0.14) 100%);
   color: var(--admin-gold);
   font-weight: 700;
-  border-color: rgba(240, 165, 26, 0.35);
-  box-shadow: 0 2px 12px rgba(240, 165, 26, 0.08);
+  border-color: rgba(232, 149, 92, 0.38);
+  box-shadow: 0 2px 12px rgba(201, 97, 44, 0.12);
 }
 
 .admin-sidebar nav a[data-active="true"] .admin-nav-icon {
@@ -152,8 +154,8 @@
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(240, 165, 26, 0.9), rgba(255, 209, 106, 0.8));
-  color: #1a1408;
+  background: linear-gradient(135deg, var(--admin-ember) 0%, var(--admin-ember-bright) 100%);
+  color: #0c0e0d;
   border: none;
   cursor: pointer;
   text-decoration: none;
@@ -213,14 +215,14 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--admin-gold), var(--admin-orange));
+  background: linear-gradient(90deg, var(--admin-ember) 0%, var(--admin-gold) 55%, var(--admin-orange) 100%);
   opacity: 0;
   transition: opacity 0.2s;
 }
 
 .admin-stat-card:hover {
-  border-color: rgba(240, 165, 26, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(240, 165, 26, 0.08);
+  border-color: rgba(232, 149, 92, 0.38);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(201, 97, 44, 0.12);
   transform: translateY(-2px);
 }
 
@@ -232,7 +234,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(240, 165, 26, 0.12);
+  background: rgba(201, 97, 44, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,7 +309,7 @@
 .admin-input:focus {
   outline: none;
   border-color: var(--admin-gold);
-  box-shadow: 0 0 0 2px rgba(240, 165, 26, 0.2);
+  box-shadow: 0 0 0 2px rgba(201, 97, 44, 0.28);
 }
 
 .admin-select {
@@ -322,8 +324,8 @@
 .admin-btn-primary {
   padding: 10px 18px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(240, 165, 26, 0.95), rgba(255, 209, 106, 0.85));
-  color: #1a1408;
+  background: linear-gradient(135deg, var(--admin-ember) 0%, var(--admin-ember-bright) 100%);
+  color: #0c0e0d;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -370,20 +372,20 @@
   font-weight: 700;
 }
 
-.admin-badge-new { background: rgba(240, 165, 26, 0.2); color: var(--admin-gold); }
-.admin-badge-pending { background: rgba(240, 165, 26, 0.2); color: var(--admin-gold); }
+.admin-badge-new { background: rgba(201, 97, 44, 0.22); color: var(--admin-gold); }
+.admin-badge-pending { background: rgba(201, 97, 44, 0.22); color: var(--admin-gold); }
 .admin-badge-won { background: rgba(40, 180, 120, 0.2); color: #4ade80; }
 .admin-badge-paid { background: rgba(40, 180, 120, 0.2); color: #4ade80; }
 .admin-badge-complete { background: rgba(40, 180, 120, 0.2); color: #4ade80; }
 .admin-badge-lost { background: rgba(180, 80, 70, 0.25); color: #f87171; }
 .admin-badge-overdue { background: rgba(200, 100, 60, 0.25); color: #fb923c; }
 .admin-badge-progress { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
-.admin-badge-cancelled { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+.admin-badge-cancelled { background: rgba(201, 97, 44, 0.18); color: #e8a578; }
 .admin-badge-tier-hot { background: rgba(220, 38, 38, 0.22); color: #fca5a5; }
 .admin-badge-tier-warm { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
 .admin-badge-tier-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 .admin-badge-bucket-easy { background: rgba(40, 180, 120, 0.22); color: #4ade80; }
-.admin-badge-bucket-high { background: rgba(240, 165, 26, 0.22); color: #fcd34d; }
+.admin-badge-bucket-high { background: rgba(201, 97, 44, 0.22); color: var(--admin-gold); }
 .admin-badge-bucket-good { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
 .admin-badge-bucket-review { background: rgba(96, 165, 250, 0.2); color: #93c5fd; }
 .admin-badge-bucket-low { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
@@ -410,11 +412,11 @@
   color: #86efac;
   box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.45), 0 0 16px rgba(34, 197, 94, 0.35);
 }
-.admin-priority-easy { background: rgba(250, 204, 21, 0.18); color: #fde047; }
+.admin-priority-easy { background: rgba(232, 149, 92, 0.18); color: #f2c29a; }
 .admin-priority-no-email { background: rgba(248, 113, 113, 0.2); color: #fca5a5; }
 .admin-priority-phone { background: rgba(45, 212, 191, 0.2); color: #5eead4; }
 .admin-priority-door-green { background: rgba(34, 197, 94, 0.2); color: #86efac; }
-.admin-priority-door-yellow { background: rgba(250, 204, 21, 0.2); color: #fde047; }
+.admin-priority-door-yellow { background: rgba(201, 97, 44, 0.2); color: var(--admin-gold); }
 .admin-priority-door-orange { background: rgba(251, 146, 60, 0.22); color: #fdba74; }
 .admin-priority-door-gray { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
 
@@ -428,8 +430,8 @@
   background: linear-gradient(160deg, rgba(30, 58, 138, 0.2), rgba(10, 28, 22, 0.95));
 }
 .admin-section-easy {
-  border: 1px solid rgba(250, 204, 21, 0.45);
-  background: linear-gradient(160deg, rgba(120, 53, 15, 0.2), rgba(10, 28, 22, 0.95));
+  border: 1px solid rgba(201, 97, 44, 0.42);
+  background: linear-gradient(160deg, rgba(90, 40, 18, 0.28), rgba(10, 28, 22, 0.95));
 }
 
 /* Empty states */
@@ -494,8 +496,8 @@
 
 /* Welcome panel */
 .admin-welcome {
-  background: linear-gradient(135deg, rgba(240, 165, 26, 0.12) 0%, rgba(198, 90, 30, 0.08) 50%, rgba(12, 28, 22, 0.95) 100%);
-  border: 1px solid rgba(240, 165, 26, 0.25);
+  background: linear-gradient(135deg, rgba(201, 97, 44, 0.14) 0%, rgba(154, 72, 31, 0.1) 50%, rgba(12, 28, 22, 0.95) 100%);
+  border: 1px solid rgba(232, 149, 92, 0.28);
   border-radius: 20px;
   padding: 28px 32px;
   margin-bottom: 32px;
@@ -521,14 +523,14 @@
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: rgba(255, 255, 255, 0.03);
   --fc-border-color: var(--admin-border);
-  --fc-button-bg-color: rgba(240, 165, 26, 0.12);
-  --fc-button-border-color: rgba(240, 165, 26, 0.28);
-  --fc-button-hover-bg-color: rgba(240, 165, 26, 0.2);
-  --fc-button-hover-border-color: rgba(240, 165, 26, 0.45);
-  --fc-button-active-bg-color: rgba(240, 165, 26, 0.28);
-  --fc-button-active-border-color: rgba(240, 165, 26, 0.55);
+  --fc-button-bg-color: rgba(201, 97, 44, 0.14);
+  --fc-button-border-color: rgba(232, 149, 92, 0.32);
+  --fc-button-hover-bg-color: rgba(201, 97, 44, 0.24);
+  --fc-button-hover-border-color: rgba(232, 149, 92, 0.48);
+  --fc-button-active-bg-color: rgba(201, 97, 44, 0.32);
+  --fc-button-active-border-color: rgba(232, 149, 92, 0.58);
   --fc-event-text-color: #08120f;
-  --fc-today-bg-color: rgba(240, 165, 26, 0.1);
+  --fc-today-bg-color: rgba(201, 97, 44, 0.12);
 }
 
 .admin-root .fc .fc-toolbar-title {

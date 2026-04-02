@@ -88,7 +88,7 @@ export function BackfillLeadsButton() {
             Backfill completed.
           </div>
           {result.summary_reason ? (
-            <div style={{ color: "#fcd34d" }}>
+            <div style={{ color: "var(--admin-gold)" }}>
               summary_reason: {result.summary_reason}
             </div>
           ) : null}

@@ -282,7 +282,7 @@ export function WebDesignSalesPage() {
             <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
               {exampleBuckets.map((bucket) => (
                 <div key={bucket.title} className="home-reveal home-card home-card--glass rounded-2xl p-6 md:p-7">
-                  <h3 className="text-lg md:text-xl font-semibold text-[#FFD166]">{bucket.title}</h3>
+                  <h3 className="text-lg md:text-xl font-semibold text-[#e09a5a]">{bucket.title}</h3>
                   <p className={`mt-2 text-sm md:text-[15px] ${body}`}>{bucket.blurb}</p>
                   <ul className="mt-4 space-y-2">
                     {bucket.links.map((l) => (
@@ -308,7 +308,7 @@ export function WebDesignSalesPage() {
           </div>
 
           <div>
-            <p className="home-reveal text-[11px] font-semibold uppercase tracking-[0.2em] text-[rgba(255,209,102,0.85)]">
+            <p className="home-reveal text-[11px] font-semibold uppercase tracking-[0.2em] text-[rgba(232,149,92,0.85)]">
               Spotlight samples
             </p>
             <p className={`home-reveal mt-3 max-w-[40rem] text-sm md:text-[15px] ${body}`}>
@@ -337,7 +337,7 @@ export function WebDesignSalesPage() {
                 </div>
                 <div className="home-sample-card__body flex flex-1 flex-col p-6 md:p-7">
                   <p className="text-lg md:text-xl font-semibold text-[#E8FDF5]">{item.label}</p>
-                  <span className="home-sample-card__cta mt-5 inline-flex w-fit items-center justify-center rounded-xl border border-[rgba(255,209,102,0.35)] bg-[rgba(255,209,102,0.08)] px-4 py-2.5 text-sm font-semibold text-[#FFD166] transition-colors group-hover:border-[rgba(255,209,102,0.5)] group-hover:bg-[rgba(255,209,102,0.12)] group-hover:text-[#FFE08A]">
+                  <span className="home-sample-card__cta mt-5 inline-flex w-fit items-center justify-center rounded-xl border border-[rgba(232,149,92,0.35)] bg-[rgba(232,149,92,0.08)] px-4 py-2.5 text-sm font-semibold text-[#e09a5a] transition-colors group-hover:border-[rgba(232,149,92,0.5)] group-hover:bg-[rgba(232,149,92,0.12)] group-hover:text-[#f0b078]">
                     View example
                   </span>
                 </div>
@@ -375,7 +375,7 @@ export function WebDesignSalesPage() {
                 key={item.t}
                 className="home-reveal home-card home-card--glass rounded-2xl p-6 md:p-8 text-center sm:text-left"
               >
-                <p className="text-xl md:text-2xl font-semibold text-[#FFD166]">{item.t}</p>
+                <p className="text-xl md:text-2xl font-semibold text-[#e09a5a]">{item.t}</p>
                 <p className={`mt-3 text-sm md:text-[15px] ${body}`}>{item.d}</p>
               </div>
             ))}

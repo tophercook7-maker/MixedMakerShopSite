@@ -8,12 +8,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
 import { trackGatewayNav, trackPublicEvent } from "@/lib/public-analytics";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
+import { HomeDeepWellShowcase } from "@/components/public/HomeDeepWellShowcase";
 import { cn } from "@/lib/utils";
 
 function WebPathPhotoCollage({ href }: { href: string }) {
@@ -47,7 +47,7 @@ function WebPathPhotoCollage({ href }: { href: string }) {
     <Link
       href={href}
       onClick={() => trackGatewayNav("web_design", "hero_visual")}
-      className="group/hero relative mb-5 block overflow-hidden rounded-2xl border border-white/15 shadow-2xl outline-none ring-emerald-400/0 transition ring-offset-2 ring-offset-[#07111f] focus-visible:ring-2 focus-visible:ring-emerald-400/40"
+      className="group/hero relative mb-5 block overflow-hidden rounded-2xl border border-white/15 shadow-2xl outline-none ring-[rgba(201,97,44,0)] transition ring-offset-2 ring-offset-[#0b0f0e] focus-visible:ring-2 focus-visible:ring-[rgba(232,149,92,0.45)]"
     >
       <div className="grid h-48 grid-cols-3 gap-px bg-white/10 sm:h-56 md:h-64">
         {slices.slice(0, 3).map((item) => (
@@ -62,8 +62,8 @@ function WebPathPhotoCollage({ href }: { href: string }) {
           </div>
         ))}
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#07111f]/92 via-[#07111f]/35 to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_0%,transparent_42%,rgba(7,17,31,0.55)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0b0f0e]/92 via-[#0b0f0e]/38 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_0%,transparent_42%,rgba(8,10,11,0.55)_100%)]" />
       <p className="pointer-events-none absolute bottom-3 left-3 right-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-white/75 md:text-xs">
         Sample sites &amp; pages — open gallery
       </p>
@@ -125,21 +125,18 @@ export function UmbrellaGateway() {
         <div className="home-gateway-motion-scope mx-auto max-w-7xl">
           {/* Hero */}
           <div className="home-gateway-pop home-gateway-pop--hero mx-auto mb-16 max-w-3xl text-center md:mb-20">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300/80">
-              Web Design by Topher
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
-              Custom Websites for Small Businesses
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-              I help small businesses grow with better websites, better
-              messaging, and useful digital tools.
-            </p>
-            <div className="mx-auto mt-8 flex max-w-xl flex-col items-center gap-3">
-              <Button
-                asChild
-                className="w-full gap-2 rounded-2xl bg-emerald-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-emerald-300 sm:w-auto"
-              >
+            <div className="home-hero-copy-shade mx-auto max-w-3xl rounded-[2rem] px-5 py-8 md:px-10 md:py-10">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-[#e8a065]/95">
+                Web Design by Topher
+              </p>
+              <h1 className="text-[1.85rem] font-semibold tracking-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] sm:text-4xl md:text-[2.65rem] md:leading-[1.08]">
+                Custom Websites for Small Businesses
+              </h1>
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-100/95 md:text-lg md:leading-8">
+                I help small businesses grow with better websites, better
+                messaging, and useful digital tools.
+              </p>
+              <div className="mx-auto mt-9 flex max-w-xl flex-col items-center gap-3">
                 <Link
                   href="/free-mockup"
                   onClick={() =>
@@ -149,14 +146,14 @@ export function UmbrellaGateway() {
                       section: "hero",
                     })
                   }
+                  className="btn gold inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
                 >
                   Get My Free Website Preview <ArrowRight className="h-4 w-4" />
                 </Link>
-              </Button>
-              <p className="text-xs leading-relaxed text-slate-400 md:text-sm">
-                No pressure. No obligation. Just a real preview of your future
-                site.
-              </p>
+                <p className="text-center text-xs leading-relaxed text-slate-200/88 md:text-sm">
+                  Real websites built to bring in leads, not just sit online.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -212,7 +209,7 @@ export function UmbrellaGateway() {
             </div>
             <div className="mt-8 grid gap-5 text-left md:grid-cols-3 md:gap-6">
               <div className="home-gateway-pop rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl md:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e8a065]/95">
                   Step 1
                 </p>
                 <p className="mt-2 text-lg font-semibold text-white">
@@ -224,7 +221,7 @@ export function UmbrellaGateway() {
                 </p>
               </div>
               <div className="home-gateway-pop rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl md:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e8a065]/95">
                   Step 2
                 </p>
                 <p className="mt-2 text-lg font-semibold text-white">
@@ -236,7 +233,7 @@ export function UmbrellaGateway() {
                 </p>
               </div>
               <div className="home-gateway-pop rounded-[28px] border border-white/10 bg-white/5 p-5 backdrop-blur-xl md:p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#e8a065]/95">
                   Step 3
                 </p>
                 <p className="mt-2 text-lg font-semibold text-white">
@@ -274,7 +271,7 @@ export function UmbrellaGateway() {
                     className={cn(
                       "h-full rounded-[28px] border bg-white/5 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.2)] backdrop-blur-xl md:p-8",
                       tier.featured
-                        ? "border-emerald-400/35 ring-1 ring-emerald-400/25 md:scale-[1.02]"
+                        ? "border-[rgba(232,149,92,0.38)] ring-1 ring-[rgba(201,97,44,0.28)] md:scale-[1.02]"
                         : "border-white/10",
                     )}
                   >
@@ -284,7 +281,7 @@ export function UmbrellaGateway() {
                     <h3 className="mt-3 text-lg font-semibold text-white md:text-xl">
                       {tier.name}
                     </h3>
-                    <p className="mt-2 text-2xl font-semibold text-emerald-300">
+                    <p className="mt-2 text-2xl font-semibold text-[#e8a065]">
                       {tier.price}{" "}
                       <span className="text-sm font-medium text-slate-400">
                         {tier.note}
@@ -306,23 +303,19 @@ export function UmbrellaGateway() {
               <p className="text-base leading-relaxed text-slate-300">
                 Not sure what you need? I&apos;ll design a free preview first.
               </p>
-              <Button
-                asChild
-                className="mt-8 w-full gap-2 rounded-2xl bg-emerald-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-emerald-300 sm:w-auto"
+              <Link
+                href="/free-mockup"
+                onClick={() =>
+                  trackPublicEvent("public_contact_cta_click", {
+                    location: "gateway",
+                    target: "free_mockup",
+                    section: "pricing",
+                  })
+                }
+                className="btn gold mt-8 inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
               >
-                <Link
-                  href="/free-mockup"
-                  onClick={() =>
-                    trackPublicEvent("public_contact_cta_click", {
-                      location: "gateway",
-                      target: "free_mockup",
-                      section: "pricing",
-                    })
-                  }
-                >
-                  Get My Free Website Preview <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+                Get My Free Website Preview <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </section>
 
@@ -349,7 +342,7 @@ export function UmbrellaGateway() {
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.18 }}
               >
-                <Card className="overflow-hidden rounded-[28px] border border-emerald-400/20 bg-white/5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                <Card className="overflow-hidden rounded-[28px] border border-[rgba(232,149,92,0.22)] bg-white/5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur-xl">
                   <CardContent className="p-5 md:p-6">
                     <WebPathPhotoCollage href="/website-samples" />
                     <div className="grid gap-2 sm:grid-cols-2">
@@ -399,24 +392,20 @@ export function UmbrellaGateway() {
                       </TrackedPublicLink>
                     </div>
                     <div className="mt-8 flex justify-center">
-                      <Button
-                        asChild
-                        className="w-full gap-2 rounded-2xl bg-emerald-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-emerald-300 sm:w-auto"
+                      <Link
+                        href="/free-mockup"
+                        onClick={() =>
+                          trackPublicEvent("public_contact_cta_click", {
+                            location: "gateway",
+                            target: "free_mockup",
+                            section: "samples",
+                          })
+                        }
+                        className="btn gold inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
                       >
-                        <Link
-                          href="/free-mockup"
-                          onClick={() =>
-                            trackPublicEvent("public_contact_cta_click", {
-                              location: "gateway",
-                              target: "free_mockup",
-                              section: "samples",
-                            })
-                          }
-                        >
-                          Get My Free Website Preview{" "}
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
+                        Get My Free Website Preview{" "}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
@@ -424,9 +413,11 @@ export function UmbrellaGateway() {
             </div>
           </section>
 
+          <HomeDeepWellShowcase />
+
           {/* Final CTA */}
           <section
-            className="home-gateway-pop mx-auto max-w-3xl rounded-[28px] border border-emerald-400/25 bg-white/5 p-6 text-center shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl md:mb-8 md:p-8"
+            className="home-gateway-pop mx-auto max-w-3xl rounded-[28px] border border-[rgba(232,149,92,0.28)] bg-white/5 p-6 text-center shadow-[0_12px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl md:mb-8 md:p-8"
             aria-labelledby="final-cta-heading"
           >
             <h2
@@ -439,23 +430,19 @@ export function UmbrellaGateway() {
               I&apos;ll put together a free preview for your business so you can
               see the direction before committing.
             </p>
-            <Button
-              asChild
-              className="mt-6 w-full gap-2 rounded-2xl bg-emerald-400 px-6 py-6 text-base font-semibold text-slate-950 hover:bg-emerald-300 sm:w-auto"
+            <Link
+              href="/free-mockup"
+              onClick={() =>
+                trackPublicEvent("public_contact_cta_click", {
+                  location: "gateway",
+                  target: "free_mockup",
+                  section: "final_cta",
+                })
+              }
+              className="btn gold mt-6 inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
             >
-              <Link
-                href="/free-mockup"
-                onClick={() =>
-                  trackPublicEvent("public_contact_cta_click", {
-                    location: "gateway",
-                    target: "free_mockup",
-                    section: "final_cta",
-                  })
-                }
-              >
-                Get My Free Website Preview <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+              Get My Free Website Preview <ArrowRight className="h-4 w-4" />
+            </Link>
           </section>
         </div>
       </div>

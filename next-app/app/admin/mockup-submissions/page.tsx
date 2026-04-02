@@ -56,10 +56,10 @@ export default async function AdminMockupSubmissionsPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-[rgba(212,175,55,0.2)]">
+      <div className="overflow-x-auto rounded-lg border border-[rgba(201,97,44,0.2)]">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-[rgba(212,175,55,0.15)]" style={{ color: "var(--admin-muted)" }}>
+            <tr className="border-b border-[rgba(201,97,44,0.15)]" style={{ color: "var(--admin-muted)" }}>
               <th className="px-3 py-2 font-medium">Created</th>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Status</th>
@@ -77,7 +77,7 @@ export default async function AdminMockupSubmissionsPage() {
               list.map((r) => (
                 <tr
                   key={r.id}
-                  className="border-b border-[rgba(255,255,255,0.06)] hover:bg-[rgba(212,175,55,0.06)]"
+                  className="border-b border-[rgba(255,255,255,0.06)] hover:bg-[rgba(201,97,44,0.06)]"
                 >
                   <td className="px-3 py-2 whitespace-nowrap">
                     <Link

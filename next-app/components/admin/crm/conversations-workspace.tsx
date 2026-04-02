@@ -111,7 +111,7 @@ export function ConversationsWorkspace({
                   className="w-full text-left rounded-lg border px-3 py-2 transition-colors"
                   style={{
                     borderColor: active ? "var(--admin-gold)" : "var(--admin-border)",
-                    background: active ? "rgba(212, 175, 55, 0.08)" : "rgba(0,0,0,.15)",
+                    background: active ? "rgba(201, 97, 44, 0.08)" : "rgba(0,0,0,.15)",
                   }}
                 >
                   <div className="flex items-center justify-between gap-2">

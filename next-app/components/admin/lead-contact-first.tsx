@@ -59,7 +59,7 @@ export function LeadContactFirst({
   }
 
   return (
-    <section className="admin-card space-y-3 border-2" style={{ borderColor: "rgba(212, 175, 55, 0.35)" }}>
+    <section className="admin-card space-y-3 border-2" style={{ borderColor: "rgba(201, 97, 44, 0.35)" }}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
           Contact

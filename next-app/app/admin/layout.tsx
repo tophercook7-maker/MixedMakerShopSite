@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 alt=""
                 width={40}
                 height={40}
-                className="rounded-xl shrink-0 border border-[rgba(212,175,55,0.35)] object-cover hidden sm:block"
+                className="rounded-xl shrink-0 border border-[rgba(201,97,44,0.35)] object-cover hidden sm:block"
               />
               <h1 className="truncate">MixedMakerShop Admin · M³</h1>
             </div>

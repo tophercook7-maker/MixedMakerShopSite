@@ -7,8 +7,8 @@
   --text:rgba(255,255,255,.94);
   --muted:rgba(255,255,255,.72);
   --muted2:rgba(255,255,255,.60);
-  --gold:#f0a51a;
-  --gold2:#ffd88a;
+  --gold:#c9612c;
+  --gold2:#e09a5a;
   --radius:18px;
   --radius2:28px;
   --shadow:0 22px 70px rgba(0,0,0,.55);
@@ -24,7 +24,7 @@ body{
   font-family:var(--font);
   color:var(--text);
   background:
-    radial-gradient(1200px 700px at 20% 10%, rgba(240,165,26,.18), transparent 60%),
+    radial-gradient(1200px 700px at 20% 10%, rgba(201,97,44,.18), transparent 60%),
     radial-gradient(1000px 650px at 80% 20%, rgba(30,190,130,.16), transparent 60%),
     linear-gradient(180deg, var(--bg0), var(--bg1) 50%, var(--bg0));
   line-height:1.55;
@@ -51,7 +51,7 @@ a:hover{text-decoration:underline}
 .brand{display:flex;align-items:center;gap:12px;min-width:260px}
 .logo{
   width:44px;height:44px;border-radius:14px;
-  border:1px solid rgba(240,165,26,.35);
+  border:1px solid rgba(201,97,44,.35);
   box-shadow:0 10px 25px rgba(0,0,0,.35);
   display:block;
   object-fit:cover;
@@ -74,8 +74,8 @@ a:hover{text-decoration:underline}
   transition:transform .12s ease, background .12s ease, border-color .12s ease;
 }
 .pill:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);transform:translateY(-1px);text-decoration:none;color:var(--text)}
-.pill.gold{border-color:rgba(240,165,26,.5);background:rgba(240,165,26,.12);color:var(--gold2)}
-.pill.cta{border-color:transparent;background:linear-gradient(135deg, rgba(240,165,26,.95), rgba(255,209,106,.80));color:#1a1408;font-weight:950;box-shadow:0 18px 40px rgba(240,165,26,.18), 0 18px 60px rgba(0,0,0,.30)}
+.pill.gold{border-color:rgba(201,97,44,.5);background:rgba(201,97,44,.12);color:var(--gold2)}
+.pill.cta{border-color:transparent;background:linear-gradient(135deg, rgba(201,97,44,.95), rgba(224,154,90,.80));color:#1a1408;font-weight:950;box-shadow:0 18px 40px rgba(201,97,44,.18), 0 18px 60px rgba(0,0,0,.30)}
 .pill.cta:hover{filter:brightness(1.02);transform:translateY(-1px);text-decoration:none}
 .pill small{opacity:.8;font-weight:800}
 
@@ -84,7 +84,7 @@ a:hover{text-decoration:underline}
 @media (max-width: 960px){.hero-grid{grid-template-columns:1fr}.brand{min-width:auto}}
 
 .kicker{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-weight:900}
-.dot{width:9px;height:9px;border-radius:999px;background:var(--gold);box-shadow:0 0 0 4px rgba(240,165,26,.18)}
+.dot{width:9px;height:9px;border-radius:999px;background:var(--gold);box-shadow:0 0 0 4px rgba(201,97,44,.18)}
 .h1{font-size:clamp(36px, 5vw, 66px);line-height:1.02;margin:14px 0 10px;letter-spacing:-1.1px}
 .h1 .gold{color:var(--gold2)}
 .subhead{color:var(--muted);max-width:70ch;font-size:clamp(16px, 1.5vw, 19px)}
@@ -94,7 +94,7 @@ a:hover{text-decoration:underline}
 .btn-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.05);font-weight:950;color:var(--text);box-shadow:0 14px 40px rgba(0,0,0,.30);transition:transform .12s ease, filter .12s ease, background .12s ease}
 .btn:hover{background:rgba(255,255,255,.09);transform:translateY(-1px);text-decoration:none}
-.btn.gold{border-color:transparent;background:linear-gradient(135deg, rgba(240,165,26,.95), rgba(255,209,106,.80));color:#1a1408;box-shadow:0 18px 44px rgba(240,165,26,.18), 0 18px 60px rgba(0,0,0,.30)}
+.btn.gold{border-color:transparent;background:linear-gradient(135deg, rgba(201,97,44,.95), rgba(224,154,90,.80));color:#1a1408;box-shadow:0 18px 44px rgba(201,97,44,.18), 0 18px 60px rgba(0,0,0,.30)}
 .btn.ghost{color:var(--text)}
 
 .panel{background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10);border-radius:var(--radius2);box-shadow:0 24px 90px rgba(0,0,0,.55);padding:18px}
@@ -163,7 +163,7 @@ a:hover{text-decoration:underline}
 .price-card ul{margin:10px 0 0 18px;color:var(--muted)}
 .price-card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .mini{padding:10px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.05);font-weight:950}
-.mini.gold{border-color:transparent;background:linear-gradient(135deg, rgba(240,165,26,.95), rgba(255,209,106,.80));color:#1a1408}
+.mini.gold{border-color:transparent;background:linear-gradient(135deg, rgba(201,97,44,.95), rgba(224,154,90,.80));color:#1a1408}
 .mini:hover{background:rgba(255,255,255,.09);text-decoration:none}
 
 .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -199,7 +199,7 @@ html{scroll-behavior:smooth}
 .form-label .req{color:var(--gold)}
 .form-helper{font-size:12px;color:var(--muted2);margin-top:4px}
 .form-input,.form-select,.form-textarea,.form-file{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.3);color:var(--text);font-size:15px;font-family:inherit}
-.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(240,165,26,.4);box-shadow:0 0 0 2px rgba(240,165,26,.15)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:rgba(201,97,44,.4);box-shadow:0 0 0 2px rgba(201,97,44,.15)}
 .form-textarea{min-height:100px;resize:vertical}
 .form-textarea.large{min-height:140px}
 .form-checkgroup,.form-radiogroup{display:flex;flex-wrap:wrap;gap:12px 20px}
@@ -240,7 +240,7 @@ html{scroll-behavior:smooth}
 .transform-after .transform-label{color:var(--gold2)}
 .transform-mockup{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:140px}
 .transform-before .transform-mockup{border-color:rgba(255,255,255,.08);opacity:.9}
-.transform-after .transform-mockup{border-color:rgba(240,165,26,.2);box-shadow:0 0 0 1px rgba(240,165,26,.08)}
+.transform-after .transform-mockup{border-color:rgba(201,97,44,.2);box-shadow:0 0 0 1px rgba(201,97,44,.08)}
 .t-mockup-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(0,0,0,.3);border-bottom:1px solid var(--border)}
 .t-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2)}
 .t-mockup-body{padding:14px}
@@ -252,7 +252,7 @@ html{scroll-behavior:smooth}
 .t-line-hero{height:12px;background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.1));border-radius:5px;margin-bottom:10px}
 .t-line-sub{width:75%;height:8px;margin-bottom:12px}
 .t-line-short{width:60%}
-.t-cta-pill{height:24px;width:100px;background:rgba(240,165,26,.3);border-radius:6px;margin-bottom:12px}
+.t-cta-pill{height:24px;width:100px;background:rgba(201,97,44,.3);border-radius:6px;margin-bottom:12px}
 .t-cta-wider{width:130px}
 .t-chips{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:12px}
 .t-chip{font-size:10px;font-weight:900;padding:4px 8px;border-radius:6px;letter-spacing:.03em}
@@ -300,7 +300,7 @@ html{scroll-behavior:smooth}
 .mockup-content{padding:16px}
 .mockup-hero-line{height:12px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(255,255,255,.06));border-radius:4px;margin-bottom:8px}
 .mockup-hero-line.short{width:60%;margin-bottom:14px}
-.mockup-cta{height:28px;width:100px;background:rgba(240,165,26,.25);border-radius:6px;margin-bottom:16px}
+.mockup-cta{height:28px;width:100px;background:rgba(201,97,44,.25);border-radius:6px;margin-bottom:16px}
 .mockup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .mockup-tile{height:40px;background:rgba(255,255,255,.06);border-radius:6px}
 .mockup-example-caption{font-size:13px;color:var(--muted2);margin:0;line-height:1.5}
@@ -324,7 +324,7 @@ html{scroll-behavior:smooth}
 @media(max-width:560px){.roast-comp-row{grid-template-columns:1fr}}
 .roast-comp-side{padding:12px;border-radius:10px;background:rgba(0,0,0,.2)}
 .roast-comp-side.transform-before{border:1px solid rgba(255,255,255,.08)}
-.roast-comp-side.transform-after{border:1px solid rgba(240,165,26,.25);background:rgba(240,165,26,.06)}
+.roast-comp-side.transform-after{border:1px solid rgba(201,97,44,.25);background:rgba(201,97,44,.06)}
 .roast-review-section .roast-checklist-item .small{line-height:1.5;opacity:.9}
 .roast-outreach-strip .panel{border:1px solid rgba(255,255,255,.12)}
 

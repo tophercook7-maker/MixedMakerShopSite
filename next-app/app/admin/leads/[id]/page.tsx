@@ -1565,7 +1565,7 @@ Want me to show you a quick idea?`;
                 ) : null}
                 <span
                   className="text-[10px] px-2 py-0.5 rounded border"
-                  style={{ borderColor: "rgba(212,175,55,0.45)", color: "var(--admin-gold)" }}
+                  style={{ borderColor: "rgba(201,97,44,0.45)", color: "var(--admin-gold)" }}
                 >
                   {laneBundle.lead_bucket.replace(/_/g, " ")}
                 </span>

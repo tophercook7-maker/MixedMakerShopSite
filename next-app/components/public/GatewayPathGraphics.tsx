@@ -51,7 +51,7 @@ export function GatewayWebGraphic({ className }: { className?: string }) {
       <rect x="124" y="124" width="228" height="56" rx="8" fill="rgba(0,255,178,0.06)" stroke="rgba(0,255,178,0.15)" />
       <rect x="136" y="136" width="72" height="8" rx="2" fill="rgba(232,253,245,0.14)" />
       <rect x="136" y="152" width="120" height="6" rx="2" fill="rgba(159,181,173,0.1)" />
-      <rect x="136" y="164" width="52" height="10" rx="5" fill="rgba(255,209,102,0.35)" />
+      <rect x="136" y="164" width="52" height="10" rx="5" fill="rgba(232,149,92,0.35)" />
       {/* growth bars */}
       <rect x="290" y="128" width="14" height="40" rx="3" fill="url(#gw-web-bar)" opacity="0.85" />
       <rect x="310" y="118" width="14" height="50" rx="3" fill="url(#gw-web-bar)" opacity="0.65" />

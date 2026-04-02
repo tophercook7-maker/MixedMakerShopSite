@@ -140,9 +140,9 @@ export function WorkTheseNowStrip({ leads }: { leads: WorkflowLead[] }) {
         <section
           className="rounded-xl border-2 px-4 py-4 sm:px-5 sm:py-5 space-y-3"
           style={{
-            borderColor: "rgba(212, 175, 55, 0.55)",
-            background: "linear-gradient(165deg, rgba(212, 175, 55, 0.12), rgba(0,0,0,0.28))",
-            boxShadow: "0 0 0 1px rgba(212, 175, 55, 0.12), 0 12px 40px rgba(0,0,0,0.25)",
+            borderColor: "rgba(201, 97, 44, 0.55)",
+            background: "linear-gradient(165deg, rgba(201, 97, 44, 0.12), rgba(0,0,0,0.28))",
+            boxShadow: "0 0 0 1px rgba(201, 97, 44, 0.12), 0 12px 40px rgba(0,0,0,0.25)",
           }}
         >
           <div>

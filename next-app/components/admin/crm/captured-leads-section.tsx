@@ -19,8 +19,8 @@ function badgeClass(badge: CapturedLeadListItem["badge"]): string {
 export function CapturedLeadsSection({ items, filteredEmptyMessage }: Props) {
   return (
     <section
-      className="rounded-xl border-2 p-4 space-y-3 shadow-[0_0_24px_rgba(212,175,55,0.12)]"
-      style={{ borderColor: "rgba(212, 175, 55, 0.45)", background: "rgba(0,0,0,0.22)" }}
+      className="rounded-xl border-2 p-4 space-y-3 shadow-[0_0_24px_rgba(201,97,44,0.12)]"
+      style={{ borderColor: "rgba(201, 97, 44, 0.45)", background: "rgba(0,0,0,0.22)" }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-lg font-bold tracking-tight" style={{ color: "var(--admin-fg)" }}>
@@ -44,7 +44,7 @@ export function CapturedLeadsSection({ items, filteredEmptyMessage }: Props) {
               <li
                 key={item.id}
                 className="rounded-lg border p-3 flex flex-col gap-2 min-h-[120px]"
-                style={{ borderColor: "rgba(212, 175, 55, 0.28)", background: "rgba(0,0,0,0.35)" }}
+                style={{ borderColor: "rgba(201, 97, 44, 0.28)", background: "rgba(0,0,0,0.35)" }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-sm leading-tight line-clamp-2" style={{ color: "var(--admin-fg)" }}>

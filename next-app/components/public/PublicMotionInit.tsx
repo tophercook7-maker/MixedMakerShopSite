@@ -18,7 +18,8 @@ const REVEAL_SELECTOR = [
   "main .offer-page .offer-reveal-line",
   "main .offer-page .offer-card",
   "main .home-premium .home-reveal",
-  "main .home-page--immersive .home-gateway-pop",
+  /* Homepage hero must stay visible on first paint — never hide it behind scroll-reveal */
+  "main .home-page--immersive .home-gateway-pop:not(.home-gateway-pop--hero)",
   "main .web-design-page--immersive .price-card",
   "main .web-design-page--immersive .wd-cta-panel",
   "main .web-design-page--immersive .wd-lead",

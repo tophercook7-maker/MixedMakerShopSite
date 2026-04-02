@@ -162,8 +162,8 @@ export function LeadContactNow({
       <div
         className="rounded-lg border px-3 py-3 sm:px-4"
         style={{
-          borderColor: "rgba(212, 175, 55, 0.45)",
-          background: "linear-gradient(145deg, rgba(212,175,55,0.12) 0%, rgba(0,0,0,0.2) 100%)",
+          borderColor: "rgba(201, 97, 44, 0.45)",
+          background: "linear-gradient(145deg, rgba(201,97,44,0.12) 0%, rgba(0,0,0,0.2) 100%)",
         }}
       >
         <p className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--admin-gold)" }}>

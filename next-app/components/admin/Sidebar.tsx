@@ -45,7 +45,7 @@ export default function Sidebar() {
           alt=""
           width={40}
           height={40}
-          className="rounded-xl mb-2 border border-[rgba(212,175,55,0.35)] object-cover shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+          className="rounded-xl mb-2 border border-[rgba(201,97,44,0.35)] object-cover shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
           priority
         />
         <span className="admin-brand">M³ Massive Brain</span>

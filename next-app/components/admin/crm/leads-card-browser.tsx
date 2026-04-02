@@ -662,7 +662,7 @@ export function LeadsCardBrowser({
           targetPresetActive ? "ring-2 ring-blue-400/50 ring-offset-2 ring-offset-[rgba(0,0,0,0.4)]" : ""
         }`}
         style={{
-          borderColor: targetPresetActive ? "rgba(59, 130, 246, 0.55)" : "rgba(212, 175, 55, 0.35)",
+          borderColor: targetPresetActive ? "rgba(59, 130, 246, 0.55)" : "rgba(201, 97, 44, 0.35)",
           background: targetPresetActive
             ? "linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(0,0,0,0.32))"
             : "rgba(0,0,0,0.2)",
@@ -726,7 +726,7 @@ export function LeadsCardBrowser({
 
       <section
         className="rounded-xl border-2 p-4 space-y-3"
-        style={{ borderColor: "rgba(212, 175, 55, 0.45)", background: "rgba(0,0,0,0.22)" }}
+        style={{ borderColor: "rgba(201, 97, 44, 0.45)", background: "rgba(0,0,0,0.22)" }}
       >
         <div>
           <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--admin-gold)" }}>
@@ -1117,7 +1117,7 @@ export function LeadsCardBrowser({
               <li
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContact ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
+                className={`rounded-lg border p-3 flex flex-col gap-2 ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(201,97,44,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContact ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
                 style={{ borderColor: "var(--admin-border)", background: "rgba(0,0,0,.12)" }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -1381,7 +1381,7 @@ export function LeadsCardBrowser({
               <div
                 id={`lead-card-${lead.id}`}
                 key={lead.id}
-                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(212,175,55,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContactDetailed ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
+                className={`admin-card text-left w-full ${extensionCapture ? "border-l-[3px] border-l-[var(--admin-gold)]" : ""} ${pulse ? "ring-1 ring-[var(--admin-gold)]/55 shadow-[0_0_14px_rgba(201,97,44,0.22)]" : ""} ${lead.status === "replied" ? "ring-1 ring-emerald-500/40 shadow-[0_0_12px_rgba(34,197,94,0.12)]" : ""} ${staleNoContactDetailed ? "ring-1 ring-amber-500/50 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.2)]" : ""}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <button

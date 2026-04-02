@@ -1116,7 +1116,7 @@ export function ScoutConsole({
                   className="h-2 rounded-full"
                   style={{
                     width: `${Math.max(0, Math.min(100, scout.jobProgress))}%`,
-                    background: "linear-gradient(90deg, rgba(240,165,26,1), rgba(198,90,30,0.95))",
+                    background: "linear-gradient(90deg, rgba(201,97,44,1), rgba(198,90,30,0.95))",
                   }}
                 />
               </div>

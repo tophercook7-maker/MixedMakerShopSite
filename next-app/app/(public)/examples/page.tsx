@@ -44,16 +44,16 @@ export default function ExamplesHubPage() {
           {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
             <Link
               href="/3d-printing#examples-3d"
-              className="home-card home-card--glass group flex flex-col rounded-2xl p-8 transition hover:-translate-y-1 border border-[rgba(255,209,102,0.22)]"
+              className="home-card home-card--glass group flex flex-col rounded-2xl p-8 transition hover:-translate-y-1 border border-[rgba(232,149,92,0.22)]"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(255,209,102,0.08)] text-[#FFD166]">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(232,149,92,0.08)] text-[#e09a5a]">
                 <Printer className="h-6 w-6" strokeWidth={1.75} aria-hidden />
               </span>
               <h2 className="mt-6 text-xl font-semibold text-[#E8FDF5]">3D printing &amp; parts</h2>
               <p className="mt-3 text-sm md:text-[15px] leading-relaxed text-[#9FB5AD] flex-1">
                 Functional prints, replacements, prototypes, and custom solves.
               </p>
-              <span className="mt-6 text-sm font-semibold text-[#FFD166] group-hover:underline underline-offset-4">
+              <span className="mt-6 text-sm font-semibold text-[#e09a5a] group-hover:underline underline-offset-4">
                 View 3D examples →
               </span>
             </Link>
@@ -72,7 +72,7 @@ export default function ExamplesHubPage() {
           {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
             <>
               {" · "}
-              <Link href="/upload-print" className="text-[#FFD166] hover:underline">
+              <Link href="/upload-print" className="text-[#e09a5a] hover:underline">
                 Upload a print file
               </Link>
             </>

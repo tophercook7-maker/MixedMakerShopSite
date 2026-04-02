@@ -11,7 +11,7 @@ function Badge({ label, tone }: { label: string; tone: "ok" | "warn" | "muted" |
           ? "rgba(248,113,113,0.2)"
           : "rgba(148,163,184,0.15)";
   const fg =
-    tone === "ok" ? "#86efac" : tone === "warn" ? "#fcd34d" : tone === "bad" ? "#fca5a5" : "var(--admin-muted)";
+    tone === "ok" ? "#86efac" : tone === "warn" ? "#e8a065" : tone === "bad" ? "#fca5a5" : "var(--admin-muted)";
   return (
     <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ background: bg, color: fg }}>
       {label}

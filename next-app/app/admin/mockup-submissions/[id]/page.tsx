@@ -184,7 +184,7 @@ export default async function AdminMockupSubmissionDetailPage({
       </div>
 
       <Section title="Business info">
-        <div className="grid sm:grid-cols-2 gap-2 rounded-lg border border-[rgba(212,175,55,0.2)] p-4 bg-[rgba(0,0,0,0.2)]">
+        <div className="grid sm:grid-cols-2 gap-2 rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.2)]">
           <Field label="Contact name" value={contactName} />
           <Field label="Business name" value={String(snap?.business_name || "")} />
           <Field label="Business type / category" value={String(snap?.category || "")} />
@@ -196,34 +196,34 @@ export default async function AdminMockupSubmissionDetailPage({
       </Section>
 
       <Section title="Desired outcomes">
-        <p className="text-sm whitespace-pre-wrap rounded-lg border border-[rgba(212,175,55,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
+        <p className="text-sm whitespace-pre-wrap rounded-lg border border-[rgba(201,97,44,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
           {formatOutcomes(outcomes)}
         </p>
       </Section>
 
       <Section title="Positioning">
-        <div className="rounded-lg border border-[rgba(212,175,55,0.2)] p-4 bg-[rgba(0,0,0,0.2)] space-y-3">
+        <div className="rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.2)] space-y-3">
           <Field label="Top services to feature" value={String(topSvc || snap?.services_text || "")} />
           <Field label="What makes you different" value={String(diff || "")} />
         </div>
       </Section>
 
       <Section title="Offer / differentiators">
-        <div className="rounded-lg border border-[rgba(212,175,55,0.2)] p-4 bg-[rgba(0,0,0,0.2)] space-y-3">
+        <div className="rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.2)] space-y-3">
           <Field label="Special offer or guarantee" value={String(offer || "")} />
           <Field label="Anything to avoid" value={String(avoid || "")} />
         </div>
       </Section>
 
       <Section title="Design direction">
-        <p className="text-sm rounded-lg border border-[rgba(212,175,55,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
+        <p className="text-sm rounded-lg border border-[rgba(201,97,44,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
           {labelForDirection(String(dir))}
         </p>
       </Section>
 
       <Section title="Notes">
         {r.notes?.trim() ? (
-          <p className="text-sm whitespace-pre-wrap rounded-lg border border-[rgba(212,175,55,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
+          <p className="text-sm whitespace-pre-wrap rounded-lg border border-[rgba(201,97,44,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
             {r.notes}
           </p>
         ) : (
@@ -238,7 +238,7 @@ export default async function AdminMockupSubmissionDetailPage({
 
       <Section title="Mockup data (JSON)">
         <pre
-          className="text-xs overflow-x-auto max-h-[50vh] overflow-y-auto rounded-lg border border-[rgba(212,175,55,0.2)] p-4 bg-[rgba(0,0,0,0.35)]"
+          className="text-xs overflow-x-auto max-h-[50vh] overflow-y-auto rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.35)]"
           style={{ color: "var(--admin-muted)" }}
         >
           {json}
