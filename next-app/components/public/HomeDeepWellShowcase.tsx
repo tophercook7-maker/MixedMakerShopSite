@@ -36,6 +36,9 @@ const PROJECTS = [
   },
 ] as const;
 
+/** Widened so `=== 1` layout branch stays valid when `PROJECTS` is edited (tuple length is otherwise literal). */
+const projectCount: number = PROJECTS.length;
+
 const shell = publicShellClass;
 const sectionY = "py-20 md:py-28";
 const h2 =
@@ -110,7 +113,7 @@ export function HomeDeepWellShowcase() {
         <div
           className={cn(
             "home-reveal mt-14 grid grid-cols-1 gap-12 md:gap-10 lg:gap-12",
-            PROJECTS.length === 1 ? "md:mx-auto md:max-w-4xl" : "md:grid-cols-2",
+            projectCount === 1 ? "md:mx-auto md:max-w-4xl" : "md:grid-cols-2",
           )}
         >
           {PROJECTS.map((project, index) => (
