@@ -1400,7 +1400,7 @@ export function ScoutConsole({
                       <th>City</th>
                       <th>Score</th>
                       <th>Why this lead</th>
-                      <th>Bucket</th>
+                      <th>Tier</th>
                       <th>Reason</th>
                       <th>Contact</th>
                       <th>Next</th>

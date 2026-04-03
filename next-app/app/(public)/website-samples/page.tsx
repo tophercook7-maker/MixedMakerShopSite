@@ -27,16 +27,16 @@ export default function WebsiteSamplesPage() {
         <div className="panel">
           <h1 style={{ margin: "0 0 10px" }}>Website Samples</h1>
           <p className="subhead" style={{ margin: "0 0 20px" }}>
-            Real examples of simple sites for local businesses — trades, food, coffee, churches, and more. Pick up ideas
-            for your own, or we can build something fully custom.
+            Polished demos for local businesses — trades, food, coffee, churches, and more. Pick up ideas for your own,
+            or we can build something fully custom.
           </p>
 
           <div style={{ marginBottom: 36 }}>
             <h2 className="section-heading" style={{ margin: "0 0 8px", fontSize: "1.35rem" }}>
-              Proven website examples for local businesses
+              Core portfolio demos
             </h2>
             <p className="small copy-readable" style={{ margin: "0 0 10px", opacity: 0.9, lineHeight: 1.55 }}>
-              These are real examples of simple, high-converting websites built for local businesses.
+              These are polished, high-converting layouts built for local businesses.
             </p>
             <p className="small copy-readable" style={{ margin: "0 0 10px", opacity: 0.9, lineHeight: 1.55 }}>
               Each one is designed to help bring in more calls, messages, and customers — without overcomplicating
@@ -56,7 +56,7 @@ export default function WebsiteSamplesPage() {
               }}
             >
               <p className="small" style={{ margin: "0 0 14px", lineHeight: 1.55, maxWidth: 640 }}>
-                If you want something like this for your business, I can put together a quick example for you.
+                If you want something like this for your business, I can put together a quick preview for you.
               </p>
               <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
                 Get My Free Website Preview
@@ -99,7 +99,7 @@ export default function WebsiteSamplesPage() {
           </div>
 
           <h2 className="section-heading" style={{ margin: "0 0 16px", fontSize: "1.25rem" }}>
-            More examples by industry
+            More concepts by industry
           </h2>
 
           {/* Filter bar - optional, does not hide samples by default */}

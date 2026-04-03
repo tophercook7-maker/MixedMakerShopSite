@@ -1793,7 +1793,7 @@ Want me to show you a quick idea?`;
             </h2>
             <div className="grid gap-2 md:grid-cols-2 text-sm">
               <div>
-                <span style={{ color: "var(--admin-muted)" }}>Lead Bucket:</span>{" "}
+                <span style={{ color: "var(--admin-muted)" }}>Opportunity tier:</span>{" "}
                 <LeadBucketBadge bucket={displayLeadBucket} score={displayScore} />
               </div>
               <div><span style={{ color: "var(--admin-muted)" }}>Lead Type:</span> {assessment.lead_type}</div>

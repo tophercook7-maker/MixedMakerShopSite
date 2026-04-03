@@ -26,7 +26,7 @@ export default function ExamplesHubPage() {
           className={`mt-12 grid grid-cols-1 gap-6 ${SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? "md:grid-cols-2" : "md:max-w-xl"}`}
         >
           <Link
-            href="/web-design#examples"
+            href="/web-design#browse-by-type"
             className="home-card home-card--glass group flex flex-col rounded-2xl p-8 transition hover:-translate-y-1 border border-[rgba(0,255,178,0.18)]"
           >
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(0,255,178,0.1)] text-[#00FFB2]">

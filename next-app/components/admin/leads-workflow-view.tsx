@@ -1755,7 +1755,8 @@ export function LeadsWorkflowView({
                     );
                   })()}
                   <p>
-                    <span className="font-semibold">Lead bucket:</span> {canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score)}
+                    <span className="font-semibold">Opportunity tier:</span>{" "}
+                    {canonicalLeadBucket(lead.lead_bucket, lead.opportunity_score)}
                   </p>
                   <p>
                     <span className="font-semibold">Lead type:</span> {lead.lead_type || "Needs Review"}
@@ -2182,7 +2183,7 @@ export function LeadsWorkflowView({
                   <th>Website Status</th>
                   <th>Score</th>
                   <th>Conversion</th>
-                  <th>Lead Bucket</th>
+                  <th>Tier</th>
                   <th>Situation</th>
                   <th>What to say</th>
                   <th>Address</th>

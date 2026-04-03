@@ -48,7 +48,7 @@ const QUOTE_CALC_IMAGE =
 const JOB_TRACKER_IMAGE =
   "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=900&q=80";
 
-const exampleBuckets = [
+const workByCategory = [
   {
     title: "Local service websites",
     blurb: "Trades and teams that need trust, clarity, and calls.",
@@ -179,8 +179,8 @@ export function WebDesignSalesPage() {
                 <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero">
                   Get My Free Website Preview
                 </Link>
-                <Link href="#examples" className="home-btn-secondary--hero">
-                  View Examples
+                <Link href="#browse-by-type" className="home-btn-secondary--hero">
+                  Browse sample work
                 </Link>
                 <TrackedPublicLink
                   href="/contact"
@@ -268,9 +268,9 @@ export function WebDesignSalesPage() {
         </div>
       </section>
 
-      <section id="examples" className="home-band home-band--deep">
+      <section id="browse-by-type" className="home-band home-band--deep">
         <div className={`${shell} ${sectionY}`}>
-          <h2 className={`home-reveal home-section-title ${h2} max-w-[800px]`}>Examples &amp; Buckets</h2>
+          <h2 className={`home-reveal home-section-title ${h2} max-w-[800px]`}>Browse by type</h2>
           <p className={`home-reveal mt-5 ${body} max-w-[760px]`}>
             Same portfolio you already know — organized so it&apos;s easier to browse.
           </p>
@@ -281,17 +281,17 @@ export function WebDesignSalesPage() {
               Browse by category
             </p>
             <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
-              {exampleBuckets.map((bucket) => (
-                <div key={bucket.title} className="home-reveal home-card home-card--glass rounded-2xl p-6 md:p-7">
-                  <h3 className="text-lg md:text-xl font-semibold text-[#e09a5a]">{bucket.title}</h3>
-                  <p className={`mt-2 text-sm md:text-[15px] ${body}`}>{bucket.blurb}</p>
+              {workByCategory.map((group) => (
+                <div key={group.title} className="home-reveal home-card home-card--glass rounded-2xl p-6 md:p-7">
+                  <h3 className="text-lg md:text-xl font-semibold text-[#e09a5a]">{group.title}</h3>
+                  <p className={`mt-2 text-sm md:text-[15px] ${body}`}>{group.blurb}</p>
                   <ul className="mt-4 space-y-2">
-                    {bucket.links.map((l) => (
+                    {group.links.map((l) => (
                       <li key={l.href}>
                         <TrackedPublicLink
                           href={l.href}
                           eventName="public_web_design_sample_click"
-                          eventProps={{ location: "web_design_examples_bucket", label: l.label }}
+                          eventProps={{ location: "web_design_browse_by_type", label: l.label }}
                           className="text-[15px] font-medium text-[#00FFB2] hover:text-[#35ffc1] underline-offset-2 hover:underline"
                         >
                           {l.label}

@@ -126,7 +126,8 @@ export default async function AdminCaseDetailPage({
               {String(caseRow.status || "new").replace(/_/g, " ")}
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
-              Lead bucket: <LeadBucketBadge bucket={opportunity?.lead_bucket || null} score={Number(opportunity?.opportunity_score ?? 0)} />
+              Opportunity tier:{" "}
+              <LeadBucketBadge bucket={opportunity?.lead_bucket || null} score={Number(opportunity?.opportunity_score ?? 0)} />
             </p>
             <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
               Opportunity reason: {String(opportunity?.opportunity_reason || "Contact info is hard to find").trim()}

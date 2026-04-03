@@ -87,14 +87,14 @@ export default function TophersWebDesignPage() {
 
       <section className="section">
         <div className="container">
-          <h2 className="section-heading">Before / After Examples</h2>
+          <h2 className="section-heading">Before &amp; After</h2>
           <div className="grid-2">
             {beforeAfter.map((example) => (
               <article key={`${example.href}-${example.beforeLabel}`} className="card">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={example.image}
-                  alt="Website redesign example"
+                  alt="Website before and after redesign"
                   style={{ width: "100%", height: 190, objectFit: "cover", borderRadius: "10px", marginBottom: 14 }}
                 />
                 <p className="small" style={{ margin: "0 0 6px" }}>
@@ -104,7 +104,7 @@ export default function TophersWebDesignPage() {
                   <strong>{example.afterLabel}:</strong> {example.afterText}
                 </p>
                 <Link href={example.href} className="btn ghost">
-                  View Example
+                  See the redesign
                 </Link>
               </article>
             ))}

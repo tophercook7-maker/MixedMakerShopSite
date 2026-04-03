@@ -266,7 +266,7 @@ export default async function AdminCasesPage({
                   <th>Category</th>
                   <th>Website</th>
                   <th>Score</th>
-                  <th>Lead Bucket</th>
+                  <th>Tier</th>
                   <th>Lane</th>
                   <th>Opportunity Reason</th>
                   <th>Website Audit</th>

@@ -38,7 +38,7 @@ export default function QuoteCalculatorSamplePage() {
           <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed md:text-base">
             <li>
               See live website &amp; landing examples on{" "}
-              <Link href="/web-design#examples" className="font-medium text-emerald-300 underline-offset-2 hover:underline">
+              <Link href="/web-design#browse-by-type" className="font-medium text-emerald-300 underline-offset-2 hover:underline">
                 Web Design → Examples
               </Link>
               .
