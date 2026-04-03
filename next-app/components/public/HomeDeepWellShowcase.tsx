@@ -22,6 +22,18 @@ const PROJECTS = [
     objectPosition: "center 8%",
     imageClassName: "object-cover",
   },
+  {
+    title: "Fresh Cut Property Care",
+    primary: "Built to turn local visitors into real calls and booked jobs",
+    supporting: "Clear services, fast load, and a layout that makes contacting you simple",
+    previewSrc: "/images/freshcut-new.png",
+    previewAlt: "Homepage preview of Fresh Cut Property Care — lawn care hero and call-to-action",
+    hostname: "freshcutpropertycare.com",
+    url: "https://freshcutpropertycare.com",
+    analyticsId: "fresh_cut_property_care",
+    objectPosition: "center center",
+    imageClassName: "object-cover",
+  },
 ] as const;
 
 const shell = publicShellClass;

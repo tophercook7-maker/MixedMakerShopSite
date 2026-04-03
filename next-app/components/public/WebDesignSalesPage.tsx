@@ -207,53 +207,6 @@ export function WebDesignSalesPage() {
 
       <WebDesignProofStrip />
 
-      <section
-        id="fresh-cut-spotlight"
-        className="home-band home-band--deep border-y border-[rgba(232,253,245,0.06)]"
-        aria-labelledby="fresh-cut-spotlight-heading"
-      >
-        <div className={`${shell} ${sectionY}`}>
-          <p className="home-reveal mx-auto max-w-[40rem] text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-[#e09a5a]/95 md:text-xs">
-            Live client site
-          </p>
-          <h2
-            id="fresh-cut-spotlight-heading"
-            className={`home-reveal home-section-title ${h2} mx-auto mt-5 max-w-[640px] text-center`}
-          >
-            See a real local business site
-          </h2>
-          <div className="home-reveal mx-auto mt-10 max-w-[520px]">
-            <TrackedPublicLink
-              href="https://freshcutpropertycare.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              eventName="public_external_project_click"
-              eventProps={{ location: "web_design", section: "fresh_cut_card" }}
-              className="project-showcase-card"
-            >
-              <div className="project-showcase-image-wrapper">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/freshcut-new.png"
-                  alt="Fresh Cut Property Care website preview"
-                  className="project-showcase-image"
-                  width={1200}
-                  height={750}
-                />
-              </div>
-              <div className="project-showcase-content">
-                <h3>Fresh Cut Property Care</h3>
-                <p>
-                  A high-conversion website for a local lawn care business focused on fast response, clear services, and
-                  real customer action.
-                </p>
-                <p className="mt-3 text-sm font-semibold text-[#e09a5a]">View live site →</p>
-              </div>
-            </TrackedPublicLink>
-          </div>
-        </div>
-      </section>
-
       <section id="problem" className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
         <div className={`${shell} ${sectionY}`}>
           <h2 className={`home-reveal home-section-title ${h2} ${read}`}>
