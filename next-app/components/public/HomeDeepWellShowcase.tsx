@@ -10,18 +10,6 @@ import { cn } from "@/lib/utils";
 
 const PROJECTS = [
   {
-    title: "Fresh Cut Property Care",
-    primary: "Built to turn local visitors into real calls and booked jobs",
-    supporting: "Clear services, fast load, and a layout designed to make contacting simple",
-    previewSrc: "/images/showcase/fresh-cut-property-care.jpg",
-    previewAlt:
-      "Homepage preview of Fresh Cut Property Care — lawn care branding and service headline visible above the fold",
-    hostname: "freshcutpropertycare.com",
-    url: "https://freshcutpropertycare.com",
-    analyticsId: "fresh_cut_property_care",
-    objectPosition: "center top",
-  },
-  {
     title: "Deep Well Audio",
     primary: "Designed to hold attention and keep people engaged—not just look good",
     supporting: "Focused on clarity, depth, and a structure that makes people stay and explore",
@@ -32,6 +20,7 @@ const PROJECTS = [
     url: "https://deepwellaudio.com",
     analyticsId: "deep_well_audio",
     objectPosition: "center 8%",
+    imageClassName: "object-cover",
   },
 ] as const;
 
@@ -106,7 +95,12 @@ export function HomeDeepWellShowcase() {
           These are real websites—shown the way people actually experience them.
         </p>
 
-        <div className="home-reveal mt-14 grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10 lg:gap-12">
+        <div
+          className={cn(
+            "home-reveal mt-14 grid grid-cols-1 gap-12 md:gap-10 lg:gap-12",
+            PROJECTS.length === 1 ? "md:mx-auto md:max-w-4xl" : "md:grid-cols-2",
+          )}
+        >
           {PROJECTS.map((project, index) => (
             <article key={project.analyticsId} className="flex min-w-0 flex-col gap-5">
               <BrowserShowcasePreview hostname={project.hostname}>
@@ -122,7 +116,7 @@ export function HomeDeepWellShowcase() {
                     fill
                     priority={index === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 720px"
-                    className="object-cover"
+                    className={project.imageClassName}
                     style={{ objectPosition: project.objectPosition }}
                   />
                 </div>
