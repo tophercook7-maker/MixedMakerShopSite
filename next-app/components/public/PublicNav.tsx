@@ -43,7 +43,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Web design, SEO &amp; digital growth by Topher</strong>
+              <strong>Web design, SEO, 3D printing &amp; digital growth by Topher</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -57,6 +57,15 @@ export function PublicNav() {
           </Link>
           <Link href="/#real-work" className="pill">
             Showcase
+          </Link>
+          <Link
+            href="/3d-printing"
+            className="pill"
+            onClick={() =>
+              trackPublicEvent("public_gateway_nav", { location: "nav", target: "3d_printing" })
+            }
+          >
+            3D printing
           </Link>
           <Link
             href="/free-mockup"

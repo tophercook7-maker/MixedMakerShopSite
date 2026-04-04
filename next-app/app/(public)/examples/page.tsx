@@ -5,11 +5,11 @@ import { Layers, Printer } from "lucide-react";
 export const metadata: Metadata = {
   title: "Examples | MixedMakerShop",
   description:
-    "Website samples, landing pages, and digital tools by Topher — web design work in one place.",
+    "Website samples, 3D printing services, landing pages, and digital tools by Topher — MixedMakerShop work in one place.",
 };
 
-/** 3D printing hub card + upload-print quick link. Off for public web-focused site; `/3d-printing` route unchanged. */
-const SHOW_PUBLIC_3D_PRINTING_EXAMPLES = false;
+/** 3D printing hub card + upload-print quick link. */
+const SHOW_PUBLIC_3D_PRINTING_EXAMPLES = true;
 
 const shell = "max-w-[1100px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24";
 
@@ -19,7 +19,7 @@ export default function ExamplesHubPage() {
       <div className={`${shell}`}>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#E8FDF5]">Examples</h1>
         <p className="mt-4 max-w-[42rem] text-[#9FB5AD] text-base md:text-lg leading-relaxed">
-          Browse web design samples, landing pages, and lightweight digital tools — all built for small businesses.
+          Browse web design samples, the 3D printing / Bambu Lab service page, landing pages, and lightweight digital tools.
         </p>
 
         <div

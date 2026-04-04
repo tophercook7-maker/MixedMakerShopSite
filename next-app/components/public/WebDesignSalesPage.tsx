@@ -6,6 +6,7 @@ import { HomeSalesVisual } from "@/components/public/HomeSalesVisual";
 import { HomeDeepWellShowcase } from "@/components/public/HomeDeepWellShowcase";
 import { WebDesignProofStrip } from "@/components/public/WebDesignProofStrip";
 import { WebDesignMockupNextSteps } from "@/components/public/WebDesignMockupNextSteps";
+import { HomePrintingPromo } from "@/components/public/HomePrintingPromo";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
 import { publicBodyMutedClass, publicCardGlassWebClass, publicSectionDividerClass, publicShellClass } from "@/lib/public-brand";
@@ -206,6 +207,8 @@ export function WebDesignSalesPage() {
       </section>
 
       <WebDesignProofStrip />
+
+      <HomePrintingPromo />
 
       <section id="problem" className="home-band home-band--surface border-y border-[rgba(232,253,245,0.08)]">
         <div className={`${shell} ${sectionY}`}>

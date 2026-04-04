@@ -14,7 +14,10 @@ import { trackGatewayNav } from "@/lib/public-analytics";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 
 export const ARCHIVED_PRINT_HERO = [
-  { src: "/images/mixedmaker-workspace-hero.png", alt: "MixedMaker 3D printing workspace and setup" },
+  {
+    src: "/images/printing/bambu-fleet-three-monitor-hero.png",
+    alt: "MixedMaker 3D printing workstation with monitors and Bambu Lab printers",
+  },
   { src: "/images/printing/printing-case-repair.png", alt: "Custom 3D-printed repair part" },
   { src: "/images/printing/printing-process-printing.png", alt: "FDM 3D print on the build plate" },
 ] as const;

@@ -20,11 +20,12 @@ export function PrintingCapabilitiesOverview() {
       <div className={printingContentClass}>
         <div className={cn(printingSectionSurfaceClass, "p-6 sm:p-8 md:p-10")}>
           <h2 id="printing-capabilities-heading" className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Custom 3D Printing
+            What I take on
           </h2>
           <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-white/[0.88] md:text-lg">
-            I design and create custom 3D printed parts, prototypes, and practical builds. From functional pieces to
-            unique ideas, if you can think it, I can probably make it.
+            The printers are only half the story —{" "}
+            <span className="text-white/[0.94]">design sense, slicer tuning, and honest timelines</span> are what turn a
+            mesh into something you can bolt on tomorrow. Tell me what you&apos;re fixing, building, or testing.
           </p>
           <h3 className="mt-10 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200/85">What I Make</h3>
           <ul className="mt-4 grid gap-2.5 text-[0.95rem] leading-relaxed text-white/[0.82] sm:grid-cols-2 sm:gap-x-8">

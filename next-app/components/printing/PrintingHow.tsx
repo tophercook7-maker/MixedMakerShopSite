@@ -17,14 +17,14 @@ const STEPS: {
 }[] = [
   {
     n: "1",
-    title: "Tell us what you need",
+    title: "Tell me what you need",
     copy: "Photo, broken piece, sketch, or a voice memo — whatever explains the problem fastest.",
     icon: Camera,
   },
   {
     n: "2",
-    title: "We design and print",
-    copy: "Custom PLA geometry, tuned for strength where it matters — then printed here in the shop.",
+    title: "I design and print",
+    copy: "Custom PLA geometry, tuned for strength where it matters — then run on the A1 / P1S farm when it’s ready.",
     icon: Cuboid,
   },
   {

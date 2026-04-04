@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { PrintingHero } from "@/components/printing/PrintingHero";
+import { PrintingFleetSection } from "@/components/printing/PrintingFleetSection";
 import { PrintingCapabilitiesOverview } from "@/components/printing/PrintingCapabilitiesOverview";
 import { PrintingProofStrip } from "@/components/printing/PrintingProofStrip";
 import { PrintingRequestNextSteps } from "@/components/printing/PrintingRequestNextSteps";
@@ -19,9 +20,16 @@ import {
 } from "@/components/printing/PrintingStickyMobileCta";
 
 export const metadata: Metadata = {
-  title: "3D Printing & Problem Solving | MixedMakerShop",
+  title: "Custom 3D Printing | Bambu Lab A1 & P1S Farm | MixedMakerShop",
   description:
-    "Custom 3D printing in Hot Springs — files, broken parts, prototypes, and practical solves. Upload a model or describe what you need.",
+    "Professional PLA 3D printing in Hot Springs, Arkansas — Bambu Lab A1 + AMS Lite and dual P1S + AMS Pro, triple-monitor workflow. Upload a file or describe your part.",
+  keywords: [
+    "3D printing Hot Springs",
+    "Bambu Lab printing",
+    "custom PLA prints",
+    "replacement parts 3D printed",
+    "prototype printing Arkansas",
+  ],
 };
 
 export default function ThreeDPrintingPage() {
@@ -33,6 +41,7 @@ export default function ThreeDPrintingPage() {
       )}
     >
       <PrintingHero />
+      <PrintingFleetSection />
       <PrintingCapabilitiesOverview />
       <PrintingProofStrip />
       <PrintingRequestNextSteps />

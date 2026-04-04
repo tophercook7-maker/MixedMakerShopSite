@@ -1,7 +1,10 @@
 /**
  * Local fabrication visuals for /3d-printing.
+ * Hero: triple-monitor workstation with Bambu Lab A1 + 2× P1S (AMS) in frame.
  * Case shots: repair / organize / mount (in-context). Process: intake + printing (printing also used for “custom → solved” story card).
  */
+export const PRINTING_HERO_WORKSTATION_IMAGE = "/images/printing/bambu-fleet-three-monitor-hero.png";
+
 export const PRINTING_CASE_IMAGES = {
   repair: "/images/printing/printing-case-repair.png",
   organize: "/images/printing/printing-case-organize.png",

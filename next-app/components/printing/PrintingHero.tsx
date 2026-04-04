@@ -5,6 +5,7 @@ import { publicEyebrowPrintClass } from "@/lib/public-brand";
 import { printingPrimaryCtaClass, printingSecondaryCtaClass } from "@/components/printing/printing-section";
 import { printingQuoteHref } from "@/components/printing/printing-quote-anchor";
 import { printingContentClass } from "@/components/printing/printing-layout";
+import { PRINTING_HERO_WORKSTATION_IMAGE } from "@/components/printing/printing-assets";
 import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 
 export function PrintingHero() {
@@ -22,24 +23,26 @@ export function PrintingHero() {
           <div className="min-w-0 lg:pr-2">
             <RevealOnScroll>
               <p className={cn(publicEyebrowPrintClass, "md:tracking-[0.3em]")}>
-                MixedMakerShop · 3D printing &amp; problem solving · Hot Springs, Arkansas
+                MixedMakerShop · Bambu Lab print farm · Hot Springs, Arkansas
               </p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={55}>
               <h1 className="mt-7 max-w-[20ch] text-[2.35rem] font-semibold leading-[1.04] tracking-[-0.035em] text-white sm:max-w-none sm:text-[2.75rem] sm:leading-[1.03] lg:mt-8 lg:text-[clamp(2.85rem,4.2vw,3.85rem)] lg:leading-[1.04] [text-shadow:0_4px_64px_rgba(0,0,0,0.55)]">
-                Need Something 3D Printed or Solved?
+                Custom 3D Printing Backed by a Real Bambu Lab Fleet
               </h1>
             </RevealOnScroll>
             <RevealOnScroll delayMs={110}>
               <p className="mt-8 max-w-2xl text-[1.0625rem] font-medium leading-[1.55] text-white/[0.88] md:mt-9 md:text-lg md:leading-[1.58]">
-                Send your print file, your idea, your broken part, or your problem — and I&apos;ll help bring it to life
-                with custom 3D printing and practical solutions.
+                From your STL to a finished part — replacements, organizers, brackets, and prototypes. I run{" "}
+                <span className="text-white/[0.95]">1× A1 with AMS Lite</span> plus{" "}
+                <span className="text-white/[0.95]">2× P1S printers with AMS Pro</span>, orchestrated from a triple-monitor
+                workstation so jobs stay on track.
               </p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={165}>
               <p className="mt-7 max-w-2xl border-l-[3px] border-emerald-400/50 pl-5 text-[0.95rem] font-semibold leading-relaxed text-emerald-200/[0.92] md:mt-8 md:text-[1rem]">
-                Have a file ready, or just a problem to describe — both are welcome. I reply by email and keep the process
-                straightforward.
+                Send a file, a photo of a broken piece, or a rough idea — I&apos;ll tell you what&apos;s realistic and
+                quote practical next steps.
               </p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={220}>
@@ -84,8 +87,8 @@ export function PrintingHero() {
               <div className="relative overflow-hidden rounded-[1.32rem] border border-white/[0.14] bg-neutral-950 shadow-[0_36px_100px_rgba(0,0,0,0.65)] backdrop-blur-md ring-1 ring-white/[0.05]">
                 <div className="relative aspect-[4/3] w-full sm:aspect-[16/11] lg:aspect-[5/4]">
                   <Image
-                    src="/images/mixedmaker-workspace-hero.png"
-                    alt="MixedMaker workspace and 3D printing setup"
+                    src={PRINTING_HERO_WORKSTATION_IMAGE}
+                    alt="MixedMakerShop workstation with three monitors; behind them, one Bambu Lab A1 with AMS Lite and two Bambu Lab P1S printers with AMS Pro multi-material systems"
                     fill
                     className="object-cover object-center"
                     priority
@@ -121,9 +124,9 @@ export function PrintingHero() {
                     <path d="M32 10v6M32 48v6M10 32h6M48 32h6" stroke="currentColor" strokeWidth="0.7" opacity="0.8" />
                   </svg>
                   <div className="absolute bottom-5 left-5 right-5 sm:bottom-6 sm:left-6 sm:right-auto sm:max-w-[92%]">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-orange-300/95">MixedMakerShop</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-orange-300/95">The actual bench</p>
                     <p className="mt-2 text-sm font-semibold leading-snug text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]">
-                      Custom PLA fabrication • Hot Springs, Arkansas
+                      A1 + AMS Lite · 2× P1S + AMS Pro · Triple-display workflow
                     </p>
                   </div>
                 </div>
