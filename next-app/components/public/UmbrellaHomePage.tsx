@@ -8,9 +8,10 @@ import {
   mmsBullet,
   mmsBtnPrimary,
   mmsBtnSecondary,
-  mmsCard,
   mmsCtaPanel,
   mmsEyebrow,
+  mmsGlassPanel,
+  mmsGlassPanelDense,
   mmsH2,
   mmsSectionBorder,
   mmsSectionY,
@@ -20,27 +21,40 @@ import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
 
+/** Desktop: let fixed umbrella read through; mobile: warm solid for stability. */
+const homeBackdrop = cn(
+  "border-b",
+  mmsSectionBorder,
+  "max-md:bg-[#ece7dd]",
+  "md:bg-transparent",
+);
+
 export function UmbrellaHomePage() {
   return (
-    <div className="relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
       {/* Desktop/tablet: umbrella locked to viewport; all sections below scroll over it (see z-index). */}
       <FixedHeroMedia />
 
-      <div className="relative z-[2] w-full">
+      <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
 
-        {/* Trust strip — overlaps hero so content reads as scrolling over the umbrella scene */}
+        {/* Trust strip — glass over umbrella on desktop */}
         <section
           className={cn(
-            "relative -mt-10 border-b py-8 backdrop-blur-md md:-mt-14 md:py-9 lg:-mt-16",
-            mmsSectionBorder,
-            "bg-gradient-to-b from-[#cdd9cf]/78 via-[#e4e8e1]/88 to-[#ece7dd]/96",
-            "shadow-[0_-14px_48px_rgba(47,62,52,0.12)] ring-1 ring-[#3f5a47]/[0.07]",
+            "relative -mt-10 py-8 md:-mt-14 md:py-9 lg:-mt-16",
+            homeBackdrop,
+            "md:pt-10 md:pb-10",
           )}
           aria-label="What to expect"
         >
         <div className={cn(shell, "px-5")}>
-          <ul className="flex flex-col gap-3 text-center text-sm font-medium text-[#4a5750] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-2">
+          <div
+            className={cn(
+              mmsGlassPanel,
+              "mx-auto border-[#3f5a47]/18 bg-[rgba(236,241,236,0.5)] px-5 py-7 md:px-8 md:py-8",
+            )}
+          >
+          <ul className="flex flex-col gap-3 text-center text-sm font-semibold text-[#2f3e34] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-2">
             <li>Web Design by Topher</li>
             <li className="hidden sm:block text-[#3f5a47]/25" aria-hidden>
               ·
@@ -55,19 +69,18 @@ export function UmbrellaHomePage() {
             </li>
             <li>Based in Hot Springs, Arkansas</li>
           </ul>
+          </div>
         </div>
       </section>
 
       {/* Web design — dominant panel */}
-      <section
-        className={cn("border-b bg-gradient-to-b from-[#ece7dd] via-[#e8efe8]/40 to-[#ece7dd]", mmsSectionBorder)}
-        id="web-design"
-      >
+      <section className={cn(homeBackdrop)} id="web-design">
         <div className={cn(shell, mmsSectionY)}>
           <div
             className={cn(
-              mmsCard,
-              "relative overflow-hidden border-[#3f5a47]/14 bg-gradient-to-br from-white via-[#faf8f4] to-[#e8efe8]/50 p-8 sm:p-10 lg:p-12",
+              mmsGlassPanelDense,
+              "relative overflow-hidden p-8 sm:p-10 lg:p-12",
+              "max-md:bg-gradient-to-br max-md:from-[#faf8f4] max-md:to-[#e8efe8]/80",
             )}
           >
             <div
@@ -77,7 +90,7 @@ export function UmbrellaHomePage() {
             <div className="relative max-w-3xl">
               <p className={cn(mmsEyebrow, "!text-[#8a4b2a]")}>Primary service</p>
               <h2 className={cn(mmsH2, "mt-4")}>Web Design by Topher</h2>
-              <p className="mt-6 text-base leading-relaxed text-[#4a5750] md:text-lg">
+              <p className="mt-6 text-base leading-relaxed text-[#354239] md:text-lg">
                 This is the core service side of MixedMakerShop. I build websites that help businesses look professional, build
                 trust fast, and turn visitors into real calls, leads, and customers.
               </p>
@@ -123,50 +136,60 @@ export function UmbrellaHomePage() {
       </section>
 
       {/* Free mockup — core offer */}
-      <section className={cn("border-b bg-gradient-to-b from-[#f7f4ee]/95 to-[#ece7dd]/90", mmsSectionBorder)}>
+      <section className={cn(homeBackdrop, "max-md:bg-[#e8e3d9]")}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <h2 className={mmsH2}>Want to see your website before you commit?</h2>
-          <p className="mt-8 text-base leading-relaxed text-[#4a5750] md:text-lg">
-            I can mock up a version of your site so you can see exactly how it could look and feel.
-          </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <TrackedPublicLink
-              href="/free-mockup"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "home_mockup_section", target: "free_mockup" }}
-              className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
-            >
-              Get My Free Mockup
-            </TrackedPublicLink>
-            <TrackedPublicLink
-              href="/contact"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "home_mockup_section", target: "start_project" }}
-              className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
-            >
-              Start My Project
-            </TrackedPublicLink>
+          <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10", "max-md:border-[#3f5a47]/14")}>
+            <h2 className={mmsH2}>Want to see your website before you commit?</h2>
+            <p className="mt-8 text-base leading-relaxed text-[#354239] md:text-lg">
+              I can mock up a version of your site so you can see exactly how it could look and feel.
+            </p>
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <TrackedPublicLink
+                href="/free-mockup"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "home_mockup_section", target: "free_mockup" }}
+                className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
+              >
+                Get My Free Mockup
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href="/contact"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "home_mockup_section", target: "start_project" }}
+                className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
+              >
+                Start My Project
+              </TrackedPublicLink>
+            </div>
+            <p className="mt-4 text-xs font-medium text-[#5a6a62] sm:text-sm">
+              No pressure · No obligation · Just a preview
+            </p>
           </div>
-          <p className="mt-4 text-xs font-medium text-[#5a6a62] sm:text-sm">
-            No pressure · No obligation · Just a preview
-          </p>
         </div>
       </section>
 
       <HomeFeaturedWebDesignWork
         variant="light"
+        immersive
         heading="Featured Web Design Work"
         subhead="These are real websites I've built to help businesses look established, clear, and worth contacting."
       />
 
       {/* Umbrella services */}
-      <section className={cn("border-y bg-[#dfe8e0]/25", mmsSectionBorder)}>
+      <section className={cn("border-y", homeBackdrop, "max-md:bg-[#dde8df]")}>
         <div className={cn(shell, mmsSectionY)}>
-          <h2 className={cn(mmsH2, "max-w-2xl")}>What else I build through MixedMakerShop</h2>
+          <h2
+            className={cn(
+              mmsH2,
+              "max-w-2xl md:[text-shadow:0_2px_24px_rgba(247,244,238,0.8)]",
+            )}
+          >
+            What else I build through MixedMakerShop
+          </h2>
           <div className="mt-14 grid gap-8 lg:grid-cols-2">
-            <div className={cn(mmsCard, "p-9 sm:p-10")}>
+            <div className={cn(mmsGlassPanelDense, "p-9 sm:p-10")}>
               <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">3D Printing by Topher</h3>
-              <p className="mt-5 text-[#4a5750] leading-relaxed">
+              <p className="mt-5 leading-relaxed text-[#354239] md:text-[17px]">
                 Custom parts, replacement pieces, functional prints, mounts, organizers, prototypes, and practical solutions
                 when something needs to be made or fixed.
               </p>
@@ -179,9 +202,9 @@ export function UmbrellaHomePage() {
                 Explore 3D printing →
               </TrackedPublicLink>
             </div>
-            <div className={cn(mmsCard, "p-9 sm:p-10")}>
+            <div className={cn(mmsGlassPanelDense, "p-9 sm:p-10")}>
               <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">Digital Builds</h3>
-              <p className="mt-5 text-[#4a5750] leading-relaxed">
+              <p className="mt-5 leading-relaxed text-[#354239] md:text-[17px]">
                 I also build app concepts, internal tools, AI-assisted ideas, and practical digital systems that go beyond a
                 standard website.
               </p>
@@ -197,10 +220,11 @@ export function UmbrellaHomePage() {
       </section>
 
       {/* Why Topher */}
-      <section className={cn("border-b bg-[#f7f4ee]/72", mmsSectionBorder)}>
+      <section className={cn(homeBackdrop, "max-md:bg-[#e4ebe4]")}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <h2 className={mmsH2}>Direct, practical, and built to actually help</h2>
-          <ul className="mt-10 space-y-3.5 text-[#3d4a42] md:text-[17px]">
+          <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10")}>
+            <h2 className={mmsH2}>Direct, practical, and built to actually help</h2>
+            <ul className="mt-10 space-y-3.5 text-[#2d3a33] md:text-[17px]">
             {[
               "You work directly with Topher",
               "No agency layers or bloated process",
@@ -215,21 +239,24 @@ export function UmbrellaHomePage() {
               </li>
             ))}
           </ul>
+          </div>
         </div>
       </section>
 
       {/* About preview */}
-      <section className={cn("border-b bg-[#ece7dd]/95", mmsSectionBorder)} id="about-topher">
+      <section className={cn(homeBackdrop, "max-md:bg-[#ece7dd]")} id="about-topher">
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <h2 className={mmsH2}>About Topher</h2>
-          <p className="mt-7 text-base leading-relaxed text-[#4a5750] md:text-lg">
-            I build things that are actually useful. MixedMakerShop is the umbrella studio where I combine web design, 3D
-            printing, and digital builds into one place for businesses, ideas, and real-world problem solving.
-          </p>
-          <div className="mt-10">
-            <Link href="/about" className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}>
-              Read More About Topher
-            </Link>
+          <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10")}>
+            <h2 className={mmsH2}>About Topher</h2>
+            <p className="mt-7 text-base leading-relaxed text-[#354239] md:text-lg">
+              I build things that are actually useful. MixedMakerShop is the umbrella studio where I combine web design, 3D
+              printing, and digital builds into one place for businesses, ideas, and real-world problem solving.
+            </p>
+            <div className="mt-10">
+              <Link href="/about" className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}>
+                Read More About Topher
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -237,8 +264,9 @@ export function UmbrellaHomePage() {
       {/* Closing CTA */}
       <section
         className={cn(
-          "border-t bg-gradient-to-b from-[#ece7dd] via-[#e5e0d6] to-[#dcd6cc]",
-          mmsSectionBorder,
+          "border-t",
+          homeBackdrop,
+          "max-md:bg-gradient-to-b max-md:from-[#e8e3da] max-md:to-[#dcd6cc]",
         )}
         id="home-contact"
       >

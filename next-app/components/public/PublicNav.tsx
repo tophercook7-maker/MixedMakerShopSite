@@ -92,10 +92,10 @@ export function PublicNav() {
             Free Mockup
           </Link>
           <Link
-            href="/contact"
+            href="/web-design"
             className="pill"
             onClick={() =>
-              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "get_website" })
+              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "web_design" })
             }
           >
             Get a Website

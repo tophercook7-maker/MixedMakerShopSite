@@ -10,11 +10,11 @@ export function FixedHeroMedia() {
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 top-0 z-[1] hidden h-[100svh] w-full overflow-hidden",
+        "pointer-events-none fixed inset-x-0 top-0 z-0 hidden h-[100svh] w-full overflow-hidden",
         "md:block",
       )}
     >
-      <UmbrellaHeroMedia className="h-full w-full" priority />
+      <UmbrellaHeroMedia className="h-full w-full" priority variant="fixed" />
     </div>
   );
 }

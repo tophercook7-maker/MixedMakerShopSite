@@ -153,7 +153,7 @@ export default function ContactPage() {
                 <span style={{ color: "var(--pub-accent)", fontWeight: 650 }}>
                   →
                 </span>
-                Have questions before getting started?
+                View pricing &amp; packages
               </Link>
             </div>
           </div>

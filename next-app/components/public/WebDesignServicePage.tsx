@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
@@ -39,11 +38,11 @@ function WebDesignMockupCtaBand({
         <div
           className={cn(
             mmsCard,
-            "mx-auto max-w-3xl border-[#3f5a47]/12 bg-gradient-to-br from-white via-[#faf8f4] to-[#f0ebe3]/80 p-8 sm:p-10",
+            "mx-auto max-w-3xl border-[#3f5a47]/16 bg-gradient-to-br from-white via-[#f6f3ec] to-[#e8efe8]/75 p-8 sm:p-10 shadow-[0_22px_55px_-28px_rgba(30,36,31,0.14)]",
           )}
         >
           <h2 className={mmsH2}>Not sure yet?</h2>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
             I can mock up your homepage so you can see it before you decide.
           </p>
           <div className="mt-9">
@@ -97,14 +96,19 @@ export function WebDesignServicePage() {
             <TrackedPublicLink
               href="/free-mockup"
               eventName="public_contact_cta_click"
-              eventProps={{ location: "web_design_hero", target: "start_my_website" }}
+              eventProps={{ location: "web_design_hero", target: "free_mockup" }}
               className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
             >
-              Start My Website
+              Get a Free Website Mockup
             </TrackedPublicLink>
-            <Link href="/free-mockup" className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}>
-              Get a Free Mockup
-            </Link>
+            <TrackedPublicLink
+              href="/contact"
+              eventName="public_contact_cta_click"
+              eventProps={{ location: "web_design_hero", target: "contact_topher" }}
+              className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
+            >
+              Contact Topher
+            </TrackedPublicLink>
           </div>
           <p className="mt-6 text-xs font-medium text-[#5a6a62] sm:text-sm">
             No pressure · No obligation · Just a preview
@@ -116,10 +120,10 @@ export function WebDesignServicePage() {
       </section>
 
       {/* 2. Who this is for */}
-      <section className={cn("border-b bg-white/88", mmsSectionBorder)}>
+      <section className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.06)]", mmsSectionBorder)}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
           <h2 className={mmsH2}>Who this is for</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
             This is for people who know they need a better online presence, but don&apos;t want to deal with complicated
             agencies or confusing tech.
           </p>
@@ -143,10 +147,16 @@ export function WebDesignServicePage() {
       </section>
 
       {/* 3. What you get */}
-      <section className={cn("border-b bg-gradient-to-b from-[#e8eee9]/35 to-[#ece7dd]/80", mmsSectionBorder)} id="browse-by-type">
+      <section
+        className={cn(
+          "border-b bg-gradient-to-b from-[#dde8df]/55 via-[#ece7dd]/90 to-[#e4dfd6]",
+          mmsSectionBorder,
+        )}
+        id="browse-by-type"
+      >
         <div className={cn(shell, sectionYRelaxed)}>
           <h2 className={mmsH2}>What Topher builds</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
             Everything is built to be simple, clear, and actually useful.
           </p>
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -166,7 +176,7 @@ export function WebDesignServicePage() {
       </section>
 
       {/* 4. What happens next */}
-      <section className={cn("border-b bg-white/90", mmsSectionBorder)}>
+      <section className={cn("border-b bg-white/93 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
         <div className={cn(shell, sectionYRelaxed)}>
           <h2 className={mmsH2}>What happens after you reach out</h2>
           <div className="mt-14 grid gap-8 md:grid-cols-3 md:gap-10">
@@ -192,7 +202,7 @@ export function WebDesignServicePage() {
                   {step.n}
                 </span>
                 <h3 className="text-lg font-bold leading-snug text-[#1e241f]">{step.title}</h3>
-                <p className="mt-4 text-sm leading-relaxed text-[#4a5750] md:text-[15px]">{step.line}</p>
+                <p className="mt-4 text-sm leading-relaxed text-[#354239] md:text-[15px]">{step.line}</p>
               </div>
             ))}
           </div>
@@ -209,10 +219,10 @@ export function WebDesignServicePage() {
       />
 
       {/* 6. Why work with Topher */}
-      <section className={cn("border-b bg-[#f0ebe3]/55", mmsSectionBorder)}>
+      <section className={cn("border-b bg-[#e8ebe4]/65", mmsSectionBorder)}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
           <h2 className={mmsH2}>Why work directly with Topher</h2>
-          <p className="mt-8 text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <p className="mt-8 text-base leading-relaxed text-[#354239] md:text-lg">
             When you work with me, you&apos;re working directly with the person building the site. No layers, no confusion,
             and no bloated process.
           </p>
@@ -236,12 +246,12 @@ export function WebDesignServicePage() {
       </section>
 
       {/* 7. Light trust / reassurance */}
-      <section className={cn("border-b bg-white/82 py-14 md:py-16", mmsSectionBorder)}>
+      <section className={cn("border-b bg-[#faf8f4]/95 py-14 md:py-16", mmsSectionBorder)}>
         <div className={cn(shell, "max-w-2xl text-center")}>
           <p className="text-lg font-semibold text-[#1e241f] md:text-xl">
             You don&apos;t need a complicated website. You need one that works.
           </p>
-          <p className="mt-4 text-base text-[#4a5750] md:text-[17px]">
+          <p className="mt-4 text-base text-[#354239] md:text-[17px]">
             Topher keeps things simple so you can focus on your business.
           </p>
         </div>
@@ -252,7 +262,7 @@ export function WebDesignServicePage() {
         <div className={cn(shell, "px-5 py-24 md:py-32")}>
           <div className={cn(mmsCtaPanel, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
             <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Need a website that actually helps your business?</h2>
-            <p className="mx-auto mt-5 max-w-lg text-[#4a5750] md:text-lg">
+            <p className="mx-auto mt-5 max-w-lg text-[#354239] md:text-lg">
               Tell Topher what you need — you&apos;ll map a straightforward path and build something that works.
             </p>
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center sm:gap-4">

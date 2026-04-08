@@ -10,9 +10,9 @@ export const LIVE_WEB_PROJECTS = [
     hostname: "freshcutpropertycare.com",
     url: "https://freshcutpropertycare.com",
     analyticsId: "fresh_cut_property_care",
-    /** Portrait capture — bias slightly toward hero + CTAs in wide cards */
-    objectPosition: "center 42%",
-    imageClassName: "object-cover",
+    /** Bias toward hero + upper page; md+ uses contain in the card for a fuller-site read */
+    objectPosition: "center top",
+    imageClassName: "object-cover md:object-contain",
   },
   {
     title: "Deep Well Audio",
@@ -23,9 +23,8 @@ export const LIVE_WEB_PROJECTS = [
     hostname: "deepwellaudio.com",
     url: "https://deepwellaudio.com",
     analyticsId: "deep_well_audio",
-    /** Below the nav grid, on the “Clarity over chaos” hero band */
-    objectPosition: "center 16%",
-    imageClassName: "object-cover",
+    objectPosition: "center top",
+    imageClassName: "object-cover md:object-contain",
   },
 ] as const;
 

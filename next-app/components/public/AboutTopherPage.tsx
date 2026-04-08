@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { TopherAvatarFigure } from "@/components/public/TopherAvatarFigure";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
@@ -48,10 +47,15 @@ export function AboutTopherPage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-[#e8eee9]/28", mmsSectionBorder)}>
+      <section className={cn("border-b bg-gradient-to-b from-[#dfe8df]/50 to-[#ece7dd]/80", mmsSectionBorder)}>
         <div className={cn(shell, mmsSectionY)}>
-          <div className={cn(mmsCard, "mx-auto max-w-3xl p-8 sm:p-12")}>
-            <div className="space-y-6 text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <div
+            className={cn(
+              mmsCard,
+              "mx-auto max-w-3xl border-[#3f5a47]/14 p-8 shadow-[0_24px_60px_-28px_rgba(30,36,31,0.12)] sm:p-12",
+            )}
+          >
+            <div className="space-y-6 text-base leading-relaxed text-[#354239] md:text-lg">
               <p>
                 I&apos;m Topher. MixedMakerShop is where I combine web design, 3D printing, and digital builds into one place.
               </p>
@@ -72,7 +76,7 @@ export function AboutTopherPage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-white/84", mmsSectionBorder)}>
+      <section className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
           <h2 className={mmsH2}>How Topher works</h2>
           <ul className="mt-10 space-y-3.5 text-[#3d4a42] md:text-[17px]">
@@ -94,10 +98,10 @@ export function AboutTopherPage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-[#f0ebe3]/45", mmsSectionBorder)}>
+      <section className={cn("border-b bg-[#e4eae4]/55", mmsSectionBorder)}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
           <h2 className={mmsH2}>Built from Hot Springs, Arkansas</h2>
-          <p className="mt-7 text-base leading-relaxed text-[#4a5750] md:text-lg">
+          <p className="mt-7 text-base leading-relaxed text-[#354239] md:text-lg">
             I&apos;m based in Hot Springs, Arkansas, and I work with local businesses, practical projects, and digital ideas
             that need someone who can actually build.
           </p>
@@ -113,14 +117,15 @@ export function AboutTopherPage() {
         <div className={cn(shell, "px-5 py-24 md:py-28")}>
           <div className={cn(mmsCtaPanel, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
             <h2 className={cn(mmsH2, "mx-auto max-w-xl !text-2xl md:!text-3xl")}>Want to work directly with Topher?</h2>
-            <p className="mx-auto mt-5 max-w-lg text-[#4a5750] md:text-lg">
-              Start with a free homepage preview, or send a note about what you&apos;re trying to build.
+            <p className="mx-auto mt-5 max-w-lg text-[#354239] md:text-lg">
+              Explore web design services, grab a free homepage preview, or send a note about what you&apos;re trying to
+              build.
             </p>
             <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:justify-center">
               <TrackedPublicLink
-                href="/free-mockup"
+                href="/web-design"
                 eventName="public_contact_cta_click"
-                eventProps={{ location: "about_cta", target: "get_website" }}
+                eventProps={{ location: "about_cta", target: "web_design" }}
                 className={cn(
                   mmsBtnPrimary,
                   "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
@@ -128,15 +133,17 @@ export function AboutTopherPage() {
               >
                 Get a Website
               </TrackedPublicLink>
-              <Link
+              <TrackedPublicLink
                 href="/contact"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "about_cta", target: "contact_topher" }}
                 className={cn(
                   mmsBtnSecondary,
                   "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                 )}
               >
-                Start a Project
-              </Link>
+                Contact Topher
+              </TrackedPublicLink>
             </div>
             <p className="mx-auto mt-4 max-w-lg text-xs font-medium text-[#5a6a62] sm:text-sm">
               No pressure · No obligation · Just a preview if you want one

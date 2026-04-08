@@ -109,6 +109,17 @@
   color: var(--pub-fg);
 }
 
+/* Homepage (umbrella): on md+, drop the solid cream shell so the fixed hero layer shows through translucent panels */
+@media (min-width: 768px) {
+  .public-site--light-umbrella:has(.home-umbrella-canvas) {
+    background-color: transparent;
+  }
+
+  .public-site--light-umbrella:has(.home-umbrella-canvas) main {
+    background-color: transparent;
+  }
+}
+
 .public-site--light-umbrella .btn.gold {
   border-color: rgba(138, 75, 42, 0.38);
   background: linear-gradient(135deg, #c96a28 0%, #b85c1e 48%, #8a4b2a 100%);

@@ -9,6 +9,7 @@ import {
   mmsBtnPrimary,
   mmsBtnSecondary,
   mmsCard,
+  mmsGlassPanelDense,
   mmsH2,
   mmsSectionBorder,
   mmsSectionY,
@@ -31,6 +32,8 @@ export type HomeFeaturedWebDesignWorkProps = {
   subhead?: string;
   /** Defaults to `real-work` for backward-compatible in-page anchors. */
   sectionId?: string;
+  /** Homepage: section sits over fixed umbrella; transparent band + glass cards on md+. */
+  immersive?: boolean;
 };
 
 const projectCount: number = LIVE_WEB_PROJECTS.length;
@@ -108,28 +111,51 @@ export function HomeFeaturedWebDesignWork({
   heading = "Websites I've Built",
   subhead = "Real businesses, live on the web — built and launched by Topher.",
   sectionId = "real-work",
+  immersive = false,
 }: HomeFeaturedWebDesignWorkProps) {
   const isLight = variant === "light";
   const h2 = isLight ? mmsH2 : h2Dark;
   const body = isLight ? bodyLight : bodyDark;
   const sectionClass = isLight
     ? cn(
-        "border-y bg-gradient-to-b from-[#ece7dd] via-[#f5f2ea] to-[#ece7dd]",
-        mmsSectionBorder,
+        immersive
+          ? cn(
+              "border-y border-[#3f5a47]/28 bg-transparent max-md:bg-gradient-to-b max-md:from-[#ebe6dc] max-md:via-[#f2ede4] max-md:to-[#ece7dd]",
+              mmsSectionBorder,
+            )
+          : cn(
+              "border-y bg-gradient-to-b from-[#e8e3d9] via-[#f0ebe3] to-[#e5dfd4]",
+              mmsSectionBorder,
+            ),
       )
     : "home-band home-band--deep border-y border-[rgba(232,253,245,0.08)]";
 
   return (
     <section
       id={sectionId}
-      className={sectionClass}
+      className={cn(sectionClass, "scroll-mt-24 md:scroll-mt-32")}
       aria-labelledby="featured-web-design-heading"
     >
       <div className={cn(shell, isLight ? mmsSectionY : sectionY)}>
-        <h2 id="featured-web-design-heading" className={cn("home-reveal home-section-title max-w-[900px]", h2)}>
+        <h2
+          id="featured-web-design-heading"
+          className={cn(
+            "home-reveal home-section-title max-w-[900px]",
+            h2,
+            immersive && "md:[text-shadow:0_2px_28px_rgba(247,244,238,0.85)]",
+          )}
+        >
           {heading}
         </h2>
-        <p className={cn("home-reveal mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed", body)}>{subhead}</p>
+        <p
+          className={cn(
+            "home-reveal mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed",
+            body,
+            immersive && "md:font-medium md:text-[#1e241f]",
+          )}
+        >
+          {subhead}
+        </p>
 
         <div
           className={cn(
@@ -143,16 +169,19 @@ export function HomeFeaturedWebDesignWork({
               className={cn(
                 "flex min-w-0 flex-col gap-6",
                 isLight &&
-                  cn(mmsCard, "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]"),
+                  cn(
+                    immersive ? mmsGlassPanelDense : mmsCard,
+                    "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]",
+                  ),
               )}
             >
               <BrowserShowcasePreview hostname={project.hostname} theme={variant}>
                 <div
                   className={cn(
                     "relative w-full overflow-hidden",
-                    isLight ? "bg-[#e8ebe6]/90" : "bg-[#0a0d0c]",
-                    /* Portrait live captures read better in a taller frame on small screens; widen at md+ */
-                    "aspect-[10/16] min-h-[220px] sm:aspect-[4/5] sm:min-h-[260px] md:aspect-[16/9] md:min-h-[320px] lg:min-h-[min(440px,40vw)]",
+                    isLight ? "bg-[#cfd8d0]" : "bg-[#0a0d0c]",
+                    "aspect-[10/16] min-h-[220px] sm:aspect-[4/5] sm:min-h-[260px]",
+                    "md:aspect-[16/13] md:min-h-[min(420px,44vw)] lg:aspect-[16/12] lg:min-h-[min(480px,38vw)]",
                   )}
                 >
                   <Image
@@ -162,7 +191,10 @@ export function HomeFeaturedWebDesignWork({
                     priority={index === 0}
                     quality={88}
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 760px"
-                    className={project.imageClassName}
+                    className={cn(
+                      project.imageClassName,
+                      "max-md:object-cover",
+                    )}
                     style={{ objectPosition: project.objectPosition }}
                   />
                 </div>
