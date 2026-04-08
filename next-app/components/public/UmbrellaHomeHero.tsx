@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
+import { mmsBtnPrimary, mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
 import { publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
@@ -12,20 +12,13 @@ const shell = publicShellClass;
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
-const heroBtnPrimary = cn(
-  "inline-flex min-h-[3rem] items-center justify-center rounded-xl",
-  "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 px-7",
-  "text-center text-[0.9375rem] font-semibold text-[#fffaf5]",
-  "shadow-lg shadow-black/25 transition hover:brightness-110",
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300",
-);
-
 const heroBtnSecondary = cn(
-  "inline-flex min-h-[3rem] items-center justify-center rounded-xl",
-  "border border-white/35 bg-white/[0.08] px-7 text-center text-[0.9375rem] font-semibold text-[#faf6f0]",
-  "shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-[2px]",
-  "transition hover:border-white/45 hover:bg-white/[0.14]",
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300",
+  "inline-flex min-h-[3rem] items-center justify-center rounded-xl px-7",
+  "border border-white/30 bg-white/[0.07] text-center text-[0.9375rem] font-semibold text-[#faf6f0]",
+  "shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-[3px]",
+  "transition-[border-color,background-color,box-shadow] duration-200 ease-out",
+  "hover:border-[#ece7dd]/45 hover:bg-[#3f5a47]/22 hover:shadow-[0_6px_22px_rgba(0,0,0,0.18)]",
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6f8a73]",
 );
 
 export function UmbrellaHomeHero() {
@@ -61,18 +54,36 @@ export function UmbrellaHomeHero() {
             "xl:object-[44%_46%]",
           )}
         />
-        {/* Busy interior + city bokeh: firm left read, still let warm interior glow show through */}
+        {/* Subtle grain — static, GPU-friendly dot dither */}
         <div
-          className="absolute inset-0 bg-gradient-to-r from-[#0f1412]/90 via-[#1a1816]/52 to-[#1c1914]/22"
+          className="pointer-events-none absolute inset-0 opacity-[0.055] mix-blend-overlay"
+          style={{
+            backgroundImage: "radial-gradient(rgba(30,36,31,0.9) 0.4px, transparent 0.4px)",
+            backgroundSize: "3px 3px",
+          }}
+          aria-hidden
+        />
+        {/* Left readability — moss/charcoal, lighter mid so umbrella interior stays vivid */}
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-[#1e241f]/78 via-[#2f3e34]/36 to-[#3f5a47]/12"
           aria-hidden
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-[#1a1510]/48 via-transparent to-[#0f0c0a]/28"
+          className="absolute inset-0 bg-gradient-to-t from-[#1e241f]/38 via-transparent to-[#1e241f]/22"
           aria-hidden
         />
-        {/* Handoff into light page body */}
+        {/* Edge vignette — calm depth without crushing the center */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#f4f3ef] via-[#f4f3ef]/88 to-transparent sm:h-48 md:h-56"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_92%_78%_at_50%_42%,transparent_42%,rgba(12,15,13,0.38)_100%)]"
+          aria-hidden
+        />
+        {/* Moss → forest → warm cream handoff into page shell */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[44vw] max-h-[21rem] min-h-[11rem] sm:min-h-[12.5rem]"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 38%, rgba(47,62,52,0.45) 58%, rgba(63,90,71,0.72) 75%, #ece7dd 100%)",
+          }}
           aria-hidden
         />
       </div>
@@ -120,7 +131,7 @@ export function UmbrellaHomeHero() {
               href="/web-design"
               eventName="public_contact_cta_click"
               eventProps={{ location: "home_hero_umbrella", target: "web_design" }}
-              className={cn(heroBtnPrimary, "no-underline hover:no-underline")}
+              className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
             >
               Get a Website
             </TrackedPublicLink>

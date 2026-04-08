@@ -5,7 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
-import { mmsBtnPrimary, mmsBtnSecondary, mmsCard, mmsH2, mmsSectionY } from "@/lib/mms-umbrella-ui";
+import {
+  mmsBtnPrimary,
+  mmsBtnSecondary,
+  mmsCard,
+  mmsH2,
+  mmsSectionBorder,
+  mmsSectionY,
+  mmsTextLink,
+} from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { cn } from "@/lib/utils";
@@ -15,7 +23,7 @@ const sectionY = "py-20 md:py-28 lg:py-[7.5rem]";
 const h2Dark =
   "text-3xl md:text-4xl lg:text-[3.15rem] font-semibold tracking-tight text-[#E8FDF5] lg:leading-[1.06]";
 const bodyDark = publicBodyMutedClass;
-const bodyLight = "text-slate-600";
+const bodyLight = "text-[#4a5750]";
 
 export type HomeFeaturedWebDesignWorkProps = {
   variant?: "dark" | "light";
@@ -40,20 +48,22 @@ function BrowserShowcasePreview({
     return (
       <div
         className={cn(
-          "overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/[0.08] ring-1 ring-slate-900/[0.04]",
+          "overflow-hidden rounded-3xl border border-[#3f5a47]/14 bg-white/95",
+          "shadow-[0_26px_70px_-28px_rgba(30,36,31,0.22),inset_0_1px_0_rgba(255,255,255,0.92)]",
+          "ring-1 ring-[#3f5a47]/[0.06]",
         )}
       >
         <div
-          className="flex h-11 shrink-0 items-center gap-2 border-b border-slate-200/80 bg-slate-50 px-3 sm:h-12 sm:px-4"
+          className="flex h-11 shrink-0 items-center gap-2 border-b border-[#3f5a47]/10 bg-[#f4f1ea]/95 px-3 sm:h-12 sm:px-4"
           aria-hidden
         >
           <span className="flex gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-rose-400/90 sm:h-2.5 sm:w-2.5" />
-            <span className="h-2 w-2 rounded-full bg-amber-400/90 sm:h-2.5 sm:w-2.5" />
-            <span className="h-2 w-2 rounded-full bg-emerald-500/90 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-[#c45a3a]/85 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-[#b85c1e]/88 sm:h-2.5 sm:w-2.5" />
+            <span className="h-2 w-2 rounded-full bg-[#6f8a73]/90 sm:h-2.5 sm:w-2.5" />
           </span>
-          <div className="mx-auto flex min-h-[1.85rem] min-w-0 max-w-[min(100%,26rem)] flex-1 items-center justify-center rounded-lg border border-slate-200/80 bg-white px-3 py-1">
-            <span className="truncate text-center text-[10px] font-medium tabular-nums text-slate-500 sm:text-[11px]">
+          <div className="mx-auto flex min-h-[1.85rem] min-w-0 max-w-[min(100%,26rem)] flex-1 items-center justify-center rounded-lg border border-[#3f5a47]/12 bg-white/90 px-3 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
+            <span className="truncate text-center text-[10px] font-medium tabular-nums text-[#5a6a62] sm:text-[11px]">
               https://{hostname}
             </span>
           </div>
@@ -103,7 +113,10 @@ export function HomeFeaturedWebDesignWork({
   const h2 = isLight ? mmsH2 : h2Dark;
   const body = isLight ? bodyLight : bodyDark;
   const sectionClass = isLight
-    ? "border-y border-slate-200/60 bg-gradient-to-b from-white via-[#faf9f6] to-[#f4f3ef]"
+    ? cn(
+        "border-y bg-gradient-to-b from-[#ece7dd] via-[#f5f2ea] to-[#ece7dd]",
+        mmsSectionBorder,
+      )
     : "home-band home-band--deep border-y border-[rgba(232,253,245,0.08)]";
 
   return (
@@ -129,14 +142,15 @@ export function HomeFeaturedWebDesignWork({
               key={project.analyticsId}
               className={cn(
                 "flex min-w-0 flex-col gap-6",
-                isLight && cn(mmsCard, "p-6 sm:p-8"),
+                isLight &&
+                  cn(mmsCard, "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]"),
               )}
             >
               <BrowserShowcasePreview hostname={project.hostname} theme={variant}>
                 <div
                   className={cn(
                     "relative w-full overflow-hidden",
-                    isLight ? "bg-slate-100" : "bg-[#0a0d0c]",
+                    isLight ? "bg-[#e8ebe6]/90" : "bg-[#0a0d0c]",
                     /* Portrait live captures read better in a taller frame on small screens; widen at md+ */
                     "aspect-[10/16] min-h-[220px] sm:aspect-[4/5] sm:min-h-[260px] md:aspect-[16/9] md:min-h-[320px] lg:min-h-[min(440px,40vw)]",
                   )}
@@ -158,7 +172,7 @@ export function HomeFeaturedWebDesignWork({
                 <h3
                   className={cn(
                     "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
-                    isLight ? "text-slate-900" : "text-[#E8FDF5]",
+                    isLight ? "text-[#1e241f]" : "text-[#E8FDF5]",
                   )}
                 >
                   {project.title}
@@ -211,7 +225,7 @@ export function HomeFeaturedWebDesignWork({
         <div
           className={cn(
             "home-reveal mt-16 flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
-            isLight ? "border-slate-200/70" : "border-[rgba(232,253,245,0.08)]",
+            isLight ? "border-[#3f5a47]/12" : "border-[rgba(232,253,245,0.08)]",
           )}
         >
           <p className={cn("max-w-xl text-sm md:text-[15px]", body)}>
@@ -220,8 +234,7 @@ export function HomeFeaturedWebDesignWork({
           <Link
             href="/website-samples"
             className={cn(
-              "text-[0.9375rem] font-semibold underline-offset-4 hover:underline",
-              isLight ? "text-amber-900" : "text-[#00FFB2] hover:text-[#35ffc1]",
+              isLight ? mmsTextLink : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
             )}
           >
             Browse all web samples →

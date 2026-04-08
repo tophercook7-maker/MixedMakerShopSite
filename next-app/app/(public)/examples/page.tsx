@@ -2,7 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Layers, Printer } from "lucide-react";
 import { publicShellClass } from "@/lib/public-brand";
-import { mmsBtnPrimary, mmsBtnSecondary, mmsCard, mmsEyebrow, mmsH1, mmsPageBg, mmsSectionY } from "@/lib/mms-umbrella-ui";
+import {
+  mmsBtnPrimary,
+  mmsBtnSecondary,
+  mmsCard,
+  mmsEyebrow,
+  mmsH1,
+  mmsH2,
+  mmsPageBg,
+  mmsSectionBorder,
+  mmsSectionY,
+  mmsTextLink,
+} from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -19,29 +30,34 @@ const shell = publicShellClass;
 export default function ExamplesHubPage() {
   return (
     <div className={cn(mmsPageBg, "min-h-[60vh]")}>
-      <section className="relative overflow-hidden border-b border-slate-200/65 bg-gradient-to-b from-white via-[#faf9f6] to-[#f4f3ef]">
+      <section
+        className={cn(
+          "relative overflow-hidden border-b bg-gradient-to-b from-[#f7f4ee] via-[#ece7dd] to-[#e2dcd0]",
+          mmsSectionBorder,
+        )}
+      >
         <div
           className="pointer-events-none absolute inset-0 opacity-100"
           style={{
             backgroundImage:
-              "radial-gradient(ellipse 80% 50% at 18% 0%, rgba(234, 88, 12, 0.055), transparent 52%), radial-gradient(ellipse 55% 45% at 92% 18%, rgba(15, 118, 110, 0.05), transparent 48%)",
+              "radial-gradient(ellipse 80% 50% at 18% 0%, rgba(184, 92, 30, 0.06), transparent 52%), radial-gradient(ellipse 55% 45% at 92% 18%, rgba(63, 90, 71, 0.06), transparent 48%)",
           }}
           aria-hidden
         />
         <div className={cn(shell, mmsSectionY, "relative z-[1] max-w-3xl")}>
           <p className={mmsEyebrow}>MixedMakerShop · by Topher</p>
           <h1 className={cn(mmsH1, "mt-5 max-w-[22ch] sm:max-w-none")}>Real websites built by Topher</h1>
-          <p className="mt-7 max-w-[42rem] text-base leading-relaxed text-slate-600 md:text-lg">
+          <p className="mt-7 max-w-[42rem] text-base leading-relaxed text-[#4a5750] md:text-lg">
             Browse real web design samples, the 3D printing service path, landing pages, and lightweight tools — all in one
             place.
           </p>
         </div>
       </section>
 
-      <section className="border-b border-slate-200/50 bg-[#f4f3ef]/90">
+      <section className={cn("border-b bg-[#e8eee9]/32", mmsSectionBorder)}>
         <div className={cn(shell, mmsSectionY)}>
-          <h2 className="text-lg font-bold text-slate-900 md:text-xl">Explore by category</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-[15px]">
+          <h2 className={cn(mmsH2, "!text-xl md:!text-2xl")}>Explore by category</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#4a5750] md:text-[15px]">
             Same umbrella brand: web design first, 3D printing when you need physical solves.
           </p>
           <div
@@ -57,16 +73,14 @@ export default function ExamplesHubPage() {
                 "group flex flex-col p-9 transition hover:-translate-y-0.5 hover:shadow-lg sm:p-10",
               )}
             >
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-900 shadow-sm">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#3f5a47]/12 text-[#3f5a47] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]">
                 <Layers className="h-7 w-7" strokeWidth={1.75} aria-hidden />
               </span>
-              <h3 className="mt-8 text-xl font-bold text-slate-900 md:text-2xl">Web design &amp; landing pages</h3>
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600 md:text-[15px]">
+              <h3 className="mt-8 text-xl font-bold text-[#1e241f] md:text-2xl">Web design &amp; landing pages</h3>
+              <p className="mt-4 flex-1 text-sm leading-relaxed text-[#4a5750] md:text-[15px]">
                 Local service sites, focused landing pages, mockups, and lightweight tools by Topher.
               </p>
-              <span className="mt-8 text-sm font-semibold text-amber-900 underline-offset-4 group-hover:underline">
-                View web examples →
-              </span>
+              <span className={cn(mmsTextLink, "mt-8 group-hover:underline")}>View web examples →</span>
             </Link>
 
             {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
@@ -77,16 +91,14 @@ export default function ExamplesHubPage() {
                   "group flex flex-col p-9 transition hover:-translate-y-0.5 hover:shadow-lg sm:p-10",
                 )}
               >
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 shadow-sm">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#2f3e34]/10 text-[#2f3e34] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
                   <Printer className="h-7 w-7" strokeWidth={1.75} aria-hidden />
                 </span>
-                <h3 className="mt-8 text-xl font-bold text-slate-900 md:text-2xl">3D printing &amp; parts</h3>
-                <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600 md:text-[15px]">
+                <h3 className="mt-8 text-xl font-bold text-[#1e241f] md:text-2xl">3D printing &amp; parts</h3>
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-[#4a5750] md:text-[15px]">
                   Functional prints, replacements, prototypes, and custom solves from Topher&apos;s Bambu Lab setup.
                 </p>
-                <span className="mt-8 text-sm font-semibold text-amber-900 underline-offset-4 group-hover:underline">
-                  View 3D examples →
-                </span>
+                <span className={cn(mmsTextLink, "mt-8 group-hover:underline")}>View 3D examples →</span>
               </Link>
             ) : null}
           </div>

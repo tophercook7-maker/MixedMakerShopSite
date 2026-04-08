@@ -16,8 +16,8 @@ export function PrintingHero() {
         className="pointer-events-none absolute inset-0 opacity-[0.18] bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2748%27 height=%2748%27%3E%3Cpath d=%27M0 48h48M48 0v48%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-opacity=%270.06%27/%3E%3C/svg%3E')]"
         aria-hidden
       />
-      <div className="pointer-events-none absolute -left-40 top-0 h-[28rem] w-[28rem] rounded-full bg-amber-500/[0.1] blur-[130px]" />
-      <div className="pointer-events-none absolute -right-24 top-1/4 h-[22rem] w-[22rem] rounded-full bg-emerald-500/[0.08] blur-[110px]" />
+      <div className="pointer-events-none absolute -left-40 top-0 h-[28rem] w-[28rem] rounded-full bg-[#b85c1e]/[0.11] blur-[130px]" />
+      <div className="pointer-events-none absolute -right-24 top-1/4 h-[22rem] w-[22rem] rounded-full bg-[#6f8a73]/[0.09] blur-[110px]" />
 
       <div className={printingContentClass}>
         <div className="grid gap-12 pb-[4rem] sm:gap-14 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,36rem)] lg:items-center lg:gap-20 lg:pb-[4.5rem] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,40rem)] xl:gap-24">

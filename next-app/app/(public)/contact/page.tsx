@@ -104,7 +104,7 @@ export default function ContactPage() {
                   <span
                     className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md"
                     style={{
-                      background: "rgba(180, 83, 9, 0.14)",
+                      background: "rgba(184, 92, 30, 0.14)",
                       color: "var(--pub-accent)",
                     }}
                     aria-hidden

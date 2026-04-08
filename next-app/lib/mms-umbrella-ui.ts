@@ -1,52 +1,94 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * MixedMakerShop umbrella brand — moss, forest, leather, burnt orange, warm cream, charcoal.
+ * Use these for public marketing surfaces; pair with `.public-site--light-umbrella` in globals.
+ */
+export const mmsBrand = {
+  deepMoss: "#2f3e34",
+  forest: "#3f5a47",
+  softSage: "#6f8a73",
+  burntOrange: "#b85c1e",
+  saddleLeather: "#8a4b2a",
+  warmCream: "#ece7dd",
+  charcoalInk: "#1e241f",
+} as const;
+
 /** Homepage hero — umbrella interior brand photograph (`mixedmakershop-umbrella-brand-hero.png`, ~1024×682). */
 export const mmsUmbrellaHeroImageSrc = "/images/mixedmakershop-umbrella-brand-hero.png";
 
 /** Full-width light marketing page shell (inside public layout). */
-export const mmsPageBg = "w-full bg-[#f4f3ef] text-slate-800 antialiased";
+export const mmsPageBg = cn("w-full bg-[#ece7dd] text-[#2f3e34] antialiased");
 
 /** Generous vertical rhythm between major sections. */
 export const mmsSectionY = "py-20 md:py-28 lg:py-36";
 
-/** Section titles — consistent weight + tracking site-wide. */
+/** Section titles — charcoal + tight tracking. */
 export const mmsH2 = cn(
-  "text-3xl font-bold tracking-tight text-slate-900 md:text-4xl lg:text-[2.35rem] lg:leading-snug",
+  "text-3xl font-bold tracking-[-0.02em] text-[#1e241f] md:text-4xl lg:text-[2.35rem] lg:leading-snug",
 );
 
 export const mmsH1 = cn(
-  "text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:leading-[1.06] lg:tracking-[-0.035em]",
+  "text-4xl font-bold tracking-[-0.035em] text-[#1e241f] sm:text-5xl lg:leading-[1.06]",
 );
 
 export const mmsEyebrow = cn(
-  "text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-900/80 md:text-xs",
+  "text-[11px] font-semibold uppercase tracking-[0.22em] text-[#3f5a47] md:text-xs",
 );
 
-export const mmsLead = "text-lg leading-relaxed text-slate-600 md:text-xl";
+/** Primary body / lead — slightly softer than headings. */
+export const mmsLead = cn("text-lg leading-[1.65] text-[#4a5750] md:text-xl md:leading-[1.7]");
 
-/** Warm gold primary — pairs with `.public-site--light-umbrella .btn.gold` on legacy pages. */
+/** List bullet / accent dot. */
+export const mmsBullet = "font-bold text-[#3f5a47]";
+
+/** Numbered step circle (light sections). */
+export const mmsStepCircle = cn(
+  "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-full",
+  "bg-[#3f5a47]/12 text-sm font-bold text-[#3f5a47]",
+);
+
+/** Inline text link (leather → orange hover). */
+export const mmsTextLink = cn(
+  "text-sm font-semibold text-[#8a4b2a] underline-offset-4",
+  "transition-colors duration-200 hover:text-[#b85c1e] hover:underline",
+);
+
+/** Subtle section border (bottom dividers). */
+export const mmsSectionBorder = "border-[#3f5a47]/10";
+
+/** Primary CTA — burnt orange / leather, restrained depth. */
 export const mmsBtnPrimary = cn(
   "inline-flex min-h-[3rem] items-center justify-center rounded-xl",
-  "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 px-6",
+  "bg-gradient-to-br from-[#c96a28] via-[#b85c1e] to-[#8a4b2a] px-6",
   "text-center text-[0.9375rem] font-semibold text-[#fffaf5]",
-  "shadow-md shadow-orange-900/20 transition hover:brightness-105",
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700",
+  "shadow-[0_4px_22px_rgba(184,92,30,0.32),inset_0_1px_0_rgba(255,255,255,0.18)]",
+  "transition-[filter,box-shadow,transform] duration-200 ease-out",
+  "hover:brightness-[1.06] hover:shadow-[0_8px_28px_rgba(47,62,52,0.18),inset_0_1px_0_rgba(255,255,255,0.2)]",
+  "active:translate-y-px",
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3f5a47]",
 );
 
+/** Secondary — soft panel on light; pair with hero glass variant in hero component. */
 export const mmsBtnSecondary = cn(
   "inline-flex min-h-[3rem] items-center justify-center rounded-xl",
-  "border border-slate-200/90 bg-white px-6 text-center text-[0.9375rem] font-semibold text-slate-800",
-  "shadow-sm transition hover:border-slate-300 hover:bg-slate-50",
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700",
+  "border border-[#3f5a47]/20 bg-white/80 px-6 text-center text-[0.9375rem] font-semibold text-[#1e241f]",
+  "shadow-[0_2px_14px_rgba(47,62,52,0.07)] backdrop-blur-sm",
+  "transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out",
+  "hover:border-[#3f5a47]/32 hover:bg-[#f7f4ee] hover:shadow-[0_6px_22px_rgba(47,62,52,0.1)]",
+  "active:translate-y-px",
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3f5a47]",
 );
 
 export const mmsCard = cn(
-  "rounded-[1.35rem] border border-slate-200/80 bg-white",
-  "shadow-[0_22px_55px_-26px_rgba(15,23,42,0.14)]",
+  "rounded-[1.35rem] border border-[#3f5a47]/12",
+  "bg-gradient-to-br from-white via-[#faf8f4] to-[#f0ebe3]/95",
+  "shadow-[0_22px_55px_-26px_rgba(30,36,31,0.2),inset_0_1px_0_rgba(255,255,255,0.9)]",
+  "transition-[box-shadow,transform] duration-300 ease-out",
 );
 
 export const mmsCtaPanel = cn(
-  "rounded-[1.35rem] border border-slate-200/70",
-  "bg-gradient-to-br from-white via-[#faf9f6] to-[#ece8e0]",
-  "shadow-[0_26px_64px_-30px_rgba(15,23,42,0.16)]",
+  "rounded-[1.35rem] border border-[#3f5a47]/14",
+  "bg-gradient-to-br from-white via-[#f4f1ea] to-[#e5e0d6]",
+  "shadow-[0_28px_64px_-28px_rgba(30,36,31,0.22),inset_0_1px_0_rgba(255,255,255,0.92)]",
 );
