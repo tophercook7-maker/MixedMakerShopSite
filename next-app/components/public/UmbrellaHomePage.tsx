@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
@@ -11,7 +12,6 @@ import {
   mmsCtaPanel,
   mmsEyebrow,
   mmsH2,
-  mmsPageBg,
   mmsSectionBorder,
   mmsSectionY,
   mmsTextLink,
@@ -22,19 +22,23 @@ const shell = publicShellClass;
 
 export function UmbrellaHomePage() {
   return (
-    <div className={mmsPageBg}>
-      <UmbrellaHomeHero />
+    <div className="relative w-full antialiased text-[#2f3e34]">
+      {/* Desktop/tablet: umbrella locked to viewport; all sections below scroll over it (see z-index). */}
+      <FixedHeroMedia />
 
-      {/* Trust strip — overlaps hero so content reads as scrolling over the umbrella scene */}
-      <section
-        className={cn(
-          "relative z-[2] -mt-10 border-b py-8 backdrop-blur-md md:-mt-14 md:py-9 lg:-mt-16",
-          mmsSectionBorder,
-          "bg-gradient-to-b from-[#cdd9cf]/78 via-[#e4e8e1]/88 to-[#ece7dd]/96",
-          "shadow-[0_-14px_48px_rgba(47,62,52,0.12)] ring-1 ring-[#3f5a47]/[0.07]",
-        )}
-        aria-label="What to expect"
-      >
+      <div className="relative z-[2] w-full">
+        <UmbrellaHomeHero />
+
+        {/* Trust strip — overlaps hero so content reads as scrolling over the umbrella scene */}
+        <section
+          className={cn(
+            "relative -mt-10 border-b py-8 backdrop-blur-md md:-mt-14 md:py-9 lg:-mt-16",
+            mmsSectionBorder,
+            "bg-gradient-to-b from-[#cdd9cf]/78 via-[#e4e8e1]/88 to-[#ece7dd]/96",
+            "shadow-[0_-14px_48px_rgba(47,62,52,0.12)] ring-1 ring-[#3f5a47]/[0.07]",
+          )}
+          aria-label="What to expect"
+        >
         <div className={cn(shell, "px-5")}>
           <ul className="flex flex-col gap-3 text-center text-sm font-medium text-[#4a5750] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-2">
             <li>Web Design by Topher</li>
@@ -269,6 +273,7 @@ export function UmbrellaHomePage() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }
