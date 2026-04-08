@@ -25,12 +25,13 @@ export function UmbrellaHomePage() {
     <div className={mmsPageBg}>
       <UmbrellaHomeHero />
 
-      {/* Trust strip */}
+      {/* Trust strip — overlaps hero so content reads as scrolling over the umbrella scene */}
       <section
         className={cn(
-          "border-b py-8 backdrop-blur-[6px] md:py-9",
+          "relative z-[2] -mt-10 border-b py-8 backdrop-blur-md md:-mt-14 md:py-9 lg:-mt-16",
           mmsSectionBorder,
-          "bg-gradient-to-b from-[#e2eae3]/55 via-[#ece7dd] to-[#ece7dd]",
+          "bg-gradient-to-b from-[#cdd9cf]/78 via-[#e4e8e1]/88 to-[#ece7dd]/96",
+          "shadow-[0_-14px_48px_rgba(47,62,52,0.12)] ring-1 ring-[#3f5a47]/[0.07]",
         )}
         aria-label="What to expect"
       >

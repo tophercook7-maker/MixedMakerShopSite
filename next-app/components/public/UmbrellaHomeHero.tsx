@@ -33,67 +33,79 @@ export function UmbrellaHomeHero() {
     transition: { duration, ease: easeOut, delay },
   });
 
+  /** Extra in-flow height so the sticky image stays pinned while the next section can glide over it. Shorter when reduced motion is on. */
+  const stickyScrollRunwayClass = reduceMotion
+    ? "h-[clamp(2.5rem,10vh,5rem)]"
+    : "h-[clamp(6rem,22vh,11rem)] md:h-[clamp(7rem,26vh,13rem)]";
+
   return (
     <section
-      className="relative isolate min-h-[min(100svh,52rem)] overflow-hidden border-b border-black/10 md:min-h-[min(92vh,56rem)]"
+      className="relative isolate"
       aria-label="MixedMakerShop introduction"
     >
-      <div className="absolute inset-0">
-        <Image
-          src={mmsUmbrellaHeroImageSrc}
-          alt="MixedMakerShop umbrella brand — open umbrella in the rain as a mobile office: wood-and-brass shaft, leather organizers, laptop, tablet, and Topher's web design sign."
-          fill
-          priority
-          sizes="100vw"
-          className={cn(
-            /* ~3:2 master: mobile keeps center column (shaft + laptop + tablet); desktop drifts slightly left so darker canopy + sign sit under headlines while the interior stays visible. */
-            "scale-[1.02] object-cover object-[50%_43%]",
-            "sm:object-[50%_42%]",
-            "md:object-[48%_44%]",
-            "lg:object-[46%_45%]",
-            "xl:object-[44%_46%]",
-          )}
-        />
-        {/* Subtle grain — static, GPU-friendly dot dither */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.055] mix-blend-overlay"
-          style={{
-            backgroundImage: "radial-gradient(rgba(30,36,31,0.9) 0.4px, transparent 0.4px)",
-            backgroundSize: "3px 3px",
-          }}
-          aria-hidden
-        />
-        {/* Left readability — moss/charcoal, lighter mid so umbrella interior stays vivid */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-[#1e241f]/78 via-[#2f3e34]/36 to-[#3f5a47]/12"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-[#1e241f]/38 via-transparent to-[#1e241f]/22"
-          aria-hidden
-        />
-        {/* Edge vignette — calm depth without crushing the center */}
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_92%_78%_at_50%_42%,transparent_42%,rgba(12,15,13,0.38)_100%)]"
-          aria-hidden
-        />
-        {/* Moss → forest → warm cream handoff into page shell */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[44vw] max-h-[21rem] min-h-[11rem] sm:min-h-[12.5rem]"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 38%, rgba(47,62,52,0.45) 58%, rgba(63,90,71,0.72) 75%, #ece7dd 100%)",
-          }}
-          aria-hidden
-        />
+      {/*
+        Sticky visual plane: umbrella + treatments stay viewport-anchored while the block scrolls.
+        Avoid overflow:hidden on this section so position:sticky isn’t clipped (iOS-safe).
+      */}
+      <div className="sticky top-0 z-0 h-[max(100svh,48rem)] w-full overflow-hidden md:h-[max(100svh,52rem)]">
+        <div className="relative h-full min-h-0 w-full">
+          <Image
+            src={mmsUmbrellaHeroImageSrc}
+            alt="MixedMakerShop umbrella brand — open umbrella in the rain as a mobile office: wood-and-brass shaft, leather organizers, laptop, tablet, and Topher's web design sign."
+            fill
+            priority
+            sizes="100vw"
+            className={cn(
+              /* ~3:2 master: mobile keeps center column (shaft + laptop + tablet); desktop drifts slightly left so darker canopy + sign sit under headlines while the interior stays visible. */
+              "scale-[1.02] object-cover object-[50%_43%]",
+              "sm:object-[50%_42%]",
+              "md:object-[48%_44%]",
+              "lg:object-[46%_45%]",
+              "xl:object-[44%_46%]",
+            )}
+          />
+          {/* Subtle grain — static, GPU-friendly dot dither */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.055] mix-blend-overlay"
+            style={{
+              backgroundImage: "radial-gradient(rgba(30,36,31,0.9) 0.4px, transparent 0.4px)",
+              backgroundSize: "3px 3px",
+            }}
+            aria-hidden
+          />
+          {/* Left readability — moss/charcoal, lighter mid so umbrella interior stays vivid */}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-[#1e241f]/78 via-[#2f3e34]/36 to-[#3f5a47]/12"
+            aria-hidden
+          />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-[#1e241f]/38 via-transparent to-[#1e241f]/22"
+            aria-hidden
+          />
+          {/* Edge vignette — calm depth without crushing the center */}
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_92%_78%_at_50%_42%,transparent_42%,rgba(12,15,13,0.38)_100%)]"
+            aria-hidden
+          />
+          {/* Moss → forest → warm cream — no white band */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[48vw] max-h-[22rem] min-h-[12rem] sm:min-h-[13rem]"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0) 35%, rgba(47,62,52,0.45) 58%, rgba(63,90,71,0.72) 76%, #ece7dd 100%)",
+            }}
+            aria-hidden
+          />
+        </div>
       </div>
 
-      <div
-        className={cn(
-          shell,
-          "relative z-[1] flex min-h-[min(100svh,52rem)] flex-col justify-end pb-24 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-[min(92vh,56rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
-        )}
-      >
+      <div className="relative z-[1] -mt-[max(100svh,48rem)] md:-mt-[max(100svh,52rem)]">
+        <div
+          className={cn(
+            shell,
+            "flex min-h-[max(100svh,48rem)] flex-col justify-end pb-24 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-[max(100svh,52rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
+          )}
+        >
         <div className="max-w-[36rem] lg:max-w-[40rem]">
           <motion.p
             className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f0d9b8] md:text-xs md:tracking-[0.24em]"
@@ -152,6 +164,10 @@ export function UmbrellaHomeHero() {
             Direct. Practical. Built by Topher.
           </motion.p>
         </div>
+        </div>
+
+        {/* Scroll runway: extends the hero block so the umbrella stays visually fixed while content begins to pass over */}
+        <div className={cn("pointer-events-none shrink-0 select-none", stickyScrollRunwayClass)} aria-hidden />
       </div>
     </section>
   );
