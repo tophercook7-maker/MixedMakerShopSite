@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
 
+/** Homepage hero — umbrella interior brand photograph (`mixedmakershop-umbrella-brand-hero.png`, ~1024×682). */
+export const mmsUmbrellaHeroImageSrc = "/images/mixedmakershop-umbrella-brand-hero.png";
+
 /** Full-width light marketing page shell (inside public layout). */
 export const mmsPageBg = "w-full bg-[#f4f3ef] text-slate-800 antialiased";
 

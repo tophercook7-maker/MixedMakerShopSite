@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
-import { TopherAvatarFigure } from "@/components/public/TopherAvatarFigure";
+import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
 import {
@@ -9,7 +9,6 @@ import {
   mmsCard,
   mmsCtaPanel,
   mmsEyebrow,
-  mmsH1,
   mmsH2,
   mmsLead,
   mmsPageBg,
@@ -22,55 +21,7 @@ const shell = publicShellClass;
 export function UmbrellaHomePage() {
   return (
     <div className={mmsPageBg}>
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-slate-200/70 bg-gradient-to-b from-[#faf9f6] via-[#f4f3ef] to-[#ebe8e2]/95">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-100"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse 80% 50% at 20% 0%, rgba(234, 88, 12, 0.06), transparent 55%), radial-gradient(ellipse 60% 45% at 90% 20%, rgba(15, 118, 110, 0.05), transparent 50%)",
-          }}
-          aria-hidden
-        />
-        <div className={cn(shell, mmsSectionY, "relative z-[1]")}>
-          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,380px)] lg:gap-20">
-            <div>
-              <p className={mmsEyebrow}>MixedMakerShop — Built by Topher</p>
-              <h1 className={cn(mmsH1, "mt-6 max-w-[22ch] lg:max-w-[26ch]")}>
-                Websites, custom solutions, and digital builds that make things work better.
-              </h1>
-              <p className={cn(mmsLead, "mt-7 max-w-2xl")}>
-                I&apos;m Topher. MixedMakerShop is where I build websites, 3D printed solutions, and practical digital tools
-                for people who need something real — not more fluff.
-              </p>
-              <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <TrackedPublicLink
-                  href="/free-mockup"
-                  eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero", target: "free_mockup" }}
-                  className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
-                >
-                  Get a Free Website Mockup
-                </TrackedPublicLink>
-                <Link href="#real-work" className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}>
-                  See My Work
-                </Link>
-              </div>
-              <p className="mt-4 max-w-xl text-sm font-medium text-slate-600 md:text-[0.9375rem]">
-                I&apos;ll show you what your site could look like before you commit.
-              </p>
-              <p className="mt-2 text-xs font-medium text-slate-500 md:text-sm">
-                No pressure · No obligation · Just a preview
-              </p>
-            </div>
-            <div className="flex w-full justify-center lg:justify-end lg:pl-2">
-              <div className="w-full max-w-[min(100%,320px)] lg:w-auto">
-                <TopherAvatarFigure className="mx-auto lg:mx-0" priority />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <UmbrellaHomeHero />
 
       {/* Trust strip */}
       <section className="border-b border-slate-200/65 bg-white/60 py-8 backdrop-blur-sm md:py-9" aria-label="What to expect">
