@@ -13,7 +13,9 @@ const beforeAfter = [
     beforeText: "Outdated layout, hard-to-find contact details, and weak conversion flow.",
     afterLabel: "After",
     afterText: "Clear structure, mobile-first design, and stronger calls to action.",
-    image: WEBSITE_SAMPLES.find((s) => s.slug === "restaurant-redesign-demo")?.imageUrl || "https://picsum.photos/id/292/1200/700",
+    image:
+      WEBSITE_SAMPLES.find((s) => s.slug === "restaurant-redesign-demo")?.imageUrl ||
+      "/images/showcase/deep-well-audio.jpg",
     href: "/restaurant-website-redesign",
   },
   {
@@ -21,7 +23,9 @@ const beforeAfter = [
     beforeText: "Generic homepage with no clear direction for visitors.",
     afterLabel: "After",
     afterText: "Focused messaging that shows services and drives contact requests.",
-    image: WEBSITE_SAMPLES.find((s) => s.slug === "southern-diner-concept")?.imageUrl || "https://picsum.photos/id/1061/1200/700",
+    image:
+      WEBSITE_SAMPLES.find((s) => s.slug === "southern-diner-concept")?.imageUrl ||
+      "/images/showcase/freshcut-property-care.jpg",
     href: "/website-samples",
   },
 ];

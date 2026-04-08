@@ -8,10 +8,10 @@ const STATUSES = [
   "new",
   "contacted",
   "replied",
-  "qualified",
-  "proposal_sent",
+  "no_response",
+  "not_interested",
   "won",
-  "lost",
+  "archived",
 ] as const;
 const DOOR_STATUSES = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const MESSAGE_TYPES = ["short_email", "long_email", "follow_up"] as const;

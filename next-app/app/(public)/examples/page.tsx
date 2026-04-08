@@ -1,84 +1,111 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Layers, Printer } from "lucide-react";
+import { publicShellClass } from "@/lib/public-brand";
+import { mmsBtnPrimary, mmsBtnSecondary, mmsCard, mmsEyebrow, mmsH1, mmsPageBg, mmsSectionY } from "@/lib/mms-umbrella-ui";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Examples | MixedMakerShop",
+  title: "Real Websites Built by Topher | Examples | MixedMakerShop",
   description:
-    "Website samples, 3D printing services, landing pages, and digital tools by Topher — MixedMakerShop work in one place.",
+    "Explore real web design samples, 3D printing paths, landing pages, and tools — MixedMakerShop work by Topher in one place.",
 };
 
 /** 3D printing hub card + upload-print quick link. */
 const SHOW_PUBLIC_3D_PRINTING_EXAMPLES = true;
 
-const shell = "max-w-[1100px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24";
+const shell = publicShellClass;
 
 export default function ExamplesHubPage() {
   return (
-    <div className="home-premium home-premium--textured min-h-[60vh]">
-      <div className={`${shell}`}>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#E8FDF5]">Examples</h1>
-        <p className="mt-4 max-w-[42rem] text-[#9FB5AD] text-base md:text-lg leading-relaxed">
-          Browse web design samples, the 3D printing / Bambu Lab service page, landing pages, and lightweight digital tools.
-        </p>
-
+    <div className={cn(mmsPageBg, "min-h-[60vh]")}>
+      <section className="relative overflow-hidden border-b border-slate-200/65 bg-gradient-to-b from-white via-[#faf9f6] to-[#f4f3ef]">
         <div
-          className={`mt-12 grid grid-cols-1 gap-6 ${SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? "md:grid-cols-2" : "md:max-w-xl"}`}
-        >
-          <Link
-            href="/web-design#browse-by-type"
-            className="home-card home-card--glass group flex flex-col rounded-2xl p-8 transition hover:-translate-y-1 border border-[rgba(0,255,178,0.18)]"
-          >
-            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(0,255,178,0.1)] text-[#00FFB2]">
-              <Layers className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-            </span>
-            <h2 className="mt-6 text-xl font-semibold text-[#E8FDF5]">Web design &amp; landing pages</h2>
-            <p className="mt-3 text-sm md:text-[15px] leading-relaxed text-[#9FB5AD] flex-1">
-              Local service sites, focused landing pages, mockups, and lightweight tools.
-            </p>
-            <span className="mt-6 text-sm font-semibold text-[#00FFB2] group-hover:underline underline-offset-4">
-              View web examples →
-            </span>
-          </Link>
+          className="pointer-events-none absolute inset-0 opacity-100"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 80% 50% at 18% 0%, rgba(234, 88, 12, 0.055), transparent 52%), radial-gradient(ellipse 55% 45% at 92% 18%, rgba(15, 118, 110, 0.05), transparent 48%)",
+          }}
+          aria-hidden
+        />
+        <div className={cn(shell, mmsSectionY, "relative z-[1] max-w-3xl")}>
+          <p className={mmsEyebrow}>MixedMakerShop · by Topher</p>
+          <h1 className={cn(mmsH1, "mt-5 max-w-[22ch] sm:max-w-none")}>Real websites built by Topher</h1>
+          <p className="mt-7 max-w-[42rem] text-base leading-relaxed text-slate-600 md:text-lg">
+            Browse real web design samples, the 3D printing service path, landing pages, and lightweight tools — all in one
+            place.
+          </p>
+        </div>
+      </section>
 
-          {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
+      <section className="border-b border-slate-200/50 bg-[#f4f3ef]/90">
+        <div className={cn(shell, mmsSectionY)}>
+          <h2 className="text-lg font-bold text-slate-900 md:text-xl">Explore by category</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-[15px]">
+            Same umbrella brand: web design first, 3D printing when you need physical solves.
+          </p>
+          <div
+            className={cn(
+              "mt-10 grid grid-cols-1 gap-8",
+              SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? "md:grid-cols-2 md:gap-10" : "md:max-w-xl",
+            )}
+          >
             <Link
-              href="/3d-printing#examples-3d"
-              className="home-card home-card--glass group flex flex-col rounded-2xl p-8 transition hover:-translate-y-1 border border-[rgba(232,149,92,0.22)]"
+              href="/web-design#browse-by-type"
+              className={cn(
+                mmsCard,
+                "group flex flex-col p-9 transition hover:-translate-y-0.5 hover:shadow-lg sm:p-10",
+              )}
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[rgba(232,149,92,0.08)] text-[#e09a5a]">
-                <Printer className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-900 shadow-sm">
+                <Layers className="h-7 w-7" strokeWidth={1.75} aria-hidden />
               </span>
-              <h2 className="mt-6 text-xl font-semibold text-[#E8FDF5]">3D printing &amp; parts</h2>
-              <p className="mt-3 text-sm md:text-[15px] leading-relaxed text-[#9FB5AD] flex-1">
-                Functional prints, replacements, prototypes, and custom solves.
+              <h3 className="mt-8 text-xl font-bold text-slate-900 md:text-2xl">Web design &amp; landing pages</h3>
+              <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600 md:text-[15px]">
+                Local service sites, focused landing pages, mockups, and lightweight tools by Topher.
               </p>
-              <span className="mt-6 text-sm font-semibold text-[#e09a5a] group-hover:underline underline-offset-4">
-                View 3D examples →
+              <span className="mt-8 text-sm font-semibold text-amber-900 underline-offset-4 group-hover:underline">
+                View web examples →
               </span>
             </Link>
-          ) : null}
-        </div>
 
-        <p className="mt-12 text-sm text-[#9FB5AD]">
-          Quick links:{" "}
-          <Link href="/website-samples" className="text-[#00FFB2] hover:underline">
-            All website samples
-          </Link>
-          {" · "}
-          <Link href="/free-mockup" className="text-[#00FFB2] hover:underline">
-            Free mockup
-          </Link>
-          {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
-            <>
-              {" · "}
-              <Link href="/upload-print" className="text-[#e09a5a] hover:underline">
+            {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
+              <Link
+                href="/3d-printing#examples-3d"
+                className={cn(
+                  mmsCard,
+                  "group flex flex-col p-9 transition hover:-translate-y-0.5 hover:shadow-lg sm:p-10",
+                )}
+              >
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-800 shadow-sm">
+                  <Printer className="h-7 w-7" strokeWidth={1.75} aria-hidden />
+                </span>
+                <h3 className="mt-8 text-xl font-bold text-slate-900 md:text-2xl">3D printing &amp; parts</h3>
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600 md:text-[15px]">
+                  Functional prints, replacements, prototypes, and custom solves from Topher&apos;s Bambu Lab setup.
+                </p>
+                <span className="mt-8 text-sm font-semibold text-amber-900 underline-offset-4 group-hover:underline">
+                  View 3D examples →
+                </span>
+              </Link>
+            ) : null}
+          </div>
+
+          <div className="mt-14 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="/website-samples" className={cn(mmsBtnSecondary, "justify-center px-7 no-underline hover:no-underline")}>
+              All website samples
+            </Link>
+            <Link href="/free-mockup" className={cn(mmsBtnPrimary, "justify-center px-7 no-underline hover:no-underline")}>
+              Get a free mockup
+            </Link>
+            {SHOW_PUBLIC_3D_PRINTING_EXAMPLES ? (
+              <Link href="/upload-print" className={cn(mmsBtnSecondary, "justify-center px-7 no-underline hover:no-underline")}>
                 Upload a print file
               </Link>
-            </>
-          ) : null}
-        </p>
-      </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

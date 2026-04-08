@@ -3,17 +3,23 @@
  * Use whitelists on all server writes to prevent schema drift / PostgREST errors.
  */
 
+/**
+ * Must match `public.leads.status` check constraint
+ * (`supabase/migrations/20260321000000_leads_canonical_simple_crm.sql`).
+ */
 export const CANONICAL_LEAD_STATUSES = [
   "new",
   "contacted",
   "replied",
-  "qualified",
-  "proposal_sent",
+  "no_response",
+  "not_interested",
   "won",
-  "lost",
+  "archived",
 ] as const;
 
 export type CanonicalLeadStatus = (typeof CANONICAL_LEAD_STATUSES)[number];
+
+const CANONICAL_STATUS_SET = new Set<string>(CANONICAL_LEAD_STATUSES);
 
 /** True if the business has a non–social-web URL (Facebook-only counts as no real website). */
 export function leadHasStandaloneWebsite(websiteRaw: string | undefined | null): boolean {
@@ -30,18 +36,20 @@ export function leadHasStandaloneWebsite(websiteRaw: string | undefined | null):
   }
 }
 
+/** Map legacy / UI strings to the seven constrained DB values. */
 const LEGACY_STATUS_MAP: Record<string, CanonicalLeadStatus> = {
   follow_up_due: "contacted",
   follow_up: "contacted",
+  followup: "contacted",
   closed_won: "won",
-  closed_lost: "lost",
-  closed: "lost",
-  do_not_contact: "lost",
-  research_later: "lost",
-  no_response: "lost",
-  not_interested: "lost",
-  archived: "lost",
-  interested: "qualified",
+  closed_lost: "no_response",
+  lost: "no_response",
+  closed: "archived",
+  do_not_contact: "not_interested",
+  research_later: "archived",
+  interested: "replied",
+  qualified: "replied",
+  proposal_sent: "replied",
 };
 
 /** Normalize any legacy/client status string to a DB-safe canonical status. */
@@ -51,7 +59,7 @@ export function canonicalizeLeadStatus(raw: unknown): CanonicalLeadStatus {
     .toLowerCase()
     .replace(/[\s-]+/g, "_");
   if (!key) return "new";
-  if ((CANONICAL_LEAD_STATUSES as readonly string[]).includes(key)) {
+  if (CANONICAL_STATUS_SET.has(key)) {
     return key as CanonicalLeadStatus;
   }
   return LEGACY_STATUS_MAP[key] ?? "new";

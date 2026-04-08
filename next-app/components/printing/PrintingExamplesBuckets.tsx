@@ -7,46 +7,53 @@ import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 
 const buckets = [
   {
-    title: "Functional parts",
-    copy: "Brackets, clips, adapters, and fixes that need to work in the real world.",
+    title: "Replacement pieces",
+    copy: "Missing or broken parts recreated so equipment, fixtures, or housings work again.",
   },
   {
-    title: "Custom solutions",
-    copy: "One-off solves when nothing off-the-shelf fits your space or machine.",
+    title: "Functional tools",
+    copy: "Small tools, jigs, and helpers that make a job faster or safer — not just decoration.",
+  },
+  {
+    title: "Brackets and mounts",
+    copy: "Custom geometry for clean mounting when off-the-shelf hardware won’t fit.",
   },
   {
     title: "Prototypes",
-    copy: "Test a shape, fit, or idea before you invest in tooling or a big run.",
+    copy: "Test fit, feel, and assembly before you commit to a bigger production approach.",
   },
   {
-    title: "Hobby / special prints",
-    copy: "Personal projects, gifts, cosplay helpers, and creative mechanical prints.",
+    title: "Custom organization solutions",
+    copy: "Trays, holders, and shop helpers tailored to your space and workflow.",
   },
 ];
 
 const bucketCard =
-  "relative h-full overflow-hidden rounded-[1.15rem] border border-white/[0.1] bg-black/40 p-5 md:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-orange-400/30 before:to-transparent";
+  "relative h-full overflow-hidden rounded-2xl border border-white/14 bg-gradient-to-b from-white/[0.09] to-black/35 p-6 md:p-7 shadow-[0_18px_48px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-orange-400/35 before:to-transparent";
 
 export function PrintingExamplesBuckets() {
   return (
-    <section id="examples-3d" className="scroll-mt-28 border-b border-white/[0.06] bg-[#060908] py-16 md:py-20 md:scroll-mt-32">
+    <section
+      id="examples-3d"
+      className="scroll-mt-28 border-y border-white/[0.07] bg-[#070a09] py-20 md:py-28 md:scroll-mt-32"
+    >
       <div className={cn(printingContentClass, "relative")}>
         <RevealOnScroll>
           <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-orange-400/85">Examples</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-[2.5rem] lg:leading-[1.08]">
-            How people use this shop
+            Examples of what this can include
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/55">
             Real parts, real constraints — browsing examples and STLs is for inspiration. Every job still gets a clear
             scope and honest feasibility check.
           </p>
         </RevealOnScroll>
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 lg:gap-7">
           {buckets.map((b) => (
             <RevealOnScroll key={b.title}>
               <div className={bucketCard}>
-                <h3 className="text-[0.98rem] font-semibold text-white">{b.title}</h3>
-                <p className="mt-2.5 text-[0.8125rem] leading-relaxed text-white/50">{b.copy}</p>
+                <h3 className="text-base font-semibold text-white md:text-[1.02rem]">{b.title}</h3>
+                <p className="mt-3 text-[0.8125rem] leading-relaxed text-white/58 md:text-[0.875rem]">{b.copy}</p>
               </div>
             </RevealOnScroll>
           ))}

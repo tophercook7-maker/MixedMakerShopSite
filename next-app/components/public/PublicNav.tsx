@@ -7,9 +7,27 @@ import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
+const navItems: {
+  href: string;
+  label: string;
+  event?: { name: string; props?: Record<string, string | number | boolean | undefined> };
+}[] = [
+  { href: "/", label: "Home" },
+  { href: "/web-design", label: "Web Design" },
+  { href: "/examples", label: "Examples" },
+  {
+    href: "/3d-printing",
+    label: "3D Printing",
+    event: { name: "public_gateway_nav", props: { location: "nav", target: "3d_printing" } },
+  },
+  { href: "/builds", label: "Builds" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
+];
+
 export function PublicNav() {
   const pathname = usePathname();
-  const isGatewayHome = pathname === "/" || pathname === "";
+  const isHome = pathname === "/" || pathname === "";
   const [logoFailed, setLogoFailed] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -24,7 +42,7 @@ export function PublicNav() {
   }, []);
 
   return (
-    <header className={cn("nav nav--premium", isGatewayHome && "nav--gateway")}>
+    <header className={cn("nav nav--premium", isHome && "nav--gateway")}>
       <div className="nav-inner">
         <Link href="/" className="brand">
           {logoFailed ? (
@@ -43,7 +61,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Web design, SEO, 3D printing &amp; digital growth by Topher</strong>
+              <strong>Web design, 3D printing &amp; digital builds by Topher</strong>
             </div>
             <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
           </div>
@@ -52,21 +70,18 @@ export function PublicNav() {
           ☰
         </button>
         <nav ref={navRef} className="main-nav nav-links">
-          <Link href="/" className="pill">
-            Home
-          </Link>
-          <Link href="/#real-work" className="pill">
-            Showcase
-          </Link>
-          <Link
-            href="/3d-printing"
-            className="pill"
-            onClick={() =>
-              trackPublicEvent("public_gateway_nav", { location: "nav", target: "3d_printing" })
-            }
-          >
-            3D printing
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="pill"
+              onClick={() => {
+                if (item.event) trackPublicEvent(item.event.name, item.event.props);
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
           <Link
             href="/free-mockup"
             className="pill cta"
@@ -74,14 +89,16 @@ export function PublicNav() {
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
             }
           >
-            Free preview
+            Free Mockup
           </Link>
           <Link
             href="/contact"
             className="pill"
-            onClick={() => trackPublicEvent("public_contact_cta_click", { location: "nav" })}
+            onClick={() =>
+              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "get_website" })
+            }
           >
-            Contact
+            Get a Website
           </Link>
           <Link href="/auth/login" className="pill pill--muted">
             Admin

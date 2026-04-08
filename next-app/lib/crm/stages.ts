@@ -1,25 +1,24 @@
-/** Canonical web-design CRM pipeline (matches `leads.status` after migration). */
+import {
+  CANONICAL_LEAD_STATUSES,
+  type CanonicalLeadStatus,
+} from "@/lib/crm-lead-schema";
 
-export const CRM_PIPELINE_STAGES = [
-  "new",
-  "contacted",
-  "replied",
-  "qualified",
-  "proposal_sent",
-  "won",
-  "lost",
-] as const;
+/**
+ * Web-design / inbound pipeline columns — same vocabulary as `leads.status` after the
+ * canonical simple CRM migration.
+ */
+export const CRM_PIPELINE_STAGES = CANONICAL_LEAD_STATUSES;
 
-export type CrmPipelineStage = (typeof CRM_PIPELINE_STAGES)[number];
+export type CrmPipelineStage = CanonicalLeadStatus;
 
 export const CRM_STAGE_LABELS: Record<CrmPipelineStage, string> = {
   new: "New",
   contacted: "Contacted",
   replied: "Replied",
-  qualified: "Qualified",
-  proposal_sent: "Proposal Sent",
+  no_response: "No response",
+  not_interested: "Not interested",
   won: "Won",
-  lost: "Lost",
+  archived: "Archived",
 };
 
 /** Secondary tags (stored on `leads.lead_tags` or derived in UI). */

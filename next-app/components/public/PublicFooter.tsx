@@ -8,13 +8,16 @@ export function PublicFooter() {
         <div className="footer-grid">
           <div className="footer-col">
             <h2 className="small footer-premium-heading" style={{ margin: "0 0 10px", fontWeight: 600 }}>
-              Contact
+              MixedMakerShop
             </h2>
-            <p className="small" style={{ margin: 0, opacity: 0.9 }}>
-              MixedMakerShop — web design, SEO, and digital growth support by Topher for small businesses that want more
-              leads online.
+            <p className="small" style={{ margin: 0, opacity: 0.92 }}>
+              <strong style={{ fontWeight: 650 }}>MixedMakerShop — Web Design, 3D Printing, and Digital Builds by Topher</strong>
             </p>
-            <p className="small" style={{ margin: "6px 0 0" }}>
+            <p className="small" style={{ margin: "10px 0 0", lineHeight: 1.55 }}>
+              MixedMakerShop is Topher&apos;s umbrella studio for practical web design, custom 3D printing, and useful digital
+              builds.
+            </p>
+            <p className="small" style={{ margin: "10px 0 0" }}>
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
             </p>
             <p className="small" style={{ marginTop: 6 }}>Topher@mixedmakershop.com</p>
@@ -47,12 +50,19 @@ export function PublicFooter() {
             </ul>
           </div>
         </div>
-        <div className="small" style={{ marginTop: 20 }}>
-          MixedMakerShop is the studio. Topher Web Design is the client-service side for business websites.
-        </div>
-        <div className="small" style={{ marginTop: 10 }}>
-          <Link href="/">Home</Link> • <Link href="/#real-work">Showcase</Link> •{" "}
-          <Link href="/free-mockup">Free preview</Link> • <Link href="/website-roast">Website Roast</Link> •{" "}
+        <div className="small" style={{ marginTop: 20, lineHeight: 1.55 }}>
+          <Link href="/">Home</Link>
+          {" · "}
+          <Link href="/web-design">Web Design</Link>
+          {" · "}
+          <Link href="/examples">Examples</Link>
+          {" · "}
+          <Link href="/3d-printing">3D Printing</Link>
+          {" · "}
+          <Link href="/builds">Builds</Link>
+          {" · "}
+          <Link href="/about">About</Link>
+          {" · "}
           <TrackedPublicLink
             href="/contact"
             eventName="public_contact_cta_click"
@@ -60,6 +70,10 @@ export function PublicFooter() {
           >
             Contact
           </TrackedPublicLink>
+          {" · "}
+          <Link href="/free-mockup">Free preview</Link>
+          {" · "}
+          <Link href="/website-roast">Website Roast</Link>
         </div>
       </div>
     </footer>

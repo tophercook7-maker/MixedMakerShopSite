@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { quoteFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -30,17 +32,23 @@ export async function POST(request: Request) {
     });
 
     if (owner) {
-      await supabase.from("leads").insert({
+      const website = data.website?.trim() || null;
+      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
         business_name: data.business_name || data.name || "Quote request",
         contact_name: data.name,
         email: data.email,
         phone: data.phone ?? null,
-        website: data.website || null,
-        message: data.message ?? null,
+        website,
+        notes: data.message ?? null,
+        why_this_lead_is_here: "Submitted general quote / services request form",
+        source: "quote_request",
         lead_source: "quote_request",
         status: "new",
-        owner_id: owner.id,
+        has_website: website ? leadHasStandaloneWebsite(website) : false,
       });
+      if (!crm.ok) {
+        console.error("[quote form] CRM insert failed", crm.error);
+      }
     }
 
     return NextResponse.json({ ok: true });

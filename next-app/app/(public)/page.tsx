@@ -1,26 +1,25 @@
 import type { Metadata } from "next";
-import { WebDesignSalesPage } from "@/components/public/WebDesignSalesPage";
+import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
 
 export const metadata: Metadata = {
-  title: "Web Design That Brings You Customers | MixedMakerShop",
+  title: "MixedMakerShop by Topher | Web Design, 3D Printing & Digital Builds",
   description:
-    "I build websites for small businesses that look better, load faster, and turn visitors into leads. Get your free website preview. Hot Springs, Arkansas.",
+    "MixedMakerShop is Topher's umbrella studio in Hot Springs, Arkansas — practical web design (main service), custom 3D printing, and useful digital builds.",
   openGraph: {
-    title: "Web design that brings you customers | MixedMakerShop",
+    title: "MixedMakerShop by Topher | Websites, prints & digital builds",
     description:
-      "Small business websites built for leads — clear messaging, fast pages, mockup first. By Topher.",
+      "Web design by Topher first — plus 3D printing and practical digital builds when you need them. Direct. No fluff.",
     url: "https://mixedmakershop.com",
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Web Design That Brings You Customers | MixedMakerShop",
-    description:
-      "Websites for small businesses that turn visitors into leads. Free website preview. By Topher.",
+    title: "MixedMakerShop by Topher",
+    description: "Web design, 3D printing, and practical digital builds — Hot Springs & nationwide.",
     images: ["/og-image"],
   },
 };
 
 export default function HomePage() {
-  return <WebDesignSalesPage />;
+  return <UmbrellaHomePage />;
 }

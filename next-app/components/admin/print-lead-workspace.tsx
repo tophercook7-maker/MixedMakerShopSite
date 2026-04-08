@@ -50,7 +50,7 @@ export function PrintLeadWorkspace({ initial }: { initial: LeadDetail }) {
     try {
       const prev = String(initial.status || "");
       const patch: Record<string, unknown> = { status, notes };
-      if (status !== prev && ["contacted", "qualified", "proposal_sent"].includes(status)) {
+      if (status !== prev && ["contacted", "replied"].includes(status)) {
         patch.last_contacted_at = new Date().toISOString();
       }
 

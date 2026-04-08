@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-const HERO =
-  "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1400&q=80";
+const HERO = "/images/mixedmaker-workspace-hero.png";
 
 export const metadata: Metadata = {
   title: "Sample: Instant Quote & Estimator Style Tools | MixedMakerShop",

@@ -7,10 +7,9 @@ export const metadata: Metadata = {
     "How we redesign restaurant sites for faster loads, clearer menus, and more reservations — with live samples you can preview.",
 };
 
-const IMG_BEFORE =
-  "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=80";
-const IMG_AFTER =
-  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=800&q=80";
+/** Local showcase previews under /public/images/ (concept before/after, not literal site screenshots). */
+const IMG_BEFORE = "/images/showcase/freshcut-property-care.jpg";
+const IMG_AFTER = "/images/showcase/deep-well-audio.jpg";
 
 export default function RestaurantRedesignPage() {
   return (
@@ -44,7 +43,7 @@ export default function RestaurantRedesignPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={IMG_BEFORE}
-                alt="Cluttered phone screen suggesting an outdated restaurant web layout"
+                alt="Local service website preview — clear structure and mobile-friendly layout"
                 style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }}
                 width={800}
                 height={400}
@@ -63,7 +62,7 @@ export default function RestaurantRedesignPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={IMG_AFTER}
-                alt="Warm restaurant table with plated food — inviting, clear hospitality photography"
+                alt="Polished brand website preview — strong typography and hero presence"
                 style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }}
                 width={800}
                 height={400}

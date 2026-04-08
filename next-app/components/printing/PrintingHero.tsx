@@ -8,6 +8,7 @@ import { printingContentClass } from "@/components/printing/printing-layout";
 import { PRINTING_HERO_WORKSTATION_IMAGE } from "@/components/printing/printing-assets";
 import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 
+/** Dark “fabrication” hero — body sections on /3d-printing match this lab aesthetic while the public layout stays light. */
 export function PrintingHero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.06] pb-0 pt-[3.5rem] md:pt-[4.75rem] lg:pt-[5.5rem]">
@@ -22,59 +23,58 @@ export function PrintingHero() {
         <div className="grid gap-12 pb-[4rem] sm:gap-14 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,36rem)] lg:items-center lg:gap-20 lg:pb-[4.5rem] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,40rem)] xl:gap-24">
           <div className="min-w-0 lg:pr-2">
             <RevealOnScroll>
-              <p className={cn(publicEyebrowPrintClass, "md:tracking-[0.3em]")}>
-                MixedMakerShop · Bambu Lab print farm · Hot Springs, Arkansas
-              </p>
+              <p className={cn(publicEyebrowPrintClass, "md:tracking-[0.3em]")}>3D Printing by Topher</p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={55}>
               <h1 className="mt-7 max-w-[20ch] text-[2.35rem] font-semibold leading-[1.04] tracking-[-0.035em] text-white sm:max-w-none sm:text-[2.75rem] sm:leading-[1.03] lg:mt-8 lg:text-[clamp(2.85rem,4.2vw,3.85rem)] lg:leading-[1.04] [text-shadow:0_4px_64px_rgba(0,0,0,0.55)]">
-                Custom 3D Printing Backed by a Real Bambu Lab Fleet
+                Custom prints, replacement parts, and practical solutions.
               </h1>
             </RevealOnScroll>
             <RevealOnScroll delayMs={110}>
               <p className="mt-8 max-w-2xl text-[1.0625rem] font-medium leading-[1.55] text-white/[0.88] md:mt-9 md:text-lg md:leading-[1.58]">
-                From your STL to a finished part — replacements, organizers, brackets, and prototypes. I run{" "}
-                <span className="text-white/[0.95]">1× A1 with AMS Lite</span> plus{" "}
-                <span className="text-white/[0.95]">2× P1S printers with AMS Pro</span>, orchestrated from a triple-monitor
-                workstation so jobs stay on track.
+                If something is broken, missing, hard to find, or needs to be created, Topher can help design and print a
+                real solution.
               </p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={165}>
               <p className="mt-7 max-w-2xl border-l-[3px] border-emerald-400/50 pl-5 text-[0.95rem] font-semibold leading-relaxed text-emerald-200/[0.92] md:mt-8 md:text-[1rem]">
-                Send a file, a photo of a broken piece, or a rough idea — I&apos;ll tell you what&apos;s realistic and
-                quote practical next steps.
+                Backed by a real Bambu Lab workflow in Hot Springs —{" "}
+                <span className="text-emerald-100/95">1× A1 with AMS Lite</span> and{" "}
+                <span className="text-emerald-100/95">2× P1S with AMS Pro</span>, with intake tuned for practical parts (not
+                gimmicks).
               </p>
             </RevealOnScroll>
             <RevealOnScroll delayMs={220}>
               <div className="mt-12 flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:items-center md:mt-[3.25rem]">
                 <Link
-                  href="/upload-print"
+                  href={printingQuoteHref()}
                   className={cn(
                     printingPrimaryCtaClass,
                     "min-h-[3.35rem] w-full px-10 text-[0.96875rem] font-semibold tracking-wide sm:w-auto",
                   )}
                 >
-                  Send Me Your Print File
+                  Start a Print Project
                 </Link>
                 <Link
-                  href={printingQuoteHref()}
+                  href="/contact"
                   className={cn(
                     printingSecondaryCtaClass,
                     "min-h-[3.35rem] w-full px-10 text-[0.96875rem] sm:w-auto",
                   )}
                 >
-                  Tell Me What You Need
+                  Contact Topher
                 </Link>
-                <a
-                  href="#examples-3d"
-                  className={cn(
-                    printingSecondaryCtaClass,
-                    "min-h-[3.35rem] w-full px-10 text-[0.96875rem] sm:w-auto",
-                  )}
-                >
-                  View 3D Examples
-                </a>
               </div>
+              <p className="mt-4 text-sm text-white/[0.72]">
+                Already have an STL?{" "}
+                <Link href="/upload-print" className="font-semibold text-emerald-200/95 underline-offset-4 hover:underline">
+                  Upload a file →
+                </Link>
+                {" · "}
+                <a href="#examples-3d" className="font-semibold text-emerald-200/95 underline-offset-4 hover:underline">
+                  View examples →
+                </a>
+              </p>
             </RevealOnScroll>
           </div>
 

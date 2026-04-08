@@ -6,8 +6,9 @@ import { printingContentClass } from "@/components/printing/printing-layout";
 import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 import { cn } from "@/lib/utils";
 import { PrintingScrollToQuoteCta } from "@/components/printing/PrintingScrollToQuoteCta";
+import { PRINTING_PROCESS_IMAGES } from "@/components/printing/printing-assets";
 
-const PROCESS_IMAGE = "/images/3d-process.png";
+const PROCESS_IMAGE = PRINTING_PROCESS_IMAGES.printing;
 
 const STEPS: {
   n: string;
@@ -17,20 +18,20 @@ const STEPS: {
 }[] = [
   {
     n: "1",
-    title: "Tell me what you need",
-    copy: "Photo, broken piece, sketch, or a voice memo — whatever explains the problem fastest.",
+    title: "Tell me the problem or the part you need",
+    copy: "Photo, broken piece, sketch, STL, or a voice memo — whatever explains it fastest.",
     icon: Camera,
   },
   {
     n: "2",
-    title: "I design and print",
-    copy: "Custom PLA geometry, tuned for strength where it matters — then run on the A1 / P1S farm when it’s ready.",
+    title: "I help figure out the best print solution",
+    copy: "Material choices, orientation, and a realistic timeline — tuned for the part’s job, not just a pretty render.",
     icon: Cuboid,
   },
   {
     n: "3",
-    title: "Install and use it",
-    copy: "Pick up or arrange delivery — bolt it on, clip it in, get back to work.",
+    title: "I design, print, and refine if needed",
+    copy: "First print, fit check, small adjustments when it matters — then handoff or delivery.",
     icon: CircleCheck,
   },
 ];
@@ -40,8 +41,8 @@ export function PrintingHow() {
     <PrintingSection className="bg-gradient-to-b from-black/44 via-black/20 to-black/32">
       <div className={printingContentClass}>
         <PrintingSectionHeader
-          title="How it works"
-          subtitle="From the mess on your bench to the part in your hand — three steps."
+          title="How 3D printing projects work"
+          subtitle="Straightforward intake, honest planning, and a print path that matches the real-world fix."
         />
         <RevealOnScroll>
           <div

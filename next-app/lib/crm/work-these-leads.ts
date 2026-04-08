@@ -47,7 +47,7 @@ export function isReadyToContactLead(lead: WorkflowLead): boolean {
 
 function terminalPipelineStage(lead: WorkflowLead): boolean {
   const s = normalizeWorkflowLeadStatus(lead.status);
-  return s === "won" || s === "lost";
+  return s === "won" || s === "archived" || s === "no_response" || s === "not_interested";
 }
 
 const DEFAULT_REPLIED_STRIP_MAX = 5;

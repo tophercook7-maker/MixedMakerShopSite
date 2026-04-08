@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
 import { contactFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -25,15 +26,20 @@ export async function POST(request: Request) {
     });
 
     if (owner) {
-      await supabase.from("leads").insert({
+      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
         business_name: name || "Connect",
         contact_name: name,
         email,
-        message: message ?? null,
+        notes: message ?? null,
+        why_this_lead_is_here: "Submitted via Ring/connect capture",
+        source: "ring_connect",
         lead_source: "ring_connect",
         status: "new",
-        owner_id: owner.id,
+        has_website: false,
       });
+      if (!crm.ok) {
+        console.error("[connect form] CRM insert failed", crm.error);
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (e) {

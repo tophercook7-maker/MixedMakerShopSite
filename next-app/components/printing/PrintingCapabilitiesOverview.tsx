@@ -4,11 +4,13 @@ import { printingContentClass, printingSectionSurfaceClass } from "@/components/
 import { printingSecondaryCtaClass } from "@/components/printing/printing-section";
 
 const MAKES = [
-  "Functional parts",
-  "Holders & mounts",
-  "Replacement pieces",
+  "Replacement parts",
+  "Custom mounts",
+  "Clips and holders",
   "Prototypes",
-  "Custom requests",
+  "Organizers",
+  "Practical one-off solutions",
+  "Custom problem-solving",
 ] as const;
 
 /**
@@ -20,14 +22,14 @@ export function PrintingCapabilitiesOverview() {
       <div className={printingContentClass}>
         <div className={cn(printingSectionSurfaceClass, "p-6 sm:p-8 md:p-10")}>
           <h2 id="printing-capabilities-heading" className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            What I take on
+            What I can help with
           </h2>
           <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-white/[0.88] md:text-lg">
             The printers are only half the story —{" "}
             <span className="text-white/[0.94]">design sense, slicer tuning, and honest timelines</span> are what turn a
-            mesh into something you can bolt on tomorrow. Tell me what you&apos;re fixing, building, or testing.
+            mesh into something you can actually use. Tell me what you&apos;re fixing, building, or testing.
           </p>
-          <h3 className="mt-10 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200/85">What I Make</h3>
+          <h3 className="mt-10 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200/85">Common requests</h3>
           <ul className="mt-4 grid gap-2.5 text-[0.95rem] leading-relaxed text-white/[0.82] sm:grid-cols-2 sm:gap-x-8">
             {MAKES.map((item) => (
               <li key={item} className="flex gap-2">

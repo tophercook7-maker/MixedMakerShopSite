@@ -15,9 +15,13 @@ export function isFollowUpDueTodayUtc(nextFollowUpAt: string | null | undefined)
   return key === today;
 }
 
+function isTerminalSimpleStatus(st: string): boolean {
+  return st === "won" || st === "archived" || st === "no_response" || st === "not_interested";
+}
+
 /**
  * Friendly CRM labels for daily workflow — maps existing `status` + timestamps.
- * No database enum; safe to evolve.
+ * Follow-up timing uses `next_follow_up_at`, not a status value.
  */
 export function simpleLeadStatusLabel(opts: {
   status: string | null | undefined;
@@ -27,15 +31,15 @@ export function simpleLeadStatusLabel(opts: {
   const st = normalizeWorkflowLeadStatus(String(opts.status || ""));
   const fuToday =
     isFollowUpDueTodayUtc(opts.next_follow_up_at) &&
-    st !== "won" &&
-    st !== "lost" &&
+    !isTerminalSimpleStatus(st) &&
     st !== "replied";
   if (fuToday) return "Follow Up Today";
 
   if (st === "won") return "Won";
-  if (st === "lost") return "Closed";
+  if (st === "archived") return "Archived";
+  if (st === "no_response") return "No response";
+  if (st === "not_interested") return "Not interested";
   if (st === "replied") return "Replied";
-  if (st === "qualified" || st === "proposal_sent") return "Qualified";
 
   if (st === "contacted") {
     const sent = opts.first_outreach_sent_at && String(opts.first_outreach_sent_at).trim();

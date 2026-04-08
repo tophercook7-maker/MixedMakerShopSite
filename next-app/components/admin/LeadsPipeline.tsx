@@ -41,10 +41,11 @@ export function LeadsPipeline({ initialStatuses }: { initialStatuses: Col[] }) {
                   >
                     <option value="new">New</option>
                     <option value="contacted">Contacted</option>
-                    <option value="interested">Interested</option>
-                    <option value="proposal_sent">Proposal sent</option>
+                    <option value="replied">Replied</option>
+                    <option value="no_response">No response</option>
+                    <option value="not_interested">Not interested</option>
                     <option value="won">Won</option>
-                    <option value="lost">Lost</option>
+                    <option value="archived">Archived</option>
                   </select>
                 </div>
               ))}

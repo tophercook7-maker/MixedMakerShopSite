@@ -86,6 +86,84 @@
   color: #0c0e0d;
 }
 
+/* Public umbrella — warm light marketing shell (see app/(public)/layout.tsx) */
+.public-site--light-umbrella {
+  --pub-bg: #f4f3ef;
+  --pub-bg-subtle: #ebe8e2;
+  --pub-surface: #ffffff;
+  --pub-fg: #334155;
+  --pub-fg-heading: #0f172a;
+  --pub-muted: #64748b;
+  --pub-muted2: #475569;
+  --pub-border: #e2e8f0;
+  --pub-border-hairline: #eef2f6;
+  --pub-accent: #0f766e;
+  --pub-accent-hover: #0d9488;
+  --pub-accent-soft: rgba(15, 118, 110, 0.12);
+  --gold: #0f6680;
+  --gold2: #0f766e;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-float: 0 16px 40px -16px rgba(15, 23, 42, 0.12);
+
+  background-color: var(--pub-bg);
+  color: var(--pub-fg);
+}
+
+.public-site--light-umbrella .btn.gold {
+  border-color: rgba(194, 65, 12, 0.35);
+  background: linear-gradient(135deg, #b45309 0%, #ea580c 52%, #d97706 100%);
+  color: #fffaf5;
+  box-shadow:
+    0 6px 22px rgba(234, 88, 12, 0.22),
+    0 0 0 1px rgba(180, 83, 9, 0.15);
+}
+
+.public-site--light-umbrella .btn.gold:hover {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 55%, #f59e0b 100%);
+  border-color: rgba(194, 65, 12, 0.48);
+  color: #fffaf5;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.public-site--light-umbrella .pill.cta {
+  background: linear-gradient(135deg, #b45309 0%, #ea580c 52%, #d97706 100%);
+  color: #fffaf5;
+  border: none;
+  box-shadow:
+    0 0 0 1px rgba(180, 83, 9, 0.18),
+    0 8px 22px rgba(234, 88, 12, 0.22);
+}
+
+.public-site--light-umbrella .pill.cta:hover {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 55%, #f59e0b 100%);
+  color: #fffaf5;
+}
+
+.public-site--light-umbrella main [id] {
+  scroll-margin-top: 5.75rem;
+}
+
+/* Umbrella marketing — typography + section rhythm on legacy `.section` / `.hero` pages */
+.public-site--light-umbrella .h1 {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.public-site--light-umbrella .section-heading {
+  font-weight: 700;
+}
+.public-site--light-umbrella main > .section {
+  padding: clamp(5rem, 11vw, 9rem) 0;
+}
+.public-site--light-umbrella .hero {
+  background: linear-gradient(180deg, #faf9f6 0%, #f4f3ef 55%, #ebe8e2 100%);
+}
+
+.public-site--light-umbrella .panel,
+.public-site--light-umbrella .card {
+  border-radius: 20px;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -3783,6 +3861,101 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   color: #9fb5ad;
 }
 
+/* Light umbrella — premium nav / footer (slate + warm neutrals) */
+.public-site--light-umbrella .nav.nav--premium {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px) saturate(1.06);
+  -webkit-backdrop-filter: blur(18px) saturate(1.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.public-site--light-umbrella .nav.nav--premium.nav--gateway {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.76) 100%);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 10px 36px rgba(15, 23, 42, 0.06);
+}
+
+.public-site--light-umbrella .nav.nav--premium .brand-title .name {
+  color: var(--pub-fg-heading);
+}
+
+.public-site--light-umbrella .nav.nav--premium .brand-title .sub,
+.public-site--light-umbrella .nav.nav--premium .brand-title .sub strong {
+  color: var(--pub-muted);
+  font-weight: 600;
+}
+
+.public-site--light-umbrella .nav.nav--premium .nav-brand-meta {
+  color: rgba(100, 116, 139, 0.9);
+}
+
+.public-site--light-umbrella .nav.nav--premium .nav-brand-logo {
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 14px 34px rgba(15, 23, 42, 0.12);
+}
+
+.public-site--light-umbrella .nav.nav--premium .logo {
+  border-color: rgba(15, 118, 110, 0.22);
+  background: linear-gradient(145deg, #f8fafc, #eef2f6);
+  color: #0f766e;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill {
+  color: var(--pub-muted);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill:hover {
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--pub-fg-heading);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill.pill--muted {
+  color: rgba(100, 116, 139, 0.72);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill.pill--muted:hover {
+  color: var(--pub-muted);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill.cta {
+  background: linear-gradient(135deg, #b45309 0%, #ea580c 52%, #d97706 100%);
+  color: #fffaf5;
+  font-weight: 600;
+  box-shadow:
+    0 0 0 1px rgba(180, 83, 9, 0.2),
+    0 12px 30px rgba(234, 88, 12, 0.24);
+}
+
+.public-site--light-umbrella .nav.nav--premium .pill.cta:hover {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 55%, #f59e0b 100%);
+  color: #fffaf5;
+}
+
+@media (max-width: 768px) {
+  .public-site--light-umbrella .nav.nav--premium .menu-toggle {
+    color: var(--pub-fg-heading);
+  }
+}
+
+.public-site--light-umbrella .footer.footer--premium {
+  background: #e8edf2;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+  color: var(--pub-muted);
+}
+
+.public-site--light-umbrella .footer.footer--premium .footer-premium-heading {
+  color: var(--pub-fg-heading);
+}
+
+.public-site--light-umbrella .footer.footer--premium .small {
+  color: var(--pub-muted);
+}
+
 /* Contact — structured layout, glass form, warm ambient (public dark) */
 .public-site--dark .contact-page-premium {
   position: relative;
@@ -3866,6 +4039,94 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
   margin-bottom: 12px;
 }
 .public-site--dark .contact-page-premium .contact-value-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Contact — light umbrella */
+.public-site--light-umbrella .contact-page-premium {
+  position: relative;
+  padding-top: clamp(3rem, 6vw, 4.5rem);
+  padding-bottom: clamp(4rem, 9vw, 6rem);
+}
+.public-site--light-umbrella .contact-page-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 85% 48% at 14% 8%, rgba(234, 88, 12, 0.045), transparent 52%),
+    radial-gradient(ellipse 90% 50% at 12% 18%, rgba(15, 118, 110, 0.07), transparent 55%),
+    radial-gradient(ellipse 55% 42% at 92% 72%, rgba(15, 23, 42, 0.04), transparent 50%);
+}
+.public-site--light-umbrella .contact-page-premium .contact-page-inner {
+  position: relative;
+  z-index: 1;
+}
+.public-site--light-umbrella .contact-page-premium .contact-intro-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(180, 83, 9, 0.88);
+  margin-bottom: 0.75rem;
+}
+.public-site--light-umbrella .contact-page-premium .contact-prompt-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--pub-fg-heading);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.public-site--light-umbrella .contact-page-premium .contact-prompt-link:hover {
+  background: rgba(15, 118, 110, 0.08);
+  border-color: rgba(15, 118, 110, 0.22);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.public-site--light-umbrella .contact-page-premium .contact-form-shell {
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  border-radius: 28px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.97) 0%, rgba(252, 250, 247, 0.92) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: clamp(22px, 4vw, 34px);
+  box-shadow:
+    0 28px 72px rgba(15, 23, 42, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+.public-site--light-umbrella .contact-page-premium .contact-side-card {
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  background: rgba(255, 255, 255, 0.62);
+  padding: 1.25rem 1.35rem;
+}
+.public-site--light-umbrella .contact-page-premium .contact-value-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.public-site--light-umbrella .contact-page-premium .contact-value-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--pub-muted);
+  margin-bottom: 12px;
+}
+.public-site--light-umbrella .contact-page-premium .contact-value-list li:last-child {
   margin-bottom: 0;
 }
 
@@ -5224,6 +5485,15 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
       rgba(255, 255, 255, 0.017) 10px,
       rgba(255, 255, 255, 0.017) 11px
     );
+}
+
+/* Softer outer wash while inner fabrication sections keep their own surfaces */
+.public-site--light-umbrella .printing-page {
+  background-color: #e9e7e0;
+  background-image:
+    radial-gradient(ellipse 120% 70% at 50% -15%, rgba(15, 118, 110, 0.07), transparent 52%),
+    radial-gradient(ellipse 55% 45% at 0% 35%, rgba(15, 23, 42, 0.04), transparent 48%),
+    radial-gradient(ellipse 50% 40% at 100% 75%, rgba(15, 118, 110, 0.04), transparent 50%);
 }
 
 /* /3d-printing — “How it works”: subtle BG drift + premium card hover */

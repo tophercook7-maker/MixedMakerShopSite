@@ -6,7 +6,7 @@ export type Lead = {
   phone?: string | null;
   company?: string | null;
   message?: string | null;
-  status: "new" | "contacted" | "interested" | "proposal_sent" | "won" | "lost";
+  status: "new" | "contacted" | "replied" | "no_response" | "not_interested" | "won" | "archived";
   source?: string | null;
   notes?: string | null;
   created_at?: string;

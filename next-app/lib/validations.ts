@@ -1,24 +1,15 @@
 import { z } from "zod";
+import { CANONICAL_LEAD_STATUSES, canonicalizeLeadStatus } from "@/lib/crm-lead-schema";
 
-const leadStatuses = [
-  "new",
-  "contacted",
-  "follow_up",
-  "replied",
-  "qualified",
-  "proposal_sent",
-  "won",
-  "lost",
-  "no_response",
-  "not_interested",
-  "archived",
-  "follow_up_due",
-  "closed",
-  "closed_won",
-  "closed_lost",
-  "research_later",
-  "do_not_contact",
-] as const;
+const canonicalLeadStatusEnum = CANONICAL_LEAD_STATUSES as unknown as [
+  (typeof CANONICAL_LEAD_STATUSES)[number],
+  ...(typeof CANONICAL_LEAD_STATUSES)[number][],
+];
+
+const leadStatusSchema = z.preprocess(
+  (v) => canonicalizeLeadStatus(v === undefined || v === null ? "new" : v),
+  z.enum(canonicalLeadStatusEnum),
+);
 const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
 const dealStages = ["new", "interested", "pricing", "closing", "won"] as const;
 const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
@@ -104,7 +95,7 @@ export const leadSchema = z.object({
   service_type: z.string().max(40).optional().nullable().transform((v) => (v === "" ? undefined : v)),
   first_outreach_message: z.string().max(12000).optional().nullable(),
   first_outreach_sent_at: optionalTimestamp,
-  status: z.enum(leadStatuses),
+  status: leadStatusSchema,
   deal_status: z.enum(dealStatuses).optional(),
   deal_stage: z.enum(dealStages).optional(),
   deal_value: z.number().min(0).optional(),

@@ -70,7 +70,7 @@ export function LeadPrimaryActions({
     .trim()
     .toLowerCase();
   const alreadyReplied = normalizedStatus === "replied";
-  const terminal = normalizedStatus === "won" || normalizedStatus === "lost";
+  const terminal = ["won", "archived", "no_response", "not_interested"].includes(normalizedStatus);
 
   useEffect(() => {
     const d = addBusinessDays(new Date(), 3);
@@ -161,7 +161,7 @@ export function LeadPrimaryActions({
             onClick={() =>
               void run(
                 "Closed.",
-                { status: "lost", automation_paused: true, sequence_active: false },
+                { status: "no_response", automation_paused: true, sequence_active: false },
                 "mark_closed"
               )
             }
@@ -235,7 +235,7 @@ export function LeadPrimaryActions({
           onClick={() =>
             void run(
               "Closed.",
-              { status: "lost", automation_paused: true, sequence_active: false },
+              { status: "no_response", automation_paused: true, sequence_active: false },
               "mark_closed"
             )
           }

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { toWorkflowLead, isMissingColumnError, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
-import { CRM_STAGE_LABELS } from "@/lib/crm/stages";
+import { CRM_PIPELINE_STAGES, CRM_STAGE_LABELS } from "@/lib/crm/stages";
 import { prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { computeWorkTodayLeads } from "@/lib/crm/work-today-leads";
 import { TodayWorkspace } from "@/components/admin/today-workspace";
+import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { isThreeDPrintLead, normalizePrintPipelineStatus } from "@/lib/crm/three-d-print-lead";
 import { resolvePrintUiLane } from "@/lib/crm/three-d-print-ui-lanes";
 import { isFollowUpDueTodayUtc, simpleLeadStatusLabel } from "@/lib/crm/simple-lead-status-ui";
@@ -57,10 +58,14 @@ export default async function TodayCommandPage() {
   const leads = rows.map(toWorkflowLead);
   const workTodayLeads = computeWorkTodayLeads(rows, now, 10);
 
+  function isTerminalLeadStatus(s: WorkflowLead["status"]): boolean {
+    return s === "won" || s === "archived" || s === "no_response" || s === "not_interested";
+  }
+
   const newLeads = leads.filter((l) => l.status === "new").length;
   const repliesWaiting = leads.filter((l) => l.status === "replied").length;
   const followUpsDue = leads.filter((l) => {
-    if (l.status === "won" || l.status === "lost" || l.status === "replied") return false;
+    if (isTerminalLeadStatus(l.status) || l.status === "replied") return false;
     const d = dueDate(l);
     if (!d) return false;
     return d.getTime() <= now.getTime() && String(l.follow_up_status || "pending").toLowerCase() !== "completed";
@@ -79,8 +84,7 @@ export default async function TodayCommandPage() {
     if (!d) return false;
     return (
       d.toDateString() === now.toDateString() &&
-      l.status !== "won" &&
-      l.status !== "lost" &&
+      !isTerminalLeadStatus(l.status) &&
       l.status !== "replied"
     );
   });
@@ -104,12 +108,12 @@ export default async function TodayCommandPage() {
     /* ignore */
   }
 
-  const proposalFollowUps = leads.filter((l) => l.status === "proposal_sent").slice(0, 6);
+  const activeDealFollowUps = leads.filter((l) => l.status === "replied").slice(0, 6);
 
   const todayQuiet =
     firstOutreach.length === 0 && followUpToday.length === 0 && unreadish.length === 0;
 
-  const pipelineOrder = ["new", "contacted", "replied", "qualified", "proposal_sent", "won", "lost"] as const;
+  const pipelineOrder = CRM_PIPELINE_STAGES;
   const pipelineCounts = Object.fromEntries(pipelineOrder.map((s) => [s, leads.filter((l) => l.status === s).length])) as Record<
     (typeof pipelineOrder)[number],
     number
@@ -119,8 +123,7 @@ export default async function TodayCommandPage() {
     (l) =>
       !isThreeDPrintLead(l) &&
       isFollowUpDueTodayUtc(l.next_follow_up_at) &&
-      l.status !== "won" &&
-      l.status !== "lost" &&
+      !isTerminalLeadStatus(l.status) &&
       l.status !== "replied",
   ).length;
   const printFuToday = leads.filter(
@@ -372,17 +375,17 @@ export default async function TodayCommandPage() {
           </section>
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>
-              Proposals waiting
+              Replied — active deals
             </h2>
             <ul className="space-y-2 text-sm">
-              {proposalFollowUps.map((l) => (
+              {activeDealFollowUps.map((l) => (
                 <li key={l.id}>
                   <Link href={`/admin/proposals`} className="text-[var(--admin-gold)] hover:underline">
                     {l.business_name}
                   </Link>
                 </li>
               ))}
-              {proposalFollowUps.length === 0 ? <li style={{ color: "var(--admin-muted)" }}>—</li> : null}
+              {activeDealFollowUps.length === 0 ? <li style={{ color: "var(--admin-muted)" }}>—</li> : null}
             </ul>
           </section>
         </aside>

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-client";
+import { publicShellClass } from "@/lib/public-brand";
+import { mmsBtnPrimary, mmsEyebrow, mmsH1, mmsLead, mmsPageBg, mmsSectionY } from "@/lib/mms-umbrella-ui";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Get Your Free Website Mockup | MixedMakerShop",
@@ -14,60 +17,48 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+const shell = publicShellClass;
+
 export default function FreeMockupPage() {
   return (
-    <>
-      <section className="hero" style={{ paddingBottom: 8 }}>
-        <div className="container">
-          <div className="hero-copy">
-            <h1 className="h1" style={{ marginBottom: 12 }}>
-              Get Your Free Website Mockup
-            </h1>
-            <p className="subhead" style={{ margin: 0, marginBottom: 20 }}>
-              I&apos;ll design a custom homepage for your business so you can see exactly what your new site could look like
-              — before you commit to anything.
-            </p>
-            <div className="btn-row" style={{ flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-              <a href="#free-mockup-start" className="btn gold">
-                Get My Free Website Preview
-              </a>
-            </div>
-            <p className="small" style={{ margin: 0, marginBottom: 8, fontWeight: 500 }}>
-              No pressure. No obligation. Just a real preview of your future site.
-            </p>
-            <p className="small" style={{ color: "var(--muted)", margin: 0, maxWidth: 440, lineHeight: 1.5 }}>
-              Built and reviewed by a real web designer — not a generic template builder.
-            </p>
-            <div
-              style={{
-                marginTop: 28,
-                paddingTop: 24,
-                borderTop: "1px solid var(--border)",
-                maxWidth: 420,
-              }}
-            >
-              <p className="text-sm font-semibold" style={{ marginBottom: 12 }}>
-                How it works
-              </p>
-              <ol
-                className="small"
-                style={{
-                  margin: 0,
-                  paddingLeft: 20,
-                  color: "var(--muted)",
-                  lineHeight: 1.65,
-                  listStyleType: "decimal",
-                }}
-              >
-                <li style={{ marginBottom: 8 }}>Build your mockup</li>
-                <li style={{ marginBottom: 8 }}>Save &amp; send it to me</li>
-                <li style={{ marginBottom: 0 }}>I help you finish and launch your site</li>
-              </ol>
-            </div>
+    <div className={mmsPageBg}>
+      <section className="relative overflow-hidden border-b border-slate-200/65 bg-gradient-to-b from-white via-[#faf9f6] to-[#f4f3ef]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-100"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 80% 50% at 20% 0%, rgba(234, 88, 12, 0.05), transparent 55%), radial-gradient(ellipse 60% 45% at 90% 20%, rgba(15, 118, 110, 0.04), transparent 50%)",
+          }}
+          aria-hidden
+        />
+        <div className={cn(shell, mmsSectionY, "relative z-[1] max-w-3xl")}>
+          <p className={mmsEyebrow}>MixedMakerShop · Web design by Topher</p>
+          <h1 className={cn(mmsH1, "mt-6 max-w-[18ch] sm:max-w-none")}>Get your free website mockup</h1>
+          <p className={cn(mmsLead, "mt-7 max-w-2xl")}>
+            Topher will show you what your site could look like before you commit.
+          </p>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a href="#free-mockup-start" className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}>
+              Get a free website mockup
+            </a>
+          </div>
+          <p className="mt-4 text-sm font-medium text-slate-600">
+            No pressure. No obligation. Just a real preview of your future site.
+          </p>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-500">
+            Built and reviewed by Topher — not a generic template builder.
+          </p>
+          <div className="mt-10 max-w-md border-t border-slate-200/80 pt-8">
+            <p className="text-sm font-semibold text-slate-900">How it works</p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+              <li>Build your mockup</li>
+              <li>Save &amp; send it to Topher</li>
+              <li>Topher helps you finish and launch your site</li>
+            </ol>
           </div>
         </div>
       </section>
       <FreeMockupFunnelClient />
-    </>
+    </div>
   );
 }

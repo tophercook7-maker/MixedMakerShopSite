@@ -1,6 +1,7 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { isHardBlockEventType } from "@/lib/calendar-events";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
 
 type BookingPayload = {
   name?: string;
@@ -127,30 +128,24 @@ export async function POST(request: Request) {
   }
   const end = new Date(start.getTime() + 15 * 60 * 1000);
 
-  const { data: leadRows } = await supabase
-    .from("leads")
-    .select("id,owner_id,workspace_id,business_name,email")
-    .eq("email", email)
-    .order("created_at", { ascending: false })
-    .limit(1);
-  const matchedLead = (leadRows || [])[0] as
-    | { id: string; owner_id?: string | null; workspace_id?: string | null; business_name?: string | null }
-    | undefined;
-
-  let ownerId = String(matchedLead?.owner_id || "").trim();
-  if (!ownerId) {
-    const { data: ownerProfile } = await supabase.from("profiles").select("id").limit(1).single();
-    ownerId = String(ownerProfile?.id || "").trim();
-  }
+  const { data: ownerProfile } = await supabase.from("profiles").select("id").limit(1).single();
+  const ownerId = String(ownerProfile?.id || "").trim();
   if (!ownerId) {
     return NextResponse.json({ error: "No owner profile found for booking." }, { status: 500 });
   }
 
-  const titleName = businessName || matchedLead?.business_name || name;
-  const meetingTitle = `Website review: ${titleName}`;
-  const eventNotes = notes || `Public booking request from ${name}${phone ? ` (${phone})` : ""}`;
   const startIso = start.toISOString();
   const endIso = end.toISOString();
+  const whenLabel = start.toLocaleString();
+  const bookingNotesForLead = [
+    "Public website review booking",
+    `Slot (UTC): ${startIso}`,
+    `Slot (local display): ${whenLabel}`,
+    phone ? `Phone: ${phone}` : null,
+    notes ? `Booker notes: ${notes}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const { data: overlapRows, error: overlapError } = await supabase
     .from("calendar_events")
@@ -173,7 +168,48 @@ export async function POST(request: Request) {
       { status: 409 }
     );
   }
-  const workspaceId = chooseWorkspaceId(matchedLead?.workspace_id);
+
+  const crm = await insertCanonicalInboundLead(supabase, ownerId, {
+    business_name: businessName || name,
+    contact_name: name,
+    email,
+    phone: phone || null,
+    notes: bookingNotesForLead,
+    why_this_lead_is_here:
+      "Booked a 15-minute website review via the public booking page (mixedmakershop.com/book).",
+    source: "public_booking",
+    lead_source: "public_booking",
+    status: "new",
+    has_website: false,
+  });
+
+  let resolvedLeadId: string | null = null;
+  let crmDuplicateSkipped: boolean | undefined;
+  if (crm.ok) {
+    resolvedLeadId = crm.lead_id;
+    crmDuplicateSkipped = crm.duplicate_skipped;
+  } else {
+    console.error("[book] canonical inbound lead failed (calendar will still be attempted)", crm.error);
+  }
+
+  let leadWorkspaceId: string | null | undefined;
+  let leadBusinessName: string | null | undefined;
+  if (resolvedLeadId) {
+    const { data: leadRow } = await supabase
+      .from("leads")
+      .select("workspace_id,business_name")
+      .eq("id", resolvedLeadId)
+      .eq("owner_id", ownerId)
+      .maybeSingle();
+    leadWorkspaceId = leadRow?.workspace_id ?? null;
+    leadBusinessName = leadRow?.business_name ?? null;
+  }
+
+  const titleName = businessName || String(leadBusinessName || "").trim() || name;
+  const meetingTitle = `Website review: ${titleName}`;
+  const eventNotes = notes || `Public booking request from ${name}${phone ? ` (${phone})` : ""}`;
+
+  const workspaceId = chooseWorkspaceId(leadWorkspaceId);
   if (!workspaceId) {
     return NextResponse.json(
       { error: "Workspace not configured for calendar booking. Set SCOUT_BRAIN_WORKSPACE_ID or create a lead with workspace." },
@@ -186,7 +222,7 @@ export async function POST(request: Request) {
     .insert({
       owner_id: ownerId,
       workspace_id: workspaceId,
-      lead_id: matchedLead?.id || null,
+      lead_id: resolvedLeadId,
       title: meetingTitle,
       event_type: "appointment",
       is_blocking: true,
@@ -205,7 +241,9 @@ export async function POST(request: Request) {
     {
       ok: true,
       event: eventRow,
-      lead_attached: Boolean(matchedLead?.id),
+      lead_id: resolvedLeadId,
+      lead_attached: Boolean(resolvedLeadId),
+      lead_duplicate_skipped: crmDuplicateSkipped,
       confirmation_email_sent: Boolean(emailResult.sent),
       confirmation_email_reason: emailResult.sent ? null : emailResult.reason,
     },

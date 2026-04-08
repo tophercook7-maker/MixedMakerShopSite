@@ -1127,7 +1127,7 @@ export function LeadWorkspaceActions({
 
   async function postSendArchive() {
     await updateLead(
-      { status: "lost", automation_paused: true, sequence_active: false },
+      { status: "no_response", automation_paused: true, sequence_active: false },
       "Closed and follow-ups paused."
     );
   }
@@ -1211,7 +1211,7 @@ export function LeadWorkspaceActions({
           deal_status: "lost",
           deal_stage: "new",
           closed_at: nowIso,
-          status: "lost",
+          status: "no_response",
           automation_paused: true,
           sequence_active: false,
         },
@@ -1233,7 +1233,7 @@ export function LeadWorkspaceActions({
       nextDoorStatus === "closed_won"
         ? { status: "won", automation_paused: true, sequence_active: false }
         : nextDoorStatus === "closed_lost"
-          ? { status: "lost", automation_paused: true, sequence_active: false }
+          ? { status: "no_response", automation_paused: true, sequence_active: false }
           : nextDoorStatus === "follow_up"
             ? { status: "contacted" }
             : {};

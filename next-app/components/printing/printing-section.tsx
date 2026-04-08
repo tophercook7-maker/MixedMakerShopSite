@@ -1,23 +1,27 @@
 import { cn } from "@/lib/utils";
 
+export type PrintingSectionSurface = "dark" | "light";
+
 export function PrintingSection({
   id,
   children,
   className,
   /** Softer divider between major bands */
   divider = true,
+  surface = "dark",
 }: {
   id?: string;
   children: React.ReactNode;
   className?: string;
   divider?: boolean;
+  surface?: PrintingSectionSurface;
 }) {
   return (
     <section
       id={id}
       className={cn(
         "relative isolate py-20 md:py-28 lg:py-[8.5rem]",
-        divider && "border-b border-white/[0.06]",
+        divider && (surface === "light" ? "border-b border-slate-200/55" : "border-b border-white/[0.06]"),
         className
       )}
     >
@@ -32,12 +36,14 @@ export function PrintingSectionHeader({
   subtitle,
   align = "center",
   className,
+  surface = "dark",
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   align?: "center" | "left";
   className?: string;
+  surface?: PrintingSectionSurface;
 }) {
   const wrap = align === "center" ? "mx-auto text-center" : "text-left max-w-3xl";
   return (
@@ -45,20 +51,27 @@ export function PrintingSectionHeader({
       {eyebrow ? (
         <p
           className={cn(
-            "mb-4 text-[11px] font-semibold uppercase tracking-[0.34em] text-orange-400/90 md:text-xs",
+            "mb-4 text-[11px] font-semibold uppercase tracking-[0.34em] md:text-xs",
+            surface === "light" ? "text-amber-900/75" : "text-orange-400/90",
             align === "center" && "mx-auto max-w-max"
           )}
         >
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-3xl font-semibold leading-[1.1] tracking-[-0.03em] text-white sm:text-[1.95rem] md:text-4xl lg:text-[2.75rem] lg:leading-[1.08] [text-shadow:0_1px_40px_rgba(0,0,0,0.35)]">
+      <h2
+        className={cn(
+          "text-3xl font-semibold leading-[1.1] tracking-[-0.03em] sm:text-[1.95rem] md:text-4xl lg:text-[2.75rem] lg:leading-[1.08]",
+          surface === "light" ? "text-slate-900" : "text-white [text-shadow:0_1px_40px_rgba(0,0,0,0.35)]"
+        )}
+      >
         {title}
       </h2>
       {subtitle ? (
         <p
           className={cn(
-            "mt-5 max-w-[44rem] text-base leading-[1.65] text-white/55 md:mt-6 md:text-[1.0625rem] md:leading-[1.7]",
+            "mt-5 max-w-[44rem] text-base leading-[1.65] md:mt-6 md:text-[1.0625rem] md:leading-[1.7]",
+            surface === "light" ? "text-slate-600" : "text-white/55",
             align === "center" ? "mx-auto" : ""
           )}
         >

@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { websiteCheckFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -35,17 +37,23 @@ export async function POST(request: Request) {
     if (subErr) throw subErr;
 
     if (owner) {
-      await supabase.from("leads").insert({
+      const website = data.website?.trim() || null;
+      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
         business_name: data.business_name || data.name || "Website check",
         contact_name: data.name ?? null,
         email: data.email,
         phone: data.phone ?? null,
-        website: data.website || null,
-        message: data.message ?? null,
+        website,
+        notes: data.message ?? null,
+        why_this_lead_is_here: "Requested free website check / roast funnel",
+        source: "website_check",
         lead_source: "website_check",
         status: "new",
-        owner_id: owner.id,
+        has_website: website ? leadHasStandaloneWebsite(website) : false,
       });
+      if (!crm.ok) {
+        console.error("[website-check] CRM insert failed", crm.error);
+      }
     }
 
     return NextResponse.json({ ok: true });

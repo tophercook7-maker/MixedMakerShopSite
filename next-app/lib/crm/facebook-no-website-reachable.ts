@@ -86,10 +86,12 @@ function rawStatusLower(lead: Pick<WorkflowLead, "status">): string {
     .replace(/[\s-]+/g, "_");
 }
 
-/** Won, lost, or any closed / terminal pipeline stage we should hide in this preset. */
+/** Won / archived / dead stages we should hide in this preset. */
 export function isTerminalForTargetPreset(lead: Pick<WorkflowLead, "status">): boolean {
   const stage = normalizeWorkflowLeadStatus(lead.status);
-  if (stage === "won" || stage === "lost") return true;
+  if (stage === "won" || stage === "archived" || stage === "no_response" || stage === "not_interested") {
+    return true;
+  }
   const raw = rawStatusLower(lead);
   if (raw === "closed" || raw.startsWith("closed_")) return true;
   return false;

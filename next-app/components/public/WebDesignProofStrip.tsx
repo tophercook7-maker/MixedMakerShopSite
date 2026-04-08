@@ -9,8 +9,7 @@ import {
 } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
-const QUOTE_CAPTURE_IMAGE =
-  "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=900&q=80";
+const QUOTE_CAPTURE_IMAGE = "/images/mixedmaker-workspace-hero.png";
 
 const cardClass =
   "group flex flex-col overflow-hidden rounded-2xl border border-[rgba(0,255,178,0.12)] bg-[rgba(15,21,19,0.65)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_18px_50px_rgba(0,0,0,0.25)] backdrop-blur-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-[rgba(0,255,178,0.22)] hover:shadow-[0_22px_60px_rgba(0,0,0,0.35)]";

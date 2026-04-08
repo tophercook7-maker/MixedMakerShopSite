@@ -8,7 +8,9 @@ import {
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
 import { FUNNEL_DESIRED_OUTCOME_LABELS, normalizeDesiredOutcomeIds } from "@/lib/funnel-desired-outcomes";
-import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { normalizeFacebookUrl, normalizeWebsiteUrl as fingerprintWebsite } from "@/lib/leads-dedup";
 import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
 
 export async function GET() {
@@ -321,13 +323,17 @@ export async function POST(request: Request) {
 
     // Do not write preview_url to leads until the production schema includes that column.
     // Preview link is still stored on crm_mockups.mockup_url and in mockup_submissions.mockup_data.
+    const websiteFull = normalizeWebsiteUrl(snapshot.website_url);
     const leadPayload = pickLeadInsertFields({
       business_name: mockRow.business_name,
       primary_contact_name: contactName,
       contact_name: contactName,
       email: email || null,
       phone: submitPhone || null,
-      website: normalizeWebsiteUrl(snapshot.website_url),
+      website: websiteFull,
+      has_website: leadHasStandaloneWebsite(snapshot.website_url),
+      normalized_website: fingerprintWebsite(snapshot.website_url) || undefined,
+      normalized_facebook_url: normalizeFacebookUrl(mockRow.facebook_url) || undefined,
       category: mockRow.category,
       city: snapshot.city,
       state: snapshot.state || null,
@@ -349,21 +355,16 @@ export async function POST(request: Request) {
     delete leadPayload.preview_url;
     delete leadPayload.automation_paused;
 
-    const { data: leadRow, error: leadErr } = await supabase.from("leads").insert(leadPayload).select("id").single();
-    if (leadErr || !leadRow?.id) {
-      console.error("[website-mockup] lead insert failed", {
-        message: leadErr?.message,
-        details: leadErr?.details,
-        hint: leadErr?.hint,
-        code: leadErr?.code,
-      });
+    const inbound = await insertCanonicalInboundLead(supabase, ownerId, leadPayload);
+    if (!inbound.ok) {
+      console.error("[website-mockup] lead insert failed", inbound.error);
       return NextResponse.json(
         { error: "Could not save your request. Try again or contact us directly." },
         { status: 500 }
       );
     }
 
-    const leadId = String(leadRow.id);
+    const leadId = inbound.lead_id;
     const now = new Date().toISOString();
     const rawPayload = {
       ...(typeof mockRow.raw_payload === "object" && mockRow.raw_payload ? mockRow.raw_payload : {}),

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
-import { WebDesignSalesPage } from "@/components/public/WebDesignSalesPage";
+import { WebDesignServicePage } from "@/components/public/WebDesignServicePage";
 
 export const metadata: Metadata = {
-  title: "Topher's Web Design | MixedMakerShop",
+  title: "Web Design by Topher | MixedMakerShop",
   description:
-    "Web design for small businesses: sites that look better, load faster, and turn visitors into leads. Start with a free website preview.",
+    "Clean, dependable websites for real businesses — built directly by Topher. Hot Springs, Arkansas. Start with a free mockup.",
   openGraph: {
-    title: "Web design that brings you customers | MixedMakerShop",
+    title: "Web design by Topher | MixedMakerShop",
+    description: "Websites built to help real businesses get customers — without agency layers.",
     url: "https://mixedmakershop.com/web-design",
   },
 };
 
 export default function WebDesignPage() {
-  return <WebDesignSalesPage />;
+  return <WebDesignServicePage />;
 }

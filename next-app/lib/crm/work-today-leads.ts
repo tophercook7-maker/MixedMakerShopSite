@@ -54,7 +54,7 @@ function hasNoWebsiteOpportunityTag(row: WorkTodayLeadRow): boolean {
 }
 
 function terminalStatus(status: ReturnType<typeof normalizeWorkflowLeadStatus>): boolean {
-  return status === "won" || status === "lost";
+  return status === "won" || status === "archived" || status === "no_response" || status === "not_interested";
 }
 
 /** Eligible for Work Today: not terminal, and (replied | follow-up due | new | unread). */

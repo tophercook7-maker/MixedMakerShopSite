@@ -17,7 +17,21 @@ export default function ContactPage() {
     setLoading(true);
     const form = e.currentTarget;
     const fd = new FormData(form);
-    const message = `Project type: ${fd.get("project") || ""}\n\n${fd.get("message") || ""}`;
+    const business = String(fd.get("business_name") || "").trim();
+    const need = String(fd.get("need") || "").trim();
+    const website = String(fd.get("website") || "").trim();
+    const extra = String(fd.get("extra") || "").trim();
+    const parts = [
+      `Business: ${business}`,
+      website ? `Website: ${website}` : "Website: (not provided)",
+      "",
+      "What do you need?",
+      need,
+    ];
+    if (extra) {
+      parts.push("", "Anything else:", extra);
+    }
+    const message = parts.join("\n");
     try {
       const res = await fetch("/api/forms/contact", {
         method: "POST",
@@ -47,38 +61,50 @@ export default function ContactPage() {
   return (
     <section className="contact-page-premium section">
       <div className="contact-page-inner container max-w-6xl">
-        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
-          <div>
-            <p className="contact-intro-eyebrow">Get in touch</p>
+        <div className="grid items-start gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-20">
+          <div className="space-y-7 lg:pr-2">
+            <p className="contact-intro-eyebrow">Contact Topher</p>
             <h1
               className="h1"
-              style={{ margin: "0 0 12px", lineHeight: 1.12, maxWidth: "20ch" }}
+              style={{ margin: "0 0 12px", lineHeight: 1.12, maxWidth: "22ch" }}
             >
-              Let&apos;s build something that works
+              Let&apos;s build something useful.
             </h1>
             <p
               className="subhead"
               style={{
-                margin: "0 0 1.5rem",
-                maxWidth: "40ch",
+                margin: 0,
+                maxWidth: "42ch",
                 lineHeight: 1.65,
               }}
             >
-              Tell me what you&apos;re working on — new site, redesign, or just
-              questions before you start. I read every message and reply
-              personally.
+              If you need a website, a custom print, or help moving a digital idea forward, reach out and tell me what
+              you&apos;re trying to build.
+            </p>
+            <p className="small" style={{ margin: 0, maxWidth: "48ch", lineHeight: 1.6 }}>
+              Tell Topher what you&apos;re trying to build, fix, improve, or launch — and you&apos;ll figure out the best
+              next step together.
+            </p>
+            <p
+              className="small"
+              style={{
+                margin: 0,
+                maxWidth: "48ch",
+                lineHeight: 1.55,
+                fontWeight: 650,
+                color: "var(--pub-fg-heading)",
+              }}
+            >
+              Simple, direct, and no pressure.
             </p>
 
-            <ul
-              className="contact-value-list"
-              style={{ marginBottom: "1.75rem" }}
-            >
+            <ul className="contact-value-list" style={{ margin: 0 }}>
               {valuePoints.map((line) => (
                 <li key={line}>
                   <span
                     className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md"
                     style={{
-                      background: "rgba(201, 97, 44, 0.18)",
+                      background: "rgba(180, 83, 9, 0.14)",
                       color: "var(--pub-accent)",
                     }}
                     aria-hidden
@@ -92,7 +118,7 @@ export default function ContactPage() {
 
             <div
               className="contact-side-card"
-              style={{ marginBottom: "1.5rem" }}
+              style={{ marginBottom: 0 }}
             >
               <p
                 className="small"
@@ -110,7 +136,7 @@ export default function ContactPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:max-w-md">
+            <div className="flex flex-col gap-2 sm:max-w-md" style={{ marginTop: "0.25rem" }}>
               <Link href="/free-mockup" className="contact-prompt-link">
                 <span style={{ color: "var(--pub-accent)", fontWeight: 650 }}>
                   →
@@ -142,9 +168,15 @@ export default function ContactPage() {
               </h2>
               <p
                 className="small"
-                style={{ margin: "0 0 20px", lineHeight: 1.55 }}
+                style={{ margin: "0 0 12px", lineHeight: 1.55 }}
               >
                 I&apos;ll follow up within one business day.
+              </p>
+              <p
+                className="small"
+                style={{ margin: "0 0 20px", lineHeight: 1.55 }}
+              >
+                You can also request a free mockup if you&apos;re not ready to commit yet.
               </p>
 
               <form onSubmit={handleSubmit}>
@@ -157,7 +189,47 @@ export default function ContactPage() {
                     id="contact-name"
                     name="name"
                     type="text"
+                    autoComplete="name"
                     required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="contact-business">
+                    Business name
+                  </label>
+                  <input
+                    className="form-input"
+                    id="contact-business"
+                    name="business_name"
+                    type="text"
+                    autoComplete="organization"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="contact-need">
+                    What do you need?
+                  </label>
+                  <textarea
+                    className="form-textarea"
+                    id="contact-need"
+                    name="need"
+                    rows={4}
+                    placeholder="A sentence or two is fine."
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="contact-website">
+                    Website <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    className="form-input"
+                    id="contact-website"
+                    name="website"
+                    type="text"
+                    inputMode="url"
+                    placeholder="yoursite.com or leave blank"
                   />
                 </div>
                 <div className="form-group">
@@ -169,48 +241,20 @@ export default function ContactPage() {
                     id="contact-email"
                     name="email"
                     type="email"
+                    autoComplete="email"
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label" htmlFor="contact-phone">
-                    Phone (optional)
-                  </label>
-                  <input
-                    className="form-input"
-                    id="contact-phone"
-                    name="phone"
-                    type="text"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="contact-project">
-                    What do you need?
-                  </label>
-                  <select
-                    className="form-select"
-                    id="contact-project"
-                    name="project"
-                  >
-                    <option>Starter Setup ($400)</option>
-                    <option>Business Setup ($900)</option>
-                    <option>Custom Builds (custom quote)</option>
-                    <option>Free Website Check</option>
-                    <option>Hosting & Support ($89/mo)</option>
-                    <option>Website Updates</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label" htmlFor="contact-message">
-                    Tell me about your project
+                  <label className="form-label" htmlFor="contact-extra">
+                    Anything else you want me to know?{" "}
+                    <span className="text-slate-400 font-normal">(optional)</span>
                   </label>
                   <textarea
                     className="form-textarea"
-                    id="contact-message"
-                    name="message"
-                    rows={5}
-                    required
+                    id="contact-extra"
+                    name="extra"
+                    rows={3}
                   />
                 </div>
                 {error && (
@@ -229,6 +273,12 @@ export default function ContactPage() {
                 >
                   {loading ? "Sending…" : "Send message"}
                 </button>
+                <p
+                  className="small text-center"
+                  style={{ marginTop: 14, marginBottom: 0, lineHeight: 1.5, color: "var(--pub-muted)" }}
+                >
+                  No pressure · No obligation · Just a preview if you want one
+                </p>
               </form>
             </div>
 

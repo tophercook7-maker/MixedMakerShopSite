@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
 
 export const maxDuration = 60;
 
@@ -264,7 +264,7 @@ export async function POST(request: Request) {
   const ownerId = ownerProfile?.id;
   if (ownerId) {
     const inboundScore = 70;
-    const leadPayload = pickLeadInsertFields({
+    const crm = await insertCanonicalInboundLead(supabase, ownerId, {
       business_name: `3D Print Request - ${name}`,
       contact_name: name,
       email,
@@ -283,12 +283,13 @@ export async function POST(request: Request) {
       opportunity_score: inboundScore,
       status: "new",
       why_this_lead_is_here: "Inbound print request from website upload",
-      owner_id: ownerId,
+      service_type: "3d_printing",
+      category: "print_request",
       last_updated_at: new Date().toISOString(),
+      has_website: false,
     });
-    const { error: leadErr } = await supabase.from("leads").insert(leadPayload);
-    if (leadErr) {
-      console.error("[print-request] CRM lead insert failed (upload still ok):", leadErr);
+    if (!crm.ok) {
+      console.error("[print-request] CRM lead insert failed (upload still ok):", crm.error);
     }
   } else {
     console.warn("[print-request] No profiles row; skipping CRM lead insert.");

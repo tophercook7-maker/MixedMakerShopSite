@@ -8,7 +8,7 @@ import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { buildLeadPath } from "@/lib/lead-route";
 import { leadStatusClass } from "@/components/admin/lead-visuals";
 import { LeadForm } from "@/components/admin/lead-form";
-import { CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
+import { CRM_PIPELINE_STAGES, CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
 import { patchLeadApi } from "@/lib/crm/patch-lead-client";
 import { applyWorkflowLeadPatch } from "@/lib/crm/apply-workflow-lead-patch";
 import { simpleLeadStatusLabel } from "@/lib/crm/simple-lead-status-ui";
@@ -82,7 +82,7 @@ function parseSortKeyFromParam(raw: string | null | undefined, fallback: SortKey
 
 const STAGE_TABS: { id: "all" | CrmPipelineStage; label: string }[] = [
   { id: "all", label: "All" },
-  ...(["new", "contacted", "replied", "qualified", "proposal_sent", "won", "lost"] as const).map((id) => ({
+  ...CRM_PIPELINE_STAGES.map((id) => ({
     id,
     label: CRM_STAGE_LABELS[id],
   })),
@@ -95,9 +95,10 @@ function fmtShort(iso: string | null | undefined): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** Highlight web-design-ish leads with no touch in 3+ days (excludes won/lost / closed mockup / 3D print lane). */
+/** Highlight web-design-ish leads with no touch in 3+ days (excludes terminal statuses / closed mockup / 3D print lane). */
 function cardStaleNeedsPing(lead: WorkflowLead): boolean {
-  if (lead.status === "won" || lead.status === "lost") return false;
+  const s = String(lead.status || "").toLowerCase();
+  if (s === "won" || s === "archived" || s === "no_response" || s === "not_interested") return false;
   const m = String(lead.mockup_deal_status || "").toLowerCase();
   if (m === "closed_won" || m === "closed_lost") return false;
   if (resolveServiceTypeForDisplay(lead) === "3d_printing") return false;

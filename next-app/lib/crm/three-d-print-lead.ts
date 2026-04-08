@@ -98,24 +98,23 @@ export function isThreeDPrintLead(row: {
   return false;
 }
 
-/** Maps print pipeline → main CRM `leads.status` (web-design vocabulary). */
+/** Maps print pipeline → main CRM `leads.status` (canonical simple vocabulary). */
 export function mapPrintPipelineToLeadStatus(
   p: string | null | undefined,
-): "new" | "contacted" | "qualified" | "proposal_sent" | "won" | "lost" {
+): "new" | "contacted" | "replied" | "no_response" | "not_interested" | "won" | "archived" {
   const x = normalizePrintPipelineStatus(p);
   switch (x) {
     case "need_info":
       return "contacted";
     case "quoted":
-      return "proposal_sent";
     case "approved":
     case "printing":
     case "ready":
-      return "qualified";
+      return "replied";
     case "delivered":
       return "won";
     case "closed":
-      return "lost";
+      return "archived";
     default:
       return "new";
   }

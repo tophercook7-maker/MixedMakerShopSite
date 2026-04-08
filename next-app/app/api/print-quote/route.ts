@@ -5,7 +5,8 @@ import {
   formatEstimateDetailsForStorage,
   parsePriceEstimateSnapshotJson,
 } from "@/components/printing/printing-price-estimate";
-import { pickLeadInsertFields } from "@/lib/crm-lead-schema";
+import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import {
   crmLeadUrl,
   deriveThreeDPrintAutoTags,
@@ -451,11 +452,14 @@ export async function POST(request: Request) {
   const requestSummaryOneLine = summarizePrintRequestDescription(descriptionForOutbound, 280);
 
   if (ownerId) {
+    const ref = referenceUrl.trim() || null;
     const leadPayload = pickLeadInsertFields({
       business_name: projectTitle ? `${projectTitle} — ${name}` : `3D Print Quote — ${name}`,
       contact_name: name,
       email: emailRaw || null,
       phone: phone || null,
+      website: ref,
+      has_website: ref ? leadHasStandaloneWebsite(ref) : false,
       notes: messageBody,
       source: "3d_printing",
       lead_source: "3d_printing",
@@ -480,15 +484,11 @@ export async function POST(request: Request) {
       print_estimate_summary: printEstimateSummary,
       print_request_summary: requestSummaryOneLine,
     });
-    const { data: insertedLead, error: leadErr } = await supabase
-      .from("leads")
-      .insert(leadPayload)
-      .select("id")
-      .maybeSingle();
-    if (leadErr) {
-      console.error("[print-quote] CRM lead insert failed:", leadErr);
+    const crm = await insertCanonicalInboundLead(supabase, ownerId, leadPayload);
+    if (!crm.ok) {
+      console.error("[print-quote] CRM lead insert failed:", crm.error);
     } else {
-      newLeadId = String((insertedLead as { id?: string } | null)?.id || "").trim() || null;
+      newLeadId = crm.lead_id;
       if (newLeadId) {
         void recordLeadActivity(supabase, {
           ownerId,

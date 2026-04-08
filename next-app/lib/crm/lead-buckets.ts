@@ -84,7 +84,7 @@ function scoreFrom(input: LeadFolderInput): number {
 
 function terminalStage(status: string | null | undefined): boolean {
   const s = normalizeWorkflowLeadStatus(status);
-  return s === "won" || s === "lost";
+  return s === "won" || s === "archived" || s === "no_response" || s === "not_interested";
 }
 
 function bcmIsFacebook(bcm: string): boolean {
