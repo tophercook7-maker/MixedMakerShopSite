@@ -38,6 +38,7 @@ export function UmbrellaHeroMedia({
           imageClassName,
         )}
       />
+      <div className="pointer-events-none absolute inset-0 bg-black/60" aria-hidden />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.055] mix-blend-overlay"
         style={{

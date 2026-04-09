@@ -8,12 +8,17 @@ import { getShowcaseProjectsByAnalyticsIds, LIVE_WEB_PROJECTS } from "@/lib/live
 import {
   mmsBtnPrimary,
   mmsBtnSecondary,
+  mmsBtnSecondaryOnGlass,
   mmsCard,
   mmsGlassPanelDense,
+  mmsGlassPanelDenseHome,
   mmsH2,
+  mmsH2OnGlass,
+  mmsOnGlassSecondary,
   mmsSectionBorder,
   mmsSectionY,
   mmsTextLink,
+  mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
@@ -122,8 +127,8 @@ export function HomeFeaturedWebDesignWork({
   const projects = selectProjects(featuredAnalyticsIds);
   const projectCount = projects.length;
   const isLight = variant === "light";
-  const h2 = isLight ? mmsH2 : h2Dark;
-  const body = isLight ? bodyLight : bodyDark;
+  const h2 = isLight ? (immersive ? mmsH2OnGlass : mmsH2) : h2Dark;
+  const body = isLight ? (immersive ? mmsOnGlassSecondary : bodyLight) : bodyDark;
   const sectionClass = isLight
     ? cn(
         immersive
@@ -148,7 +153,7 @@ export function HomeFeaturedWebDesignWork({
         <div
           className={cn(
             "home-reveal max-w-[min(100%,56rem)]",
-            immersive && isLight && cn(mmsGlassPanelDense, "p-6 sm:p-8 md:p-9"),
+            immersive && isLight && cn(mmsGlassPanelDenseHome, "p-6 sm:p-8 md:p-9"),
           )}
         >
           <h2
@@ -161,7 +166,7 @@ export function HomeFeaturedWebDesignWork({
             className={cn(
               "mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed",
               body,
-              immersive && isLight && "font-medium text-[#1e241f] md:text-[#2d3a33]",
+              immersive && isLight && "font-medium",
             )}
           >
             {subhead}
@@ -183,7 +188,7 @@ export function HomeFeaturedWebDesignWork({
                 "flex min-w-0 flex-col gap-6",
                 isLight &&
                   cn(
-                    immersive ? mmsGlassPanelDense : mmsCard,
+                    immersive ? mmsGlassPanelDenseHome : mmsCard,
                     "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]",
                   ),
               )}
@@ -217,12 +222,19 @@ export function HomeFeaturedWebDesignWork({
                 <h3
                   className={cn(
                     "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
-                    isLight ? "text-[#1e241f]" : "text-[#E8FDF5]",
+                    isLight ? (immersive ? "text-white" : "text-[#1e241f]") : "text-[#E8FDF5]",
                   )}
                 >
                   {project.title}
                 </h3>
-                <p className={cn("text-sm leading-relaxed md:text-[15px]", body)}>{project.pitch}</p>
+                <p
+                  className={cn(
+                    "text-sm leading-relaxed md:text-[15px]",
+                    isLight && immersive ? mmsOnGlassSecondary : body,
+                  )}
+                >
+                  {project.pitch}
+                </p>
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
                   {project.primaryCtaIsExternal === false ? (
                     <Link
@@ -237,7 +249,9 @@ export function HomeFeaturedWebDesignWork({
                       }
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
-                        isLight ? cn(mmsBtnSecondary) : "home-btn-secondary--hero rounded-xl",
+                        isLight
+                          ? cn(immersive ? mmsBtnSecondaryOnGlass : mmsBtnSecondary)
+                          : "home-btn-secondary--hero rounded-xl",
                       )}
                     >
                       {project.primaryCtaLabel ?? "Learn more"}
@@ -257,7 +271,9 @@ export function HomeFeaturedWebDesignWork({
                       }
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
-                        isLight ? cn(mmsBtnSecondary) : "home-btn-secondary--hero rounded-xl",
+                        isLight
+                          ? cn(immersive ? mmsBtnSecondaryOnGlass : mmsBtnSecondary)
+                          : "home-btn-secondary--hero rounded-xl",
                       )}
                     >
                       {"primaryCtaLabel" in project && project.primaryCtaLabel
@@ -296,7 +312,7 @@ export function HomeFeaturedWebDesignWork({
             isLight &&
               immersive &&
               cn(
-                mmsGlassPanelDense,
+                mmsGlassPanelDenseHome,
                 "flex flex-col gap-4 p-6 sm:p-8 md:flex-row md:items-center md:justify-between",
               ),
             (!immersive || !isLight) &&
@@ -306,13 +322,22 @@ export function HomeFeaturedWebDesignWork({
               ),
           )}
         >
-          <p className={cn("max-w-xl text-sm md:text-[15px]", body)}>
+          <p
+            className={cn(
+              "max-w-xl text-sm md:text-[15px]",
+              isLight && immersive ? mmsOnGlassSecondary : body,
+            )}
+          >
             Want something like this for your business? Start with a free homepage preview.
           </p>
           <Link
             href="/builds#builds-experiments"
             className={cn(
-              isLight ? mmsTextLink : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
+              isLight
+                ? immersive
+                  ? mmsTextLinkOnGlass
+                  : mmsTextLink
+                : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
             )}
           >
             See full builds library →

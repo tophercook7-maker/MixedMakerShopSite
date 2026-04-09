@@ -112,3 +112,50 @@ export const mmsGlassPanelDense = cn(
   "shadow-[0_26px_64px_-24px_rgba(27,36,30,0.32),inset_0_1px_0_rgba(255,255,255,0.45)]",
   "ring-1 ring-[#2f3e34]/10",
 );
+
+/**
+ * Homepage-only: dark cinematic cards over the umbrella hero photo (md+ fixed layer + mobile hero).
+ * Readable type: pair with `mmsH2OnGlass`, `mmsOnGlassSecondary`, etc.
+ */
+export const mmsGlassPanelHome = cn(
+  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+);
+
+export const mmsGlassPanelDenseHome = cn(
+  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+);
+
+export const mmsCtaPanelHome = cn(
+  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+);
+
+/** Headings on homepage dark glass — same scale as `mmsH2`, light text. */
+export const mmsH2OnGlass = cn(
+  "text-3xl font-bold tracking-[-0.02em] text-white md:text-4xl lg:text-[2.35rem] lg:leading-snug",
+);
+
+/** Eyebrow on dark glass — warm accent in brand family. */
+export const mmsEyebrowOnGlass = cn(
+  "text-[11px] font-semibold uppercase tracking-[0.22em] text-[#eab08a] md:text-xs",
+);
+
+export const mmsOnGlassPrimary = "text-white";
+export const mmsOnGlassSecondary = "text-white/80";
+
+export const mmsBulletOnGlass = "font-bold text-white/80";
+
+export const mmsTextLinkOnGlass = cn(
+  "text-sm font-semibold text-[#f0c49a] underline-offset-4",
+  "transition-colors duration-200 hover:text-white hover:underline",
+);
+
+/** Secondary button on dark glass cards (homepage over umbrella). */
+export const mmsBtnSecondaryOnGlass = cn(
+  "inline-flex min-h-[3rem] items-center justify-center rounded-xl",
+  "border border-white/20 bg-white/10 px-6 text-center text-[0.9375rem] font-semibold text-white",
+  "shadow-[0_2px_14px_rgba(0,0,0,0.25)] backdrop-blur-sm",
+  "transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out",
+  "hover:border-white/35 hover:bg-white/15 hover:shadow-[0_6px_22px_rgba(0,0,0,0.35)]",
+  "active:translate-y-px",
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40",
+);
