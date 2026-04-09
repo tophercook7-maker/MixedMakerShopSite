@@ -2,6 +2,8 @@
  * Admin “send mockup preview” email to a lead (Resend).
  */
 
+import { buildPreviewShareEmailBodyWithGreeting, previewShareEmailSubject } from "@/lib/preview-share-copy";
+
 function ownerReplyToEmail(): string {
   return (
     process.env.MOCKUP_REPLY_TO_EMAIL?.trim() ||
@@ -9,30 +11,6 @@ function ownerReplyToEmail(): string {
     process.env.BOOKING_NOTIFY_EMAIL?.trim() ||
     "Topher@mixedmakershop.com"
   );
-}
-
-function buildMockupPreviewBody(contactName: string, businessName: string, previewUrl: string): string {
-  const name = contactName.trim() || "there";
-  const biz = businessName.trim() || "your business";
-  const link = previewUrl.trim();
-  return [
-    `Hey ${name},`,
-    "",
-    `I put together a homepage preview for ${biz}.`,
-    "",
-    `👉 ${link}`,
-    "",
-    "This direction is built to:",
-    "- make your business look more professional",
-    "- clearly show what you offer",
-    "- help turn visitors into actual leads",
-    "",
-    "Take a look and let me know what stands out to you — good or bad.",
-    "",
-    "If you like where this is going, I can build the full site and get it live for you.",
-    "",
-    "– Topher",
-  ].join("\n");
 }
 
 export async function sendMockupPreviewEmail(opts: {
@@ -59,7 +37,7 @@ export async function sendMockupPreviewEmail(opts: {
     return { ok: false, error: "Missing preview URL." };
   }
 
-  const text = buildMockupPreviewBody(opts.contactName, opts.businessName, previewUrl);
+  const text = buildPreviewShareEmailBodyWithGreeting(previewUrl, opts.contactName);
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -72,7 +50,7 @@ export async function sendMockupPreviewEmail(opts: {
       from: fromEmail,
       to: [to],
       reply_to: ownerReplyToEmail(),
-      subject: "Here's your website preview",
+      subject: previewShareEmailSubject(opts.businessName),
       text,
     }),
     cache: "no-store",

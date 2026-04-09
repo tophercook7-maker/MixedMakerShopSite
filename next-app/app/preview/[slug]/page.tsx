@@ -1,6 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
+import { permanentRedirect, notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { ExportBuildBox } from "@/components/admin/export-build-box";
+import { BrandedCrmMockupPreviewPage } from "@/components/preview/branded-crm-mockup-preview";
+import { MockupPresentationCtaStrip, MockupPresentationHeader } from "@/components/preview/mockup-presentation-chrome";
+import { isLeadPreviewUuid } from "@/lib/mockup-branded-slug";
+import { fetchPublicCrmMockupBySlug } from "@/lib/public-crm-mockup-fetch";
+import {
+  fetchPublicLeadSiteDraftById,
+  fetchPublicLeadSiteDraftBySlug,
+  fetchSiteDraftSlugForLeadId,
+  type PublicLeadSiteDraftRow,
+} from "@/lib/public-lead-site-draft-fetch";
 
 type PreviewParams = {
   business?: string;
@@ -805,78 +816,75 @@ function buildClientSiteDraft(input: {
   };
 }
 
-export default async function PreviewPage({
+export async function generateMetadata({
   params,
-  searchParams,
 }: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<PreviewParams>;
-}) {
-  const { id } = await params;
-  const qs = await searchParams;
-  const supabase = await createClient();
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const s = String(slug || "").trim();
+  const description = "A custom homepage direction built by Topher at MixedMakerShop.";
+  let displayName = "your business";
 
-  let lead: LeadPreviewRow | null = null;
-  let leadLoadError: string | null = null;
-  let previewWarning: string | null = null;
-  try {
-    console.info("[Client Site Draft] preview request received", { lead_id: id, query_keys: Object.keys(qs || {}) });
-    const isMissingColumnError = (message: string): boolean => {
-      const text = String(message || "").toLowerCase();
-      return text.includes("column ") && text.includes(" does not exist");
-    };
-    const selectVariants = [
-      "id,business_name,category,city,phone,address",
-      "id,business_name,category,phone,address",
-      "id,business_name,category,phone",
-      "id,business_name,category",
-      "id,business_name",
-      "id",
-    ];
-    for (const selectClause of selectVariants) {
-      const { data, error } = await supabase
-        .from("leads")
-        .select(selectClause)
-        .eq("id", id)
-        .maybeSingle<LeadPreviewRow>();
-      if (error) {
-        leadLoadError = error.message;
-        if (!isMissingColumnError(error.message)) {
-          console.warn("[Client Site Draft] lead lookup select variant failed", {
-            lead_id: id,
-            select_clause: selectClause,
-            error: error.message,
-          });
-        }
-        continue;
-      }
-      lead = (data || null) as LeadPreviewRow | null;
-      if (lead) leadLoadError = null;
-      break;
-    }
-    if (leadLoadError && !lead) {
-      console.error("[Client Site Draft] lead lookup failed", {
-        lead_id: id,
-        error: leadLoadError,
-      });
-    }
-    if (!lead) {
-      previewWarning = "No data returned";
-      console.warn("[Client Site Draft] no lead row returned for preview", { lead_id: id });
+  if (isLeadPreviewUuid(s)) {
+    const row = await fetchPublicLeadSiteDraftById(s);
+    const bn = row?.business_name?.trim();
+    if (bn) displayName = bn;
+  } else {
+    const crm = await fetchPublicCrmMockupBySlug(s);
+    if (crm?.business_name?.trim()) {
+      displayName = crm.business_name.trim();
     } else {
-      console.info("[Client Site Draft] lead row loaded for preview", {
-        lead_id: id,
-        has_business_name: Boolean(String(lead.business_name || "").trim()),
-        has_category: Boolean(String(lead.category || "").trim()),
-        has_city: Boolean(String(lead.city || "").trim()),
-        has_phone: Boolean(String(lead.phone || "").trim()),
-      });
+      const ld = await fetchPublicLeadSiteDraftBySlug(s);
+      const bn = ld?.business_name?.trim();
+      if (bn) displayName = bn;
     }
-  } catch {
-    lead = null;
-    leadLoadError = "Preview failed to load";
-    previewWarning = "API error";
-    console.error("[Client Site Draft] lead lookup threw", { lead_id: id });
+  }
+
+  const ogTitle = `Custom Website Preview for ${displayName}`;
+  return {
+    title: `${ogTitle} | MixedMakerShop`,
+    description,
+    openGraph: { title: ogTitle, description, type: "website" },
+    twitter: { card: "summary_large_image", title: ogTitle, description },
+    robots: { index: false, follow: false },
+  };
+}
+
+async function LeadSiteDraftPreviewView({
+  leadId,
+  initialLead,
+  searchParams: qs,
+}: {
+  leadId: string;
+  initialLead: PublicLeadSiteDraftRow | null;
+  searchParams: PreviewParams;
+}) {
+  const id = leadId;
+  console.info("[Client Site Draft] preview request received", { lead_id: id, query_keys: Object.keys(qs || {}) });
+
+  const lead: LeadPreviewRow | null = initialLead
+    ? {
+        id: initialLead.id,
+        business_name: initialLead.business_name,
+        category: initialLead.category,
+        city: initialLead.city,
+        phone: initialLead.phone,
+        address: initialLead.address,
+      }
+    : null;
+  const leadLoadError: string | null = initialLead ? null : "Preview could not load lead data.";
+  const previewWarning: string | null = initialLead ? null : "No data returned";
+  if (initialLead) {
+    console.info("[Client Site Draft] lead row loaded for preview", {
+      lead_id: id,
+      has_business_name: Boolean(String(initialLead.business_name || "").trim()),
+      has_category: Boolean(String(initialLead.category || "").trim()),
+      has_city: Boolean(String(initialLead.city || "").trim()),
+      has_phone: Boolean(String(initialLead.phone || "").trim()),
+    });
+  } else {
+    console.warn("[Client Site Draft] no lead row returned for preview", { lead_id: id });
   }
 
   const businessName = String(lead?.business_name || qs.business || "Business Name").trim() || "Business Name";
@@ -982,7 +990,10 @@ export default async function PreviewPage({
   } as CSSProperties;
 
   return (
-    <main className="preview-shell" data-style-preset={stylePreset} data-color-preset={colorPreset} style={cssVars}>
+    <div className="mockup-pres-root" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+      <MockupPresentationHeader businessName={safeBusinessName(businessName)} />
+      <div style={{ flex: 1 }}>
+        <main className="preview-shell" data-style-preset={stylePreset} data-color-preset={colorPreset} style={cssVars}>
       <style>{`
         .preview-shell {
           min-height: 100vh;
@@ -1272,6 +1283,57 @@ export default async function PreviewPage({
         </footer>
       </div>
     </main>
+      </div>
+      <MockupPresentationCtaStrip />
+    </div>
   );
 }
 
+export default async function PreviewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<PreviewParams>;
+}) {
+  const { slug } = await params;
+  const segment = String(slug || "").trim();
+  const qs = await searchParams;
+
+  if (!segment) {
+    notFound();
+  }
+
+  if (isLeadPreviewUuid(segment)) {
+    const branded = await fetchSiteDraftSlugForLeadId(segment);
+    if (branded) {
+      const sp = new URLSearchParams();
+      for (const [key, value] of Object.entries(qs)) {
+        if (value === undefined || value === null || value === "") continue;
+        if (Array.isArray(value)) {
+          for (const item of value) {
+            if (item != null && String(item).trim() !== "") sp.append(key, String(item));
+          }
+        } else {
+          sp.set(key, String(value));
+        }
+      }
+      const suffix = sp.toString() ? `?${sp.toString()}` : "";
+      permanentRedirect(`/preview/${encodeURIComponent(branded)}${suffix}`);
+    }
+    const row = await fetchPublicLeadSiteDraftById(segment);
+    return <LeadSiteDraftPreviewView leadId={segment} initialLead={row} searchParams={qs} />;
+  }
+
+  const crm = await fetchPublicCrmMockupBySlug(segment);
+  if (crm) {
+    return <BrandedCrmMockupPreviewPage slug={segment} />;
+  }
+
+  const bySlug = await fetchPublicLeadSiteDraftBySlug(segment);
+  if (bySlug) {
+    return <LeadSiteDraftPreviewView leadId={bySlug.id} initialLead={bySlug} searchParams={qs} />;
+  }
+
+  notFound();
+}

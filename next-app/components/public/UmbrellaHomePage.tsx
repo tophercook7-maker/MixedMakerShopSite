@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
+import { HOME_PAGE_FEATURED_ANALYTICS_IDS } from "@/lib/live-web-projects";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
@@ -20,6 +22,24 @@ import {
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
+
+const homePricingPackages = [
+  {
+    name: "Starter Website",
+    price: "$400",
+    blurb: "A clean, professional site to get your business online and looking right.",
+  },
+  {
+    name: "Growth Website",
+    price: "$600",
+    blurb: "Built to help you get more leads, better visibility, and real results.",
+  },
+  {
+    name: "Ongoing Support",
+    price: "from $89/month",
+    blurb: "Updates, improvements, and support to keep your site working.",
+  },
+] as const;
 
 /** Desktop: let fixed umbrella read through; mobile: warm solid for stability. */
 const homeBackdrop = cn(
@@ -48,12 +68,7 @@ export function UmbrellaHomePage() {
           aria-label="What to expect"
         >
         <div className={cn(shell, "px-5")}>
-          <div
-            className={cn(
-              mmsGlassPanel,
-              "mx-auto border-[#3f5a47]/18 bg-[rgba(236,241,236,0.5)] px-5 py-7 md:px-8 md:py-8",
-            )}
-          >
+          <div className={cn(mmsGlassPanel, "mx-auto px-5 py-7 md:px-8 md:py-8")}>
           <ul className="flex flex-col gap-3 text-center text-sm font-semibold text-[#2f3e34] sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-10 sm:gap-y-2">
             <li>Web Design by Topher</li>
             <li className="hidden sm:block text-[#3f5a47]/25" aria-hidden>
@@ -76,13 +91,7 @@ export function UmbrellaHomePage() {
       {/* Web design — dominant panel */}
       <section className={cn(homeBackdrop)} id="web-design">
         <div className={cn(shell, mmsSectionY)}>
-          <div
-            className={cn(
-              mmsGlassPanelDense,
-              "relative overflow-hidden p-8 sm:p-10 lg:p-12",
-              "max-md:bg-gradient-to-br max-md:from-[#faf8f4] max-md:to-[#e8efe8]/80",
-            )}
-          >
+          <div className={cn(mmsGlassPanelDense, "relative overflow-hidden p-8 sm:p-10 lg:p-12")}>
             <div
               className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#b85c1e]/10 blur-3xl"
               aria-hidden
@@ -111,46 +120,95 @@ export function UmbrellaHomePage() {
               </ul>
               <div className="mt-11 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <TrackedPublicLink
-                  href="/website-samples"
+                  href="/builds#builds-experiments"
                   eventName="public_web_design_sample_click"
-                  eventProps={{ location: "home_primary_web", label: "see_web_examples" }}
+                  eventProps={{ location: "home_primary_web", label: "see_builds_samples" }}
                   className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
                 >
-                  See Web Design Examples
+                  Browse builds &amp; samples
                 </TrackedPublicLink>
                 <TrackedPublicLink
                   href="/free-mockup"
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_primary_web", target: "free_mockup" }}
-                  className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
+                  className={cn(mmsBtnPrimary, "inline-flex items-center justify-center gap-2 px-8 no-underline hover:no-underline")}
                 >
-                  Get a Free Website Mockup
+                  Get My Free Website Preview
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
               </div>
               <p className="mt-4 text-xs font-medium text-[#5a6a62] sm:text-sm">
-                No pressure · No obligation · Just a preview
+                No pressure. Just a real preview built for your business.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Free mockup — core offer */}
+      {/* Pricing */}
+      <section className={cn(homeBackdrop, "max-md:bg-[#e5e0d6]")} id="pricing" aria-labelledby="home-pricing-heading">
+        <div className={cn(shell, mmsSectionY)}>
+          <div className={cn(mmsGlassPanelDense, "max-w-3xl p-6 sm:p-8")}>
+            <h2 id="home-pricing-heading" className={mmsH2}>
+              Simple, honest pricing
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+              No guesswork. Just clear options depending on what your business needs.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+            {homePricingPackages.map((pkg) => (
+              <div key={pkg.name} className={cn(mmsGlassPanelDense, "flex flex-col p-6 sm:p-8")}>
+                <h3 className="text-lg font-bold tracking-tight text-[#1e241f] md:text-xl">{pkg.name}</h3>
+                <p className="mt-3 text-2xl font-semibold tracking-tight text-[#8a4b2a] md:text-[1.65rem]">{pkg.price}</p>
+                <p className="mt-5 text-sm leading-relaxed text-[#354239] md:text-[15px]">{pkg.blurb}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className={cn(mmsGlassPanelDense, "mx-auto mt-12 max-w-2xl p-8 text-center sm:p-10")}>
+            <p className="text-base leading-relaxed text-[#354239] md:text-lg">
+              Not sure what you need? I&apos;ll design a free homepage preview first so you can see the direction before
+              committing.
+            </p>
+            <TrackedPublicLink
+              href="/free-mockup"
+              eventName="public_contact_cta_click"
+              eventProps={{ location: "home_pricing", target: "free_mockup" }}
+              className={cn(
+                mmsBtnPrimary,
+                "mx-auto mt-8 inline-flex min-h-[3.35rem] w-full max-w-md items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+              )}
+            >
+              Get My Free Website Preview
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+            </TrackedPublicLink>
+          </div>
+        </div>
+      </section>
+
+      {/* Free preview — core offer (matches ad messaging) */}
       <section className={cn(homeBackdrop, "max-md:bg-[#e8e3d9]")}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10", "max-md:border-[#3f5a47]/14")}>
-            <h2 className={mmsH2}>Want to see your website before you commit?</h2>
+          <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10")}>
+            <h2 className={mmsH2}>Want to see what your website could look like before committing?</h2>
             <p className="mt-8 text-base leading-relaxed text-[#354239] md:text-lg">
-              I can mock up a version of your site so you can see exactly how it could look and feel.
+              I&apos;ll put together a free homepage preview so you can see exactly how it could look and feel — before you
+              decide on anything.
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <TrackedPublicLink
                 href="/free-mockup"
                 eventName="public_contact_cta_click"
                 eventProps={{ location: "home_mockup_section", target: "free_mockup" }}
-                className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex min-h-[3rem] items-center justify-center gap-2 px-8 no-underline hover:no-underline",
+                )}
               >
-                Get My Free Mockup
+                Get My Free Website Preview
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </TrackedPublicLink>
               <TrackedPublicLink
                 href="/contact"
@@ -162,7 +220,7 @@ export function UmbrellaHomePage() {
               </TrackedPublicLink>
             </div>
             <p className="mt-4 text-xs font-medium text-[#5a6a62] sm:text-sm">
-              No pressure · No obligation · Just a preview
+              No pressure. Just a real preview built for your business.
             </p>
           </div>
         </div>
@@ -171,36 +229,27 @@ export function UmbrellaHomePage() {
       <HomeFeaturedWebDesignWork
         variant="light"
         immersive
-        heading="Featured Web Design Work"
-        subhead="These are real websites I've built to help businesses look established, clear, and worth contacting."
+        featuredAnalyticsIds={HOME_PAGE_FEATURED_ANALYTICS_IDS}
+        heading="Featured work"
+        subhead="Two live client sites that show trust and conversion, plus Henry AI as an example of tools and systems work. See Builds for everything else."
       />
 
       {/* Umbrella services */}
       <section className={cn("border-y", homeBackdrop, "max-md:bg-[#dde8df]")}>
         <div className={cn(shell, mmsSectionY)}>
-          <h2
-            className={cn(
-              mmsH2,
-              "max-w-2xl md:[text-shadow:0_2px_24px_rgba(247,244,238,0.8)]",
-            )}
-          >
-            What else I build through MixedMakerShop
-          </h2>
-          <div className="mt-14 grid gap-8 lg:grid-cols-2">
+          <div className={cn(mmsGlassPanelDense, "max-w-3xl p-6 sm:p-8")}>
+            <h2 className={mmsH2}>What else I build through MixedMakerShop</h2>
+          </div>
+          <div className="mt-10 grid gap-8 lg:grid-cols-2 lg:mt-12">
             <div className={cn(mmsGlassPanelDense, "p-9 sm:p-10")}>
               <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">3D Printing by Topher</h3>
               <p className="mt-5 leading-relaxed text-[#354239] md:text-[17px]">
                 Custom parts, replacement pieces, functional prints, mounts, organizers, prototypes, and practical solutions
                 when something needs to be made or fixed.
               </p>
-              <TrackedPublicLink
-                href="/3d-printing"
-                eventName="public_home_path_cta"
-                eventProps={{ path: "3d_printing", label: "explore_3d_home" }}
-                className={cn(mmsTextLink, "mt-7 inline-block text-[15px]")}
-              >
-                Explore 3D printing →
-              </TrackedPublicLink>
+              <Link href="/builds#builds-3d-printing" className={cn(mmsTextLink, "mt-7 inline-block text-[15px]")}>
+                3D printing on Builds →
+              </Link>
             </div>
             <div className={cn(mmsGlassPanelDense, "p-9 sm:p-10")}>
               <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">Digital Builds</h3>
@@ -282,9 +331,13 @@ export function UmbrellaHomePage() {
                 href="/free-mockup"
                 eventName="public_contact_cta_click"
                 eventProps={{ location: "home_cta", target: "free_mockup" }}
-                className={cn(mmsBtnPrimary, "w-full justify-center px-8 sm:w-auto no-underline hover:no-underline")}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex w-full items-center justify-center gap-2 px-8 sm:w-auto no-underline hover:no-underline",
+                )}
               >
-                Get My Free Mockup
+                Get My Free Website Preview
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </TrackedPublicLink>
               <TrackedPublicLink
                 href="/contact"
@@ -296,7 +349,7 @@ export function UmbrellaHomePage() {
               </TrackedPublicLink>
             </div>
             <p className="mx-auto mt-4 max-w-lg text-xs font-medium text-[#5a6a62] sm:text-sm">
-              No pressure · No obligation · Just a preview
+              No pressure. Just a real preview built for your business.
             </p>
           </div>
         </div>

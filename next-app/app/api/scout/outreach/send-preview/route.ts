@@ -1,7 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createCalendarEvent, resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 import { recordLeadActivity } from "@/lib/lead-activity";
+import {
+  absolutePreviewUrl,
+  allocateUniqueSiteDraftPreviewSlug,
+  previewPublicPath,
+} from "@/lib/mockup-branded-slug";
+import { buildPreviewShareEmailBodyWithGreeting, previewShareEmailSubject } from "@/lib/preview-share-copy";
 
 const DEFAULT_TIMEOUT_MS = 45000;
 
@@ -13,11 +19,11 @@ function addDaysIso(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
-function buildPreviewPath(leadId: string, businessName: string, category: string) {
-  const params = new URLSearchParams();
-  params.set("business", businessName || "Business");
-  params.set("category", category || "service");
-  return `/preview/${encodeURIComponent(leadId)}?${params.toString()}`;
+function requestOriginFromRequest(request: NextRequest): string {
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
+  if (host) return `${proto}://${host}`;
+  return String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
 }
 
 function pickString(...values: unknown[]): string {
@@ -28,7 +34,7 @@ function pickString(...values: unknown[]): string {
   return "";
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
   const baseUrl = scoutBaseUrl();
   console.info("[Preview Outreach API] request received", {
@@ -82,7 +88,7 @@ export async function POST(request: Request) {
 
   const { data: leadRow, error: leadError } = await supabase
     .from("leads")
-    .select("id,business_name,email,industry,workspace_id")
+    .select("id,business_name,email,industry,workspace_id,city,category,site_draft_preview_slug")
     .eq("id", leadId)
     .eq("owner_id", ownerId)
     .limit(1)
@@ -113,6 +119,7 @@ export async function POST(request: Request) {
   const category = String(payload.category || leadRow.industry || "").trim() || "service";
   const recipientEmail = String(payload.email || leadRow.email || "").trim();
   const linkedOpportunityId = String(payload.linked_opportunity_id || "").trim() || null;
+  const leadCity = String((leadRow as { city?: string | null }).city || "").trim() || null;
 
   if (!recipientEmail) {
     const responseBody = { error: "Lead has no email address for preview outreach." };
@@ -127,27 +134,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const previewPath = buildPreviewPath(leadId, businessName, category);
-  const requestOrigin = String(request.headers.get("origin") || "").trim();
-  const siteUrl = String(process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
-  const baseOrigin = requestOrigin || siteUrl;
-  const previewUrl = baseOrigin ? `${baseOrigin}${previewPath}` : previewPath;
+  let shareSlug = String((leadRow as { site_draft_preview_slug?: string | null }).site_draft_preview_slug || "").trim();
+  if (!shareSlug) {
+    shareSlug = await allocateUniqueSiteDraftPreviewSlug(supabase, businessName, leadCity);
+    const { error: slugErr } = await supabase
+      .from("leads")
+      .update({ site_draft_preview_slug: shareSlug, last_updated_at: new Date().toISOString() })
+      .eq("id", leadId)
+      .eq("owner_id", ownerId);
+    if (slugErr) {
+      console.warn("[Preview Outreach API] could not persist site_draft_preview_slug", slugErr.message);
+    }
+  }
 
-  const subject = `Quick idea for ${businessName}`;
-  const body = [
-    `Hi ${businessName},`,
-    "",
-    "I put together a quick example of what your website could look like:",
-    "",
-    previewUrl,
-    "",
-    "This is just to show what's possible - something simple, clean, and built to bring in more customers.",
-    "",
-    "If you'd like something like this, I can set it up for you pretty quickly.",
-    "",
-    "- Topher",
-    "Topher's Web Design",
-  ].join("\n");
+  const siteUrl = String(process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
+  const baseOrigin = requestOriginFromRequest(request) || siteUrl;
+  const previewUrl = baseOrigin ? absolutePreviewUrl(baseOrigin, shareSlug) : previewPublicPath(shareSlug);
+
+  const subject = previewShareEmailSubject(businessName);
+  const body = buildPreviewShareEmailBodyWithGreeting(previewUrl, "there");
 
   const accessToken = String(session.access_token || "").trim();
   if (!accessToken) {

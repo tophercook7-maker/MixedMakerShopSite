@@ -12,6 +12,7 @@ import {
   inferImageCategoryFromDraftPick,
   type SampleImageCategory,
 } from "@/lib/sample-fallback-images";
+import { SIGNATURE_MOCKUP_FOOTER_BRAND } from "@/lib/crm-mockup";
 import { inferGallerySectionLead, inferServicesSectionLead } from "@/lib/sample-section-copy";
 import type {
   SampleDraft,
@@ -367,7 +368,8 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
   }, [colorPreset, stylePreset]);
 
   const telHref = `tel:${draft.phone.replace(/[^\d]/g, "")}`;
-  const galleryList = draft.galleryImages ?? [];
+  const simpleCv = Boolean(embedOptions?.simpleConversionLayout);
+  const galleryList = simpleCv ? [] : (draft.galleryImages ?? []);
   const whyBullets = draft.whyChooseBullets ?? [];
   const secondaryHref = embedOptions?.secondaryHref ?? "/website-samples";
   const portfolioCopy = Boolean(embedOptions?.portfolioCopy);
@@ -381,13 +383,14 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     if (/^https?:\/\//i.test(raw)) return raw;
     return `https://${raw.replace(/^\/+/, "")}`;
   })();
-  const showWhyOrTrust = whyBullets.length > 0 || (draft.trustQuotes?.length ?? 0) > 0;
+  const trustQuoteCount = simpleCv ? 0 : (draft.trustQuotes?.length ?? 0);
+  const showWhyOrTrust = whyBullets.length > 0 || trustQuoteCount > 0;
+  const testimonialsFirst = !simpleCv && Boolean(embedOptions?.testimonialsBeforeTrustBullets);
   const imageCategory: SampleImageCategory =
     embedOptions?.imageCategoryKey ?? inferImageCategoryFromDraftPick(draft);
   const servicesLead = inferServicesSectionLead(draft, portfolioCopy);
   const galleryLead = inferGallerySectionLead(draft, portfolioCopy);
   const aboutBeforeTrust = Boolean(embedOptions?.aboutBeforeTrust);
-  const testimonialsBeforeTrustBullets = Boolean(embedOptions?.testimonialsBeforeTrustBullets);
   const servicesNavLabel = draft.servicesNavLabel ?? "Services";
   const serviceCardHref = draft.serviceCardsLinkToContact ? "#contact" : telHref;
   const serviceCardLabel = draft.serviceCardsLinkToContact
@@ -403,33 +406,34 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
     [mode, stylePreset, colorPreset, draft],
   );
 
-  const aboutSection = (
-    <section className="section sample-section" id="about">
-      <div className="container">
-        <h2 className="sample-h2">{draft.aboutTitle}</h2>
-        <p className="sample-sub sample-about-body">{draft.aboutText}</p>
-        {draft.aboutCtaLabel ? (
-          <div className="btn-row" style={{ marginTop: 22 }}>
-            <a href={telHref} className="btn gold">
-              {draft.aboutCtaLabel}
-            </a>
-          </div>
-        ) : null}
-      </div>
-    </section>
-  );
+  const aboutSection =
+    simpleCv || !String(draft.aboutText || "").trim() ? null : (
+      <section className="section sample-section" id="about">
+        <div className="container">
+          <h2 className="sample-h2">{draft.aboutTitle}</h2>
+          <p className="sample-sub sample-about-body">{draft.aboutText}</p>
+          {draft.aboutCtaLabel ? (
+            <div className="btn-row" style={{ marginTop: 22 }}>
+              <a href={telHref} className="btn gold">
+                {draft.aboutCtaLabel}
+              </a>
+            </div>
+          ) : null}
+        </div>
+      </section>
+    );
 
   const whyTrustSection =
     showWhyOrTrust ? (
       <section className="section sample-section sample-why-trust" id="why">
         <div className="container">
-          {testimonialsBeforeTrustBullets ? (
+          {testimonialsFirst ? (
             <>
-              {(draft.trustQuotes?.length ?? 0) > 0 ? (
+              {trustQuoteCount > 0 ? (
                 <>
                   <h2 className="sample-h2">{draft.trustTitle}</h2>
                   <div className="sample-testimonial-grid">
-                    {draft.trustQuotes.map((entry) => (
+                    {draft.trustQuotes!.map((entry) => (
                       <blockquote key={entry.by} className="sample-quote-minimal">
                         <p className="sample-quote-text">&ldquo;{entry.quote}&rdquo;</p>
                         <footer className="sample-quote-by">— {entry.by}</footer>
@@ -440,9 +444,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               ) : null}
               {whyBullets.length > 0 ? (
                 <>
-                  <h2
-                    className={`sample-h2${(draft.trustQuotes?.length ?? 0) > 0 ? " sample-h2-trust-follow" : ""}`}
-                  >
+                  <h2 className={`sample-h2${trustQuoteCount > 0 ? " sample-h2-trust-follow" : ""}`}>
                     {draft.whyChooseTitle}
                   </h2>
                   <div className="sample-why-grid">
@@ -475,13 +477,13 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
                   </div>
                 </>
               ) : null}
-              {(draft.trustQuotes?.length ?? 0) > 0 ? (
+              {trustQuoteCount > 0 ? (
                 <>
                   <h2 className={`sample-h2${whyBullets.length > 0 ? " sample-h2-trust-follow" : ""}`}>
                     {draft.trustTitle}
                   </h2>
                   <div className="sample-testimonial-grid">
-                    {draft.trustQuotes.map((entry) => (
+                    {draft.trustQuotes!.map((entry) => (
                       <blockquote key={entry.by} className="sample-quote-minimal">
                         <p className="sample-quote-text">&ldquo;{entry.quote}&rdquo;</p>
                         <footer className="sample-quote-by">— {entry.by}</footer>
@@ -496,7 +498,9 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
       </section>
     ) : null;
 
-  const aboutAndTrustOrdered = aboutBeforeTrust ? (
+  const aboutAndTrustOrdered = simpleCv ? (
+    <>{whyTrustSection}</>
+  ) : aboutBeforeTrust ? (
     <>
       {aboutSection}
       {whyTrustSection}
@@ -553,10 +557,14 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
             </a>
             <div className="sample-site-links">
               <a href="#services">{servicesNavLabel}</a>
-              {galleryList.length ? <a href="#gallery">Gallery</a> : null}
+              {!simpleCv && galleryList.length ? <a href="#gallery">Gallery</a> : null}
               {showWhyOrTrust ? <a href="#why">Why choose us</a> : null}
-              <a href="#about">About</a>
-              <a href="#contact">Contact</a>
+              {!simpleCv ? <a href="#about">About</a> : null}
+              {simpleCv ? (
+                <a href="#cta">{draft.finalCta || "Get started"}</a>
+              ) : (
+                <a href="#contact">Contact</a>
+              )}
             </div>
           </div>
         </nav>
@@ -569,7 +577,11 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               <p className="sample-tagline">{draft.tagline}</p>
               <h1 className="sample-h1">{draft.heroHeadline}</h1>
               <p className="sample-sub">{draft.heroSub}</p>
-              {draft.localPositioning ? <p className="sample-local">{draft.localPositioning}</p> : null}
+              {draft.localPositioning ? (
+                <p className={`sample-local${simpleCv ? " sample-mockup-trust-line" : ""}`}>
+                  {draft.localPositioning}
+                </p>
+              ) : null}
               <div className="btn-row">
                 <a href={telHref} className="btn gold">
                   {draft.heroPrimaryCta}
@@ -603,24 +615,37 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         <div className="container">
           <h2 className="sample-h2">{draft.offeringsTitle}</h2>
           <p className="sample-sub sample-section-lead">{servicesLead}</p>
-          <div className="how-it-works-grid sample-service-grid">
-            {draft.offerings.map((item) => (
-              <article key={item.name} className="how-it-works-card sample-service-card">
-                <ResilientCardImage
-                  primarySrc={item.image}
-                  category={imageCategory}
-                  alt={item.imageAlt ?? `${item.name} — ${draft.businessName}`}
-                  className="sample-service-card-image"
-                  placeholderClassName="sample-service-card-placeholder"
-                />
-                <h3 className="how-it-works-title">{item.name}</h3>
-                <p className="how-it-works-copy">{item.text}</p>
-                <a href={serviceCardHref} className="sample-service-card-cta">
-                  {serviceCardLabel}
-                </a>
-              </article>
-            ))}
-          </div>
+          {simpleCv ? (
+            <ul className="sample-mockup-service-list">
+              {draft.offerings.map((item) => (
+                <li key={item.name} className="sample-mockup-service-item">
+                  <span className="sample-mockup-service-name">{item.name}</span>
+                  {item.text ? (
+                    <span className="sample-mockup-service-note"> — {item.text}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="how-it-works-grid sample-service-grid">
+              {draft.offerings.map((item) => (
+                <article key={item.name} className="how-it-works-card sample-service-card">
+                  <ResilientCardImage
+                    primarySrc={item.image}
+                    category={imageCategory}
+                    alt={item.imageAlt ?? `${item.name} — ${draft.businessName}`}
+                    className="sample-service-card-image"
+                    placeholderClassName="sample-service-card-placeholder"
+                  />
+                  <h3 className="how-it-works-title">{item.name}</h3>
+                  <p className="how-it-works-copy">{item.text}</p>
+                  <a href={serviceCardHref} className="sample-service-card-cta">
+                    {serviceCardLabel}
+                  </a>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -656,50 +681,52 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
         </div>
       </section>
 
-      <section className="section sample-section sample-contact-block" id="contact">
-        <div className="container">
-          <h2 className="sample-h2">{draft.locationTitle}</h2>
-          <div className="sample-contact-grid">
-            <div className="sample-contact-cell">
-              <span className="sample-contact-k">Phone</span>
-              <a href={telHref} className="sample-contact-v">
-                {draft.phone}
-              </a>
-            </div>
-            {mailHref ? (
+      {!simpleCv ? (
+        <section className="section sample-section sample-contact-block" id="contact">
+          <div className="container">
+            <h2 className="sample-h2">{draft.locationTitle}</h2>
+            <div className="sample-contact-grid">
               <div className="sample-contact-cell">
-                <span className="sample-contact-k">Email</span>
-                <a href={mailHref} className="sample-contact-v">
-                  {draft.contactEmail}
+                <span className="sample-contact-k">Phone</span>
+                <a href={telHref} className="sample-contact-v">
+                  {draft.phone}
                 </a>
               </div>
-            ) : null}
-            {facebookHref ? (
-              <div className="sample-contact-cell">
-                <span className="sample-contact-k">Facebook</span>
-                <a href={facebookHref} className="sample-contact-v" target="_blank" rel="noopener noreferrer">
-                  Profile
-                </a>
+              {mailHref ? (
+                <div className="sample-contact-cell">
+                  <span className="sample-contact-k">Email</span>
+                  <a href={mailHref} className="sample-contact-v">
+                    {draft.contactEmail}
+                  </a>
+                </div>
+              ) : null}
+              {facebookHref ? (
+                <div className="sample-contact-cell">
+                  <span className="sample-contact-k">Facebook</span>
+                  <a href={facebookHref} className="sample-contact-v" target="_blank" rel="noopener noreferrer">
+                    Profile
+                  </a>
+                </div>
+              ) : null}
+              <div className="sample-contact-cell sample-contact-cell-span">
+                <span className="sample-contact-k">Location</span>
+                <p className="sample-contact-v sample-contact-plain">{draft.locationName}</p>
+                <p className="sample-contact-v sample-contact-plain">{draft.address}</p>
               </div>
-            ) : null}
-            <div className="sample-contact-cell sample-contact-cell-span">
-              <span className="sample-contact-k">Location</span>
-              <p className="sample-contact-v sample-contact-plain">{draft.locationName}</p>
-              <p className="sample-contact-v sample-contact-plain">{draft.address}</p>
-            </div>
-            <div className="sample-contact-cell sample-contact-cell-span">
-              <span className="sample-contact-k">Hours</span>
-              <ul className="sample-hours-list">
-                {draft.hours.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
+              <div className="sample-contact-cell sample-contact-cell-span">
+                <span className="sample-contact-k">Hours</span>
+                <ul className="sample-hours-list">
+                  {draft.hours.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      {embedOptions?.portfolioFooter ? (
+      {embedOptions?.portfolioFooter || (singleHeroCta && simpleCv) ? (
         <footer className="section sample-section" style={{ paddingTop: 0 }}>
           <div className="container">
             <p
@@ -717,6 +744,7 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               {embedOptions?.portfolioFooterMessage?.trim() ||
                 "Design concept for a local business website — built to show layout, structure, and flow."}
             </p>
+            {simpleCv ? <p className="sample-mockup-brand-mark">{SIGNATURE_MOCKUP_FOOTER_BRAND}</p> : null}
           </div>
         </footer>
       ) : null}

@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { BuildsPage } from "@/components/public/BuildsPage";
 
 export const metadata: Metadata = {
-  title: "Digital Builds by Topher | MixedMakerShop",
+  title: "Builds | MixedMakerShop",
   description:
-    "Beyond client websites: tools, experiments, and practical digital systems by Topher — context for MixedMakerShop’s broader build capability.",
+    "Full library of Topher’s work: web projects, AI tools, samples, experiments, and 3D printing — browse and request a build.",
   openGraph: {
-    title: "Digital builds & experiments | MixedMakerShop",
+    title: "Builds | MixedMakerShop",
     url: "https://mixedmakershop.com/builds",
   },
 };

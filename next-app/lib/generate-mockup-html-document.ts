@@ -27,7 +27,7 @@ function loadBundledExportCss(): string {
 }
 
 /**
- * Builds a full static HTML document from a CRM mockup row (same inputs as /mockup/[slug]).
+ * Builds a full static HTML document from a CRM mockup row (same inputs as /preview/[slug]).
  * Uses a runtime import of `react-dom/server` because Next blocks static imports of it alongside React trees.
  */
 export async function generateMockupHtmlDocument(row: PublicCrmMockupRow): Promise<string> {
@@ -36,6 +36,11 @@ export async function generateMockupHtmlDocument(row: PublicCrmMockupRow): Promi
   const cssVars = buildSampleStandaloneCssVars(stylePreset, colorPreset);
   const footerMessage = `Prepared for ${row.business_name || "your business"}. This is a layout example — not a live website.`;
   const isWellness = row.template_key === "wellness";
+  const raw = row.raw_payload && typeof row.raw_payload === "object" && !Array.isArray(row.raw_payload)
+    ? (row.raw_payload as Record<string, unknown>)
+    : {};
+  const simpleConversionLayout =
+    Boolean(raw.simple_conversion_layout) || raw.mockup_signature === true;
 
   const inner = renderToStaticMarkup(
     React.createElement(MockupStaticMarkup, {
@@ -45,6 +50,7 @@ export async function generateMockupHtmlDocument(row: PublicCrmMockupRow): Promi
       footerMessage,
       aboutBeforeTrust: isWellness,
       testimonialsBeforeTrustBullets: isWellness,
+      simpleConversionLayout,
     })
   );
 
@@ -92,6 +98,7 @@ export async function generateMockupHtmlFromSampleDraft(
       footerMessage,
       aboutBeforeTrust: isWellness,
       testimonialsBeforeTrustBullets: isWellness,
+      simpleConversionLayout: true,
     })
   );
 

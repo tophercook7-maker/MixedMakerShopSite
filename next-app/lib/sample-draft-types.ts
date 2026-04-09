@@ -70,6 +70,8 @@ export type SampleDraftEmbedOptions = {
   aboutBeforeTrust?: boolean;
   /** When true, show testimonial quotes above the numbered trust / support points. */
   testimonialsBeforeTrustBullets?: boolean;
+  /** Hero → services → why us → CTA only (no gallery, about, testimonials band, or contact block). */
+  simpleConversionLayout?: boolean;
   /** Replace internal “demo” helper copy with sendable portfolio tone. */
   portfolioCopy?: boolean;
   /** Explicit image fallback category (portfolio routes). Otherwise inferred from draft copy. */

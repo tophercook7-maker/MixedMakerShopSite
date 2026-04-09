@@ -14,14 +14,7 @@ const navItems: {
 }[] = [
   { href: "/", label: "Home" },
   { href: "/web-design", label: "Web Design" },
-  { href: "/examples", label: "Examples" },
-  {
-    href: "/3d-printing",
-    label: "3D Printing",
-    event: { name: "public_gateway_nav", props: { location: "nav", target: "3d_printing" } },
-  },
   { href: "/builds", label: "Builds" },
-  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
@@ -89,16 +82,7 @@ export function PublicNav() {
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
             }
           >
-            Free Mockup
-          </Link>
-          <Link
-            href="/web-design"
-            className="pill"
-            onClick={() =>
-              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "web_design" })
-            }
-          >
-            Get a Website
+            Free Preview
           </Link>
           <Link href="/auth/login" className="pill pill--muted">
             Admin

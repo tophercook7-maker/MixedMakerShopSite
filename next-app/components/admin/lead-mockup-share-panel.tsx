@@ -20,8 +20,8 @@ type MockupApiRow = {
 };
 
 function buildPreviewUrl(slug: string): string {
-  if (typeof window === "undefined") return `/mockup/${encodeURIComponent(slug)}`;
-  return `${window.location.origin}/mockup/${encodeURIComponent(slug)}`;
+  if (typeof window === "undefined") return `/preview/${encodeURIComponent(slug)}`;
+  return `${window.location.origin}/preview/${encodeURIComponent(slug)}`;
 }
 
 export function LeadMockupSharePanel({
@@ -46,8 +46,9 @@ export function LeadMockupSharePanel({
   const resolvedUrl = String(mockup?.mockup_url_resolved || mockup?.mockup_url || "").trim();
   const slug = String(mockup?.mockup_slug || "").trim();
   const shareUrl = resolvedUrl || (slug ? buildPreviewUrl(slug) : "");
+  const normalizedShareUrl = shareUrl.replace(/\/mockup\//, "/preview/");
   const leadEmailTrim = String(leadEmail || "").trim();
-  const canSendPreview = Boolean(mockup && shareUrl && slug && leadEmailTrim);
+  const canSendPreview = Boolean(mockup && normalizedShareUrl && slug && leadEmailTrim);
   const sentAt = mockup?.sent_at ? String(mockup.sent_at).trim() : "";
 
   const load = useCallback(async () => {
@@ -162,7 +163,7 @@ export function LeadMockupSharePanel({
     }
   }
 
-  const share = shareUrl ? buildMockupShareMessages(shareUrl) : null;
+  const share = normalizedShareUrl ? buildMockupShareMessages(normalizedShareUrl) : null;
   const payload = mockup?.raw_payload && typeof mockup.raw_payload === "object" ? mockup.raw_payload : {};
   const adminTitle = typeof payload.admin_title === "string" ? payload.admin_title.trim() : "";
   const shareEmailSubject = typeof payload.share_email_subject === "string" ? payload.share_email_subject.trim() : "";
@@ -203,25 +204,47 @@ export function LeadMockupSharePanel({
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="rounded border p-2 space-y-2" style={{ borderColor: "var(--admin-border)" }}>
+            <p className="text-[11px] font-semibold" style={{ color: "var(--admin-fg)" }}>
+              Client preview link
+            </p>
+            <p
+              className="text-[11px] break-all font-mono"
+              style={{ color: "var(--admin-muted)", wordBreak: "break-word" }}
+            >
+              {normalizedShareUrl || "—"}
+            </p>
+            <p className="text-[10px]" style={{ color: "var(--admin-muted)" }}>
+              Share this URL — it uses a clean, readable path when possible.
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <a
-              href={shareUrl || "#"}
+              href={normalizedShareUrl || "#"}
               target="_blank"
               rel="noreferrer"
               className="admin-btn-primary text-xs"
-              style={{ opacity: shareUrl ? 1 : 0.5, pointerEvents: shareUrl ? "auto" : "none" }}
+              style={{ opacity: normalizedShareUrl ? 1 : 0.5, pointerEvents: normalizedShareUrl ? "auto" : "none" }}
             >
-              Open mockup
+              Open preview
             </a>
             <button
               type="button"
               className="admin-btn-ghost text-xs"
-              disabled={!shareUrl}
-              onClick={() => void copyText("Link", shareUrl)}
+              disabled={!normalizedShareUrl}
+              onClick={() => void copyText("Preview link", normalizedShareUrl)}
             >
-              Copy mockup link
+              Copy link
             </button>
-            {shareUrl && slug ? (
+            <button
+              type="button"
+              className="admin-btn-ghost text-xs"
+              disabled={!share?.text}
+              onClick={() => void copyText("Share message", share?.text || "")}
+            >
+              Copy message
+            </button>
+            {normalizedShareUrl && slug ? (
               <>
                 {canSendPreview ? (
                   <button
@@ -265,6 +288,16 @@ export function LeadMockupSharePanel({
               </>
             ) : null}
           </p>
+          {slug ? (
+            <details className="text-[10px]" style={{ color: "var(--admin-muted)" }}>
+              <summary className="cursor-pointer select-none" style={{ color: "var(--admin-muted)" }}>
+                Internal reference (slug)
+              </summary>
+              <p className="mt-1 break-all font-mono" style={{ color: "var(--admin-fg)" }}>
+                {slug}
+              </p>
+            </details>
+          ) : null}
 
           {shareEmailSubject && shareEmailBody ? (
             <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
@@ -361,7 +394,7 @@ export function LeadMockupSharePanel({
           {share ? (
             <div className="space-y-2 rounded border p-2" style={{ borderColor: "var(--admin-border)" }}>
               <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
-                Copy-paste outreach {shareUrl ? "(includes link)" : ""}
+                Copy-paste outreach {normalizedShareUrl ? "(includes link)" : ""}
               </p>
               <div className="space-y-1">
                 <p className="text-[11px] font-semibold" style={{ color: "var(--admin-muted)" }}>
@@ -389,13 +422,13 @@ export function LeadMockupSharePanel({
                   className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-24 overflow-auto"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
                 >
-                  {shareTextCustom ? `${shareTextCustom}\n${shareUrl}` : share.text}
+                  {shareTextCustom ? `${shareTextCustom}\n${normalizedShareUrl}` : share.text}
                 </pre>
                 <button
                   type="button"
                   className="admin-btn-ghost text-[11px]"
                   onClick={() =>
-                    void copyText("Text draft", shareTextCustom ? `${shareTextCustom}\n${shareUrl}` : share.text)
+                    void copyText("Text draft", shareTextCustom ? `${shareTextCustom}\n${normalizedShareUrl}` : share.text)
                   }
                 >
                   Copy text
@@ -409,7 +442,7 @@ export function LeadMockupSharePanel({
                   className="text-[11px] whitespace-pre-wrap rounded p-2 max-h-28 overflow-auto"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--admin-border)" }}
                 >
-                  {shareFacebookCustom ? `${shareFacebookCustom}\n${shareUrl}` : share.facebook}
+                  {shareFacebookCustom ? `${shareFacebookCustom}\n${normalizedShareUrl}` : share.facebook}
                 </pre>
                 <button
                   type="button"
@@ -417,7 +450,7 @@ export function LeadMockupSharePanel({
                   onClick={() =>
                     void copyText(
                       "Facebook draft",
-                      shareFacebookCustom ? `${shareFacebookCustom}\n${shareUrl}` : share.facebook,
+                      shareFacebookCustom ? `${shareFacebookCustom}\n${normalizedShareUrl}` : share.facebook,
                     )
                   }
                 >

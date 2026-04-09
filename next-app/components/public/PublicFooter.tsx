@@ -55,10 +55,6 @@ export function PublicFooter() {
           {" · "}
           <Link href="/web-design">Web Design</Link>
           {" · "}
-          <Link href="/examples">Examples</Link>
-          {" · "}
-          <Link href="/3d-printing">3D Printing</Link>
-          {" · "}
           <Link href="/builds">Builds</Link>
           {" · "}
           <Link href="/about">About</Link>

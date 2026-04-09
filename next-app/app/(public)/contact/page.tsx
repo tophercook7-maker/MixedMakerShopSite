@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
@@ -10,6 +10,18 @@ export default function ContactPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needFromQuery, setNeedFromQuery] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = new URLSearchParams(window.location.search).get("need");
+    if (!raw) return;
+    try {
+      setNeedFromQuery(decodeURIComponent(raw.replace(/\+/g, " ")));
+    } catch {
+      setNeedFromQuery(raw);
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -217,6 +229,8 @@ export default function ContactPage() {
                     rows={4}
                     placeholder="A sentence or two is fine."
                     required
+                    key={needFromQuery ? `need-${needFromQuery.slice(0, 48)}` : "need-default"}
+                    defaultValue={needFromQuery}
                   />
                 </div>
                 <div className="form-group">

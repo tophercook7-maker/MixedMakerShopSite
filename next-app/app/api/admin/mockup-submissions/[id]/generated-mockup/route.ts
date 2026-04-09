@@ -180,6 +180,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       services: built.structured.services,
       style_preset: built.stylePreset,
       color_preset: built.colorPreset,
+      simple_conversion_layout: true,
+      mockup_signature: true,
     };
 
     let generated_html: string | null = null;

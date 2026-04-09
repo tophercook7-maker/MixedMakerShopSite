@@ -5,6 +5,7 @@ import { LeadMockupDealFollowupPanel } from "@/components/admin/lead-mockup-deal
 import { LeadMockupSharePanel } from "@/components/admin/lead-mockup-share-panel";
 import { LeadWorkspaceActions } from "@/components/admin/lead-workspace-actions";
 import { LeadWorkspaceScrollAnchor } from "@/components/admin/lead-workspace-scroll-anchor";
+import { ClientSiteDraftPreviewLink } from "@/components/admin/client-site-draft-preview-link";
 import { LeadContactNow } from "@/components/admin/lead-contact-now";
 import { LeadSuggestedResponse } from "@/components/admin/lead-suggested-response";
 import { buildLeadAssessment } from "@/lib/lead-assessment";
@@ -140,6 +141,7 @@ type LeadRow = {
   payment_link?: string | null;
   paid_at?: string | null;
   last_response_at?: string | null;
+  site_draft_preview_slug?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -236,6 +238,7 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "payment_link",
     "paid_at",
     "last_response_at",
+    "site_draft_preview_slug",
   ].join(","),
   [
     "id",
@@ -1619,6 +1622,15 @@ Want me to show you a quick idea?`;
           contactPage={displayContactPage || null}
           website={displayWebsite || null}
         />
+      ) : null}
+
+      {!isPrintLead && resolvedLeadId ? (
+        <div className="mt-3">
+          <ClientSiteDraftPreviewLink
+            leadId={resolvedLeadId}
+            initialSlug={lead?.site_draft_preview_slug ?? null}
+          />
+        </div>
       ) : null}
 
       {isPrintLead && resolvedLeadId && lead ? (

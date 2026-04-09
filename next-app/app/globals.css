@@ -5580,3 +5580,45 @@ details.printing-faq-details[open] {
     0 0 0 1px rgba(249, 115, 22, 0.08),
     0 20px 48px rgba(0, 0, 0, 0.38);
 }
+
+/* Signature mockup system: trust line, list services, footer brand */
+.sample-standalone .sample-mockup-trust-line {
+  letter-spacing: 0.02em;
+  font-weight: 600;
+  opacity: 0.92;
+}
+.sample-standalone .sample-mockup-service-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: min(720px, 100%);
+  border: 1px solid color-mix(in srgb, var(--sd-border) 70%, transparent);
+  border-radius: var(--sd-radius);
+  background: color-mix(in srgb, var(--sd-surface-alt) 88%, transparent);
+}
+.sample-standalone .sample-mockup-service-item {
+  margin: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sd-border) 55%, transparent);
+  line-height: 1.45;
+  font-size: var(--sd-body-size, 1rem);
+}
+.sample-standalone .sample-mockup-service-item:last-child {
+  border-bottom: none;
+}
+.sample-standalone .sample-mockup-service-name {
+  font-weight: 700;
+  color: var(--sd-text);
+}
+.sample-standalone .sample-mockup-service-note {
+  color: var(--sd-secondary-text, var(--sd-muted));
+}
+.sample-standalone .sample-mockup-brand-mark {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sd-muted);
+  opacity: 0.78;
+}

@@ -80,12 +80,12 @@ export function WebDesignSalesPage() {
           </ul>
           <div className="home-reveal mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <TrackedPublicLink
-              href="/website-samples"
+              href="/builds#builds-experiments"
               eventName="public_web_design_sample_click"
-              eventProps={{ location: "home_primary_web", label: "see_web_examples" }}
+              eventProps={{ location: "web_design_sales", label: "see_builds_samples" }}
               className="home-btn-secondary--hero inline-flex justify-center px-8 py-3"
             >
-              See Web Design Examples
+              Browse builds &amp; samples
             </TrackedPublicLink>
             <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero inline-flex justify-center px-8 py-3">
               Get a Free Mockup
@@ -115,12 +115,12 @@ export function WebDesignSalesPage() {
               </ul>
               <div className="home-reveal mt-6">
                 <TrackedPublicLink
-                  href="/3d-printing"
+                  href="/builds#builds-3d-printing"
                   eventName="public_home_path_cta"
-                  eventProps={{ path: "3d_printing", label: "explore_3d" }}
+                  eventProps={{ path: "3d_printing", label: "explore_3d_builds" }}
                   className="text-[0.9375rem] font-semibold text-[#00FFB2] hover:text-[#35ffc1] underline-offset-4 hover:underline"
                 >
-                  Explore 3D printing →
+                  3D printing on Builds →
                 </TrackedPublicLink>
               </div>
             </div>
@@ -139,12 +139,12 @@ export function WebDesignSalesPage() {
               </ul>
               <div className="home-reveal mt-6">
                 <TrackedPublicLink
-                  href="/examples"
+                  href="/builds"
                   eventName="public_home_path_cta"
-                  eventProps={{ path: "digital_builds", label: "see_examples" }}
+                  eventProps={{ path: "digital_builds", label: "see_builds" }}
                   className="text-[0.9375rem] font-semibold text-[#00FFB2] hover:text-[#35ffc1] underline-offset-4 hover:underline"
                 >
-                  See build examples →
+                  See all builds →
                 </TrackedPublicLink>
               </div>
             </div>

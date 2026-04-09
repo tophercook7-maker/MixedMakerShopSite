@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   buildFunnelPublicMockupRow,
-  generateMockupSlug,
   parseServicesLines,
   type FunnelFormSnapshot,
 } from "@/lib/crm-mockup";
+import { absolutePreviewUrl, allocateUniqueBrandedMockupSlug } from "@/lib/mockup-branded-slug";
 import { FUNNEL_DESIRED_OUTCOME_LABELS, normalizeDesiredOutcomeIds } from "@/lib/funnel-desired-outcomes";
 import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
@@ -252,11 +252,15 @@ export async function POST(request: Request) {
     const contactName = String(parsed.data.contactName || "").trim();
 
     const mockRow = buildFunnelPublicMockupRow(snapshot);
-    const slug = generateMockupSlug();
     const origin = requestOrigin(request);
-    const previewUrl = `${origin.replace(/\/$/, "")}/mockup/${encodeURIComponent(slug)}`;
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const slug = await allocateUniqueBrandedMockupSlug(
+      supabase as SupabaseClient,
+      snapshot.business_name,
+      snapshot.city
+    );
+    const previewUrl = absolutePreviewUrl(origin, slug);
 
     const duplicateKind = await findRecentMockupDuplicate(supabase, email, snapshot.business_name);
     if (duplicateKind) {

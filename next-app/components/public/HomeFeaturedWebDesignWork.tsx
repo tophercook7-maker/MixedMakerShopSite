@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
+import { getShowcaseProjectsByAnalyticsIds, LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
 import {
   mmsBtnPrimary,
   mmsBtnSecondary,
@@ -34,9 +34,14 @@ export type HomeFeaturedWebDesignWorkProps = {
   sectionId?: string;
   /** Homepage: section sits over fixed umbrella; transparent band + glass cards on md+. */
   immersive?: boolean;
+  /** When set, only these `analyticsId` values are shown (e.g. homepage subset). */
+  featuredAnalyticsIds?: readonly string[];
 };
 
-const projectCount: number = LIVE_WEB_PROJECTS.length;
+function selectProjects(featuredAnalyticsIds?: readonly string[]) {
+  if (!featuredAnalyticsIds?.length) return [...LIVE_WEB_PROJECTS];
+  return getShowcaseProjectsByAnalyticsIds(featuredAnalyticsIds);
+}
 
 function BrowserShowcasePreview({
   hostname,
@@ -112,7 +117,10 @@ export function HomeFeaturedWebDesignWork({
   subhead = "Real businesses, live on the web — built and launched by Topher.",
   sectionId = "real-work",
   immersive = false,
+  featuredAnalyticsIds,
 }: HomeFeaturedWebDesignWorkProps) {
+  const projects = selectProjects(featuredAnalyticsIds);
+  const projectCount = projects.length;
   const isLight = variant === "light";
   const h2 = isLight ? mmsH2 : h2Dark;
   const body = isLight ? bodyLight : bodyDark;
@@ -137,33 +145,38 @@ export function HomeFeaturedWebDesignWork({
       aria-labelledby="featured-web-design-heading"
     >
       <div className={cn(shell, isLight ? mmsSectionY : sectionY)}>
-        <h2
-          id="featured-web-design-heading"
+        <div
           className={cn(
-            "home-reveal home-section-title max-w-[900px]",
-            h2,
-            immersive && "md:[text-shadow:0_2px_28px_rgba(247,244,238,0.85)]",
+            "home-reveal max-w-[min(100%,56rem)]",
+            immersive && isLight && cn(mmsGlassPanelDense, "p-6 sm:p-8 md:p-9"),
           )}
         >
-          {heading}
-        </h2>
-        <p
-          className={cn(
-            "home-reveal mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed",
-            body,
-            immersive && "md:font-medium md:text-[#1e241f]",
-          )}
-        >
-          {subhead}
-        </p>
+          <h2
+            id="featured-web-design-heading"
+            className={cn("home-section-title max-w-[900px]", h2)}
+          >
+            {heading}
+          </h2>
+          <p
+            className={cn(
+              "mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed",
+              body,
+              immersive && isLight && "font-medium text-[#1e241f] md:text-[#2d3a33]",
+            )}
+          >
+            {subhead}
+          </p>
+        </div>
 
         <div
           className={cn(
             "home-reveal mt-14 grid grid-cols-1 gap-12 md:mt-16 md:gap-16 lg:gap-20",
-            projectCount === 1 ? "md:mx-auto md:max-w-4xl" : "md:grid-cols-2",
+            projectCount === 1 && "md:mx-auto md:max-w-4xl",
+            projectCount === 2 && "md:grid-cols-2",
+            projectCount >= 3 && "md:grid-cols-2 lg:grid-cols-3",
           )}
         >
-          {LIVE_WEB_PROJECTS.map((project, index) => (
+          {projects.map((project, index) => (
             <article
               key={project.analyticsId}
               className={cn(
@@ -211,25 +224,48 @@ export function HomeFeaturedWebDesignWork({
                 </h3>
                 <p className={cn("text-sm leading-relaxed md:text-[15px]", body)}>{project.pitch}</p>
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() =>
-                      trackPublicEvent("public_external_project_click", {
-                        location: "web_design",
-                        section: "featured_web_design",
-                        project: project.analyticsId,
-                      })
-                    }
-                    className={cn(
-                      "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
-                      isLight ? cn(mmsBtnSecondary) : "home-btn-secondary--hero rounded-xl",
-                    )}
-                  >
-                    View live site
-                    <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-                  </a>
+                  {project.primaryCtaIsExternal === false ? (
+                    <Link
+                      href={project.url}
+                      onClick={() =>
+                        trackPublicEvent("public_external_project_click", {
+                          location: "web_design",
+                          section: "featured_web_design",
+                          project: project.analyticsId,
+                          href: project.url,
+                        })
+                      }
+                      className={cn(
+                        "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
+                        isLight ? cn(mmsBtnSecondary) : "home-btn-secondary--hero rounded-xl",
+                      )}
+                    >
+                      {project.primaryCtaLabel ?? "Learn more"}
+                      <ArrowRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                    </Link>
+                  ) : (
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        trackPublicEvent("public_external_project_click", {
+                          location: "web_design",
+                          section: "featured_web_design",
+                          project: project.analyticsId,
+                        })
+                      }
+                      className={cn(
+                        "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
+                        isLight ? cn(mmsBtnSecondary) : "home-btn-secondary--hero rounded-xl",
+                      )}
+                    >
+                      {"primaryCtaLabel" in project && project.primaryCtaLabel
+                        ? project.primaryCtaLabel
+                        : "View live site"}
+                      <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                    </a>
+                  )}
                   <Link
                     href="/free-mockup"
                     onClick={() =>
@@ -245,7 +281,7 @@ export function HomeFeaturedWebDesignWork({
                       isLight ? cn(mmsBtnPrimary, "rounded-xl") : "home-btn-primary home-btn-primary--hero text-[#0c0e0d] rounded-xl",
                     )}
                   >
-                    Get a free mockup
+                    Get My Free Website Preview
                     <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden />
                   </Link>
                 </div>
@@ -256,20 +292,30 @@ export function HomeFeaturedWebDesignWork({
 
         <div
           className={cn(
-            "home-reveal mt-16 flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
-            isLight ? "border-[#3f5a47]/12" : "border-[rgba(232,253,245,0.08)]",
+            "home-reveal mt-16 md:mt-20",
+            isLight &&
+              immersive &&
+              cn(
+                mmsGlassPanelDense,
+                "flex flex-col gap-4 p-6 sm:p-8 md:flex-row md:items-center md:justify-between",
+              ),
+            (!immersive || !isLight) &&
+              cn(
+                "flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
+                isLight ? "border-[#3f5a47]/12" : "border-[rgba(232,253,245,0.08)]",
+              ),
           )}
         >
           <p className={cn("max-w-xl text-sm md:text-[15px]", body)}>
             Want something like this for your business? Start with a free homepage preview.
           </p>
           <Link
-            href="/website-samples"
+            href="/builds#builds-experiments"
             className={cn(
               isLight ? mmsTextLink : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
             )}
           >
-            Browse all web samples →
+            See full builds library →
           </Link>
         </div>
       </div>

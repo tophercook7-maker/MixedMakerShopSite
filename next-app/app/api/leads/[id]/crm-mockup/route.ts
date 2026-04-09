@@ -1,15 +1,16 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import {
   buildMockupContentFromLead,
-  generateMockupSlug,
   getMockupTemplateForLead,
   isWiseBodyMindSoulLead,
   PREFERRED_WISE_BODY_MIND_SOUL_MOCKUP_SLUG,
   wiseBodyMindSoulShareRawFields,
   type LeadRowForMockup,
 } from "@/lib/crm-mockup";
+import { absolutePreviewUrl, allocateUniqueBrandedMockupSlug } from "@/lib/mockup-branded-slug";
 import { recordLeadActivity } from "@/lib/lead-activity";
 
 const TABLE = "crm_mockups";
@@ -26,7 +27,11 @@ async function resolveMockupSlug(
     const { data, error } = await supabase.from(TABLE).select("id").eq("mockup_slug", preferred).maybeSingle();
     if (!error && !data) return preferred;
   }
-  return generateMockupSlug();
+  return allocateUniqueBrandedMockupSlug(
+    supabase as unknown as SupabaseClient,
+    String(lead.business_name || "business"),
+    lead.city ?? null
+  );
 }
 
 function requestOrigin(req: NextRequest): string {
@@ -34,11 +39,6 @@ function requestOrigin(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
   if (host) return `${proto}://${host}`;
   return String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-}
-
-function mockupAbsoluteUrl(origin: string, slug: string): string {
-  const base = origin.replace(/\/$/, "");
-  return `${base}/mockup/${encodeURIComponent(slug)}`;
 }
 
 async function leadIdFromParams(params: Promise<{ id: string }> | { id: string }): Promise<string> {
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const origin = requestOrigin(req);
   const slug = String((data as { mockup_slug?: string }).mockup_slug || "").trim();
-  const mockup_url_resolved = slug ? mockupAbsoluteUrl(origin, slug) : null;
+  const mockup_url_resolved = slug ? absolutePreviewUrl(origin, slug) : null;
   return NextResponse.json({ mockup: { ...(data as Record<string, unknown>), mockup_url_resolved } });
 }
 
@@ -118,6 +118,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const origin = requestOrigin(req);
   const slug = await resolveMockupSlug(supabase, (existing as { mockup_slug?: string } | null)?.mockup_slug, lead);
   const now = new Date().toISOString();
+  const publicPreviewUrl = absolutePreviewUrl(origin, slug);
 
   const baseRow = {
     lead_id: leadId,
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     subheadline: content.subheadline,
     cta_text: content.cta_text,
     mockup_slug: slug,
-    mockup_url: mockupAbsoluteUrl(origin, slug),
+    mockup_url: publicPreviewUrl,
     raw_payload: rawPayload,
     updated_at: now,
   };
@@ -153,7 +154,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       message: "Shareable website mockup updated",
       meta: { mockup_slug: slug, template_key: tpl.template_key },
     });
-    const resolved = mockupAbsoluteUrl(origin, slug);
+    const resolved = absolutePreviewUrl(origin, slug);
     return NextResponse.json({ mockup: { ...(data as Record<string, unknown>), mockup_url_resolved: resolved } });
   }
 
@@ -176,6 +177,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     meta: { mockup_slug: slug, template_key: tpl.template_key },
   });
 
-  const resolved = mockupAbsoluteUrl(origin, slug);
+  const resolved = absolutePreviewUrl(origin, slug);
   return NextResponse.json({ mockup: { ...(data as Record<string, unknown>), mockup_url_resolved: resolved } });
 }

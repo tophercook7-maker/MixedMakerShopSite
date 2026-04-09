@@ -1,9 +1,5 @@
 import type { SampleDraft } from "@/lib/sample-draft-types";
-import {
-  FUNNEL_DESIRED_OUTCOME_WHY_LINES,
-  normalizeDesiredOutcomeIds,
-  type FunnelDesiredOutcomeId,
-} from "@/lib/funnel-desired-outcomes";
+import { normalizeDesiredOutcomeIds } from "@/lib/funnel-desired-outcomes";
 import { presetsForDesignDirection } from "@/lib/funnel-design-directions";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
 import {
@@ -17,6 +13,11 @@ import {
   type LeadSampleRecord,
 } from "@/lib/lead-samples";
 import { imageCategoryFromPortfolioRouteSlug, type SampleImageCategory } from "@/lib/sample-fallback-images";
+import {
+  buildPreviewShareCoreBody,
+  buildPreviewShareEmailBody,
+  buildPreviewShareFacebookBody,
+} from "@/lib/preview-share-copy";
 
 export const PORTFOLIO_MOCKUP_TEMPLATE_KEYS = [
   "pressure-washing",
@@ -52,7 +53,7 @@ export type LeadRowForMockup = {
   website?: string | null;
 };
 
-function pickCtaForCategoryHay(hay: string): string {
+export function pickCtaForCategoryHay(hay: string): string {
   if (/restaurant|food truck|kitchen|catering/i.test(hay)) return "Order Online";
   if (/coffee|cafe|espresso/i.test(hay)) return "Message Us";
   if (/church|ministry/i.test(hay)) return "Plan Your Visit";
@@ -62,6 +63,95 @@ function pickCtaForCategoryHay(hay: string): string {
   if (/pressure|power wash|wash/i.test(hay)) return "Get a Free Estimate";
   if (/plumb|hvac|electric|handyman/i.test(hay)) return "Schedule Service";
   return "Call Now";
+}
+
+/** Strips trailing "service" / "services" so subheads avoid "… services services". */
+export function stripTrailingServiceWords(label: string): string {
+  let s = String(label || "").trim();
+  if (!s) return s;
+  const low = s.toLowerCase();
+  if (low.endsWith(" services")) return s.slice(0, -" services".length).trim() || s;
+  if (low.endsWith(" service")) return s.slice(0, -" service".length).trim() || s;
+  return s;
+}
+
+/** Uniform hero CTA for all signature mockups (same system, every time). */
+export const SIGNATURE_MOCKUP_HERO_CTA = "Get a Free Quote";
+
+/** Bottom-of-page CTA label (distinct from hero). */
+export const SIGNATURE_MOCKUP_FINAL_CTA = "Call Now";
+
+/** Subtle footer credit on exported / shareable previews. */
+export const SIGNATURE_MOCKUP_FOOTER_BRAND = "Preview built by Topher";
+
+export const SIGNATURE_MOCKUP_WHY_CORE = ["Local & reliable", "Fast response", "Quality work"] as const;
+
+/** Trust line under hero: serving line when we have a real place name, otherwise a fixed trio. */
+export function buildSignatureTrustLine(cityRaw: string | null | undefined): string {
+  const c =
+    String(cityRaw || "")
+      .split(",")[0]
+      ?.trim() || String(cityRaw || "").trim();
+  if (!c || /^your area$/i.test(c)) return "Local • Reliable • Straightforward Service";
+  return `Serving ${c} and surrounding areas`;
+}
+
+/** Three core bullets, plus one optional first line from the lead’s differentiator. */
+export function buildSignatureWhyBullets(differentiator: string): string[] {
+  const line = String(differentiator || "")
+    .split(/\n+/)[0]
+    ?.trim();
+  if (line) return [line, ...SIGNATURE_MOCKUP_WHY_CORE];
+  return [...SIGNATURE_MOCKUP_WHY_CORE];
+}
+
+function signatureOfferingBlurb(name: string): string {
+  const n = String(name || "").trim() || "this service";
+  return `Straightforward ${n} with clear scope and easy scheduling.`;
+}
+
+/**
+ * Applies the MixedMakerShop signature shell: trust line, fixed why bullets, bottom CTA, uniform service blurbs.
+ */
+export function applySignatureMockupDraft(
+  draft: SampleDraft,
+  row: { city: string | null },
+  payload: Record<string, unknown>
+): SampleDraft {
+  const fc = readFunnelContext(payload);
+  const diff = fc ? String(fc.what_makes_you_different || "").trim() : "";
+  const offerings = (draft.offerings || []).map((o) => ({
+    ...o,
+    text: signatureOfferingBlurb(o.name),
+  }));
+  return {
+    ...draft,
+    heroPrimaryCta: SIGNATURE_MOCKUP_HERO_CTA,
+    localPositioning: buildSignatureTrustLine(row.city),
+    whyChooseTitle: draft.whyChooseTitle ?? "Why choose us",
+    whyChooseBullets: buildSignatureWhyBullets(diff),
+    offeringsTitle: "Services",
+    servicesSectionLead: "A short list of what we can take care of for you.",
+    offerings,
+    finalTitle: "Ready when you are",
+    finalSub: `Questions or timing? Call ${draft.phone} — we're happy to help.`,
+    finalCta: SIGNATURE_MOCKUP_FINAL_CTA,
+  };
+}
+
+/**
+ * Conversion-focused hero lines for sendable mockups: "{Service} in {City}" plus a reliable local subhead.
+ */
+export function buildPersonalizedMockupHero(opts: {
+  cityHeadline: string;
+  primaryOffering: string;
+}): { headline: string; subheadline: string; cta: string } {
+  const city = String(opts.cityHeadline || "").trim() || "your area";
+  const offeringRaw = String(opts.primaryOffering || "").trim() || "Local service";
+  const headline = `${offeringRaw} in ${city}`;
+  const core = stripTrailingServiceWords(offeringRaw).toLowerCase();
+  const subheadline = `Reliable ${core} services for homeowners and businesses in ${city}`;
+  return { headline, subheadline, cta: SIGNATURE_MOCKUP_HERO_CTA };
 }
 
 function pickPortfolioMeta(key: PortfolioMockupTemplateKey): CrmMockupTemplateInfo {
@@ -154,12 +244,14 @@ export function buildMockupContentFromLead(lead: LeadRowForMockup, template: Crm
   const state = String(lead.state || "").trim();
   const location = [city, state].filter(Boolean).join(", ");
 
+  const servicesWellness = ["Massage Therapy", "Yoga Classes", "Sound Baths"];
+
   if (template.template_key === "wellness") {
-    const locPhrase = location ? `${location}` : "your area";
-    const sub =
-      city && state
-        ? `Massage therapy, yoga, and restorative healing experiences in ${city}, ${state}.`
-        : `Massage therapy, yoga, and restorative healing experiences in ${locPhrase}.`;
+    const cityHeadline = city.split(",")[0]?.trim() || city || "";
+    const hero = buildPersonalizedMockupHero({
+      cityHeadline: cityHeadline || "your area",
+      primaryOffering: servicesWellness[0] || "Massage therapy",
+    });
     return {
       business_name: businessName,
       city: location || city || null,
@@ -167,27 +259,20 @@ export function buildMockupContentFromLead(lead: LeadRowForMockup, template: Crm
       phone: String(lead.phone || "").trim() || null,
       email: String(lead.email || "").trim() || null,
       facebook_url: String(lead.facebook_url || "").trim() || null,
-      headline: "Holistic wellness for body, mind, and soul",
-      subheadline: sub,
-      cta_text: "Book a Session",
-      services: ["Massage Therapy", "Yoga Classes", "Sound Baths"],
+      headline: hero.headline,
+      subheadline: hero.subheadline,
+      cta_text: hero.cta,
+      services: servicesWellness,
     };
   }
 
-  let headline: string;
-  if (template.suggestedHeadlinePattern === "simple_services") {
-    headline = city
-      ? `Simple, professional ${categoryLabel} services in ${city}`
-      : `Simple, professional ${categoryLabel} services`;
-  } else {
-    headline = city
-      ? `${businessName} — Trusted ${categoryLabel} in ${city}`
-      : `${businessName} — Trusted ${categoryLabel} in your area`;
-  }
-
-  const subheadline = "Make it easy for customers to find you, trust you, and contact you.";
-  const cta = template.suggestedCta;
   const services = getSuggestedServicesForBusinessType(categoryLabel);
+  const primaryOffering = services[0]?.trim() || categoryLabel;
+  const cityHeadline = city.split(",")[0]?.trim() || city || "";
+  const hero = buildPersonalizedMockupHero({
+    cityHeadline: cityHeadline || "your area",
+    primaryOffering,
+  });
 
   return {
     business_name: businessName,
@@ -196,36 +281,18 @@ export function buildMockupContentFromLead(lead: LeadRowForMockup, template: Crm
     phone: String(lead.phone || "").trim() || null,
     email: String(lead.email || "").trim() || null,
     facebook_url: String(lead.facebook_url || "").trim() || null,
-    headline,
-    subheadline,
-    cta_text: cta,
+    headline: hero.headline,
+    subheadline: hero.subheadline,
+    cta_text: hero.cta,
     services,
   };
 }
 
 function enrichMockupContentFromFunnelFields(
   content: MockupContentFields,
-  snapshot: FunnelFormSnapshot
+  _snapshot: FunnelFormSnapshot
 ): MockupContentFields {
-  const outcomes = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
-  let sub = content.subheadline;
-  const bits: string[] = [];
-  if (outcomes.includes("explain_services_clearly")) {
-    bits.push("The layout emphasizes clear service explanations and scannable sections.");
-  }
-  if (outcomes.includes("show_up_better_online")) {
-    bits.push("The direction supports a stronger first impression where people look you up.");
-  }
-  if (outcomes.includes("get_more_calls") || outcomes.includes("make_contact_easier")) {
-    bits.push("Contact paths stay obvious so visitors know what to do next.");
-  }
-  if (outcomes.includes("look_more_professional") || outcomes.includes("replace_outdated_site")) {
-    bits.push("The presentation aims for a current, professional feel.");
-  }
-  if (bits.length) {
-    sub = `${sub} ${bits.join(" ")}`.trim().slice(0, 520);
-  }
-  return { ...content, subheadline: sub };
+  return content;
 }
 
 function isPortfolioKey(key: string): key is PortfolioMockupTemplateKey {
@@ -395,37 +462,8 @@ function readFunnelContext(payload: Record<string, unknown>): Record<string, unk
   return fc as Record<string, unknown>;
 }
 
-function applyDraftFunnelPatches(draft: SampleDraft, payload: Record<string, unknown>): SampleDraft {
-  const fc = readFunnelContext(payload);
-  if (!fc) return draft;
-
-  const diff = String(fc.what_makes_you_different || "").trim();
-  const offer = String(fc.special_offer_or_guarantee || "").trim();
-  const outcomes = normalizeDesiredOutcomeIds(fc.desired_outcomes);
-
-  let aboutText = draft.aboutText;
-  if (diff) {
-    const leadIn = diff.endsWith(".") ? diff : `${diff}.`;
-    aboutText = `${leadIn}\n\n${aboutText}`.trim();
-  }
-
-  const whyFromOutcomes = outcomes
-    .map((id) => FUNNEL_DESIRED_OUTCOME_WHY_LINES[id as FunnelDesiredOutcomeId])
-    .filter(Boolean) as string[];
-  const existingWhy = draft.whyChooseBullets || [];
-  const whyChooseBullets = [...whyFromOutcomes, ...existingWhy].filter(Boolean).slice(0, 7);
-
-  let finalSub = draft.finalSub;
-  if (offer) {
-    finalSub = `${offer}${finalSub ? ` — ${finalSub}` : ""}`.trim().slice(0, 320);
-  }
-
-  return {
-    ...draft,
-    aboutText,
-    whyChooseBullets,
-    finalSub,
-  };
+function applyDraftFunnelPatches(draft: SampleDraft, _payload: Record<string, unknown>): SampleDraft {
+  return draft;
 }
 
 /**
@@ -450,8 +488,11 @@ export function buildSampleDraftFromPublicMockup(row: PublicCrmMockupRow): {
       const colorPreset =
         (readPreset(payload, "color_preset", found.colorPreset) as MockupColorPreset) ||
         (found.colorPreset as MockupColorPreset);
+      let draftOut = finalizeDraftWithPayload(merged, payload);
+      draftOut = applyDraftFunnelPatches(draftOut, payload);
+      draftOut = applySignatureMockupDraft(draftOut, row, payload);
       return {
-        draft: applyDraftFunnelPatches(finalizeDraftWithPayload(merged, payload), payload),
+        draft: draftOut,
         imageCategoryKey: imageCategoryFromPortfolioRouteSlug(row.template_key),
         stylePreset,
         colorPreset,
@@ -480,8 +521,12 @@ export function buildSampleDraftFromPublicMockup(row: PublicCrmMockupRow): {
   else if (categoryHay.includes("restaurant") || categoryHay.includes("food")) imageKey = "restaurant";
   else if (row.template_key === "wellness") imageKey = "wellness";
 
+  let draftOut = finalizeDraftWithPayload(enriched, payload);
+  draftOut = applyDraftFunnelPatches(draftOut, payload);
+  draftOut = applySignatureMockupDraft(draftOut, row, payload);
+
   return {
-    draft: applyDraftFunnelPatches(finalizeDraftWithPayload(enriched, payload), payload),
+    draft: draftOut,
     imageCategoryKey: imageKey,
     stylePreset,
     colorPreset,
@@ -582,11 +627,25 @@ export function buildFunnelPublicMockupRow(snapshot: FunnelFormSnapshot): Public
 
   const fromTop = parseServicesLines(snapshot.top_services_to_feature || "");
   const parsedLegacy = parseServicesLines(snapshot.services_text || "");
-  const services = fromTop.length ? fromTop : parsedLegacy.length ? parsedLegacy : content.services;
+  const services = (fromTop.length ? fromTop : parsedLegacy.length ? parsedLegacy : content.services).slice(0, 5);
 
-  const headline = String(snapshot.headline_override || "").trim() || content.headline;
-  const subheadline = String(snapshot.subheadline_override || "").trim() || content.subheadline;
-  const cta_text = String(snapshot.cta_override || "").trim() || content.cta_text;
+  const cityHeadline =
+    String(snapshot.city || "").split(",")[0]?.trim() || String(snapshot.city || "").trim() || "";
+  const primaryOffering =
+    services[0]?.trim() ||
+    content.services[0]?.trim() ||
+    readableBusinessType(String(snapshot.category || "local service"));
+  const heroLines = buildPersonalizedMockupHero({
+    cityHeadline: cityHeadline || "your area",
+    primaryOffering,
+  });
+  const headlineDefault = heroLines.headline;
+  const subheadlineDefault = heroLines.subheadline;
+  const ctaDefault = heroLines.cta;
+
+  const headline = String(snapshot.headline_override || "").trim() || headlineDefault;
+  const subheadline = String(snapshot.subheadline_override || "").trim() || subheadlineDefault;
+  const cta_text = String(snapshot.cta_override || "").trim() || ctaDefault;
   const outcomes = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
   const funnel_context = {
     desired_outcomes: outcomes,
@@ -602,6 +661,8 @@ export function buildFunnelPublicMockupRow(snapshot: FunnelFormSnapshot): Public
     style_preset: tpl.stylePreset,
     color_preset: tpl.colorPreset,
     funnel_context,
+    mockup_signature: true,
+    simple_conversion_layout: true,
   };
   const hp = String(snapshot.hero_preset || "").trim();
   if (hp && IMAGE_POOLS[hp]?.length) raw.hero_image_key = hp;
@@ -682,8 +743,8 @@ export function generateMockupSlug(): string {
 export function buildMockupShareMessages(mockupUrl: string): { email: string; text: string; facebook: string } {
   const url = String(mockupUrl || "").trim();
   return {
-    email: `I put together a quick example showing what your website could look like:\n${url}\n\nIf you want, I'd be happy to talk through it.`,
-    text: `I put together a quick example for your business:\n${url}\n\nThought you might want to see it.`,
-    facebook: `I put together a quick example for your business so you can see what a site could look like:\n${url}\n\nHappy to show you more if you want.`,
+    email: buildPreviewShareEmailBody(url),
+    text: buildPreviewShareCoreBody(url),
+    facebook: buildPreviewShareFacebookBody(url),
   };
 }

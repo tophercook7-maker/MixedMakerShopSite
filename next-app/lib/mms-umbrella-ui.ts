@@ -94,18 +94,21 @@ export const mmsCtaPanel = cn(
   "ring-1 ring-[#b85c1e]/10",
 );
 
-/** Translucent “glass” surface — use over photographic/fixed homepage layers (desktop). */
+/**
+ * Translucent “milky glass” surface — trust-strip reference for major homepage blocks over the umbrella photo.
+ * Slightly milky (not pure white), readable with dark type, backdrop blur + soft border.
+ */
 export const mmsGlassPanel = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/24",
-  "bg-[rgba(232,241,232,0.38)] backdrop-blur-2xl",
+  "rounded-[1.35rem] border border-[#3f5a47]/18",
+  "bg-[rgba(236,241,236,0.5)] backdrop-blur-2xl",
   "shadow-[0_28px_72px_-26px_rgba(30,36,31,0.28),inset_0_1px_0_rgba(255,255,255,0.5)]",
   "ring-1 ring-[#b85c1e]/12",
 );
 
-/** Slightly denser glass for longer copy blocks (still lets background read through on md+). */
+/** Denser glass for longer copy / cards — same family, a touch more fill for contrast on busy backdrops. */
 export const mmsGlassPanelDense = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/26",
-  "bg-[rgba(228,235,228,0.52)] backdrop-blur-2xl",
+  "rounded-[1.35rem] border border-[#3f5a47]/20",
+  "bg-[rgba(232,239,232,0.6)] backdrop-blur-2xl",
   "shadow-[0_26px_64px_-24px_rgba(27,36,30,0.32),inset_0_1px_0_rgba(255,255,255,0.45)]",
   "ring-1 ring-[#2f3e34]/10",
 );

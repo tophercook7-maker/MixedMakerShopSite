@@ -1,7 +1,11 @@
 import type { SampleDraft } from "@/lib/sample-draft-types";
 import {
+  applySignatureMockupDraft,
+  buildPersonalizedMockupHero,
+  buildSignatureWhyBullets,
   getMockupTemplateForLead,
   parseServicesLines,
+  SIGNATURE_MOCKUP_FINAL_CTA,
   type MockupColorPreset,
   type MockupStylePreset,
 } from "@/lib/crm-mockup";
@@ -9,8 +13,10 @@ import { presetsForDesignDirection } from "@/lib/funnel-design-directions";
 import {
   autofillLeadSample,
   buildDefaultLeadSample,
+  getSuggestedServicesForBusinessType,
   leadSampleToDraft,
   normalizeLeadSampleRecord,
+  readableBusinessType,
   type LeadSampleRecord,
 } from "@/lib/lead-samples";
 import { type SampleImageCategory } from "@/lib/sample-fallback-images";
@@ -35,20 +41,39 @@ export type AdminStoredGeneratedMockup = {
   lead_sample_id: string | null;
 };
 
-const DEFAULT_WHY = ["Local & reliable", "Fast response", "Quality work"];
-
 function primaryServiceLabel(services: string[], category: string): string {
   if (services.length) return services[0]!.trim();
   const c = category.trim();
   return c || "Services";
 }
 
-function servicePhraseForSubheadline(serviceLabel: string): string {
-  const s = serviceLabel.trim().toLowerCase();
-  if (!s) return "service";
-  if (s.endsWith("services")) return s;
-  if (s.endsWith("service")) return s;
-  return `${s} service`;
+function mergeServicesThreeToFive(parsed: string[], category: string): string[] {
+  const typeLabel = readableBusinessType(category);
+  const suggested = getSuggestedServicesForBusinessType(typeLabel);
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  for (const s of [...parsed, ...suggested]) {
+    const t = s.trim();
+    const key = t.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(t);
+    if (merged.length >= 5) break;
+  }
+  while (merged.length < 3 && suggested.length) {
+    let added = false;
+    for (const s of suggested) {
+      const t = s.trim();
+      const key = t.toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      merged.push(t);
+      added = true;
+      break;
+    }
+    if (!added) break;
+  }
+  return merged.slice(0, 5);
 }
 
 function clampAbout(text: string, maxSentences = 2): string {
@@ -82,45 +107,37 @@ export type AdminMockupSubmissionInput = {
 };
 
 export function generateStructuredAdminMockup(input: AdminMockupSubmissionInput): AdminGeneratedStructuredMockup {
-  const services = parseServicesLines(
+  const parsed = parseServicesLines(
     [input.top_services_text, input.legacy_services_text].filter(Boolean).join("\n")
-  ).slice(0, 5);
-
+  );
+  const services = mergeServicesThreeToFive(parsed, input.category);
   const serviceLabel = primaryServiceLabel(services, input.category);
   const city = input.city.trim() || "your area";
-  const subSvc = servicePhraseForSubheadline(serviceLabel);
 
-  const hero = {
-    headline: `${serviceLabel} in ${city}`,
-    subheadline: `Reliable ${subSvc} services for homeowners and businesses in ${city}`,
-    cta: "Get a Free Quote",
-  };
+  const hero = buildPersonalizedMockupHero({
+    cityHeadline: city,
+    primaryOffering: serviceLabel,
+  });
 
   const diff = input.what_makes_you_different.trim();
-  const why: string[] = [];
-  if (diff) {
-    for (const line of diff.split(/\n+/).map((s) => s.trim()).filter(Boolean)) {
-      if (why.length >= 3) break;
-      why.push(line);
-    }
-  }
-  for (const d of DEFAULT_WHY) {
-    if (why.length >= 6) break;
-    if (!why.some((b) => b.toLowerCase().includes(d.slice(0, 6).toLowerCase()))) why.push(d);
-  }
+  const why = buildSignatureWhyBullets(diff);
 
-  const about = clampAbout(diff || `${input.business_name} serves ${city} with dependable work and clear communication.`);
+  const about = clampAbout(
+    diff || `${input.business_name} serves ${city} with dependable work, tidy crews, and clear communication.`
+  );
 
   const offer = input.special_offer_or_guarantee.trim();
   const cta_section = {
-    title: "Ready to get started?",
-    sub: offer || "Tell us what you need — we'll follow up with next steps and timing.",
-    cta: hero.cta,
+    title: "Ready when you are",
+    sub:
+      offer ||
+      `Questions or timing? Call us today — we serve ${city} and nearby areas with responsive scheduling.`,
+    cta: SIGNATURE_MOCKUP_FINAL_CTA,
   };
 
   return {
     hero,
-    services: services.length ? services : [serviceLabel],
+    services,
     why_choose_us: why,
     about,
     cta_section,
@@ -170,6 +187,8 @@ export function buildAdminQuickMockupDraft(input: AdminMockupSubmissionInput): {
     businessName: input.business_name,
     businessType: input.category || "service business",
   });
+  const typeLabel = readableBusinessType(input.category);
+  const cityLine = input.city.trim();
   const filled = autofillLeadSample(
     base,
     {
@@ -205,19 +224,30 @@ export function buildAdminQuickMockupDraft(input: AdminMockupSubmissionInput): {
   let draft = leadSampleToDraft(sample);
   draft = {
     ...draft,
+    businessName: input.business_name,
+    tagline: cityLine ? `${typeLabel} · ${cityLine}` : typeLabel,
     heroHeadline: structured.hero.headline,
     heroSub: structured.hero.subheadline,
-    heroPrimaryCta: structured.hero.cta,
-    whyChooseBullets: structured.why_choose_us,
-    aboutText: structured.about,
+    aboutText: "",
+    galleryImages: [],
+    gallerySectionTitle: undefined,
+    trustQuotes: [],
     offerings: structured.services.map((name, idx) => ({
       name,
-      text:
-        draft.offerings[idx]?.text ||
-        `Straightforward ${name} for local customers — clear scope and responsive service.`,
+      text: "",
       image: draft.offerings[idx]?.image,
       imageAlt: draft.offerings[idx]?.imageAlt,
     })),
+  };
+
+  draft = applySignatureMockupDraft(draft, { city: cityLine || null }, {
+    funnel_context: {
+      what_makes_you_different: input.what_makes_you_different,
+    },
+  } as Record<string, unknown>);
+
+  draft = {
+    ...draft,
     finalTitle: structured.cta_section.title,
     finalSub: structured.cta_section.sub,
     finalCta: structured.cta_section.cta,

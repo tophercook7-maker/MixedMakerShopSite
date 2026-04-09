@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
+import { absolutePreviewUrl } from "@/lib/mockup-branded-slug";
 import { recordLeadActivity } from "@/lib/lead-activity";
 import { sendMockupPreviewEmail } from "@/lib/send-mockup-preview-email";
 
@@ -11,11 +12,6 @@ function requestOrigin(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || (host?.includes("localhost") ? "http" : "https");
   if (host) return `${proto}://${host}`;
   return String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-}
-
-function mockupAbsoluteUrl(origin: string, slug: string): string {
-  const base = origin.replace(/\/$/, "");
-  return `${base}/mockup/${encodeURIComponent(slug)}`;
 }
 
 async function leadIdFromParams(params: Promise<{ id: string }> | { id: string }): Promise<string> {
@@ -86,8 +82,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const origin = requestOrigin(req);
   const storedUrl = String((mockupRow as { mockup_url?: string | null }).mockup_url || "").trim();
-  const previewUrl =
-    storedUrl && /^https?:\/\//i.test(storedUrl) ? storedUrl : mockupAbsoluteUrl(origin, slug);
+  let previewUrl =
+    storedUrl && /^https?:\/\//i.test(storedUrl) ? storedUrl : absolutePreviewUrl(origin, slug);
+  if (previewUrl.includes("/mockup/")) {
+    previewUrl = previewUrl.replace(/\/mockup\//, "/preview/");
+  }
 
   if (!previewUrl) {
     return NextResponse.json(
@@ -174,9 +173,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     console.warn("[crm-mockup send] lead last_contacted/mockup_deal_status update failed", leadUpErr.message);
   }
 
-  const resolved = mockupAbsoluteUrl(origin, slug);
   return NextResponse.json({
     ok: true,
-    mockup: { ...(updated as Record<string, unknown>), mockup_url_resolved: resolved },
+    mockup: { ...(updated as Record<string, unknown>), mockup_url_resolved: previewUrl },
   });
 }
