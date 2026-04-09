@@ -33,7 +33,9 @@
       <a class="pill" href="/web-design.html">Web Design</a>
       <a class="pill" href="/website-samples/index.html">Website Samples</a>
       <a class="pill" href="/3d-printing.html">3D Printing</a>
-      <a class="pill cta" href="/website-roast/#roast-form">Get My Free Website Roast ➜</a>
+      <a class="pill" href="/website-roast/">Free Website Roast</a>
+      <a class="pill" href="/contact.html">Contact Topher</a>
+      <a class="pill cta" href="/#free-mockup-request">Free Mockup ➜</a>
     </nav>
   </div>
 </header>
@@ -45,9 +47,10 @@
       <p class="subhead">I'll review your website and point out what may be hurting your trust, conversions, clarity, and first impression.</p>
       <p class="hero-microproof" style="margin:10px 0 0;">Perfect for small businesses, contractors, local services, startups, and personal brands.</p>
       <div class="btn-row" style="margin-top:20px;">
-        <a class="btn gold" href="#roast-form">Get My Free Website Roast</a>
-        <a class="btn ghost" href="#what-i-review">See What I Review</a>
+        <a class="btn gold btn-cta-primary" href="/#free-mockup-request">Get a Free Website Mockup</a>
+        <a class="btn ghost" href="/contact.html">Contact Topher</a>
       </div>
+      <p class="small" style="margin-top:14px;color:var(--muted2);"><a href="#roast-form">Request a free website roast</a> · <a href="#what-i-review">See what I review</a></p>
       <div class="trust-line" style="margin-top:18px;">
         <span>Free review</span>
         <span>No obligation</span>
@@ -182,49 +185,60 @@
             <form name="website-roast-request" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="/thank-you-roast.html" class="form-card">
               <input type="hidden" name="form-name" value="website-roast-request" />
               <p class="form-group" style="position:absolute;left:-9999px" aria-hidden="true"><label for="roast-bot">Don't fill this out</label><input id="roast-bot" name="bot-field" tabindex="-1" autocomplete="off" /></p>
+              <p class="form-reassurance">I'll take a look and reply within 1 business day. You can also request a free mockup if you're not ready yet.</p>
+              <ul class="form-trust-list">
+                <li>Built for real small businesses</li>
+                <li>Direct communication with Topher</li>
+                <li>No agency runaround</li>
+              </ul>
               <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label" for="roast-name">Full Name <span class="req">*</span></label>
-                  <input class="form-input" id="roast-name" type="text" name="name" required placeholder="Your name" />
+                  <label class="form-label" for="roast-name">Name <span class="req">*</span></label>
+                  <input class="form-input" id="roast-name" type="text" name="name" required placeholder="Your name" autocomplete="name" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="roast-business">Business Name <span class="req">*</span></label>
-                  <input class="form-input" id="roast-business" type="text" name="business" required placeholder="Your business name" />
+                  <label class="form-label" for="roast-business">Business name <span class="form-optional">(optional)</span></label>
+                  <input class="form-input" id="roast-business" type="text" name="business" placeholder="If it applies" autocomplete="organization" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="roast-email">Email Address <span class="req">*</span></label>
-                  <input class="form-input" id="roast-email" type="email" name="email" required placeholder="you@example.com" />
+                  <label class="form-label" for="roast-email">Email <span class="req">*</span></label>
+                  <input class="form-input" id="roast-email" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="roast-phone">Phone Number</label>
-                  <input class="form-input" id="roast-phone" type="tel" name="phone" placeholder="e.g. (501) 555-0123" />
+                  <label class="form-label" for="roast-phone">Phone <span class="form-optional">(optional)</span></label>
+                  <input class="form-input" id="roast-phone" type="tel" name="phone" placeholder="If you prefer a call or text" autocomplete="tel" />
                 </div>
                 <div class="form-group full">
                   <label class="form-label" for="roast-website">Website URL <span class="req">*</span></label>
                   <input class="form-input" id="roast-website" type="text" name="website_url" required placeholder="yourwebsite.com" inputmode="url" autocomplete="url" />
                 </div>
+                <div class="form-group full">
+                  <label class="form-label" for="roast-do">What are you trying to build or fix? <span class="req">*</span></label>
+                  <textarea class="form-textarea" id="roast-do" name="what_business_does" required placeholder="Example: I need a website for my lawn care business"></textarea>
+                </div>
+              </div>
+              <details class="form-details-optional">
+                <summary>Add more context (optional — sharper roast)</summary>
+                <div class="form-details-inner">
+                  <div class="form-grid">
                 <div class="form-group">
-                  <label class="form-label" for="roast-industry">Business Type / Industry <span class="req">*</span></label>
-                  <input class="form-input" id="roast-industry" type="text" name="industry" required placeholder="e.g. Contractor, Restaurant, Consultant" />
+                  <label class="form-label" for="roast-industry">Business type / industry <span class="form-optional">(optional)</span></label>
+                  <input class="form-input" id="roast-industry" type="text" name="industry" placeholder="e.g. Contractor, Restaurant, Consultant" />
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="roast-location">Where do you serve customers?</label>
+                  <label class="form-label" for="roast-location">Where do you serve customers? <span class="form-optional">(optional)</span></label>
                   <input class="form-input" id="roast-location" type="text" name="location" placeholder="e.g. Hot Springs, AR or nationwide" />
                 </div>
                 <div class="form-group full">
-                  <label class="form-label" for="roast-do">What does your business do? <span class="req">*</span></label>
-                  <textarea class="form-textarea" id="roast-do" name="what_business_does" required placeholder="Describe your business, services, or products..."></textarea>
+                  <label class="form-label" for="roast-problems">What do you think is not working on your current site? <span class="form-optional">(optional)</span></label>
+                  <textarea class="form-textarea large" id="roast-problems" name="not_working" placeholder="What feels off? What have you heard from customers or visitors?"></textarea>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label" for="roast-problems">What do you think is not working on your current site? <span class="req">*</span></label>
-                  <textarea class="form-textarea large" id="roast-problems" name="not_working" required placeholder="What feels off? What have you heard from customers or visitors?"></textarea>
+                  <label class="form-label" for="roast-want">What do you want your website to do better? <span class="form-optional">(optional)</span></label>
+                  <textarea class="form-textarea large" id="roast-want" name="want_better" placeholder="More calls? More leads? Better trust? Clearer messaging?"></textarea>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label" for="roast-want">What do you want your website to do better? <span class="req">*</span></label>
-                  <textarea class="form-textarea large" id="roast-want" name="want_better" required placeholder="More calls? More leads? Better trust? Clearer messaging?"></textarea>
-                </div>
-                <div class="form-group full">
-                  <label class="form-label">What kind of feedback do you want most? <span class="req">*</span></label>
+                  <label class="form-label">What kind of feedback do you want most? <span class="form-optional">(optional)</span></label>
                   <div class="form-checkgroup" role="group" aria-label="Feedback priorities">
                     <label class="form-checklabel"><input type="checkbox" name="feedback_priorities" value="Design / visual trust" /> Design / visual trust</label>
                     <label class="form-checklabel"><input type="checkbox" name="feedback_priorities" value="Messaging / clarity" /> Messaging / clarity</label>
@@ -236,7 +250,7 @@
                   </div>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">Are you open to a free homepage mockup if your site is a good fit?</label>
+                  <label class="form-label">Open to a free homepage mockup if it is a good fit? <span class="form-optional">(optional)</span></label>
                   <div class="form-radiogroup" role="group" aria-label="Mockup interest">
                     <label class="form-radiolabel"><input type="radio" name="mockup_interest" value="Yes" /> Yes</label>
                     <label class="form-radiolabel"><input type="radio" name="mockup_interest" value="Maybe" /> Maybe</label>
@@ -244,7 +258,7 @@
                   </div>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label">Best way to reach you</label>
+                  <label class="form-label">Best way to reach you <span class="form-optional">(optional)</span></label>
                   <div class="form-radiogroup" role="group" aria-label="Contact preference">
                     <label class="form-radiolabel"><input type="radio" name="contact_method" value="Email" /> Email</label>
                     <label class="form-radiolabel"><input type="radio" name="contact_method" value="Phone" /> Phone</label>
@@ -252,11 +266,15 @@
                   </div>
                 </div>
                 <div class="form-group full">
-                  <label class="form-label" for="roast-else">Anything else I should know?</label>
+                  <label class="form-label" for="roast-else">Anything else I should know? <span class="form-optional">(optional)</span></label>
                   <textarea class="form-textarea" id="roast-else" name="anything_else" placeholder="Additional context..."></textarea>
                 </div>
-              </div>
-              <button type="submit" class="btn gold" style="margin-top:24px;">Send My Website Roast Request</button>
+                  </div>
+                </div>
+              </details>
+              <p class="form-cta-note">I'll personally respond — not automated.</p>
+              <button type="submit" class="btn gold form-submit-cta">Send My Info</button>
+              <p class="form-footer-note">No pressure. No obligation. Just a clear next step.</p>
               <p class="website-score-helper" style="margin-top:12px;">I review these personally and usually reply within 24–48 hours.</p>
             </form>
           </div>
@@ -271,8 +289,8 @@
         <h3 class="transformations-cta-title">Want more than feedback?</h3>
         <p class="transformations-cta-copy">If you want, I can also turn the recommendations into a real homepage concept or help you plan a full redesign.</p>
         <div class="btn-row">
-          <a class="btn gold" href="/#free-mockup-request">Get My Free Mockup</a>
-          <a class="btn ghost" href="/#full-project-inquiry">Start a Full Project</a>
+          <a class="btn gold btn-cta-primary" href="/#free-mockup-request">Get a Free Website Mockup</a>
+          <a class="btn ghost" href="/contact.html">Contact Topher</a>
         </div>
       </div>
     </div>
@@ -280,10 +298,13 @@
 
   <section class="section roast-outreach-strip">
     <div class="container">
-      <div class="panel" style="text-align:center;max-width:560px;margin:0 auto;">
-        <h3 style="margin:0 0 10px;font-size:18px;">Already know your site needs work?</h3>
-        <p class="subhead" style="margin:0 0 18px;">Send it over and I'll point out what may be costing you trust, leads, or conversions.</p>
-        <a class="btn gold" href="#roast-form">Get My Free Website Roast</a>
+      <div class="panel site-close-cta" style="max-width:560px;margin:0 auto;">
+        <h2 class="site-close-cta__headline" style="font-size:clamp(18px,2.2vw,22px);">Tell me what you&apos;re trying to build — I&apos;ll show you what it could look like.</h2>
+        <p class="site-close-cta__sub">Free homepage mockup first. Prefer a roast instead? <a href="#roast-form">Request a free website roast</a>.</p>
+        <div class="btn-row">
+          <a class="btn gold btn-cta-primary" href="/#free-mockup-request">Get a Free Website Mockup</a>
+          <a class="btn ghost" href="/contact.html">Contact Topher</a>
+        </div>
       </div>
     </div>
   </section>

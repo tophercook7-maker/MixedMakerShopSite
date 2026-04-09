@@ -29,7 +29,8 @@
       <a class="pill" href="/website-samples/index.html">Website Samples</a>
       <a class="pill" href="/3d-printing.html">3D Printing</a>
       <a class="pill" href="/website-roast/">Free Website Roast</a>
-      <a class="pill cta" href="/#free-mockup-request">Get My Free Mockup ➜</a>
+      <a class="pill" href="/contact.html">Contact Topher</a>
+      <a class="pill cta" href="/#free-mockup-request">Free Mockup ➜</a>
     </nav>
   </div>
 </header>
@@ -40,15 +41,35 @@
       <h1 class="h1" style="margin:0 0 10px;">Free Website Check</h1>
       <p class="subhead" style="margin:0 0 20px;">If you already have a website but aren't sure if it's working as well as it could, I offer a quick website check. I'll review your site and send a short list of improvements for speed, clarity, and visibility on Google.</p>
 
-      <form name="website-check" method="POST" data-netlify="true" action="/thank-you-website-score.html" class="card" style="max-width:520px;">
+      <form name="website-check" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="/thank-you-website-score.html" class="form-card lead-form lead-form-narrow">
         <input type="hidden" name="form-name" value="website-check" />
-        <label class="small" style="display:block;margin-bottom:6px;">Name</label>
-        <input type="text" name="name" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;" />
-        <label class="small" style="display:block;margin-bottom:6px;">Email</label>
-        <input type="email" name="email" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:12px;font-size:14px;" />
-        <label class="small" style="display:block;margin-bottom:6px;">Website URL</label>
-        <input type="url" name="website-url" placeholder="https://example.com" required style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);margin-bottom:16px;font-size:14px;" />
-        <button type="submit" class="btn gold">Check My Website</button>
+        <p class="form-group" style="position:absolute;left:-9999px" aria-hidden="true"><label for="website-check-bot">Don't fill this out</label><input id="website-check-bot" name="bot-field" tabindex="-1" autocomplete="off" /></p>
+
+        <p class="form-reassurance">I'll take a look and reply within 1 business day. You can also request a free mockup if you're not ready yet.</p>
+        <ul class="form-trust-list">
+          <li>Built for real small businesses</li>
+          <li>Direct communication with Topher</li>
+          <li>No agency runaround</li>
+        </ul>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="website-check-name">Name <span class="req">*</span></label>
+            <input class="form-input" id="website-check-name" type="text" name="name" required placeholder="Your name" autocomplete="name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="website-check-email">Email <span class="req">*</span></label>
+            <input class="form-input" id="website-check-email" type="email" name="email" required placeholder="you@example.com" autocomplete="email" />
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="website-check-url">Website URL <span class="req">*</span></label>
+            <input class="form-input" id="website-check-url" type="url" name="website-url" placeholder="https://example.com" required inputmode="url" autocomplete="url" />
+          </div>
+        </div>
+
+        <p class="form-cta-note">I'll personally respond — not automated.</p>
+        <button type="submit" class="btn gold form-submit-cta">Send My Info</button>
+        <p class="form-footer-note">No pressure. No obligation. Just a clear next step.</p>
       </form>
 
       <div style="margin-top:28px;max-width:520px;">
@@ -58,6 +79,15 @@
           <li>I email you a short list of improvements</li>
           <li>If you want help fixing it I can quote the work</li>
         </ol>
+      </div>
+
+      <div class="site-close-cta" style="margin-top:32px;max-width:560px;">
+        <h2 class="site-close-cta__headline">Want a visual direction, not just a checklist?</h2>
+        <p class="site-close-cta__sub">Tell me what you&apos;re trying to build — I&apos;ll show you what it could look like.</p>
+        <div class="btn-row">
+          <a class="btn gold btn-cta-primary" href="/#free-mockup-request">Get a Free Website Mockup</a>
+          <a class="btn ghost" href="/contact.html">Contact Topher</a>
+        </div>
       </div>
     </div>
   </div>
