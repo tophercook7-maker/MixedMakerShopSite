@@ -19,6 +19,7 @@ import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-
 import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
+import { LeadDealTrackingCard } from "@/components/admin/lead-deal-tracking-card";
 import { LeadFollowUpPanel } from "@/components/admin/lead-follow-up-panel";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { computeLeadLaneBundle } from "@/lib/crm/lead-lane";
@@ -142,6 +143,8 @@ type LeadRow = {
   paid_at?: string | null;
   last_response_at?: string | null;
   site_draft_preview_slug?: string | null;
+  /** Deal / follow-up lane (separate from canonical `status`). */
+  lead_status?: string | null;
 };
 
 const LEAD_DETAIL_SELECT_VARIANTS = [
@@ -239,6 +242,7 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "paid_at",
     "last_response_at",
     "site_draft_preview_slug",
+    "lead_status",
   ].join(","),
   [
     "id",
@@ -1711,6 +1715,16 @@ Want me to show you a quick idea?`;
               />
             ) : null}
           </section>
+
+          {resolvedLeadId && !isPrintLead ? (
+            <LeadDealTrackingCard
+              leadId={resolvedLeadId}
+              leadStatus={lead?.lead_status ?? null}
+              lastContactedAt={String(lead?.last_contacted_at || "").trim() || null}
+              nextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+              lastFollowUpTemplateKey={String(lead?.last_follow_up_template_key || "").trim() || null}
+            />
+          ) : null}
 
           {resolvedLeadId && !isPrintLead ? (
             <LeadFollowUpPanel

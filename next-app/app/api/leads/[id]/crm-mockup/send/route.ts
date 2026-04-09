@@ -164,6 +164,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .from("leads")
     .update({
       last_contacted_at: now,
+      lead_status: "mockup_sent",
       mockup_deal_status: nextMockupDeal,
       last_updated_at: now,
     })

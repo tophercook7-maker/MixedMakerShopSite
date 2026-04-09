@@ -93,6 +93,7 @@ export const LEAD_INSERT_COLUMN_WHITELIST = [
   "source_url",
   "source_label",
   "status",
+  "lead_status",
   "notes",
   "scout_intake_reason",
   "why_this_lead_is_here",

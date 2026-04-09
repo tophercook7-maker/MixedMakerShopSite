@@ -112,6 +112,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           replyPreview: parsed.data.reply_preview ?? null,
           currentUnread: unread,
         }),
+        lead_status: "replied",
+        last_contacted_at: nowIso,
         notes: appendLeadNoteLine(notesRaw, "Lead marked replied."),
         last_updated_at: nowIso,
       });
@@ -135,6 +137,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (parsed.data.action === "mark_won") {
       const patch = pickLeadPatchFields({
         status: "won",
+        lead_status: "closed_won",
+        last_contacted_at: nowIso,
         next_follow_up_at: null,
         follow_up_status: "completed",
         automation_paused: true,
@@ -163,6 +167,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (parsed.data.action === "mark_not_interested") {
       const patch = pickLeadPatchFields({
         status: "not_interested",
+        lead_status: "closed_lost",
+        last_contacted_at: nowIso,
         next_follow_up_at: null,
         follow_up_status: "completed",
         automation_paused: true,
@@ -248,6 +254,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (parsed.data.action === "close_no_response") {
       const patch = pickLeadPatchFields({
         status: "no_response",
+        lead_status: "closed_lost",
+        last_contacted_at: nowIso,
         next_follow_up_at: null,
         follow_up_status: "completed",
         automation_paused: true,
