@@ -94,6 +94,9 @@ export default function Sidebar() {
         <a href="/admin/crm/hub" className="block py-1 hover:text-[var(--admin-gold)]">
           CRM hub
         </a>
+        <a href="/admin/scout/review" className="block py-1 hover:text-[var(--admin-gold)]">
+          Scout review queue
+        </a>
         <a href="/admin/mockup-submissions" className="block py-1 hover:text-[var(--admin-gold)]">
           Free mockup inbox
         </a>

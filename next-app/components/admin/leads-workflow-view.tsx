@@ -31,9 +31,9 @@ function followUpMessageForLead(lead: Pick<WorkflowLead, "business_name" | "cate
 }
 
 function followUpDelayDaysForStage(stage: number): number {
-  if (stage <= 1) return 2;
-  if (stage === 2) return 5;
-  return 10;
+  if (stage <= 1) return 1;
+  if (stage === 2) return 2;
+  return 4;
 }
 
 function nextFollowUpIsoFromStage(stage: number): string {
@@ -142,6 +142,8 @@ export type WorkflowLead = {
   /** Web mockup funnel status — see migration leads_mockup_deal_status */
   mockup_deal_status?: string | null;
   follow_up_stage?: number;
+  follow_up_count?: number | null;
+  last_follow_up_template_key?: string | null;
   next_follow_up_at?: string | null;
   follow_up_status?: FollowUpStatus;
   conversion_score?: number | null;
@@ -687,6 +689,36 @@ export function LeadsWorkflowView({
       setError("This lead isn’t saved to the server yet. Use Add Lead until it saves, then try again.");
       return;
     }
+    const prevNorm = normalizeWorkflowLeadStatus(lead.status);
+    if (nextStatus === "contacted" && prevNorm === "new") {
+      const res = await fetch(`/api/leads/${encodeURIComponent(lead.id)}/follow-up-action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "record_outreach" }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string; lead?: Record<string, unknown> };
+      if (!res.ok) {
+        setError(body.error || "Could not log initial outreach.");
+        return;
+      }
+      const row = body.lead || {};
+      setLeads((prev) =>
+        prev.map((rowLead) =>
+          rowLead.id === lead.id
+            ? {
+                ...rowLead,
+                status: "contacted",
+                follow_up_status: "pending",
+                next_follow_up_at: String(row.next_follow_up_at || rowLead.next_follow_up_at || ""),
+                last_contacted_at: String(row.last_contacted_at || new Date().toISOString()),
+                follow_up_count: Number(row.follow_up_count ?? 1),
+              }
+            : rowLead
+        )
+      );
+      setError(null);
+      return;
+    }
     const shouldStopFollowUps =
       nextStatus === "replied" ||
       nextStatus === "no_response" ||
@@ -699,7 +731,7 @@ export function LeadsWorkflowView({
     let contactedFollowUpAt: string | null = null;
     if (nextStatus === "contacted") {
       const fu = new Date();
-      fu.setDate(fu.getDate() + 2);
+      fu.setDate(fu.getDate() + 1);
       contactedFollowUpAt = fu.toISOString();
       patchPayload.next_follow_up_at = contactedFollowUpAt;
       patchPayload.follow_up_status = "pending";
@@ -783,6 +815,14 @@ export function LeadsWorkflowView({
               email_sent: Boolean(row.email_sent ?? rowLead.email_sent),
               facebook_sent: Boolean(row.facebook_sent ?? rowLead.facebook_sent),
               text_sent: Boolean(row.text_sent ?? rowLead.text_sent),
+              follow_up_count:
+                row.follow_up_count != null && !Number.isNaN(Number(row.follow_up_count))
+                  ? Number(row.follow_up_count)
+                  : rowLead.follow_up_count,
+              last_follow_up_template_key:
+                typeof row.last_follow_up_template_key === "string"
+                  ? row.last_follow_up_template_key
+                  : rowLead.last_follow_up_template_key,
               last_outreach_channel:
                 row.last_outreach_channel === "email" ||
                 row.last_outreach_channel === "facebook" ||

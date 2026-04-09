@@ -1,7 +1,10 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { processStaleFollowUpGraces } from "@/lib/crm/process-follow-up-automation";
+
 /**
- * Legacy hook: follow-ups are driven by `next_follow_up_at` while status stays `contacted`.
- * We no longer flip status to `follow_up_due` (removed from the canonical model).
+ * Server-side automation pass (safe to call on list loads): closes grace-window `no_response` rows.
+ * Does not send email.
  */
-export async function refreshDueFollowUps() {
-  return;
+export async function refreshDueFollowUps(supabase: SupabaseClient, ownerId: string) {
+  await processStaleFollowUpGraces(supabase, ownerId);
 }

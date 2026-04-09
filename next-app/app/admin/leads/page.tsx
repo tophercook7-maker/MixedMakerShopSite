@@ -15,6 +15,13 @@ import {
 } from "@/lib/crm/facebook-no-website-reachable";
 import { printCashAppDisplayLineFromEnv, printCashAppPaymentUrlFromEnv } from "@/lib/crm/print-cashapp-config";
 import { isMissingColumnError, toWorkflowLead, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
+import { isFollowUpDueTodayUtc } from "@/lib/crm/simple-lead-status-ui";
+import { leadIsNew, leadNeedsAttention } from "@/lib/crm/follow-up-queue";
+import {
+  leadMatchesReportingSourceFilter,
+  startOfCurrentMonthUtc,
+} from "@/lib/crm/lead-source-reporting";
+import { LeadSourceUrlFilter } from "@/components/admin/crm/lead-source-url-filter";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -45,6 +52,10 @@ export default async function AdminLeadsPage({
     needs_reply?: string;
     /** `1` = leads whose next_follow_up_at is today (UTC date) */
     follow_up_today?: string;
+    /** `attention` | `new` — triage filters (see below) */
+    queue?: string;
+    /** Normalized source key — see `lib/crm/lead-source-reporting.ts` */
+    lead_source?: string;
   }>;
 }) {
   const {
@@ -62,6 +73,8 @@ export default async function AdminLeadsPage({
     print_payment,
     needs_reply,
     follow_up_today,
+    queue,
+    lead_source,
   } = await searchParams;
   const highlightLeadId = String(highlight || "").trim() || null;
   const classicWorkflow = String(view || "").toLowerCase() === "workflow";
@@ -77,6 +90,10 @@ export default async function AdminLeadsPage({
   const initialPrintPaymentFilter = parsePrintPaymentFilterQuery(String(print_payment || "").trim());
   const initialNeedsReply = String(needs_reply || "").trim() === "1";
   const followUpTodayMode = String(follow_up_today || "").trim() === "1";
+  const queueRaw = String(queue || "").trim().toLowerCase();
+  const queueAttentionMode = queueRaw === "attention" || queueRaw === "needs_attention";
+  const queueNewMode = queueRaw === "new";
+  const leadSourceFilter = String(lead_source || "").trim();
   /** Use card browser for 3D + follow-up-today so the 3D pipeline UI is available. */
   const threeDFollowUpToday =
     followUpTodayMode && (crmSourceRaw === "3d_printing" || crmSourceRaw === "three_d_printing");
@@ -132,7 +149,7 @@ export default async function AdminLeadsPage({
   try {
     const selectVariants = [
       "*",
-      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,mockup_deal_status,follow_up_stage,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,service_type,first_outreach_message,first_outreach_sent_at,lead_source,source_url,source_label,lead_tags,print_pipeline_status,print_request_type,print_tags,print_material,print_dimensions,print_quantity,print_deadline,print_attachment_url,print_estimate_summary,print_request_summary,print_design_help_requested,print_timer_started_at,print_timer_running,print_tracked_minutes,print_manual_time_minutes,print_labor_level,print_labor_cost,price_charged,filament_cost,filament_grams_used,filament_cost_per_kg,filament_use_weight_calc,estimated_time_hours,quoted_amount,deposit_amount,final_amount,payment_request_type,payment_status,payment_method,payment_link,paid_at,last_response_at",
+      "id,owner_id,workspace_id,created_at,status,business_name,contact_name,primary_contact_name,email,phone,website,has_website,industry,category,city,state,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,why_this_lead_is_here,visual_business,last_contacted_at,mockup_deal_status,follow_up_stage,follow_up_count,last_follow_up_template_key,next_follow_up_at,follow_up_status,last_outreach_channel,last_outreach_status,last_outreach_sent_at,preview_sent,email_sent,facebook_sent,text_sent,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,source,service_type,first_outreach_message,first_outreach_sent_at,lead_source,source_url,source_label,lead_tags,print_pipeline_status,print_request_type,print_tags,print_material,print_dimensions,print_quantity,print_deadline,print_attachment_url,print_estimate_summary,print_request_summary,print_design_help_requested,print_timer_started_at,print_timer_running,print_tracked_minutes,print_manual_time_minutes,print_labor_level,print_labor_cost,price_charged,filament_cost,filament_grams_used,filament_cost_per_kg,filament_use_weight_calc,estimated_time_hours,quoted_amount,deposit_amount,final_amount,payment_request_type,payment_status,payment_method,payment_link,paid_at,last_response_at",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,conversion_score,last_contacted_at,next_follow_up_at,source,service_type,first_outreach_message,first_outreach_sent_at,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,phone,website,industry,category,city,notes,address,contact_page,facebook_url,best_contact_method,opportunity_score,last_contacted_at,next_follow_up_at,source,service_type,first_outreach_message,first_outreach_sent_at,lead_source,source_url,source_label",
       "id,owner_id,workspace_id,created_at,status,business_name,email,email_source,phone,website,industry,category,notes,address,contact_page,facebook_url,best_contact_method,opportunity_reason,opportunity_score,last_contacted_at,next_follow_up_at,source,service_type,first_outreach_message,first_outreach_sent_at,lead_source,source_url,source_label",
@@ -164,15 +181,59 @@ export default async function AdminLeadsPage({
         .filter(([id]) => Boolean(id))
     ).values()
   );
+  const needsAttentionCount = dedupedRows.filter((r) =>
+    leadNeedsAttention({
+      status: (r as { status?: string | null }).status,
+      next_follow_up_at: (r as { next_follow_up_at?: string | null }).next_follow_up_at,
+    })
+  ).length;
+  const monthStartMs = new Date(startOfCurrentMonthUtc()).getTime();
+  const monthSnapshotRows = dedupedRows.filter((r) => {
+    const c = (r as { created_at?: string | null }).created_at;
+    const t = c ? new Date(String(c)).getTime() : NaN;
+    return Number.isFinite(t) && t >= monthStartMs;
+  });
+  const monthWins = monthSnapshotRows.filter(
+    (r) => String((r as { status?: string | null }).status || "").toLowerCase() === "won"
+  ).length;
   let rowsForUi = dedupedRows;
   if (followUpTodayMode) {
-    const todayKey = new Date().toISOString().slice(0, 10);
     rowsForUi = rowsForUi.filter((r) => {
       const raw = (r as { next_follow_up_at?: string | null }).next_follow_up_at;
-      if (!raw || !String(raw).trim()) return false;
-      const key = new Date(String(raw)).toISOString().slice(0, 10);
-      return key === todayKey;
+      return isFollowUpDueTodayUtc(raw);
     });
+  }
+  if (queueAttentionMode) {
+    rowsForUi = rowsForUi.filter((r) =>
+      leadNeedsAttention({
+        status: (r as { status?: string | null }).status,
+        next_follow_up_at: (r as { next_follow_up_at?: string | null }).next_follow_up_at,
+      })
+    );
+    rowsForUi = [...rowsForUi].sort((a, b) => {
+      const aNext = (a as { next_follow_up_at?: string | null }).next_follow_up_at;
+      const bNext = (b as { next_follow_up_at?: string | null }).next_follow_up_at;
+      const at = aNext ? new Date(String(aNext)).getTime() : Number.POSITIVE_INFINITY;
+      const bt = bNext ? new Date(String(bNext)).getTime() : Number.POSITIVE_INFINITY;
+      if (at !== bt) return at - bt;
+      const ac = (a as { created_at?: string | null }).created_at;
+      const bc = (b as { created_at?: string | null }).created_at;
+      return (bc ? new Date(String(bc)).getTime() : 0) - (ac ? new Date(String(ac)).getTime() : 0);
+    });
+  }
+  if (queueNewMode) {
+    rowsForUi = rowsForUi.filter((r) => leadIsNew({ status: (r as { status?: string | null }).status }));
+  }
+  if (leadSourceFilter) {
+    rowsForUi = rowsForUi.filter((r) =>
+      leadMatchesReportingSourceFilter(
+        {
+          lead_source: (r as { lead_source?: string | null }).lead_source,
+          source: (r as { source?: string | null }).source,
+        },
+        leadSourceFilter
+      )
+    );
   }
   if (totalLeadsCount > 0 && rowsForUi.length > totalLeadsCount) {
     console.error("[Leads Page] rendered rows exceeded db leads count; trimming to db count", {
@@ -218,6 +279,52 @@ export default async function AdminLeadsPage({
               {threeDFollowUpToday ? " 3D print view — use list, board, or table below." : null}
             </p>
           ) : null}
+          {queueAttentionMode ? (
+            <p className="text-xs mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
+              Needs attention: new leads, or contacted with a follow-up time that is due/overdue (replies excluded).
+            </p>
+          ) : null}
+          {queueNewMode ? (
+            <p className="text-xs mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
+              Showing leads with status <span className="font-semibold text-[var(--admin-fg)]">new</span>.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap gap-2 mt-3 text-xs">
+            <Link
+              href="/admin/leads?queue=attention"
+              className="admin-btn-ghost px-3 py-1"
+              style={{
+                borderColor: needsAttentionCount > 0 ? "rgba(251, 191, 36, 0.45)" : undefined,
+              }}
+            >
+              Needs attention{needsAttentionCount > 0 ? ` (${needsAttentionCount})` : ""}
+            </Link>
+            <Link href="/admin/leads?follow_up_today=1" className="admin-btn-ghost px-3 py-1">
+              Follow up today
+            </Link>
+            <Link href="/admin/leads?queue=new" className="admin-btn-ghost px-3 py-1">
+              New leads
+            </Link>
+            <Link href="/admin/leads" className="admin-btn-ghost px-3 py-1">
+              Clear filters
+            </Link>
+            <Link href="/admin/leads/sources" className="admin-btn-ghost px-3 py-1">
+              Source report
+            </Link>
+          </div>
+          <div className="flex flex-wrap items-end gap-3 mt-3">
+            <Suspense fallback={<div className="h-9 w-[200px] rounded bg-white/5 animate-pulse" aria-hidden />}>
+              <LeadSourceUrlFilter />
+            </Suspense>
+          </div>
+          {leadSourceFilter ? (
+            <p className="text-xs mt-2 opacity-90" style={{ color: "var(--admin-muted)" }}>
+              Filtered by source key <span className="font-mono text-[var(--admin-fg)]">{leadSourceFilter}</span> —
+              <Link href="/admin/leads" className="ml-1 underline text-[var(--admin-gold)]">
+                clear source filter
+              </Link>
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           {classicWorkflow ? (
@@ -231,6 +338,20 @@ export default async function AdminLeadsPage({
           )}
         </div>
       </div>
+
+      <section className="admin-card flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "var(--admin-muted)" }}>
+            This month (UTC)
+          </div>
+          <div className="text-sm mt-1" style={{ color: "var(--admin-fg)" }}>
+            {monthSnapshotRows.length} leads · {monthWins} wins
+          </div>
+        </div>
+        <Link href="/admin/leads/sources" className="admin-btn-ghost text-xs shrink-0">
+          Open source report →
+        </Link>
+      </section>
 
       {error ? (
         <section

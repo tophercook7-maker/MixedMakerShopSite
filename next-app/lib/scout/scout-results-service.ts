@@ -119,6 +119,14 @@ export async function markScoutResultLinkedByOpportunity(
     .eq("source_external_id", oid);
 }
 
+function emailFromScoutRaw(raw: unknown): string | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const e = o.email ?? o.contact_email ?? o.best_email;
+  const s = String(e || "").trim();
+  return s || null;
+}
+
 function rowToListItem(r: Record<string, unknown>): ScoutResultListItem {
   return {
     id: String(r.id || ""),
@@ -133,6 +141,7 @@ function rowToListItem(r: Record<string, unknown>): ScoutResultListItem {
     has_facebook: (r.has_facebook as boolean) ?? null,
     phone: (r.phone as string) ?? null,
     has_phone: (r.has_phone as boolean) ?? null,
+    email: emailFromScoutRaw(r.raw_source_payload),
     opportunity_reason: (r.opportunity_reason as string) ?? null,
     opportunity_rank: Number(r.opportunity_rank ?? 0),
     source_url: (r.source_url as string) ?? null,
@@ -160,7 +169,7 @@ export async function fetchScoutResultsForOwner(
   let q = supabase
     .from("scout_results")
     .select(
-      "id,business_name,city,state,category,source_type,website_url,has_website,facebook_url,has_facebook,phone,has_phone,opportunity_reason,opportunity_rank,source_url,skipped,added_to_leads,linked_lead_id,source_external_id"
+      "id,business_name,city,state,category,source_type,website_url,has_website,facebook_url,has_facebook,phone,has_phone,raw_source_payload,opportunity_reason,opportunity_rank,source_url,skipped,added_to_leads,linked_lead_id,source_external_id"
     )
     .eq("owner_id", ownerId)
     .order("opportunity_rank", { ascending: false })

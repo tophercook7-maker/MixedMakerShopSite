@@ -130,11 +130,11 @@ export default async function AdminOutreachPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status } = await searchParams;
-  if (!isManualOnlyMode()) {
-    await refreshDueFollowUps();
-  }
   const supabase = await createClient();
   const user = await getCurrentUser();
+  if (user && !isManualOnlyMode()) {
+    await refreshDueFollowUps(supabase, user.id);
+  }
   if (!user) {
     return (
       <section className="admin-card">

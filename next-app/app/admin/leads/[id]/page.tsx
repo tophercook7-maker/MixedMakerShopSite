@@ -18,6 +18,7 @@ import { SaveLocalLeadToWorkspace } from "@/components/admin/save-local-lead-to-
 import { ClaimLeadToWorkspace } from "@/components/admin/claim-lead-to-workspace";
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
+import { LeadFollowUpPanel } from "@/components/admin/lead-follow-up-panel";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { computeLeadLaneBundle } from "@/lib/crm/lead-lane";
 import { BackToLeadsLink } from "@/components/admin/crm/back-to-leads-link";
@@ -104,6 +105,8 @@ type LeadRow = {
   contact_name?: string | null;
   primary_contact_name?: string | null;
   last_contacted_at?: string | null;
+  follow_up_count?: number | null;
+  last_follow_up_template_key?: string | null;
   mockup_deal_status?: string | null;
   print_pipeline_status?: string | null;
   print_request_type?: string | null;
@@ -200,6 +203,8 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "contact_name",
     "primary_contact_name",
     "last_contacted_at",
+    "follow_up_count",
+    "last_follow_up_template_key",
     "mockup_deal_status",
     "print_pipeline_status",
     "print_request_type",
@@ -1684,6 +1689,7 @@ Want me to show you a quick idea?`;
                 leadId={resolvedLeadId}
                 hasContactPath={hasContactPath}
                 initialNextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+                followUpCount={lead?.follow_up_count == null ? 0 : Number(lead.follow_up_count)}
                 leadStatus={lead?.status || null}
                 unreadReplyCount={
                   lead?.unread_reply_count == null || Number.isNaN(Number(lead.unread_reply_count))
@@ -1693,6 +1699,17 @@ Want me to show you a quick idea?`;
               />
             ) : null}
           </section>
+
+          {resolvedLeadId && !isPrintLead ? (
+            <LeadFollowUpPanel
+              leadId={resolvedLeadId}
+              status={lead?.status || null}
+              nextFollowUpAt={String(lead?.next_follow_up_at || "").trim() || null}
+              lastContactedAt={String(lead?.last_contacted_at || "").trim() || null}
+              followUpCount={lead?.follow_up_count == null ? 0 : Number(lead.follow_up_count)}
+              lastTemplateKey={String(lead?.last_follow_up_template_key || "").trim() || null}
+            />
+          ) : null}
 
           <section className="admin-card space-y-3">
             <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>

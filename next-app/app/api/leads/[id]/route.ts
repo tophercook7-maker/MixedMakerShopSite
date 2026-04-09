@@ -201,6 +201,14 @@ export async function PATCH(
         rawPayload.last_reply_at = new Date().toISOString();
       }
     }
+    if (["won", "archived", "not_interested", "no_response"].includes(nextSt)) {
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "next_follow_up_at")) {
+        rawPayload.next_follow_up_at = null;
+      }
+      if (!Object.prototype.hasOwnProperty.call(rawPayload, "follow_up_status")) {
+        rawPayload.follow_up_status = "completed";
+      }
+    }
   }
 
   const payload = pickLeadPatchFields(rawPayload);

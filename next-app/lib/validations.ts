@@ -125,6 +125,13 @@ export const leadSchema = z.object({
   notes: z.string().max(5000).optional().transform((v) => (v === "" ? undefined : v)),
   follow_up_date: optionalTimestamp,
   last_contacted_at: optionalTimestamp,
+  follow_up_count: z.number().int().min(0).max(50).optional().nullable(),
+  last_follow_up_template_key: z
+    .string()
+    .max(80)
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? undefined : v)),
   follow_up_stage: z.number().int().min(0).max(3).optional().nullable(),
   next_follow_up_at: optionalTimestamp,
   follow_up_status: z.enum(["pending", "completed"]).optional(),

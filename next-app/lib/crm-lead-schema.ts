@@ -123,6 +123,7 @@ export const LEAD_INSERT_COLUMN_WHITELIST = [
   "outreach_sent_at",
   "contact_method",
   "last_contacted_at",
+  "last_follow_up_template_key",
   "next_follow_up_at",
   "follow_up_count",
   "follow_up_stage",

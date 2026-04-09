@@ -13,6 +13,7 @@ type AlertItem = {
 
 export function CrmAlertsPanel() {
   const [items, setItems] = useState<AlertItem[]>([]);
+  const [needsAttentionCount, setNeedsAttentionCount] = useState<number | null>(null);
   const [scaffold, setScaffold] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +24,7 @@ export function CrmAlertsPanel() {
         const res = await fetch("/api/crm/alerts", { cache: "no-store" });
         const body = (await res.json().catch(() => ({}))) as {
           items?: AlertItem[];
+          needs_attention_count?: number;
           scaffold?: { inbound_email?: string };
           error?: string;
         };
@@ -32,6 +34,7 @@ export function CrmAlertsPanel() {
         }
         if (!cancelled) {
           setItems(Array.isArray(body.items) ? body.items : []);
+          setNeedsAttentionCount(typeof body.needs_attention_count === "number" ? body.needs_attention_count : null);
           setScaffold(body.scaffold?.inbound_email || null);
           setError(null);
         }
@@ -53,6 +56,14 @@ export function CrmAlertsPanel() {
       <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
         Replies, follow-ups due, failed sends, and future inbox hooks.
       </p>
+      {needsAttentionCount != null && needsAttentionCount > 0 ? (
+        <p className="text-xs font-semibold" style={{ color: "var(--admin-fg)" }}>
+          Needs attention now:{" "}
+          <Link href="/admin/leads?queue=attention" className="text-[var(--admin-gold)] underline">
+            {needsAttentionCount} lead{needsAttentionCount === 1 ? "" : "s"}
+          </Link>
+        </p>
+      ) : null}
       {error ? (
         <p className="text-sm" style={{ color: "#fca5a5" }}>
           {error}

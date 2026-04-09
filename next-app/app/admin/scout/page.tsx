@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getScoutSummary, getTopOpportunities } from "@/lib/scout/server";
 import { ScoutConsole } from "@/components/admin/scout-console";
 import { ScoutWebsiteFocusBanner } from "@/components/admin/scout-website-focus-banner";
@@ -25,6 +26,16 @@ export default async function AdminScoutPage() {
   }
   return (
     <>
+      <div className="mb-4 rounded-xl border px-4 py-3 text-sm" style={{ borderColor: "var(--admin-border)", color: "var(--admin-muted)" }}>
+        <span className="font-semibold" style={{ color: "var(--admin-fg)" }}>
+          Review unpulled finds
+        </span>
+        {" — "}
+        Quick text-only queue:{" "}
+        <Link href="/admin/scout/review" className="underline font-medium" style={{ color: "var(--admin-gold)" }}>
+          Scout review queue
+        </Link>
+      </div>
       <ScoutWebsiteFocusBanner />
       <ScoutConsole
         integrationReady={summaryResult.configured}

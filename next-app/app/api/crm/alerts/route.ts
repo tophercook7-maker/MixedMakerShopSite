@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
+import { leadNeedsAttention } from "@/lib/crm/follow-up-queue";
 
 function startOfTodayIso(): string {
   const d = new Date();
@@ -101,8 +102,26 @@ export async function GET() {
     if (!dedup.has(a.id)) dedup.set(a.id, a);
   }
 
+  let needsAttentionCount = 0;
+  try {
+    const { data: allRows } = await supabase.from("leads").select("status,next_follow_up_at").eq("owner_id", ownerId).limit(500);
+    for (const r of allRows || []) {
+      if (
+        leadNeedsAttention({
+          status: (r as { status?: string | null }).status,
+          next_follow_up_at: (r as { next_follow_up_at?: string | null }).next_follow_up_at,
+        })
+      ) {
+        needsAttentionCount += 1;
+      }
+    }
+  } catch {
+    needsAttentionCount = 0;
+  }
+
   return NextResponse.json({
     items: Array.from(dedup.values()).slice(0, 50),
+    needs_attention_count: needsAttentionCount,
     scaffold: {
       inbound_email: "Connect your inbox to surface new replies here automatically.",
     },

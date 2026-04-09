@@ -21,8 +21,24 @@
     .sample-card {
       background: linear-gradient(135deg, rgba(8, 39, 23, 0.94), rgba(3, 16, 10, 0.98));
       border: 1px solid rgba(243, 233, 217, 0.18);
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
     }
     .sample-card:hover { border-color: rgba(243, 233, 217, 0.35); }
+    .portfolio-thumb {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: radial-gradient(circle at 25% 15%, rgba(244, 155, 26, 0.14), rgba(0, 0, 0, 0.35));
+      border-bottom: 1px solid rgba(243, 233, 217, 0.1);
+    }
+    .portfolio-thumb img {
+      width: 100%;
+      height: 100%;
+      min-height: 13rem;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
     .sample-card .font-semibold.text-amber-700,
     .sample-card .font-semibold.text-emerald-700,
     .sample-card .font-semibold.text-slate-800,
@@ -85,7 +101,7 @@
     <p class="mt-2 text-slate-600 mb-6">Client-ready mockups and website concepts.</p>
     <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       <a href="./bean-bliss.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1015/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Bean Bliss café design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Bean Bliss café design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Bean Bliss</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -95,7 +111,7 @@
       </a>
 
       <a href="./bean-bliss-boho.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1060/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Bean Bliss Boho café design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Bean Bliss Boho café design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Bean Bliss Boho</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -105,7 +121,7 @@
       </a>
 
       <a href="./noir-roast.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1061/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Noir Roast roastery design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Noir Roast roastery design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Noir Roast</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -115,7 +131,7 @@
       </a>
 
       <a href="./noir-roast-rustic.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1018/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Noir Roast Rustic roastery design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Noir Roast Rustic roastery design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Noir Roast Rustic</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -125,7 +141,7 @@
       </a>
 
       <a href="./sunrise-cafe.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1066/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Sunrise Café design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Sunrise Café design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Sunrise Café</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -135,7 +151,7 @@
       </a>
 
       <a href="./sunrise-cafe-modern.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1050/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Sunrise Café Modern design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Sunrise Café Modern design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Sunrise Café Modern</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -145,7 +161,7 @@
       </a>
 
       <a href="./route-66-coffee.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1040/1200/700" class="w-full h-44 object-cover" alt="Coffee shop website layout example — Route 66 Coffee diner design">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Coffee shop website layout example — Route 66 Coffee diner design"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Route 66 Coffee</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -155,7 +171,7 @@
       </a>
 
       <a href="./southern-diner-concept/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/292/1200/700" class="w-full h-44 object-cover" alt="Restaurant website design example — Southern Diner concept homepage">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/southern-diner-hero.jpg" alt="Restaurant website design example — Southern Diner concept homepage"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Southern Diner Concept</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -165,7 +181,7 @@
       </a>
 
       <a href="./grace-fellowship-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/225/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Grace Fellowship Church homepage">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Church website design example — Grace Fellowship Church homepage"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Grace Fellowship Church</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -174,7 +190,7 @@
         </div>
       </a>
       <a href="./riverstone-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/26/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Riverstone Church homepage">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Church website design example — Riverstone Church homepage"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Riverstone Church</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -183,7 +199,7 @@
         </div>
       </a>
       <a href="./oak-hill-community-church/" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/1018/1200/700" class="w-full h-44 object-cover" alt="Church website design example — Oak Hill Community Church homepage">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Church website design example — Oak Hill Community Church homepage"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Oak Hill Community Church</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Website Build</p>
@@ -197,7 +213,7 @@
     <p class="mt-2 text-slate-600 mb-6">Before/after redesign demos.</p>
     <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       <a href="/restaurant-website-redesign.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/292/1200/700" class="w-full h-44 object-cover" alt="Restaurant website design example — before and after homepage redesign">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/restaurant-redesign-after.png" alt="Restaurant website design example — after homepage redesign"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Restaurant Redesign Demo</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Redesign</p>
@@ -211,7 +227,7 @@
     <p class="mt-2 text-slate-600 mb-6">Free tools to improve your website.</p>
     <section class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
       <a href="/website-check.html" class="sample-card rounded-2xl shadow-lg hover:shadow-xl transition overflow-hidden">
-        <img src="https://picsum.photos/id/119/1200/700" class="w-full h-44 object-cover" alt="Website check tool — free website review interface">
+        <div class="portfolio-thumb"><img loading="lazy" decoding="async" src="/assets/portfolio/demo-mockup-hero.jpg" alt="Website check tool — free website review interface"></div>
         <div class="p-6">
           <h2 class="text-2xl font-bold">Website Teardown Tool</h2>
           <p class="mt-1 text-xs text-slate-500">Type: Tool</p>
@@ -227,13 +243,14 @@
         <li>Different design directions (cozy / boho / modern / premium / rustic / playful / vintage)</li>
         <li>Responsive layouts + clean sections</li>
         <li>Menus with a small flavors list (not a giant flavors page)</li>
+        <li>Thumbnails: open the live demo for the real layout — shared studio captures are only for quick scanning.</li>
       </ul>
     </section>
   </main>
 
   <footer class="py-10 text-center text-sm text-slate-500 border-t border-white/10">
     <p class="mb-4"><a href="../index.html" class="text-amber-400/95 hover:text-amber-300 font-medium">← Back to MixedMakerShop</a></p>
-    <p>Portfolio mockups • Replace with real client work later</p>
+    <p>Interactive HTML demos. Southern Diner + the restaurant redesign card use real captures from those pages. Most other cards share one studio export as the thumbnail until each demo gets its own export.</p>
   </footer>
 </body>
 </html>

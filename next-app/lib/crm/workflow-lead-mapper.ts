@@ -37,6 +37,8 @@ export type LeadRowForWorkflow = {
   last_contacted_at?: string | null;
   mockup_deal_status?: string | null;
   follow_up_stage?: number | null;
+  follow_up_count?: number | null;
+  last_follow_up_template_key?: string | null;
   next_follow_up_at?: string | null;
   follow_up_status?: "pending" | "completed" | null;
   last_outreach_channel?: string | null;
@@ -265,6 +267,11 @@ export function toWorkflowLead(row: LeadRowForWorkflow): WorkflowLead {
       row.follow_up_stage == null || Number.isNaN(Number(row.follow_up_stage))
         ? 0
         : Math.max(0, Math.min(3, Number(row.follow_up_stage))),
+    follow_up_count:
+      row.follow_up_count == null || Number.isNaN(Number(row.follow_up_count))
+        ? null
+        : Math.max(0, Number(row.follow_up_count)),
+    last_follow_up_template_key: String(row.last_follow_up_template_key || "").trim() || null,
     next_follow_up_at: String(row.next_follow_up_at || "").trim() || null,
     follow_up_status:
       String(row.follow_up_status || "").trim().toLowerCase() === "completed" ? "completed" : "pending",

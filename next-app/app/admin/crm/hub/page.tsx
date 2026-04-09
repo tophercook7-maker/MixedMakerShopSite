@@ -55,9 +55,14 @@ export default function AdminCrmHubPage() {
               gradually.
             </p>
           </div>
-          <Link href="/admin/leads?pool=top_picks" className="admin-btn-ghost text-sm shrink-0">
-            Top Picks (database)
-          </Link>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Link href="/admin/scout/review" className="admin-btn-ghost text-sm shrink-0">
+              Scout review queue
+            </Link>
+            <Link href="/admin/leads?pool=top_picks" className="admin-btn-ghost text-sm shrink-0">
+              Top Picks (database)
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -71,14 +76,26 @@ export default function AdminCrmHubPage() {
           <Link href="/admin/leads" className="admin-btn-ghost text-xs">
             All leads
           </Link>
+          <Link href="/admin/leads?queue=attention" className="admin-btn-ghost text-xs">
+            Needs attention
+          </Link>
           <Link href="/admin/leads?follow_up_today=1" className="admin-btn-ghost text-xs">
             Follow up today
+          </Link>
+          <Link href="/admin/leads?queue=new" className="admin-btn-ghost text-xs">
+            New leads
           </Link>
           <Link href="/admin/leads?needs_reply=1" className="admin-btn-ghost text-xs">
             Waiting on reply
           </Link>
           <Link href="/admin/leads?crm_source=3d_printing" className="admin-btn-ghost text-xs">
             3D print leads
+          </Link>
+          <Link href="/admin/scout/review" className="admin-btn-ghost text-xs">
+            Scout review queue
+          </Link>
+          <Link href="/admin/leads/sources" className="admin-btn-ghost text-xs">
+            Lead sources report
           </Link>
           <Link href="/admin/print-dashboard" className="admin-btn-ghost text-xs">
             3D print dashboard

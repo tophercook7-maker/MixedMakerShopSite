@@ -15,6 +15,8 @@ function toLocalDatetimeValue(d: Date): string {
 type Props = {
   leadId: string;
   initialNextFollowUpAt: string | null;
+  /** Logged outbound sends (canonical cadence uses `follow_up_count` on the lead row). */
+  followUpCount?: number | null;
   /** When false, show Enrich / Research later / Close instead of Contact / Follow up / Close */
   hasContactPath: boolean;
   /** Pipeline status — used for Mark replied / snippet-only updates */
@@ -53,6 +55,7 @@ async function logAutomation(leadId: string, event_type: string, payload: Record
 export function LeadPrimaryActions({
   leadId,
   initialNextFollowUpAt,
+  followUpCount = 0,
   hasContactPath,
   leadStatus = null,
   unreadReplyCount = null,
@@ -71,6 +74,7 @@ export function LeadPrimaryActions({
     .toLowerCase();
   const alreadyReplied = normalizedStatus === "replied";
   const terminal = ["won", "archived", "no_response", "not_interested"].includes(normalizedStatus);
+  const outboundCount = Math.max(0, Math.floor(Number(followUpCount) || 0));
 
   useEffect(() => {
     const d = addBusinessDays(new Date(), 3);
@@ -185,30 +189,27 @@ export function LeadPrimaryActions({
         <button
           type="button"
           className="admin-btn-primary text-sm"
-          disabled={busy}
+          disabled={busy || outboundCount >= 4 || alreadyReplied}
           onClick={async () => {
             setBusy(true);
             setErr(null);
-            const next =
-              initialNextFollowUpAt && String(initialNextFollowUpAt).trim()
-                ? undefined
-                : addBusinessDaysIso(new Date(), 3);
-            const patch: Record<string, unknown> = {
-              status: "contacted",
-              automation_paused: false,
-            };
-            if (next) patch.next_follow_up_at = next;
-            const r = await patchLeadApi(leadId, patch);
+            const res = await fetch(`/api/leads/${encodeURIComponent(leadId)}/follow-up-action`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "record_outreach" }),
+            });
+            const body = (await res.json().catch(() => ({}))) as { error?: string };
             setBusy(false);
-            if (!r.ok) {
-              setErr(r.error);
+            if (!res.ok) {
+              setErr(body.error || "Could not log outreach.");
               return;
             }
-            setToast(next ? "Contact logged — follow-up set." : "Contact logged.");
-            void logAutomation(leadId, "mark_contacted", { scheduled_follow_up: Boolean(next) });
+            setToast(outboundCount === 0 ? "Initial outreach logged — follow-up scheduled." : "Follow-up logged.");
+            void logAutomation(leadId, "record_outreach", {});
+            router.refresh();
           }}
         >
-          Contact
+          {outboundCount === 0 ? "Log initial outreach" : "Log next outreach"}
         </button>
         <button
           type="button"

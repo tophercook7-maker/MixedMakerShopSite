@@ -45,6 +45,8 @@ export type ScoutResultListItem = {
   has_facebook: boolean | null;
   phone: string | null;
   has_phone: boolean | null;
+  /** Best-effort from `raw_source_payload` (not a dedicated column on `scout_results`). */
+  email?: string | null;
   opportunity_reason: string | null;
   opportunity_rank: number;
   source_url: string | null;

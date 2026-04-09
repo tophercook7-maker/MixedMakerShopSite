@@ -15,10 +15,10 @@ import { findLeadDuplicate, normalizeBusinessName, normalizeEmail, normalizeFace
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!isManualOnlyMode()) {
-    await refreshDueFollowUps();
-  }
   const supabase = await createClient();
+  if (!isManualOnlyMode()) {
+    await refreshDueFollowUps(supabase, user.id);
+  }
   const { data, error } = await supabase
     .from("leads")
     .select("*")
@@ -129,9 +129,14 @@ export async function POST(request: Request) {
     }
   }
 
+  const nowIso = new Date().toISOString();
   const safeInsertPayload = pickLeadInsertFields({
     ...candidatePayload,
     ...fingerprintEntries,
+    next_follow_up_at: (candidatePayload as Record<string, unknown>).next_follow_up_at ?? nowIso,
+    follow_up_count: (candidatePayload as Record<string, unknown>).follow_up_count ?? 0,
+    follow_up_status: (candidatePayload as Record<string, unknown>).follow_up_status ?? "pending",
+    last_updated_at: (candidatePayload as Record<string, unknown>).last_updated_at ?? nowIso,
   });
 
   const droppedFields = Object.keys(candidatePayload).filter(
