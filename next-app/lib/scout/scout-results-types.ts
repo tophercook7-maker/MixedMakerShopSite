@@ -55,6 +55,21 @@ export type ScoutResultListItem = {
   linked_lead_id: string | null;
   /** Opportunity id for create-lead API */
   source_external_id: string | null;
+  scout_notes?: string | null;
+  discovered_at?: string | null;
+  marked_priority?: boolean | null;
+  reviewed_at?: string | null;
+  pulled_into_crm_at?: string | null;
+};
+
+/** After CRM dedupe + scoring (API response). */
+export type EnrichedScoutResultListItem = ScoutResultListItem & {
+  opportunity_score: number;
+  opportunity_label: "hot" | "good" | "maybe" | "skip";
+  reason_summary: string;
+  crm_duplicate: boolean;
+  duplicate_lead_id: string | null;
+  scout_status: "new" | "reviewed" | "pulled" | "rejected" | "archived";
 };
 
 export type ScoutResultsCounts = {
@@ -63,6 +78,14 @@ export type ScoutResultsCounts = {
   skipped: number;
   no_website: number;
   facebook_only: number;
+  /** All rows for this owner */
+  total_all: number;
+  hot_in_queue: number;
+  good_in_queue: number;
+  maybe_in_queue: number;
+  skip_in_queue: number;
+  rejected: number;
+  archived: number;
 };
 
 export type ScoutResultsSyncBody = {

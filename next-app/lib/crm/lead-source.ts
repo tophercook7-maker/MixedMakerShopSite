@@ -53,6 +53,7 @@ export function normalizeLeadSourceValue(raw: string | null | undefined): string
   if (s === "print_quote" || s === "print_request") return "3d_printing";
   if (s === "scout_simple_intake" || s === "scoutsimpleintake") return "scout_mixed";
   if (s === "opportunity_sync" || s === "opportunitysync") return "scout_mixed";
+  if (s === "scout") return "scout";
   return s;
 }
 
@@ -113,6 +114,7 @@ const SOURCE_BADGE_BY_CANONICAL: Record<string, string> = {
   scout_google: "Scout (Google)",
   scout_facebook: "Scout (Facebook)",
   scout_mixed: "Scout",
+  scout: "Scout",
   manual: "Manual",
   manual_pick: "Top Picks",
   "3d_printing": "3D printing",
@@ -175,7 +177,7 @@ export function leadMatchesSourceFilter(
     case "manual":
       return c === "manual";
     case "scout":
-      return c.startsWith("scout_");
+      return c.startsWith("scout_") || c === "scout";
     case "google":
       return c === "scout_google";
     case "facebook":

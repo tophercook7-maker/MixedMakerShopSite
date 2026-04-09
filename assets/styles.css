@@ -87,9 +87,158 @@ a:hover{text-decoration:underline}
 .pill.cta:hover{filter:brightness(1.02);transform:translateY(-1px);text-decoration:none}
 .pill small{opacity:.8;font-weight:800}
 
-.hero{padding:clamp(24px, 6vw, 70px) 0 10px}
+/* Homepage hero — full-bleed image + layered overlays + glass (umbrella image) */
+.hero{
+  position:relative;
+  padding:clamp(24px, 6vw, 70px) 0 10px;
+  overflow:hidden;
+  isolation:isolate;
+}
+.hero-media{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+.hero-media__image{
+  position:absolute;
+  inset:0;
+  background-image:url("/assets/mixedmakershop-umbrella-brand-hero.png");
+  background-size:cover;
+  background-position:center 28%;
+  background-repeat:no-repeat;
+  transform:scale(1.02);
+}
+/* Subtle dark / green atmospheric wash — whole hero */
+.hero-media__wash{
+  position:absolute;
+  inset:0;
+  background:rgba(8,20,14,.2);
+}
+/* Left-weighted readability gradient — text side darkest, right stays photographic */
+.hero-media__read{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    90deg,
+    rgba(10,14,12,.72) 0%,
+    rgba(10,14,12,.58) 26%,
+    rgba(10,14,12,.34) 52%,
+    rgba(10,14,12,.14) 72%,
+    rgba(10,14,12,.04) 100%
+  );
+}
+.hero > .container{
+  position:relative;
+  z-index:2;
+}
 .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(18px, 4vw, 34px);align-items:center}
 @media (max-width: 960px){.hero-grid{grid-template-columns:1fr}.brand{min-width:auto}}
+
+/* Glass: shared chrome */
+.hero-glass,
+.hero-card,
+.hero-overlay{
+  border-radius:16px;
+  padding:clamp(18px,3vw,22px);
+}
+.hero-card,
+.hero-overlay{
+  background:rgba(20,25,22,.65);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+}
+/* Copy column — stronger glass (desktop ~0.58 opacity, blur 14) */
+.hero-glass--copy{
+  background:rgba(20,25,22,.58);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+}
+/* Side column — softer / more photographic */
+.hero-glass--side{
+  background:rgba(20,25,22,.38);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 8px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+}
+/* Tablet: slightly more solid copy panel */
+@media (max-width:960px){
+  .hero-glass--copy{
+    background:rgba(20,25,22,.62);
+  }
+  .hero-glass--side{
+    background:rgba(20,25,22,.44);
+  }
+}
+/* Mobile: readability first — stronger wash, gradient, more solid glass, slightly less blur */
+@media (max-width:640px){
+  .hero-media__wash{
+    background:rgba(10,18,14,.32);
+  }
+  .hero-media__read{
+    background:linear-gradient(
+      90deg,
+      rgba(10,14,12,.82) 0%,
+      rgba(10,14,12,.68) 32%,
+      rgba(10,14,12,.48) 58%,
+      rgba(10,14,12,.22) 82%,
+      rgba(10,14,12,.08) 100%
+    );
+  }
+  .hero-glass--copy,
+  .hero-glass--side{
+    background:rgba(18,22,20,.72);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 12px 36px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+}
+.hero .hero-glass--copy h1,
+.hero .hero-glass--copy h1.h1{
+  color:rgba(255,255,255,.96);
+  text-shadow:0 2px 18px rgba(0,0,0,.22);
+}
+.hero .hero-glass h2,
+.hero .hero-glass h3{
+  color:rgba(255,255,255,.95);
+}
+.hero .hero-glass--copy p,
+.hero .hero-glass--copy .small{
+  color:rgba(255,255,255,.84);
+}
+.hero .hero-glass--side p,
+.hero .hero-glass--side .small{
+  color:rgba(255,255,255,.82);
+}
+.hero .hero-glass .h1 .gold{
+  color:var(--gold2);
+  text-shadow:0 2px 14px rgba(0,0,0,.2);
+}
+.hero .hero-glass--copy .kicker{
+  color:rgba(232,210,175,.9);
+  border-color:rgba(240,165,26,.22);
+  background:rgba(255,255,255,.06);
+}
+.hero .hero-glass--side .kicker{
+  color:rgba(255,255,255,.85);
+}
+.hero .hero-glass a:not(.btn):not(.pill){
+  color:rgba(255,255,255,.9);
+}
+.hero .hero-glass--copy .subhead{
+  color:rgba(255,255,255,.84);
+}
+.hero .hero-glass--side .subhead{
+  color:rgba(255,255,255,.8);
+}
+.hero .hero-glass .trust-line span{
+  color:rgba(255,255,255,.8);
+}
 
 .kicker{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-weight:900}
 .dot{width:9px;height:9px;border-radius:999px;background:var(--gold);box-shadow:0 0 0 4px rgba(240,165,26,.18)}

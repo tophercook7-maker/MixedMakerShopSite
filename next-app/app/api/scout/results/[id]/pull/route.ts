@@ -5,7 +5,6 @@ import { resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 import { findLeadDuplicate, normalizeFacebookUrl, normalizeWebsiteUrl } from "@/lib/leads-dedup";
 import { scoreScoutLead } from "@/lib/scout-conversion";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
-import { mapScoutSourceTypeToLeadSource } from "@/lib/crm/lead-source";
 import { markScoutResultLinked } from "@/lib/scout/scout-results-service";
 
 export const dynamic = "force-dynamic";
@@ -111,11 +110,6 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     has_contact_path: Boolean(emailRaw || phoneRaw || facebookUrl || website),
   });
 
-  const resolvedSource = mapScoutSourceTypeToLeadSource(sr.source_type);
-  let sourceLabel = "Scout discovery queue";
-  if (resolvedSource === "scout_google") sourceLabel = "Scout queue (Google)";
-  else if (resolvedSource === "scout_facebook") sourceLabel = "Scout queue (Facebook)";
-
   const workspaceId = await resolveWorkspaceIdForOwner(ownerId);
   if (!workspaceId) {
     return NextResponse.json(
@@ -178,10 +172,10 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     normalized_facebook_url: normalizeFacebookUrl(facebookUrl) || null,
     category: String(sr.category || "").trim() || null,
     industry: String(sr.category || "").trim() || null,
-    source: resolvedSource,
-    lead_source: resolvedSource,
+    source: "scout",
+    lead_source: "scout",
     source_url: String(sr.source_url || "").trim() || null,
-    source_label: sourceLabel,
+    source_label: "Pulled from Scout review",
     scout_intake_reason: "scout_queue_pull",
     why_this_lead_is_here: conversion.why_this_lead || assessment.why_this_lead_is_here,
     visual_business: conversion.visual_business,
