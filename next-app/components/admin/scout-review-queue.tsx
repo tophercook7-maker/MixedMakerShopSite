@@ -156,6 +156,29 @@ export function ScoutReviewQueue({ previewLimit = null }: ScoutReviewQueueProps)
     }
   };
 
+  const generatePreview = async (id: string) => {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/scout/results/${encodeURIComponent(id)}/generate-preview`, { method: "POST" });
+      const b = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        preview_url?: string;
+        lead_id?: string;
+        reason?: string;
+      };
+      if (!res.ok) {
+        setError(b.error || "Could not generate preview.");
+        return;
+      }
+      setError(null);
+      await load();
+      const url = String(b.preview_url || "").trim();
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const clearFilters = () => {
     setBand("all");
     setFacebookOnly(false);
@@ -175,8 +198,9 @@ export function ScoutReviewQueue({ previewLimit = null }: ScoutReviewQueueProps)
               {previewLimit ? "Scout priority preview" : "Scout review"}
             </h1>
             <p className="text-sm max-w-3xl" style={{ color: "var(--admin-muted)" }}>
-              Scored and sorted for fast decisions. Pull good fits into the CRM; archive or mark not useful to keep junk
-              out. No thumbnails—text only.
+              Scored and sorted for fast decisions. Use <strong className="font-semibold">Generate preview</strong> for a
+              one-click CRM lead + branded mockup link (opens in a new tab). Pull into CRM only adds the lead. Archive or
+              mark not useful to keep junk out. No thumbnails—text only.
             </p>
             {previewLimit ? (
               <p className="text-xs mt-2">
@@ -478,10 +502,21 @@ export function ScoutReviewQueue({ previewLimit = null }: ScoutReviewQueueProps)
                     </td>
                     <td className="py-3 pl-2 text-right">
                       <div className="flex flex-col items-end gap-1.5">
-                        {!r.added_to_leads && !r.skipped ? (
+                        {!r.skipped ? (
                           <button
                             type="button"
                             className="admin-btn text-xs px-2 py-1"
+                            disabled={disabled}
+                            onClick={() => void generatePreview(r.id)}
+                          >
+                            Generate preview
+                          </button>
+                        ) : null}
+                        {!r.added_to_leads && !r.skipped ? (
+                          <button
+                            type="button"
+                            className="admin-btn-ghost text-xs px-2 py-1"
+                            style={{ borderColor: "var(--admin-border)" }}
                             disabled={disabled}
                             onClick={() => void pullIntoCrm(r.id)}
                           >

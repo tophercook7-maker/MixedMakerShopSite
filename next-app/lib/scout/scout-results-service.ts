@@ -9,6 +9,8 @@ import {
   isScoutResultsTableMissingError,
   SCOUT_RESULTS_TABLE_MISSING_MESSAGE,
 } from "@/lib/scout/scout-results-table-messages";
+import { hydrateScoutResultRecord } from "@/lib/scout/scout-results-hydrate";
+import { isOutreachReadyScoutRow } from "@/lib/scout/scout-outreach-eligibility";
 
 export {
   isScoutResultsTableMissingError,
@@ -139,19 +141,20 @@ function emailFromScoutRaw(raw: unknown): string | null {
 }
 
 function rowToListItem(r: Record<string, unknown>): ScoutResultListItem {
+  const h = hydrateScoutResultRecord(r);
   return {
     id: String(r.id || ""),
-    business_name: String(r.business_name || ""),
-    city: (r.city as string) ?? null,
-    state: (r.state as string) ?? null,
-    category: (r.category as string) ?? null,
+    business_name: h.business_name,
+    city: h.city,
+    state: h.state,
+    category: h.category,
     source_type: r.source_type as ScoutResultListItem["source_type"],
     website_url: (r.website_url as string) ?? null,
     has_website: (r.has_website as boolean) ?? null,
-    facebook_url: (r.facebook_url as string) ?? null,
-    has_facebook: (r.has_facebook as boolean) ?? null,
-    phone: (r.phone as string) ?? null,
-    has_phone: (r.has_phone as boolean) ?? null,
+    facebook_url: h.facebook_url,
+    has_facebook: h.has_facebook,
+    phone: h.phone,
+    has_phone: h.has_phone,
     email: emailFromScoutRaw(r.raw_source_payload),
     opportunity_reason: (r.opportunity_reason as string) ?? null,
     opportunity_rank: Number(r.opportunity_rank ?? 0),
@@ -201,7 +204,9 @@ export async function fetchScoutResultsForOwner(
   }
 ): Promise<{ rows: EnrichedScoutResultListItem[]; error: string | null; tableMissing?: boolean }> {
   const view: ScoutResultsViewFilter = filters.view || "queue";
-  const fetchCap = Math.min(filters.fetch_cap ?? 800, 1000);
+  const outreachQueueView = view === "queue" || view === "unreviewed";
+  const requestedCap = filters.fetch_cap ?? 800;
+  const fetchCap = Math.min(outreachQueueView ? Math.max(requestedCap, 1600) : requestedCap, 2000);
   const outLimit = Math.min(filters.limit ?? 500, 500);
 
   let q = supabase
@@ -275,6 +280,10 @@ export async function fetchScoutResultsForOwner(
   const leadRows = await fetchLeadRowsForDedup(supabase, ownerId);
   let enriched = enrichScoutResultRows(mapped, leadRows);
 
+  if (outreachQueueView) {
+    enriched = enriched.filter((r) => isOutreachReadyScoutRow(r));
+  }
+
   const band = String(filters.band || "all").toLowerCase();
   if (band === "hot") enriched = enriched.filter((r) => r.opportunity_label === "hot");
   else if (band === "good") enriched = enriched.filter((r) => r.opportunity_label === "good");
@@ -314,6 +323,19 @@ export async function fetchScoutResultsForOwner(
 export async function fetchScoutResultsCounts(supabase: SupabaseClient, ownerId: string): Promise<ScoutResultsCounts> {
   const base = () => supabase.from("scout_results").select("*", { count: "exact", head: true }).eq("owner_id", ownerId);
 
+  const outreachQueueBase = () =>
+    base()
+      .eq("skipped", false)
+      .eq("added_to_leads", false)
+      .not("business_name", "is", null)
+      .neq("business_name", "")
+      .not("facebook_url", "is", null)
+      .neq("facebook_url", "")
+      .or("has_website.is.null,has_website.eq.false")
+      .or(
+        "facebook_url.ilike.%facebook.com%,facebook_url.ilike.%fb.com%,facebook_url.ilike.%fb.me%,facebook_url.ilike.%m.facebook.com%"
+      );
+
   const [
     queueRes,
     savedRes,
@@ -324,11 +346,11 @@ export async function fetchScoutResultsCounts(supabase: SupabaseClient, ownerId:
     rejectedRes,
     archivedRes,
   ] = await Promise.all([
-    base().eq("skipped", false).eq("added_to_leads", false),
+    outreachQueueBase(),
     base().eq("added_to_leads", true),
     base().eq("skipped", true),
     base().eq("skipped", false).eq("added_to_leads", false).or("has_website.eq.false,has_website.is.null"),
-    base().eq("skipped", false).eq("added_to_leads", false).eq("has_facebook", true).eq("has_website", false),
+    outreachQueueBase(),
     base(),
     base().eq("skipped", true).ilike("scout_notes", "%not_useful%"),
     base().eq("skipped", true).ilike("scout_notes", "%archived%"),

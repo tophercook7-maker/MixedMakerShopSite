@@ -8,6 +8,7 @@ import {
 import type { ScoutLead } from "@/lib/scout/types";
 import { rankScoreForSort } from "@/lib/scout/scout-lite";
 import type { ScoutSourceTypeStored } from "@/lib/scout/scout-results-types";
+import { isOutreachReadyScoutRow } from "@/lib/scout/scout-outreach-eligibility";
 
 const SOURCE_TYPES = new Set(["google", "facebook", "mixed", "manual", "unknown"]);
 
@@ -241,11 +242,12 @@ export function activeSignalsBonus(payload: Record<string, unknown> | null | und
 }
 
 /**
- * Best web design targets: queue items that match outreach fit (evaluated on stored row).
+ * Best / outreach preset: same bar as server-side queue (Facebook + business name, no website on file).
  */
 export function matchesBestWebDesignPreset(row: {
   skipped: boolean;
   added_to_leads: boolean;
+  business_name?: string | null;
   has_website: boolean | null;
   website_url: string | null;
   has_facebook: boolean | null;
@@ -253,17 +255,7 @@ export function matchesBestWebDesignPreset(row: {
   opportunity_reason: string | null;
 }): boolean {
   if (row.skipped || row.added_to_leads) return false;
-  const web = String(row.website_url || "").trim();
-  const fbOnly =
-    (row.has_facebook || Boolean(String(row.facebook_url || "").trim())) &&
-    (!web || isFacebookUrl(web) || row.has_website === false);
-  const noSite = row.has_website === false || (!web && row.has_website !== true);
-  const unknownSite = row.has_website == null && !web;
-  const reason = String(row.opportunity_reason || "").toLowerCase();
-  const weak =
-    row.has_website === true &&
-    (reason.includes("weak") || reason.includes("outdated") || reason.includes("broken") || reason.includes("cta"));
-  return Boolean(noSite || fbOnly || unknownSite || weak);
+  return isOutreachReadyScoutRow(row);
 }
 
 export function bestWebDesignSortScore(row: {
@@ -276,7 +268,15 @@ export function bestWebDesignSortScore(row: {
   has_facebook: boolean | null;
   facebook_url: string | null;
   opportunity_reason: string | null;
+  business_name?: string | null;
 }): number {
+  const phoneBoost = row.has_phone ? 25 : 0;
+  const catBoost = serviceCategoryBonus(row.category);
+  const activeBoost = activeSignalsBonus(row.raw_source_payload ?? null);
+  const tail = row.opportunity_rank + phoneBoost + catBoost + activeBoost;
+
+  if (isOutreachReadyScoutRow(row)) return 1_000_000 + tail;
+
   let tier = 0;
   const web = String(row.website_url || "").trim();
   const fbOnly =
@@ -289,15 +289,11 @@ export function bestWebDesignSortScore(row: {
     row.has_website === true &&
     (reason.includes("weak") || reason.includes("outdated") || reason.includes("broken") || reason.includes("cta"));
 
-  if (noSite && !fbOnly) tier = 1_000_000;
-  else if (fbOnly) tier = 800_000;
-  else if (weak) tier = 600_000;
+  if (noSite && !fbOnly) tier = 800_000;
+  else if (fbOnly) tier = 600_000;
+  else if (weak) tier = 500_000;
   else if (unknownSite) tier = 400_000;
   else tier = 200_000;
 
-  const phoneBoost = row.has_phone ? 25 : 0;
-  const catBoost = serviceCategoryBonus(row.category);
-  const activeBoost = activeSignalsBonus(row.raw_source_payload ?? null);
-
-  return tier + row.opportunity_rank + phoneBoost + catBoost + activeBoost;
+  return tier + tail;
 }

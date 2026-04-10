@@ -2,6 +2,9 @@ import Image from "next/image";
 import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
+/** Portrait screen graphic composited onto the umbrella photo tablet (under shared hero overlays). */
+const umbrellaHeroFreshCutTabletSrc = "/images/umbrella-hero-freshcut-tablet-screen.png";
+
 /**
  * Umbrella photograph + grain, readability, vignette, bottom fade.
  * - `scroll` (default): stronger bottom fade for in-flow mobile hero.
@@ -25,7 +28,7 @@ export function UmbrellaHeroMedia({
     <div className={cn("relative h-full min-h-0 w-full overflow-hidden", className)}>
       <Image
         src={mmsUmbrellaHeroImageSrc}
-        alt="MixedMakerShop umbrella brand — open umbrella in the rain as a mobile office: wood-and-brass shaft, leather organizers, laptop, tablet, and Topher's web design sign."
+        alt="MixedMakerShop umbrella brand — open umbrella in the rain as a mobile office: wood-and-brass shaft, leather organizers, laptop, tablet showing Fresh Cut Property Care, and Topher's web design sign."
         fill
         priority={priority}
         sizes="100vw"
@@ -38,6 +41,35 @@ export function UmbrellaHeroMedia({
           imageClassName,
         )}
       />
+      {/* Fresh Cut Property Care on the umbrella tablet — sits under the same darken/grain as the photo */}
+      <div
+        className={cn(
+          "pointer-events-none absolute z-[1]",
+          "[perspective:880px]",
+          "left-[59%] top-[14%] w-[14%]",
+          "sm:left-[58%] sm:top-[13.5%] sm:w-[14.25%]",
+          "md:left-[56%] md:top-[14.8%] md:w-[14.5%]",
+          "lg:left-[54%] lg:top-[15.5%] lg:w-[14.75%]",
+          "xl:left-[52%] xl:top-[16%] xl:w-[15%]",
+        )}
+        style={{
+          transform:
+            "translate3d(-6%, 1.5%, 0) rotateY(-23deg) rotateX(11deg) rotateZ(-5.5deg) skewY(1.2deg)",
+          transformOrigin: "32% 6%",
+        }}
+        aria-hidden
+      >
+        <div className="relative aspect-[10/18.5] w-full overflow-hidden rounded-[9%] ring-1 ring-black/45">
+          <Image
+            src={umbrellaHeroFreshCutTabletSrc}
+            alt=""
+            fill
+            priority={priority}
+            sizes="(max-width: 640px) 20vw, (max-width: 1024px) 14vw, 12vw"
+            className="object-cover object-top brightness-[0.86] contrast-[0.97]"
+          />
+        </div>
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-black/60" aria-hidden />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.055] mix-blend-overlay"

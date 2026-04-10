@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { hydrateScoutResultRecord } from "@/lib/scout/scout-results-hydrate";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  return NextResponse.json({ result: data });
+  const row = data as Record<string, unknown>;
+  const h = hydrateScoutResultRecord(row);
+  return NextResponse.json({
+    result: {
+      ...row,
+      business_name: h.business_name,
+      city: h.city,
+      state: h.state,
+      category: h.category,
+      facebook_url: h.facebook_url,
+      has_facebook: h.has_facebook,
+      phone: h.phone,
+      has_phone: h.has_phone,
+    },
+  });
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {

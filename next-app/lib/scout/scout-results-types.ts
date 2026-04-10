@@ -31,7 +31,11 @@ export type ScoutResultRow = {
   updated_at: string;
 };
 
-/** Compact row for list UI — no raw JSON */
+/**
+ * Compact row for list UI — `raw_source_payload` is not exposed here, but API mapping merges
+ * `business_name`, `city`, `state`, `category`, `facebook_url`, `phone`, and `has_*` from
+ * `raw_source_payload` when columns are empty (see `hydrateScoutResultRecord`).
+ */
 export type ScoutResultListItem = {
   id: string;
   business_name: string;
