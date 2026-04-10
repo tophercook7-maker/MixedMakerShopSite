@@ -1,15 +1,7 @@
-/**
- * TODO (your assets): Add media under public/ for StrainSpotter placeholders:
- * - images/builds/: strainspotter-database.jpg, strainspotter-vendors.jpg, strainspotter-garden.jpg
- * - images/builds/: henry-ai-workspace.jpg, henry-ai-assistant.jpg, henry-ai-systems.jpg
- * - Optional: images/showcase/strainspotter.jpg for homepage / cards
- * - videos/strainspotter_ad_v2.mp4 — when present, hero video renders automatically.
- */
-
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
-import { ExternalLink, ImageIcon } from "lucide-react";
+import { ExternalLink, Layers } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
@@ -49,50 +41,28 @@ const strainspotterVideoAbs = path.join(
 );
 const hasStrainspotterVideo = fs.existsSync(strainspotterVideoAbs);
 
-function MediaSlot({
-  file,
-  label,
-  hint,
+/** Polished fallback when a dedicated screenshot or video asset is not published yet. */
+function VisualProofPlaceholder({
+  title,
+  description,
   className,
-  publicSubdir = "images/builds",
 }: {
-  file: string;
-  label: string;
-  hint?: string;
+  title: string;
+  description: string;
   className?: string;
-  publicSubdir?: string;
 }) {
   return (
     <div
       className={cn(
         mmsGlassPanelDense,
-        "relative flex min-h-[200px] flex-col justify-between gap-3 overflow-hidden p-5 sm:min-h-[220px]",
-        "before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/20 before:to-transparent",
+        "relative flex min-h-[168px] flex-col justify-center gap-3 overflow-hidden p-6 sm:min-h-[180px] sm:p-7",
+        "bg-gradient-to-br from-[#fbf9f4] via-[#f4f1ea] to-[#e8efe8]/95",
+        "before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_90%_80%_at_20%_0%,rgba(184,92,30,0.06),transparent_55%)]",
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#3f5a47]/14 bg-white/55 text-[#3f5a47] shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]"
-          aria-hidden
-        >
-          <ImageIcon className="h-4 w-4 opacity-90" strokeWidth={2} />
-        </span>
-        <div className="min-w-0 pt-0.5">
-          <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-[#3f5a47]">{label}</p>
-          <p className="mt-1 text-xs font-semibold text-[#1e241f]">Screenshot — add file when ready</p>
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <p className="text-[11px] leading-relaxed text-[#4a5750]">
-          Place{" "}
-          <code className="rounded bg-white/75 px-1.5 py-0.5 text-[10px] text-[#1e241f]">{file}</code> in{" "}
-          <code className="rounded bg-white/75 px-1.5 py-0.5 text-[10px] text-[#1e241f]">
-            public/{publicSubdir}/
-          </code>
-        </p>
-        {hint ? <p className="text-[11px] leading-relaxed text-[#5a6a62]">{hint}</p> : null}
-      </div>
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#8a4b2a]">{title}</p>
+      <p className="text-sm leading-relaxed text-[#354239] md:text-[15px]">{description}</p>
     </div>
   );
 }
@@ -266,7 +236,7 @@ export function BuildsPage() {
                       </TrackedPublicLink>
                     </div>
                     <p className="mt-6 border-l-2 border-[#b85c1e]/40 pl-4 text-sm font-medium text-[#5a6a62]">
-                      Demo environments shift; treat the link as a living preview of direction — not a final packaging claim.
+                      Live demos can change as the product evolves — the link reflects current direction and UX.
                     </p>
                   </div>
 
@@ -299,40 +269,32 @@ export function BuildsPage() {
                             <source src={STRAINSPOTTER_VIDEO_SRC} type="video/mp4" />
                           </video>
                         </div>
-                        <p className="border-t border-white/10 bg-black/28 px-4 py-3 text-center text-[11px] font-medium text-[#e8e0d6]">
-                          Motion:{" "}
-                          <code className="rounded bg-white/10 px-1.5 py-0.5 text-[10px]">
-                            public/videos/{STRAINSPOTTER_VIDEO_FILENAME}
-                          </code>
+                        <p className="border-t border-[#3f5a47]/12 bg-[#1a221e]/90 px-4 py-3 text-center text-[11px] font-medium text-[#e8e0d6]">
+                          StrainSpotter — product preview (motion)
                         </p>
                       </div>
                     ) : (
-                      <MediaSlot
-                        file={STRAINSPOTTER_VIDEO_FILENAME}
-                        label="Motion preview"
-                        hint="Hero clip for the scanner story (.mp4)."
-                        publicSubdir="videos"
+                      <VisualProofPlaceholder
+                        title="Motion preview"
+                        description="A short product clip can be published here to highlight the scanner and UI flow."
                         className="min-h-[220px] sm:min-h-[240px]"
                       />
                     )}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <MediaSlot
-                        file="strainspotter-database.jpg"
-                        label="Database"
-                        hint="Strain cards, filters, or discovery UI."
+                      <VisualProofPlaceholder
+                        title="Strain database"
+                        description="Strain cards, filters, and discovery — built to stay scannable even when data is dense."
                         className="min-h-[200px] sm:min-h-[220px]"
                       />
-                      <MediaSlot
-                        file="strainspotter-vendors.jpg"
-                        label="Vendors"
-                        hint="Directory, detail, or map-style vendor exploration."
+                      <VisualProofPlaceholder
+                        title="Vendor discovery"
+                        description="Directory-style exploration for sources and partners — structured, not a random link list."
                         className="min-h-[200px] sm:min-h-[220px]"
                       />
-                      <MediaSlot
-                        file="strainspotter-garden.jpg"
-                        label="Garden / dashboard"
-                        hint="Ecosystem overview — wide crop works best."
-                        className="col-span-1 min-h-[200px] sm:col-span-2 sm:min-h-[240px]"
+                      <VisualProofPlaceholder
+                        title="Garden / dashboard"
+                        description="A calmer ecosystem view that ties sessions, favorites, and ongoing use together."
+                        className="col-span-1 min-h-[200px] sm:col-span-2 sm:min-h-[220px]"
                       />
                     </div>
                   </div>
@@ -363,34 +325,28 @@ export function BuildsPage() {
                 )}
               >
                 <div className="grid gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] lg:gap-14 lg:items-start">
-                  <div className="min-w-0 space-y-6 lg:order-1">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#3f5a47]">
-                        Henry AI · visual proof grid
+                  <div className="min-w-0 lg:order-1">
+                    <div
+                      className={cn(
+                        mmsGlassPanelDense,
+                        "relative flex min-h-[260px] flex-col justify-center gap-4 overflow-hidden p-8 sm:min-h-[280px] sm:p-10",
+                        "bg-gradient-to-br from-[#fbf9f4] via-[#f2efe8] to-[#e8efe8]/95",
+                      )}
+                    >
+                      <span
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#3f5a47]/14 bg-white/70 text-[#3f5a47] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]"
+                        aria-hidden
+                      >
+                        <Layers className="h-6 w-6 opacity-90" strokeWidth={2} />
+                      </span>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8a4b2a]">Henry AI</p>
+                      <p className="text-lg font-semibold leading-snug text-[#1e241f] md:text-xl">
+                        Workspace, assistant, and systems — built as one coherent product story.
                       </p>
-                      <p className="mt-2 text-sm text-[#4a5750]">
-                        Three slots: overview, assistant surface, and a wide systems shot that shows how pieces connect.
+                      <p className="text-sm leading-relaxed text-[#354239] md:text-[15px]">
+                        Screenshots and walkthrough media can be shared on request for serious projects. The spotlight here is
+                        intent, depth, and how the pieces connect — not a wireframe dump.
                       </p>
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <MediaSlot
-                        file="henry-ai-workspace.jpg"
-                        label="Workspace"
-                        hint="Shell layout, panels, navigation."
-                        className="min-h-[220px] sm:min-h-[240px]"
-                      />
-                      <MediaSlot
-                        file="henry-ai-assistant.jpg"
-                        label="Assistant / tools"
-                        hint="Chat, actions, or task-focused UI."
-                        className="min-h-[220px] sm:min-h-[240px]"
-                      />
-                      <MediaSlot
-                        file="henry-ai-systems.jpg"
-                        label="Workflows / systems"
-                        hint="Diagram-style or multi-pane — show the system, not just a hero."
-                        className="col-span-1 min-h-[200px] sm:col-span-2 sm:min-h-[260px]"
-                      />
                     </div>
                   </div>
 
@@ -463,8 +419,8 @@ export function BuildsPage() {
                       </TrackedPublicLink>
                     </div>
 
-                    <p className="mt-8 border-l-2 border-[#3f5a47]/25 pl-4 text-sm font-medium italic text-[#5a6a62]">
-                      Not sold as a finished SaaS — positioned as a real build lane that parallels serious client work.
+                    <p className="mt-8 border-l-2 border-[#3f5a47]/25 pl-4 text-sm font-medium text-[#5a6a62]">
+                      Positioned as a serious build lane — custom software thinking, not a generic chat wrapper.
                     </p>
                   </div>
                 </div>

@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-/** Illustrated avatar — place file at `public/images/topher-avatar.png` (or `.jpeg`; PNG is used for lossless art). */
 const DEFAULT_SRC = "/images/topher-avatar.png";
 
 type TopherAvatarFigureProps = {
@@ -13,10 +12,7 @@ type TopherAvatarFigureProps = {
   src?: string;
 };
 
-/**
- * Illustrated Topher avatar when `public/images/topher-avatar.png` exists;
- * otherwise a quiet placeholder so the layout stays stable.
- */
+/** Illustrated Topher avatar, with a neutral fallback if the image is unavailable. */
 export function TopherAvatarFigure({
   className,
   priority = false,
@@ -32,9 +28,7 @@ export function TopherAvatarFigure({
           className,
         )}
       >
-        <figcaption className="text-sm font-medium text-slate-500">
-          Topher avatar — add <span className="font-mono text-xs text-slate-600">{DEFAULT_SRC}</span>
-        </figcaption>
+        <figcaption className="text-sm font-medium text-slate-600">Portrait coming soon</figcaption>
       </figure>
     );
   }

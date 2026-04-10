@@ -6,19 +6,17 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { getShowcaseProjectsByAnalyticsIds, LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
 import {
+  mmsBodyFrost,
+  mmsBodyFrostMuted,
   mmsBtnPrimary,
   mmsBtnSecondary,
-  mmsBtnSecondaryOnGlass,
   mmsCard,
   mmsGlassPanelDense,
   mmsGlassPanelDenseHome,
   mmsH2,
-  mmsH2OnGlass,
-  mmsOnGlassSecondary,
   mmsSectionBorder,
   mmsSectionY,
   mmsTextLink,
-  mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
@@ -127,8 +125,8 @@ export function HomeFeaturedWebDesignWork({
   const projects = selectProjects(featuredAnalyticsIds);
   const projectCount = projects.length;
   const isLight = variant === "light";
-  const h2 = isLight ? (immersive ? mmsH2OnGlass : mmsH2) : h2Dark;
-  const body = isLight ? (immersive ? mmsOnGlassSecondary : bodyLight) : bodyDark;
+  const h2 = isLight ? mmsH2 : h2Dark;
+  const body = isLight ? (immersive ? mmsBodyFrost : bodyLight) : bodyDark;
   const sectionClass = isLight
     ? cn(
         immersive
@@ -222,7 +220,7 @@ export function HomeFeaturedWebDesignWork({
                 <h3
                   className={cn(
                     "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
-                    isLight ? (immersive ? "text-white" : "text-[#1e241f]") : "text-[#E8FDF5]",
+                    isLight ? "text-[#1e241f]" : "text-[#E8FDF5]",
                   )}
                 >
                   {project.title}
@@ -230,7 +228,7 @@ export function HomeFeaturedWebDesignWork({
                 <p
                   className={cn(
                     "text-sm leading-relaxed md:text-[15px]",
-                    isLight && immersive ? mmsOnGlassSecondary : body,
+                    isLight && immersive ? mmsBodyFrost : body,
                   )}
                 >
                   {project.pitch}
@@ -250,7 +248,7 @@ export function HomeFeaturedWebDesignWork({
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
                         isLight
-                          ? cn(immersive ? mmsBtnSecondaryOnGlass : mmsBtnSecondary)
+                          ? mmsBtnSecondary
                           : "home-btn-secondary--hero rounded-xl",
                       )}
                     >
@@ -272,7 +270,7 @@ export function HomeFeaturedWebDesignWork({
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
                         isLight
-                          ? cn(immersive ? mmsBtnSecondaryOnGlass : mmsBtnSecondary)
+                          ? mmsBtnSecondary
                           : "home-btn-secondary--hero rounded-xl",
                       )}
                     >
@@ -325,7 +323,7 @@ export function HomeFeaturedWebDesignWork({
           <p
             className={cn(
               "max-w-xl text-sm md:text-[15px]",
-              isLight && immersive ? mmsOnGlassSecondary : body,
+              isLight && immersive ? mmsBodyFrostMuted : body,
             )}
           >
             Want something like this for your business? Start with a free homepage preview.
@@ -334,9 +332,7 @@ export function HomeFeaturedWebDesignWork({
             href="/builds#builds-experiments"
             className={cn(
               isLight
-                ? immersive
-                  ? mmsTextLinkOnGlass
-                  : mmsTextLink
+                ? mmsTextLink
                 : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
             )}
           >

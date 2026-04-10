@@ -88,46 +88,60 @@ export const mmsCard = cn(
 );
 
 export const mmsCtaPanel = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/22",
-  "bg-[rgba(246,242,234,0.72)] backdrop-blur-xl",
-  "shadow-[0_28px_64px_-28px_rgba(30,36,31,0.28),inset_0_1px_0_rgba(255,255,255,0.52)]",
+  "rounded-[1.35rem] border border-[#3f5a47]/20",
+  "bg-[rgba(246,242,234,0.9)] backdrop-blur-xl",
+  "shadow-[0_28px_64px_-28px_rgba(30,36,31,0.26),inset_0_1px_0_rgba(255,255,255,0.72)]",
   "ring-1 ring-[#b85c1e]/10",
 );
 
 /**
- * Translucent “milky glass” surface — trust-strip reference for major homepage blocks over the umbrella photo.
- * Slightly milky (not pure white), readable with dark type, backdrop blur + soft border.
+ * Nested milky panels (e.g. Builds detail cards) — readable on umbrella canvas.
  */
 export const mmsGlassPanel = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/18",
-  "bg-[rgba(236,241,236,0.5)] backdrop-blur-2xl",
-  "shadow-[0_28px_72px_-26px_rgba(30,36,31,0.28),inset_0_1px_0_rgba(255,255,255,0.5)]",
-  "ring-1 ring-[#b85c1e]/12",
+  "rounded-[1.35rem] border border-[#3f5a47]/16",
+  "bg-[rgba(238,244,238,0.85)] backdrop-blur-2xl",
+  "shadow-[0_24px_64px_-26px_rgba(30,36,31,0.24),inset_0_1px_0_rgba(255,255,255,0.65)]",
+  "ring-1 ring-[#b85c1e]/10",
 );
 
 /** Denser glass for longer copy / cards — same family, a touch more fill for contrast on busy backdrops. */
 export const mmsGlassPanelDense = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/20",
-  "bg-[rgba(232,239,232,0.6)] backdrop-blur-2xl",
-  "shadow-[0_26px_64px_-24px_rgba(27,36,30,0.32),inset_0_1px_0_rgba(255,255,255,0.45)]",
-  "ring-1 ring-[#2f3e34]/10",
+  "rounded-[1.35rem] border border-[#3f5a47]/18",
+  "bg-[rgba(244,248,244,0.9)] backdrop-blur-2xl",
+  "shadow-[0_26px_64px_-24px_rgba(27,36,30,0.28),inset_0_1px_0_rgba(255,255,255,0.55)]",
+  "ring-1 ring-[#2f3e34]/08",
 );
 
 /**
- * Homepage-only: dark cinematic cards over the umbrella hero photo (md+ fixed layer + mobile hero).
- * Readable type: pair with `mmsH2OnGlass`, `mmsOnGlassSecondary`, etc.
+ * Homepage + umbrella canvas: milky frosted panels over the hero photo (readable dark type).
+ * Pair with `mmsH2`, `mmsBodyFrost`, `mmsEyebrow`, etc. — not the legacy light-on-dark glass tokens.
  */
 export const mmsGlassPanelHome = cn(
-  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+  "rounded-2xl border border-white/55",
+  "bg-[rgba(252,250,246,0.93)] backdrop-blur-2xl",
+  "shadow-[0_28px_68px_-26px_rgba(24,32,28,0.3),inset_0_1px_0_rgba(255,255,255,0.88)]",
+  "ring-1 ring-[#3f5a47]/10",
 );
 
 export const mmsGlassPanelDenseHome = cn(
-  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+  "rounded-2xl border border-[#3f5a47]/14",
+  "bg-[rgba(246,242,234,0.94)] backdrop-blur-2xl",
+  "shadow-[0_26px_62px_-22px_rgba(24,32,28,0.28),inset_0_1px_0_rgba(255,255,255,0.82)]",
+  "ring-1 ring-[#2f3e34]/08",
 );
 
 export const mmsCtaPanelHome = cn(
-  "rounded-2xl border border-white/10 bg-black/70 backdrop-blur-md shadow-xl",
+  "rounded-2xl border border-[#3f5a47]/16",
+  "bg-[rgba(244,240,232,0.95)] backdrop-blur-2xl",
+  "shadow-[0_24px_56px_-20px_rgba(24,32,28,0.26),inset_0_1px_0_rgba(255,255,255,0.8)]",
+  "ring-1 ring-[#b85c1e]/12",
 );
+
+/** Body copy on milky frosted panels (strong contrast on busy backdrops). */
+export const mmsBodyFrost = "text-[#2d3a33]";
+
+/** Muted supporting line on frosted panels. */
+export const mmsBodyFrostMuted = "text-[#4a5750]";
 
 /** Headings on homepage dark glass — same scale as `mmsH2`, light text. */
 export const mmsH2OnGlass = cn(

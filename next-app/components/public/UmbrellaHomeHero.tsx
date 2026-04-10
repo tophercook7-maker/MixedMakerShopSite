@@ -5,10 +5,11 @@ import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { UmbrellaHeroMedia } from "@/components/public/umbrella-hero-media";
 import {
+  mmsBodyFrost,
+  mmsBodyFrostMuted,
   mmsBtnPrimary,
-  mmsEyebrowOnGlass,
+  mmsEyebrow,
   mmsGlassPanelHome,
-  mmsOnGlassSecondary,
 } from "@/lib/mms-umbrella-ui";
 import { publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
@@ -55,19 +56,19 @@ export function UmbrellaHomeHero() {
             "max-w-[36rem] px-6 py-8 sm:px-8 sm:py-9 lg:max-w-[40rem] lg:px-10 lg:py-10",
           )}
         >
-          <motion.p className={mmsEyebrowOnGlass} {...fadeUp(0)}>
+          <motion.p className={cn(mmsEyebrow, "!text-[#8a4b2a]")} {...fadeUp(0)}>
             Web Design by Topher
           </motion.p>
 
           <motion.h1
-            className="mt-5 font-bold tracking-[-0.035em] text-white text-[2.125rem] leading-[1.1] sm:text-4xl md:mt-6 md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]"
+            className="mt-5 font-bold tracking-[-0.035em] text-[#1e241f] text-[2.125rem] leading-[1.1] sm:text-4xl md:mt-6 md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]"
             {...fadeUp(stagger)}
           >
             Websites That Bring You Customers
           </motion.h1>
 
           <motion.p
-            className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
+            className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsBodyFrost)}
             {...fadeUp(stagger * 2)}
           >
             I build clean, modern websites for small businesses that actually turn visitors into calls, leads, and real
@@ -75,7 +76,7 @@ export function UmbrellaHomeHero() {
           </motion.p>
 
           <motion.p
-            className="mt-5 text-base font-semibold leading-snug text-white md:mt-6 md:text-lg md:leading-snug"
+            className={cn("mt-5 text-base font-semibold leading-snug md:mt-6 md:text-lg md:leading-snug", mmsBodyFrost)}
             {...fadeUp(stagger * 3)}
           >
             Want to see what your website could look like before committing?
@@ -94,7 +95,7 @@ export function UmbrellaHomeHero() {
               Get My Free Website Preview
               <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
             </TrackedPublicLink>
-            <p className={cn("mt-4 text-xs font-medium leading-relaxed md:text-sm", mmsOnGlassSecondary)}>
+            <p className={cn("mt-4 text-xs font-medium leading-relaxed md:text-sm", mmsBodyFrostMuted)}>
               No pressure. Just a real preview built for your business.
             </p>
           </motion.div>
