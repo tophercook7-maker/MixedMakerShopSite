@@ -12,7 +12,7 @@ import {
   inferImageCategoryFromDraftPick,
   type SampleImageCategory,
 } from "@/lib/sample-fallback-images";
-import { SIGNATURE_MOCKUP_FOOTER_BRAND } from "@/lib/crm-mockup";
+import { SIGNATURE_MOCKUP_FOOTER_BRAND, SIGNATURE_MOCKUP_FOOTER_SUB } from "@/lib/crm-mockup";
 import { inferGallerySectionLead, inferServicesSectionLead } from "@/lib/sample-section-copy";
 import type {
   SampleDraft,
@@ -744,7 +744,12 @@ export function SampleDraftClient({ initialDraft, initialMode, embedOptions }: P
               {embedOptions?.portfolioFooterMessage?.trim() ||
                 "Design concept for a local business website — built to show layout, structure, and flow."}
             </p>
-            {simpleCv ? <p className="sample-mockup-brand-mark">{SIGNATURE_MOCKUP_FOOTER_BRAND}</p> : null}
+            {simpleCv ? (
+              <>
+                <p className="sample-mockup-brand-mark">{SIGNATURE_MOCKUP_FOOTER_BRAND}</p>
+                <p className="sample-mockup-brand-sub">{SIGNATURE_MOCKUP_FOOTER_SUB}</p>
+              </>
+            ) : null}
           </div>
         </footer>
       ) : null}

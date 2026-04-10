@@ -10,7 +10,7 @@ export function CrmMockupPreviewClient({ row }: { row: PublicCrmMockupRow }) {
     [row]
   );
 
-  const footerMessage = `Prepared for ${row.business_name || "your business"}. This is a layout example — not a live website.`;
+  const footerMessage = `Prepared for ${row.business_name || "your business"}. Presentation preview — not a live website.`;
 
   const isWellness = row.template_key === "wellness";
   const raw = row.raw_payload && typeof row.raw_payload === "object" && !Array.isArray(row.raw_payload)

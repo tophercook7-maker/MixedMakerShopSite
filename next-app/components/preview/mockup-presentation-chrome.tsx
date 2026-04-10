@@ -6,7 +6,7 @@ function safeName(name: string): string {
 }
 
 /**
- * Minimal branded frame above client-ready CRM mockup previews.
+ * Minimal branded frame above client-ready CRM mockup previews (live `/preview` route).
  */
 export function MockupPresentationHeader({ businessName }: { businessName: string }) {
   const bn = safeName(businessName);
@@ -23,25 +23,28 @@ export function MockupPresentationHeader({ businessName }: { businessName: strin
         style={{
           maxWidth: "min(100vw - 32px, 1680px)",
           margin: "0 auto",
-          padding: "14px max(20px, 3vw)",
+          padding: "18px max(20px, 3vw) 20px",
         }}
       >
         <p
           style={{
             margin: 0,
-            fontSize: "0.8125rem",
+            fontSize: "0.875rem",
             letterSpacing: "0.02em",
             fontWeight: 600,
             color: "var(--foreground, #0f172a)",
+            lineHeight: 1.35,
           }}
         >
           Custom Website Preview for {bn}
         </p>
         <p
           style={{
-            margin: "4px 0 0",
+            margin: "6px 0 0",
             fontSize: "0.75rem",
+            letterSpacing: "0.01em",
             color: "var(--muted-foreground, #64748b)",
+            lineHeight: 1.45,
           }}
         >
           Built by Topher at MixedMakerShop
@@ -51,7 +54,7 @@ export function MockupPresentationHeader({ businessName }: { businessName: strin
   );
 }
 
-/** Single primary CTA + optional secondary line — kept sparse on purpose. */
+/** MixedMakerShop follow-up — business-facing tone; CTA is not inside the client mockup body. */
 export function MockupPresentationCtaStrip() {
   return (
     <section
@@ -66,27 +69,27 @@ export function MockupPresentationCtaStrip() {
         style={{
           maxWidth: "min(100vw - 32px, 1680px)",
           margin: "0 auto",
-          padding: "20px max(20px, 3vw) 28px",
+          padding: "22px max(20px, 3vw) 28px",
           display: "flex",
           flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 14,
+          gap: 16,
         }}
       >
-        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted-foreground, #64748b)", maxWidth: 420 }}>
-          Want this built for your business? Request your own preview — same polished direction, tailored to you.
+        <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--muted-foreground, #64748b)", maxWidth: 440, lineHeight: 1.55 }}>
+          Like this direction? I can refine it into a full site — reach out when you&apos;re ready.
         </p>
         <Link
-          href="/free-mockup"
+          href="/contact"
           className="mockup-pres-cta-btn"
           style={{
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "10px 18px",
+            padding: "10px 20px",
             borderRadius: 999,
-            fontWeight: 700,
+            fontWeight: 600,
             fontSize: "0.8125rem",
             textDecoration: "none",
             background: "var(--foreground, #0f172a)",
@@ -94,7 +97,7 @@ export function MockupPresentationCtaStrip() {
             whiteSpace: "nowrap",
           }}
         >
-          Get My Free Website Preview
+          Contact Topher
         </Link>
       </div>
     </section>

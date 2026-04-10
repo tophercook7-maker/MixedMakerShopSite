@@ -5622,3 +5622,11 @@ details.printing-faq-details[open] {
   color: var(--sd-muted);
   opacity: 0.78;
 }
+.sample-standalone .sample-mockup-brand-sub {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--sd-muted);
+  opacity: 0.72;
+}

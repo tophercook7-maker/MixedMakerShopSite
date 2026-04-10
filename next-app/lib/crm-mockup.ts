@@ -81,8 +81,11 @@ export const SIGNATURE_MOCKUP_HERO_CTA = "Get a Free Quote";
 /** Bottom-of-page CTA label (distinct from hero). */
 export const SIGNATURE_MOCKUP_FINAL_CTA = "Call Now";
 
-/** Subtle footer credit on exported / shareable previews. */
+/** Subtle footer credit on exported / shareable previews (primary line). */
 export const SIGNATURE_MOCKUP_FOOTER_BRAND = "Preview built by Topher";
+
+/** Understated second line — consistent closing marker. */
+export const SIGNATURE_MOCKUP_FOOTER_SUB = "Custom preview · MixedMakerShop";
 
 export const SIGNATURE_MOCKUP_WHY_CORE = ["Local & reliable", "Fast response", "Quality work"] as const;
 
@@ -113,6 +116,8 @@ function signatureOfferingBlurb(name: string): string {
 /**
  * Applies the MixedMakerShop signature shell: trust line, fixed why bullets, bottom CTA, uniform service blurbs.
  */
+const SIGNATURE_MAX_SERVICES = 5;
+
 export function applySignatureMockupDraft(
   draft: SampleDraft,
   row: { city: string | null },
@@ -120,10 +125,13 @@ export function applySignatureMockupDraft(
 ): SampleDraft {
   const fc = readFunnelContext(payload);
   const diff = fc ? String(fc.what_makes_you_different || "").trim() : "";
-  const offerings = (draft.offerings || []).map((o) => ({
+  let offerings = (draft.offerings || []).map((o) => ({
     ...o,
     text: signatureOfferingBlurb(o.name),
   }));
+  if (offerings.length > SIGNATURE_MAX_SERVICES) {
+    offerings = offerings.slice(0, SIGNATURE_MAX_SERVICES);
+  }
   return {
     ...draft,
     heroPrimaryCta: SIGNATURE_MOCKUP_HERO_CTA,
@@ -131,10 +139,10 @@ export function applySignatureMockupDraft(
     whyChooseTitle: draft.whyChooseTitle ?? "Why choose us",
     whyChooseBullets: buildSignatureWhyBullets(diff),
     offeringsTitle: "Services",
-    servicesSectionLead: "A short list of what we can take care of for you.",
+    servicesSectionLead: "What we offer — clear scope and an easy next step.",
     offerings,
-    finalTitle: "Ready when you are",
-    finalSub: `Questions or timing? Call ${draft.phone} — we're happy to help.`,
+    finalTitle: "Ready to talk?",
+    finalSub: `Call ${draft.phone} for a quick question, or request a time that works for you.`,
     finalCta: SIGNATURE_MOCKUP_FINAL_CTA,
   };
 }
@@ -252,21 +260,21 @@ export function buildMockupContentFromLead(lead: LeadRowForMockup, template: Crm
       cityHeadline: cityHeadline || "your area",
       primaryOffering: servicesWellness[0] || "Massage therapy",
     });
-    return {
-      business_name: businessName,
-      city: location || city || null,
-      category: categoryLabel.includes("Wellness") ? categoryLabel : "Wellness / Massage / Yoga",
-      phone: String(lead.phone || "").trim() || null,
-      email: String(lead.email || "").trim() || null,
-      facebook_url: String(lead.facebook_url || "").trim() || null,
-      headline: hero.headline,
-      subheadline: hero.subheadline,
-      cta_text: hero.cta,
-      services: servicesWellness,
-    };
+  return {
+    business_name: businessName,
+    city: location || city || null,
+    category: categoryLabel.includes("Wellness") ? categoryLabel : "Wellness / Massage / Yoga",
+    phone: String(lead.phone || "").trim() || null,
+    email: String(lead.email || "").trim() || null,
+    facebook_url: String(lead.facebook_url || "").trim() || null,
+    headline: hero.headline,
+    subheadline: hero.subheadline,
+    cta_text: hero.cta,
+    services: servicesWellness.slice(0, 5),
+  };
   }
 
-  const services = getSuggestedServicesForBusinessType(categoryLabel);
+  const services = getSuggestedServicesForBusinessType(categoryLabel).slice(0, 5);
   const primaryOffering = services[0]?.trim() || categoryLabel;
   const cityHeadline = city.split(",")[0]?.trim() || city || "";
   const hero = buildPersonalizedMockupHero({

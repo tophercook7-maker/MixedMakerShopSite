@@ -14,7 +14,7 @@ import {
   isNonEmptyImageUrl,
   type SampleImageCategory,
 } from "@/lib/sample-fallback-images";
-import { SIGNATURE_MOCKUP_FOOTER_BRAND } from "@/lib/crm-mockup";
+import { SIGNATURE_MOCKUP_FOOTER_BRAND, SIGNATURE_MOCKUP_FOOTER_SUB } from "@/lib/crm-mockup";
 import { inferGallerySectionLead, inferServicesSectionLead } from "@/lib/sample-section-copy";
 
 function withDraftDefaults(d: SampleDraft): SampleDraft {
@@ -54,7 +54,14 @@ export type MockupStaticMarkupProps = {
   testimonialsBeforeTrustBullets: boolean;
   /** Hero, services, why choose us, final CTA only — reads like a tight sendable mockup. */
   simpleConversionLayout?: boolean;
+  /** Matches live `/preview` shell — client-facing presentation strip above the sample. */
+  presentationBusinessName?: string | null;
 };
+
+function safePresentationName(name: string | null | undefined): string {
+  const t = String(name || "").trim();
+  return t || "your business";
+}
 
 export function MockupStaticMarkup({
   draft: draftIn,
@@ -64,6 +71,7 @@ export function MockupStaticMarkup({
   aboutBeforeTrust,
   testimonialsBeforeTrustBullets,
   simpleConversionLayout = false,
+  presentationBusinessName = null,
 }: MockupStaticMarkupProps) {
   const draft = withDraftDefaults(draftIn);
   const telHref = `tel:${draft.phone.replace(/[^\d]/g, "")}`;
@@ -196,8 +204,19 @@ export function MockupStaticMarkup({
       </>
     );
 
+  const presName = presentationBusinessName != null ? safePresentationName(presentationBusinessName) : "";
+
   return (
-    <div className="sample-standalone is-presentation sample-standalone--wide" style={cssVars}>
+    <>
+      {presName ? (
+        <header className="mockup-export-pres-header" role="banner">
+          <div className="container mockup-export-pres-header-inner">
+            <p className="mockup-export-pres-title">Custom Website Preview for {presName}</p>
+            <p className="mockup-export-pres-sub">Built by Topher at MixedMakerShop</p>
+          </div>
+        </header>
+      ) : null}
+      <div className="sample-standalone is-presentation sample-standalone--wide" style={cssVars}>
       <nav className="sample-site-nav">
         <div className="container sample-site-nav-inner">
           <a href="#top" className="sample-site-brand">
@@ -380,10 +399,14 @@ export function MockupStaticMarkup({
               "Design concept for a local business website — built to show layout, structure, and flow."}
           </p>
           {simpleConversionLayout ? (
-            <p className="sample-mockup-brand-mark">{SIGNATURE_MOCKUP_FOOTER_BRAND}</p>
+            <>
+              <p className="sample-mockup-brand-mark">{SIGNATURE_MOCKUP_FOOTER_BRAND}</p>
+              <p className="sample-mockup-brand-sub">{SIGNATURE_MOCKUP_FOOTER_SUB}</p>
+            </>
           ) : null}
         </div>
       </footer>
     </div>
+    </>
   );
 }

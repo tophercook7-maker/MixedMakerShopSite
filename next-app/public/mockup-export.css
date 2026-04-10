@@ -788,3 +788,34 @@ a.sample-contact-v:hover {
   color: var(--sd-muted);
   opacity: 0.78;
 }
+.sample-standalone .sample-mockup-brand-sub {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: var(--sd-muted);
+  opacity: 0.72;
+}
+
+/* Static HTML export + parity with live preview shell */
+.mockup-export-pres-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--sd-text, #0f172a) 8%, transparent);
+  background: color-mix(in srgb, var(--sd-bg, #fff) 96%, var(--sd-text, #0f172a) 4%);
+}
+.mockup-export-pres-header .container.mockup-export-pres-header-inner {
+  max-width: min(100vw - 32px, 1680px);
+  margin: 0 auto;
+  padding: 16px max(20px, 3vw) 18px;
+}
+.mockup-export-pres-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--sd-text, #0f172a);
+}
+.mockup-export-pres-sub {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--sd-muted, #64748b);
+}

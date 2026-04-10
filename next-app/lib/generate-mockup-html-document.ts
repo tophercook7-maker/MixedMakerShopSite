@@ -34,7 +34,7 @@ export async function generateMockupHtmlDocument(row: PublicCrmMockupRow): Promi
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { draft, imageCategoryKey, stylePreset, colorPreset } = buildSampleDraftFromPublicMockup(row);
   const cssVars = buildSampleStandaloneCssVars(stylePreset, colorPreset);
-  const footerMessage = `Prepared for ${row.business_name || "your business"}. This is a layout example — not a live website.`;
+  const footerMessage = `Prepared for ${row.business_name || "your business"}. Presentation preview — not a live website.`;
   const isWellness = row.template_key === "wellness";
   const raw = row.raw_payload && typeof row.raw_payload === "object" && !Array.isArray(row.raw_payload)
     ? (row.raw_payload as Record<string, unknown>)
@@ -51,6 +51,7 @@ export async function generateMockupHtmlDocument(row: PublicCrmMockupRow): Promi
       aboutBeforeTrust: isWellness,
       testimonialsBeforeTrustBullets: isWellness,
       simpleConversionLayout,
+      presentationBusinessName: row.business_name,
     })
   );
 
@@ -87,7 +88,7 @@ export async function generateMockupHtmlFromSampleDraft(
 ): Promise<string> {
   const { renderToStaticMarkup } = await import("react-dom/server");
   const cssVars = buildSampleStandaloneCssVars(opts.stylePreset, opts.colorPreset);
-  const footerMessage = `Prepared for ${opts.businessName || "your business"}. Admin-generated preview — not a live website.`;
+  const footerMessage = `Prepared for ${opts.businessName || "your business"}. Presentation preview — not a live website.`;
   const isWellness = opts.templateKey === "wellness";
 
   const inner = renderToStaticMarkup(
@@ -99,6 +100,7 @@ export async function generateMockupHtmlFromSampleDraft(
       aboutBeforeTrust: isWellness,
       testimonialsBeforeTrustBullets: isWellness,
       simpleConversionLayout: true,
+      presentationBusinessName: opts.businessName,
     })
   );
 

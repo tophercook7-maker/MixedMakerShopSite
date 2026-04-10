@@ -87,61 +87,30 @@ export const mmsCard = cn(
   "transition-[box-shadow,transform] duration-300 ease-out",
 );
 
-export const mmsCtaPanel = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/20",
-  "bg-[rgba(246,242,234,0.9)] backdrop-blur-xl",
-  "shadow-[0_28px_64px_-28px_rgba(30,36,31,0.26),inset_0_1px_0_rgba(255,255,255,0.72)]",
-  "ring-1 ring-[#b85c1e]/10",
-);
+/** Homepage / umbrella — strong white glass, readable on busy photography. */
+export const mmsGlassPanelHome =
+  "bg-white/80 backdrop-blur-2xl border border-white/40 shadow-xl shadow-black/10 rounded-2xl";
 
-/**
- * Nested milky panels (e.g. Builds detail cards) — readable on umbrella canvas.
- */
-export const mmsGlassPanel = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/16",
-  "bg-[rgba(238,244,238,0.85)] backdrop-blur-2xl",
-  "shadow-[0_24px_64px_-26px_rgba(30,36,31,0.24),inset_0_1px_0_rgba(255,255,255,0.65)]",
-  "ring-1 ring-[#b85c1e]/10",
-);
+export const mmsGlassPanelDenseHome =
+  "bg-white/85 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/15 rounded-2xl";
 
-/** Denser glass for longer copy / cards — same family, a touch more fill for contrast on busy backdrops. */
-export const mmsGlassPanelDense = cn(
-  "rounded-[1.35rem] border border-[#3f5a47]/18",
-  "bg-[rgba(244,248,244,0.9)] backdrop-blur-2xl",
-  "shadow-[0_26px_64px_-24px_rgba(27,36,30,0.28),inset_0_1px_0_rgba(255,255,255,0.55)]",
-  "ring-1 ring-[#2f3e34]/08",
-);
+export const mmsCtaPanelHome =
+  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/20 rounded-2xl";
 
-/**
- * Homepage + umbrella canvas: milky frosted panels over the hero photo (readable dark type).
- * Pair with `mmsH2`, `mmsBodyFrost`, `mmsEyebrow`, etc. — not the legacy light-on-dark glass tokens.
- */
-export const mmsGlassPanelHome = cn(
-  "rounded-2xl border border-white/55",
-  "bg-[rgba(252,250,246,0.93)] backdrop-blur-2xl",
-  "shadow-[0_28px_68px_-26px_rgba(24,32,28,0.3),inset_0_1px_0_rgba(255,255,255,0.88)]",
-  "ring-1 ring-[#3f5a47]/10",
-);
+/** Base panels — builds, pricing, nested cards on public pages. */
+export const mmsGlassPanel =
+  "bg-white/80 backdrop-blur-2xl border border-white/40 shadow-lg shadow-black/10 rounded-xl";
 
-export const mmsGlassPanelDenseHome = cn(
-  "rounded-2xl border border-[#3f5a47]/14",
-  "bg-[rgba(246,242,234,0.94)] backdrop-blur-2xl",
-  "shadow-[0_26px_62px_-22px_rgba(24,32,28,0.28),inset_0_1px_0_rgba(255,255,255,0.82)]",
-  "ring-1 ring-[#2f3e34]/08",
-);
+export const mmsGlassPanelDense =
+  "bg-white/85 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/15 rounded-xl";
 
-export const mmsCtaPanelHome = cn(
-  "rounded-2xl border border-[#3f5a47]/16",
-  "bg-[rgba(244,240,232,0.95)] backdrop-blur-2xl",
-  "shadow-[0_24px_56px_-20px_rgba(24,32,28,0.26),inset_0_1px_0_rgba(255,255,255,0.8)]",
-  "ring-1 ring-[#b85c1e]/12",
-);
+export const mmsCtaPanel =
+  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/20 rounded-xl";
 
-/** Body copy on milky frosted panels (strong contrast on busy backdrops). */
-export const mmsBodyFrost = "text-[#2d3a33]";
+/** Body copy on frosted panels — pair with `mmsH2` / `mmsEyebrow`. */
+export const mmsBodyFrost = "text-neutral-800";
 
-/** Muted supporting line on frosted panels. */
-export const mmsBodyFrostMuted = "text-[#4a5750]";
+export const mmsBodyFrostMuted = "text-neutral-600";
 
 /** Headings on homepage dark glass — same scale as `mmsH2`, light text. */
 export const mmsH2OnGlass = cn(

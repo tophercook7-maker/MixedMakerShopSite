@@ -362,8 +362,8 @@ function servicesFromCategory(category: string): string[] {
 
 export function getSuggestedServicesForBusinessType(businessType: string): string[] {
   const mapped = servicesFromCategory(businessType);
-  if (mapped.length) return mapped.slice(0, 8);
-  return ["Core Service", "Popular Service", "Premium Service"];
+  if (mapped.length) return mapped.slice(0, 5);
+  return ["On-site consultation", "Scheduled service", "Maintenance & follow-up", "Seasonal options"];
 }
 
 function inferSiteGoalFromInsights(issue: string, hasWebsite: boolean): string {
