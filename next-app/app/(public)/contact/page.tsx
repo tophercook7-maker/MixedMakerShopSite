@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 export default function ContactPage() {
@@ -65,7 +66,7 @@ export default function ContactPage() {
   }
 
   const valuePoints = [
-    "Free website preview when it makes sense",
+    "Free preview when it makes sense",
     "Clear pricing and a simple process",
     "Built for real small businesses — not agency overhead",
   ];
@@ -75,27 +76,26 @@ export default function ContactPage() {
       <div className="contact-page-inner container max-w-6xl">
         <div className="grid items-start gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-20">
           <div className="space-y-7 lg:pr-2">
-            <p className="contact-intro-eyebrow">Contact Topher</p>
+            <p className="contact-intro-eyebrow">Contact</p>
             <h1
               className="h1"
-              style={{ margin: "0 0 12px", lineHeight: 1.12, maxWidth: "22ch" }}
+              style={{ margin: "0 0 12px", lineHeight: 1.12, maxWidth: "24ch" }}
             >
-              Let&apos;s build something useful.
+              Talk directly with Topher
             </h1>
             <p
               className="subhead"
               style={{
                 margin: 0,
-                maxWidth: "42ch",
+                maxWidth: "46ch",
                 lineHeight: 1.65,
               }}
             >
-              If you need a website, a custom print, or help moving a digital idea forward, reach out and tell me what
-              you&apos;re trying to build.
+              MixedMakerShop is one studio — web design first, plus 3D printing and digital builds when that&apos;s what you
+              need. Send a short message and we&apos;ll pick the simplest next step.
             </p>
             <p className="small" style={{ margin: 0, maxWidth: "48ch", lineHeight: 1.6 }}>
-              Tell Topher what you&apos;re trying to build, fix, improve, or launch — and you&apos;ll figure out the best
-              next step together.
+              No call center, no account manager — just a straight answer within one business day.
             </p>
             <p
               className="small"
@@ -341,22 +341,19 @@ export default function ContactPage() {
                   className="small"
                   style={{ margin: "0 0 12px", lineHeight: 1.55 }}
                 >
-                  See samples, pricing, or start with a free preview.
+                  See examples, pricing, or start with a free preview.
                 </p>
-                <div
-                  className="btn-row"
-                  style={{ marginTop: 0, gap: 8, flexWrap: "wrap" }}
-                >
+                <PublicCtaRow className="mt-1">
                   <Link href="/free-mockup" className="btn">
-                    Free preview
+                    Free Preview
                   </Link>
-                  <Link href="/pricing" className="btn">
-                    Pricing
+                  <Link href="/examples" className="btn">
+                    Examples
                   </Link>
                   <Link href="/web-design" className="btn">
-                    Web design
+                    Web Design
                   </Link>
-                </div>
+                </PublicCtaRow>
               </div>
             </div>
 

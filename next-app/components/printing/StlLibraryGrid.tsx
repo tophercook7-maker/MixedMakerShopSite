@@ -91,7 +91,7 @@ export function StlLibraryGrid() {
                   href="/custom-3d-printing"
                   className="font-semibold text-orange-300 underline-offset-[3px] hover:text-orange-200 hover:underline"
                 >
-                  Submit a request
+                  Request a print
                 </Link>
               </div>
             </div>

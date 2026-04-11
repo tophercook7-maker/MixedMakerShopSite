@@ -14,10 +14,10 @@ export default function ToolsPage() {
           <p className="subhead">Free tools and resources for small businesses.</p>
           <div className="btn-row" style={{ marginTop: 20 }}>
             <Link href="/website-roast" className="btn gold">
-              Free Website Roast
+              Website Roast
             </Link>
             <Link href="/free-website-check" className="btn ghost">
-              Free Website Check
+              Website Check
             </Link>
           </div>
         </div>

@@ -1,0 +1,57 @@
+---
+import type { LocalPage } from "../types/local-seo";
+
+type Props = {
+  page: LocalPage;
+};
+
+const { page } = Astro.props;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="what-we-offer">
+  <div class="fc-shell">
+    <h2 id="what-we-offer" class="fc-h2">What we offer</h2>
+    <ul class="fc-list">
+      {page.whatWeOffer.map((line) => (
+        <li>{line}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<section class="fc-section fc-section--tight" aria-labelledby="why-choose">
+  <div class="fc-shell">
+    <h2 id="why-choose" class="fc-h2">Why choose us</h2>
+    <ul class="fc-list">
+      {page.whyChooseUs.map((line) => (
+        <li>{line}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<section class="fc-section fc-section--tight" aria-labelledby="common-jobs">
+  <div class="fc-shell">
+    <h2 id="common-jobs" class="fc-h2">Common jobs we handle</h2>
+    <ul class="fc-list">
+      {page.commonJobs.map((line) => (
+        <li>{line}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<section class="fc-section fc-section--tight" aria-labelledby="serving">
+  <div class="fc-shell">
+    <h2 id="serving" class="fc-h2">Serving {page.city} + nearby areas</h2>
+    <p class="fc-lead" style="margin: 0 0 1rem; max-width: 65ch;">
+      We work throughout {page.city} and routinely serve properties near{" "}
+      {page.nearbyAreas.length
+        ? page.nearbyAreas.slice(0, -1).join(", ") +
+          (page.nearbyAreas.length > 1 ? ", and " : "") +
+          page.nearbyAreas[page.nearbyAreas.length - 1]
+        : "surrounding neighborhoods"}
+      . If you&apos;re close by, ask — routing changes by season.
+    </p>
+  </div>
+</section>

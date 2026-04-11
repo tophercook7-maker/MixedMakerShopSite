@@ -62,7 +62,7 @@ export function PrintingHero() {
                     "min-h-[3.35rem] w-full px-10 text-[0.96875rem] sm:w-auto",
                   )}
                 >
-                  Contact Topher
+                  Contact
                 </Link>
               </div>
               <p className="mt-4 text-sm text-white/[0.72]">

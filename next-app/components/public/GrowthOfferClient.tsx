@@ -23,7 +23,7 @@ const CTA_HREF = "/free-mockup";
 function OfferCtaPrimary({ className = "" }: { className?: string }) {
   return (
     <Link href={CTA_HREF} className={`btn gold offer-cta-primary ${className}`.trim()}>
-      Get My Free Website Preview
+      Get My Free Preview
     </Link>
   );
 }

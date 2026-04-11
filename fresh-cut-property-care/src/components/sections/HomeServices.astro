@@ -1,0 +1,31 @@
+---
+import type { ResolvedSite } from "../../types/client";
+import { getServiceCatalog } from "../../data/services";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+const catalog = getServiceCatalog(site.nicheKey);
+const keys = site.featuredServiceKeys ?? site.niche.defaultServices.slice(0, 3);
+const cards = keys
+  .map((k) => catalog[k])
+  .filter(Boolean)
+  .slice(0, 6);
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-services">
+  <div class="fc-shell">
+    <h2 id="home-services" class="fc-h2">Services</h2>
+    <div
+      style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1rem;"
+    >
+      {cards.map((s) => (
+        <div class="fc-card" style="padding: 1.25rem;">
+          <h3 style="margin: 0; font-size: 1.1rem; letter-spacing: -0.02em;">{s.serviceName}</h3>
+          <p class="fc-lead" style="margin: 0.65rem 0 0;">
+            {s.shortDescription}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

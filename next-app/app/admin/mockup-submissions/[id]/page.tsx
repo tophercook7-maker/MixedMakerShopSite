@@ -15,6 +15,7 @@ type Row = {
   notes: string | null;
   status: string;
   source: string;
+  funnel_source: string | null;
   created_at: string;
   updated_at: string;
   selected_template_key?: string | null;
@@ -171,6 +172,12 @@ export default async function AdminMockupSubmissionDetailPage({
           </p>
           <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
             Source: {r.source}
+            {r.funnel_source ? (
+              <>
+                {" "}
+                · funnel: <span className="font-semibold text-[var(--admin-gold)]">{r.funnel_source}</span>
+              </>
+            ) : null}
           </p>
           {previewUrl ? (
             <p className="text-sm mt-2">
@@ -182,6 +189,33 @@ export default async function AdminMockupSubmissionDetailPage({
         </div>
         <MockupSubmissionStatusSelect submissionId={r.id} initialStatus={r.status} />
       </div>
+
+      <Section title="Follow-up message templates (copy/paste)">
+        <div
+          className="rounded-lg border border-[rgba(201,97,44,0.25)] p-4 text-sm leading-relaxed space-y-4"
+          style={{ color: "var(--admin-fg)", background: "rgba(0,0,0,0.15)" }}
+        >
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
+              First reply
+            </p>
+            <p className="whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
+              {`Hey — I took a look at your request.\n\nI’ve got a good direction in mind for your site. Before I build it out, quick question:\n\n[ask 1 relevant question about their business]`}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
+              If no response (~2 days)
+            </p>
+            <p className="whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
+              {`Hey — just wanted to follow up on this.\n\nI’ve got an idea for your site that I think would work really well. Let me know if you still want me to put it together.\n\n– Topher`}
+            </p>
+          </div>
+          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+            Use <strong style={{ color: "var(--admin-fg)" }}>Status → Contacted</strong> when you’ve reached out.
+          </p>
+        </div>
+      </Section>
 
       <Section title="Business info">
         <div className="grid sm:grid-cols-2 gap-2 rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.2)]">

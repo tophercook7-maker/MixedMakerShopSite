@@ -6,6 +6,7 @@ type Row = {
   email: string;
   status: string;
   source: string;
+  funnel_source: string | null;
   created_at: string;
 };
 
@@ -27,7 +28,7 @@ export default async function AdminMockupSubmissionsPage() {
 
   const { data: rows, error } = await supabase
     .from("mockup_submissions")
-    .select("id, email, status, source, created_at")
+    .select("id, email, status, source, funnel_source, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -63,7 +64,7 @@ export default async function AdminMockupSubmissionsPage() {
               <th className="px-3 py-2 font-medium">Created</th>
               <th className="px-3 py-2 font-medium">Email</th>
               <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Source</th>
+              <th className="px-3 py-2 font-medium">Attribution</th>
             </tr>
           </thead>
           <tbody>
@@ -96,7 +97,17 @@ export default async function AdminMockupSubmissionsPage() {
                     </Link>
                   </td>
                   <td className="px-3 py-2">{r.status}</td>
-                  <td className="px-3 py-2">{r.source}</td>
+                  <td className="px-3 py-2">
+                    <span className="text-[var(--admin-muted)]">{r.source}</span>
+                    {r.funnel_source ? (
+                      <>
+                        <span className="text-[var(--admin-muted)]"> · </span>
+                        <span className="rounded border border-[rgba(201,97,44,0.35)] px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--admin-gold)]">
+                          {r.funnel_source}
+                        </span>
+                      </>
+                    ) : null}
+                  </td>
                 </tr>
               ))
             )}

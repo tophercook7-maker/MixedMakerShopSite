@@ -1,0 +1,323 @@
+import type { NicheConfig } from "../types/niche";
+
+const faqEstimate = [
+  { question: "How fast can I get an estimate?", answer: "Most requests get a same-week response. Share photos and the best way to reach you — it speeds everything up." },
+  { question: "Do you work in my neighborhood?", answer: "Tell me your address or cross streets. If you’re just outside normal routing, we’ll still say so honestly." },
+] as const;
+
+export const NICHE_LAWN_CARE: NicheConfig = {
+  key: "lawn-care",
+  name: "Lawn care",
+  siteTitle: "Lawn care & outdoor maintenance",
+  tagline: "Dependable mowing, clean edges, and seasonal help that fits real Arkansas yards.",
+  primaryColorTheme: {
+    accent: "#2f6b3e",
+    accentDark: "#245530",
+    bg: "#f6f7f4",
+    ink: "#1a221c",
+    muted: "#3d4a41",
+  },
+  defaultCtaLabel: "Request a Free Estimate",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "Tell us about your lot, slope, and how often you want service.",
+  heroHeadline: "Outdoor work that respects your time",
+  heroSubheadline:
+    "Straightforward lawn care for Hot Springs-area homes — steady scheduling, sharp edges, and cleanup that doesn’t leave clippings tracking into the garage.",
+  coreOffer: "A simple maintenance rhythm (mowing + trimming + blower cleanup) with clear pricing windows and honest recommendations when something needs attention.",
+  reviewPrompt: "If we earned it, mention the crew’s punctuality and how the edges looked when we left.",
+  servicePageIntroTemplate:
+    "{{businessName}} helps {{city}} homeowners with {{serviceName}} that fits local heat, slope, and tree cover — not a one-size template from out of town.",
+  faqTemplates: [...faqEstimate,
+    { question: "What if my lawn is mostly weeds?", answer: "We’ll tell you what a cleanup realistically takes and what improves with steady mowing versus what needs a different approach." },
+  ],
+  commonProblems: ["Overgrown edges along sidewalks", "Thin strips beside fences", "Storm debris smothering turf", "Irrigation conflicts with mowing days"],
+  trustPoints: ["Local routing around narrow streets", "Sharp blades and maintained equipment", "Clear communication when something looks off"],
+  beforeAfterLabels: { before: "Before: shaggy edges & clippings on concrete", after: "After: clean lines & turf that looks maintained" },
+  photoCategories: ["Front yards", "Corner lots", "Lake-adjacent turf", "Fence lines & beds"],
+  defaultServices: ["lawn-care", "lawn-mowing", "yard-cleanup", "leaf-removal", "pressure-washing", "driveway-cleaning"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Recurring maintenance", description: "Weekly/biweekly mowing with trimming — priced by lot size, slope, and obstacles.", emphasis: "recurring" },
+    { title: "Seasonal cleanups", description: "Leaf-heavy weeks and storm debris — priced by time + haul-off needs.", emphasis: "estimate" },
+    { title: "Add-on washing", description: "Concrete and patios bundled after turf work when scheduling allows.", emphasis: "bundle" },
+  ],
+  features: ["Steady cadence through peak growth", "Bed + tree ring touch-ups", "Photos on request for out-of-town owners"],
+  businessTypeLabel: "lawn care & outdoor maintenance",
+  howItWorksSteps: ["Tell us about your yard and priorities", "We propose a realistic cadence and price range", "You get dependable visits and clear notes if something changes"],
+  homepageServices: [
+    { title: "Mowing & edging", description: "Crisp lines along walks, posts, and beds — not a rushed one-pass cut." },
+    { title: "Seasonal cleanups", description: "Leaves, branches, and mess after storms — thinned out so grass can breathe." },
+    { title: "Pressure washing", description: "Driveways and patios where algae and pollen make things slick." },
+  ],
+  proofEmphasis: "maintenance",
+  proofSectionTitle: "Results you can see from the curb",
+  proofSectionBody: "We focus on repeatable quality: clean edges, level height, and blower cleanup before we roll away.",
+  nicheNotes: [{ title: "Maintenance mindset", body: "The goal is a yard that looks quietly handled week to week — not a one-time miracle." }],
+};
+
+export const NICHE_PRESSURE_WASHING: NicheConfig = {
+  key: "pressure-washing",
+  name: "Pressure washing",
+  siteTitle: "Pressure washing & exterior cleaning",
+  tagline: "Concrete, siding-safe methods, and decks cleaned with the right pressure — not scars.",
+  primaryColorTheme: {
+    accent: "#1e6b8a",
+    accentDark: "#15566f",
+    bg: "#f3f8fb",
+    ink: "#132326",
+    muted: "#3a4f56",
+  },
+  defaultCtaLabel: "Get a Washing Quote",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "Share surface types (concrete, wood, vinyl) and any staining you want targeted.",
+  heroHeadline: "Clean surfaces — without the “blast damage” surprise",
+  heroSubheadline:
+    "Hot Springs humidity grows algae fast. We match detergents and pressure to the surface so driveways regain grip and siding gets clean safely.",
+  coreOffer: "Area-based estimates for flatwork plus bundled house washing packages when you want the full exterior refreshed.",
+  reviewPrompt: "Mention whether we removed the algae streaks without etching your concrete.",
+  servicePageIntroTemplate:
+    "For {{city}} homes, {{serviceName}} is about controlled technique — fan patterns, pretreatment, and rinse discipline so runoff stays manageable.",
+  faqTemplates: [...faqEstimate,
+    { question: "Will this damage my siding?", answer: "We soft-wash many exteriors. If something shouldn’t be high-pressure blasted, we’ll say so up front." },
+  ],
+  commonProblems: ["Slick algae on shaded concrete", "Pollen on porches", "Tannin stains near trees", "Dirty pool decks"],
+  trustPoints: ["Surface-specific methods", "Clear scope before we start", "Respect for landscaping near hardscapes"],
+  beforeAfterLabels: { before: "Before: black algae streaks", after: "After: clean, even color" },
+  photoCategories: ["Driveways", "Sidewalks", "Pool decks", "Siding"],
+  defaultServices: ["pressure-washing", "house-washing", "deck-cleaning", "concrete-cleaning", "roof-soft-wash"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Flatwork washing", description: "Driveways, walks, patios — priced by square footage and soil load.", emphasis: "bundle" },
+    { title: "House washing", description: "Soft wash methods for siding + trim — priced by stories and access.", emphasis: "estimate" },
+    { title: "Add deck/porch detail", description: "Wood and composite need different fan control — quoted separately.", emphasis: "estimate" },
+  ],
+  features: ["Controlled fan patterns", "Pretreatment on organic stains", "Post-walkthrough on problem spots"],
+  businessTypeLabel: "pressure washing & exterior cleaning",
+  howItWorksSteps: ["Photos + surface types", "Clear quote with what’s included", "Protected plants + managed runoff"],
+  homepageServices: [
+    { title: "Concrete cleaning", description: "Grip restored on drives and walks — especially shaded, algae-prone areas." },
+    { title: "House washing", description: "Detergent + soft wash approaches matched to your siding." },
+    { title: "Decks & porches", description: "Wood-friendly washing that doesn’t fur up boards." },
+  ],
+  proofEmphasis: "gallery",
+  proofSectionTitle: "Before / after that’s honest",
+  proofSectionBody: "We photograph typical stains — oil lightens, algae clears — without promising impossible miracles.",
+  nicheNotes: [{ title: "Gallery-ready jobs", body: "Great candidates for before/after: north-facing concrete and pool decks with organic staining." }],
+};
+
+export const NICHE_LANDSCAPING: NicheConfig = {
+  key: "landscaping",
+  name: "Landscaping",
+  siteTitle: "Landscaping & outdoor projects",
+  tagline: "Planting, bed redesign, and seasonal refreshes built for Arkansas heat and rocky soil.",
+  primaryColorTheme: {
+    accent: "#4a6b2f",
+    accentDark: "#3a5425",
+    bg: "#f6f7f2",
+    ink: "#1a2218",
+    muted: "#3f4d38",
+  },
+  defaultCtaLabel: "Book a Project Consultation",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "Tell us sun exposure, drainage trouble spots, and what you want simplified.",
+  heroHeadline: "Landscapes that survive the season — not just photo day",
+  heroSubheadline:
+    "We design for maintenance reality: irrigation conflicts, deer pressure, and beds that still look good 90 days later.",
+  coreOffer: "Consultation-first projects with phased options — refresh now, expand later — so you’re not forced into an all-or-nothing bid.",
+  reviewPrompt: "Note whether the bed layout made mowing and edging easier for your crew (or for you).",
+  servicePageIntroTemplate:
+    "{{serviceName}} in {{city}} starts with drainage and sun patterns — then we pick materials that won’t cook against your foundation.",
+  faqTemplates: [...faqEstimate,
+    { question: "Do you handle drainage issues?", answer: "We address practical grading and bed boundaries. Major drainage engineering may need a specialist — we’ll flag it early." },
+  ],
+  commonProblems: ["Weeds winning in mulch", "Bed edges crumbling", "Overgrown shrubs against siding", "Poor plant choices for full sun"],
+  trustPoints: ["Local plant palettes", "Phased proposals", "Cleanup-first job sites"],
+  beforeAfterLabels: { before: "Before: tired mulch & leggy shrubs", after: "After: defined edges & workable plant spacing" },
+  photoCategories: ["Front beds", "Sloped sides", "Tree rings", "Rock work"],
+  defaultServices: ["landscape-design", "mulch-bed-refresh", "shrub-trimming", "planting", "edging-and-bed-definition"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Refresh packages", description: "Mulch, weed removal, redefine edges — priced by bed volume.", emphasis: "estimate" },
+    { title: "Shrub sculpting", description: "Reduction pruning and shaping — priced by time + debris haul-off.", emphasis: "estimate" },
+    { title: "Design + install", description: "Material lists, layout, and planting — phased quotes available.", emphasis: "inspection" },
+  ],
+  features: ["Heat-tolerant selections", "Clean trench lines", "Clear handoff notes for watering"],
+  businessTypeLabel: "landscaping & outdoor projects",
+  howItWorksSteps: ["Walkthrough + photos", "Options at different investment levels", "Install windows that fit weather"],
+  homepageServices: [
+    { title: "Bed redesign", description: "Shape, spacing, and mulch depth that actually suppresses weeds." },
+    { title: "Shrub trimming", description: "Reduction and shaping that buys you time before the next cut." },
+    { title: "Seasonal color", description: "Planters and pops of color without high-maintenance chaos." },
+  ],
+  proofEmphasis: "results",
+  proofSectionTitle: "Outdoor spaces that photograph well — and live well",
+  proofSectionBody: "We highlight bed lines, tree rings, and mulch contrast — the stuff that reads on real estate photos and everyday life.",
+  nicheNotes: [{ title: "Lake lots", body: "We pay attention to shoreline setbacks and erosion when recommending groundcover near the water." }],
+};
+
+export const NICHE_JUNK_REMOVAL: NicheConfig = {
+  key: "junk-removal",
+  name: "Junk removal",
+  siteTitle: "Junk removal & haul-off",
+  tagline: "Fast pickup windows, volume-based pricing, and straight talk about what can leave today.",
+  primaryColorTheme: {
+    accent: "#b85c1e",
+    accentDark: "#8f4716",
+    bg: "#fbf7f1",
+    ink: "#221a14",
+    muted: "#5c4a3d",
+  },
+  defaultCtaLabel: "Get a Pickup Window",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "List items, approximate volume, and whether we’ll need driveway or backyard access.",
+  heroHeadline: "Heavy stuff gone — without the mystery fees",
+  heroSubheadline:
+    "Garage cleanouts, appliance pulls, and storm debris — we quote by volume and access so you’re not surprised when we show up.",
+  coreOffer: "Same-week availability when possible, upfront volume tiers, and labor included for typical lift-and-load work.",
+  reviewPrompt: "Call out communication — did we confirm access and show up in the window we promised?",
+  servicePageIntroTemplate:
+    "{{serviceName}} in {{city}} is built around tight access routes, driveway-friendly loading, and realistic disposal paths for local rules.",
+  faqTemplates: [...faqEstimate,
+    { question: "What can’t you take?", answer: "Hazardous materials and certain electronics need special disposal — we’ll tell you straight and suggest options." },
+  ],
+  commonProblems: ["Garage packed to the ceiling", "Old appliances with tight door swings", "Tenant move-outs", "Fence-line brush piles"],
+  trustPoints: ["Volume-based quotes", "Labor included for standard items", "Respect for driveways and gates"],
+  beforeAfterLabels: { before: "Before: packed garage bay", after: "After: sweep-ready floor space" },
+  photoCategories: ["Appliances", "Furniture", "Construction debris", "Brush piles"],
+  defaultServices: ["junk-removal", "furniture-removal", "appliance-removal", "garage-cleanout", "debris-haul-off"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Quarter load → full truck", description: "Volume tiers with photos — priced before we haul.", emphasis: "volume" },
+    { title: "Appliance pulls", description: "Door-path planning + basic hookups — quoted with access notes.", emphasis: "estimate" },
+    { title: "Construction debris", description: "Sorted loads where possible — may require bagster/dump coordination.", emphasis: "estimate" },
+  ],
+  features: ["Same-week windows when capacity allows", "Straightforward access questions up front", "Broom-sweep after pickup"],
+  businessTypeLabel: "junk removal & haul-off",
+  howItWorksSteps: ["Photos + list", "Volume tier + window", "Load, sweep, dispose"],
+  homepageServices: [
+    { title: "Garage cleanouts", description: "Make room for vehicles again — we stage donate vs dump sensibly." },
+    { title: "Furniture & appliances", description: "Tight hallways and stairs? Tell us early — it changes the plan." },
+    { title: "Yard debris", description: "Branches and storm mess — volume pricing with haul-off included." },
+  ],
+  proofEmphasis: "speed",
+  proofSectionTitle: "Speed that still respects your property",
+  proofSectionBody: "We ask gate widths and pavement concerns up front so we’re not improvising on your driveway.",
+  nicheNotes: [{ title: "Same-day when possible", body: "Smaller loads sometimes fit same-day — ask early in the week during busy seasons." }],
+};
+
+export const NICHE_PAINTING: NicheConfig = {
+  key: "painting",
+  name: "Painting",
+  siteTitle: "Interior & exterior painting",
+  tagline: "Prep-first painting with clean lines — cabinets, siding, and decks that hold up.",
+  primaryColorTheme: {
+    accent: "#3d4f8f",
+    accentDark: "#2f3d72",
+    bg: "#f5f6fb",
+    ink: "#161a2c",
+    muted: "#4a5168",
+  },
+  defaultCtaLabel: "Schedule a Project Estimate",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "Tell us interior vs exterior, peeling vs new construction, and your target timeline.",
+  heroHeadline: "Paint jobs that start with prep — because that’s what lasts",
+  heroSubheadline:
+    "Humidity swings are hard on coatings. We scrape what’s failing, prime what’s thirsty, and keep lines crisp on trim.",
+  coreOffer: "Written scopes with prep levels spelled out — not a single-line price that hides sanding time.",
+  reviewPrompt: "Mention tape lines and whether we protected floors and hardware the way you expected.",
+  servicePageIntroTemplate:
+    "{{serviceName}} in {{city}} depends on substrate and sun exposure — we’ll recommend primers and sheens that match real conditions.",
+  faqTemplates: [...faqEstimate,
+    { question: "Do you paint cabinets?", answer: "Yes — cleaning, scuff sanding, and cabinet-appropriate coatings with cure-time guidance." },
+  ],
+  commonProblems: ["Peeling porch rails", "Sun-baked south siding", "Interior high-traffic hallways", "Fence stain that failed in one season"],
+  trustPoints: ["Prep checklist included in quotes", "Clean job sites daily", "Touch-up kits labeled when possible"],
+  beforeAfterLabels: { before: "Before: chalky siding & flaky trim", after: "After: sealed, even color" },
+  photoCategories: ["Exteriors", "Kitchen cabinets", "Decks & fences", "Interior trim"],
+  defaultServices: ["house-painting", "exterior-painting", "interior-painting", "fence-painting", "deck-staining"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Exterior repaint", description: "Prep class + gallons + access — priced after walkthrough.", emphasis: "estimate" },
+    { title: "Interior rooms", description: "Per-room scopes with furniture move options spelled out.", emphasis: "estimate" },
+    { title: "Deck & fence stain", description: "Strip/clean/stain sequences priced by condition.", emphasis: "bundle" },
+  ],
+  features: ["Sheen recommendations per room", "Caulk + nail hole discipline", "Humidity-aware recoat windows"],
+  businessTypeLabel: "painting & coatings",
+  howItWorksSteps: ["Walkthrough + photos", "Prep-class proposal", "Protected surfaces + clean handoff"],
+  homepageServices: [
+    { title: "Exterior repaints", description: "Siding, trim, and porch systems — prep spelled out in writing." },
+    { title: "Cabinet refinishing", description: "Kitchens that need durability and smooth finish work." },
+    { title: "Deck & fence stain", description: "Stripping decisions based on failure mode — not one process for every yard." },
+  ],
+  proofEmphasis: "gallery",
+  proofSectionTitle: "Finish quality you can inspect up close",
+  proofSectionBody: "We highlight cut lines, caulk transitions, and deck stain absorption — not just “after” photos from far away.",
+  nicheNotes: [{ title: "Color consult", body: "Bring samples — north vs south light in the Ouachitas changes how color reads." }],
+};
+
+export const NICHE_ROOFING: NicheConfig = {
+  key: "roofing",
+  name: "Roofing",
+  siteTitle: "Roof repair & replacement",
+  tagline: "Inspections you can understand — storm documentation, honest repair scopes, and replacement when it’s truly time.",
+  primaryColorTheme: {
+    accent: "#3a3a3a",
+    accentDark: "#222",
+    bg: "#f4f4f4",
+    ink: "#121212",
+    muted: "#4a4a4a",
+  },
+  defaultCtaLabel: "Request a Roof Inspection",
+  defaultCtaHref: "/contact#estimate",
+  contactGoalLabel: "Tell us about leaks, hail dates, and insurance involvement — we’ll guide documentation needs.",
+  heroHeadline: "Roof work explained in plain language — with photos",
+  heroSubheadline:
+    "Storm seasons hit fast. We document lift, seal, and flashing issues clearly so you can make decisions without pressure.",
+  coreOffer: "Inspection-first workflow: repair options when possible, replacement scopes when shingles are cooked or patterns fail across the roof.",
+  reviewPrompt: "Mention whether we explained insurance vs cash-pay options without confusing the two.",
+  servicePageIntroTemplate:
+    "{{serviceName}} in {{city}} starts with attic signs, deck penetration checks, and shingle seal integrity — especially after wind events.",
+  faqTemplates: [...faqEstimate,
+    { question: "Do you help with insurance claims?", answer: "We can document damage and provide scopes. Policy decisions belong to you and your carrier — we keep paperwork clear." },
+  ],
+  commonProblems: ["Lifted ridge caps", "Valley leaks after heavy rain", "Granule loss on south slopes", "Flashing gaps at wall transitions"],
+  trustPoints: ["Photo reports with explanations", "Repair-first mindset when it’s safe", "No-pressure replacement timing"],
+  beforeAfterLabels: { before: "Before: hail-spotted slopes", after: "After: sealed system + clean drip edge" },
+  photoCategories: ["Shingle closeups", "Flashing details", "Gutters & drip edge", "Attic stains"],
+  defaultServices: ["roof-repair", "roof-replacement", "roof-inspection", "storm-damage-roofing", "shingle-repair"],
+  defaultLocations: ["hot-springs-ar", "hot-springs-village-ar", "lake-hamilton-ar"],
+  pricingTiers: [
+    { title: "Inspection + report", description: "Photo documentation and prioritized findings — priced flat.", emphasis: "inspection" },
+    { title: "Targeted repairs", description: "Flashing, ridge, small sections — scoped after inspection.", emphasis: "estimate" },
+    { title: "Full replacement", description: "Tear-off + decking checks + install — phased payment milestones available.", emphasis: "estimate" },
+  ],
+  features: ["Wind/hail documentation habits", "Ventilation notes when relevant", "Clean magnet passes on driveways"],
+  businessTypeLabel: "roofing & storm repair",
+  howItWorksSteps: ["Exterior + attic inspection", "Clear repair vs replace guidance", "Scheduled install with daily cleanup"],
+  homepageServices: [
+    { title: "Storm assessments", description: "Documented photos and a prioritized fix list." },
+    { title: "Leak tracking", description: "Trace uphill, not just patch the ceiling stain." },
+    { title: "Replacement", description: "When repairs are band-aids on a failing system — we’ll say so clearly." },
+  ],
+  proofEmphasis: "storm-insurance",
+  proofSectionTitle: "Storm damage — clear documentation",
+  proofSectionBody: "We separate cosmetic marks from seal failures so you’re not guessing what matters on a claim.",
+  nicheNotes: [{ title: "Insurance clarity", body: "We’ll explain what we saw vs what a carrier must decide — no blurred lines." }],
+};
+
+export const NICHES: readonly NicheConfig[] = [
+  NICHE_LAWN_CARE,
+  NICHE_PRESSURE_WASHING,
+  NICHE_LANDSCAPING,
+  NICHE_JUNK_REMOVAL,
+  NICHE_PAINTING,
+  NICHE_ROOFING,
+] as const;
+
+export const NICHE_BY_KEY = Object.fromEntries(NICHES.map((n) => [n.key, n])) as Record<NicheConfig["key"], NicheConfig>;
+
+export function getNicheConfig(key: NicheConfig["key"]): NicheConfig {
+  const n = NICHE_BY_KEY[key];
+  if (!n) throw new Error(`Unknown niche: ${key}`);
+  return n;
+}

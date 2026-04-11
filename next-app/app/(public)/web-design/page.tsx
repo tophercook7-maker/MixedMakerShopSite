@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { WebDesignServicePage } from "@/components/public/WebDesignServicePage";
 
+const canonical = "https://mixedmakershop.com/web-design";
+
 export const metadata: Metadata = {
-  title: "Web Design by Topher | MixedMakerShop",
+  title: "Web Design for Real Businesses | MixedMakerShop",
   description:
-    "Clean, dependable websites for real businesses — built directly by Topher. Hot Springs, Arkansas. Start with a free mockup.",
+    "Practical web design by Topher — clear sites that build trust and drive calls and leads. Hot Springs, AR & nationwide. Start with a free preview.",
+  alternates: { canonical },
   openGraph: {
-    title: "Web design by Topher | MixedMakerShop",
-    description: "Websites built to help real businesses get customers — without agency layers.",
-    url: "https://mixedmakershop.com/web-design",
+    title: "Web design for real businesses | MixedMakerShop",
+    description: "Clear, conversion-focused websites — built directly by Topher, no agency layers.",
+    url: canonical,
   },
 };
 

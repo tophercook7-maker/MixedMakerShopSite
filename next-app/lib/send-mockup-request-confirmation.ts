@@ -12,22 +12,16 @@ function ownerReplyToEmail(): string {
   );
 }
 
-function buildMockupConfirmationBody(contactName: string, businessName: string): string {
+function buildMockupConfirmationBody(contactName: string, _businessName: string): string {
   const name = contactName.trim() || "there";
-  const biz = businessName.trim() || "your business";
   return [
-    `Hey ${name},`,
+    `Hey ${name} —`,
     "",
-    "Got your request — I'm on it.",
+    "I got your request and I'm already looking it over.",
     "",
-    `I'll be putting together a custom homepage mockup for ${biz} so you can see what your site could look like before committing to anything.`,
+    "I'll start putting together your homepage preview and reach out if I need anything.",
     "",
-    "If you sent your current site, I'll review it.",
-    "If not, I'll build something fresh based on what you told me.",
-    "",
-    "If there's anything specific you want me to focus on, just reply and let me know.",
-    "",
-    "I'll be back in touch soon.",
+    "You should hear from me within a day.",
     "",
     "– Topher",
   ].join("\n");
@@ -64,7 +58,7 @@ export async function sendMockupRequestConfirmationEmail(opts: {
       from: fromEmail,
       to: [to],
       reply_to: ownerReplyToEmail(),
-      subject: "Got your mockup request 👍",
+      subject: "Got your request — working on your preview",
       text,
     }),
     cache: "no-store",

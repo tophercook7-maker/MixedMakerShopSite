@@ -90,6 +90,8 @@ const mockupDataSchema = z
   .object({
     contactName: z.string().min(1, "Name is required"),
     snapshot: snapshotSchema,
+    /** URL/query attribution e.g. freshcut from ?source=freshcut */
+    funnel_source: z.string().max(64).optional(),
   })
   .passthrough();
 
@@ -242,8 +244,11 @@ export async function POST(request: Request) {
 
     const validatedMockupData = parsed.data as z.infer<typeof mockupDataSchema> &
       Record<string, unknown>;
+    const funnelSourceAttr = String(
+      (validatedMockupData as { funnel_source?: unknown }).funnel_source ?? "",
+    ).trim();
     const submitPhone = String(
-      (validatedMockupData as { submitPhone?: unknown }).submitPhone ?? ""
+      (validatedMockupData as { submitPhone?: unknown }).submitPhone ?? "",
     ).trim();
     const snapshotIn = parsed.data.snapshot;
     const businessPhoneForNotes = String(snapshotIn.phone || "").trim();
@@ -288,6 +293,7 @@ export async function POST(request: Request) {
 
     const leadNotes = [
       "Inbound: website mockup funnel (/free-mockup)",
+      funnelSourceAttr ? `Funnel attribution (source): ${funnelSourceAttr}` : "",
       `Shareable preview: ${previewUrl}`,
       `Contact: ${contactName}`,
       submitPhone && businessPhoneForNotes && submitPhone !== businessPhoneForNotes
@@ -374,6 +380,7 @@ export async function POST(request: Request) {
       ...(typeof mockRow.raw_payload === "object" && mockRow.raw_payload ? mockRow.raw_payload : {}),
       funnel_contact_name: contactName,
       source: "mockup_request",
+      ...(funnelSourceAttr ? { funnel_source: funnelSourceAttr } : {}),
     };
 
     const crmInsert = {
@@ -459,6 +466,7 @@ export async function POST(request: Request) {
         notes,
         status: "new",
         source: "free-mockup",
+        funnel_source: funnelSourceAttr || null,
         selected_template_key: snapshot.selected_template_key,
         desired_outcomes: desiredOutcomesJson,
         top_services_to_feature: snapshot.top_services_to_feature?.trim() || null,

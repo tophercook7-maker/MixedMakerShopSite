@@ -1,0 +1,24 @@
+---
+import type { LocalPage } from "../types/local-seo";
+
+type Props = {
+  page: LocalPage;
+};
+
+const { page } = Astro.props;
+const h1 = page.heroTitle ?? `${page.serviceName} in ${page.city}, ${page.stateAbbr}`;
+---
+
+<section class="fc-section" aria-labelledby="local-hero-title">
+  <div class="fc-shell">
+    <div class="fc-card" style="padding: clamp(1.5rem, 4vw, 2.5rem);">
+      <p class="fc-kicker">Local service</p>
+      <h1 id="local-hero-title" class="fc-h1">{h1}</h1>
+      <p class="fc-lead" style="margin-top: 1.25rem; max-width: 62ch;">{page.intro}</p>
+      <div class="fc-btn-row">
+        <a class="fc-btn fc-btn--primary" href={page.primaryCtaHref}>{page.primaryCtaLabel}</a>
+        <a class="fc-btn fc-btn--secondary" href={page.secondaryCtaHref}>{page.secondaryCtaLabel}</a>
+      </div>
+    </div>
+  </div>
+</section>

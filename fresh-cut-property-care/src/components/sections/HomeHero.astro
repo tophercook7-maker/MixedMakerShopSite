@@ -1,0 +1,21 @@
+---
+import type { ResolvedSite } from "../../types/client";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+---
+
+<section class="fc-section" aria-labelledby="home-hero-title">
+  <div class="fc-shell">
+    <div class="fc-card" style="padding: clamp(1.5rem, 4vw, 2.5rem);">
+      <p class="fc-kicker">{site.niche.businessTypeLabel}</p>
+      <h1 id="home-hero-title" class="fc-h1">{site.homepage.heroHeadline}</h1>
+      <p class="fc-lead" style="margin-top: 1rem; max-width: 62ch;">{site.homepage.heroSubheadline}</p>
+      <p class="fc-lead" style="margin-top: 1rem; max-width: 62ch;">{site.homepage.coreOffer}</p>
+      <div class="fc-btn-row">
+        <a class="fc-btn fc-btn--primary" href={site.estimateCtaHref}>{site.estimateCtaLabel}</a>
+        <a class="fc-btn fc-btn--secondary" href={site.secondaryCtaHref}>{site.secondaryCtaLabel}</a>
+      </div>
+    </div>
+  </div>
+</section>

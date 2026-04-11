@@ -1,14 +1,38 @@
 /**
- * Showcase projects: live client sites + product builds for Builds page;
+ * Showcase projects: live client sites + product builds for Builds / Examples;
  * homepage uses a conversion-focused subset (see HOME_PAGE_FEATURED_ANALYTICS_IDS).
  */
 
-/** Client and public web projects shown on Builds (Web projects row) — includes StrainSpotter, not Henry (Henry has its own section on Builds). */
+export type ShowcaseKind = "live" | "concept";
+
+export type ShowcaseProject = {
+  title: string;
+  /** Result-focused line — what the site helps do. */
+  primaryLine: string;
+  /** Optional supporting sentence for clarity. */
+  context?: string;
+  /** Small label for quick scanning (e.g. Local Service Business). */
+  tag: string;
+  showcaseKind: ShowcaseKind;
+  previewSrc: string;
+  previewAlt: string;
+  hostname: string;
+  url: string;
+  analyticsId: string;
+  objectPosition: string;
+  imageClassName: string;
+  primaryCtaIsExternal: boolean;
+  /** Overrides default label from `showcaseKind` (e.g. “View Live Demo”). */
+  primaryCtaLabel?: string;
+};
+
 export const LIVE_WEB_PROJECTS = [
   {
     title: "Fresh Cut Property Care",
-    pitch:
-      "Local service business site built to earn trust quickly and turn visitors into calls and leads.",
+    tag: "Local Service Business",
+    showcaseKind: "live",
+    primaryLine: "Clean, local service site built to turn visitors into estimate requests",
+    context: "Focused on simple navigation, strong service sections, and clear contact flow.",
     previewSrc: "/images/showcase/freshcut-property-care.jpg",
     previewAlt: "Homepage preview of Fresh Cut Property Care — lawn care hero and call-to-action",
     hostname: "freshcutpropertycare.com",
@@ -17,11 +41,13 @@ export const LIVE_WEB_PROJECTS = [
     objectPosition: "center top",
     imageClassName: "object-cover md:object-contain",
     primaryCtaIsExternal: true,
-    primaryCtaLabel: "View live site",
   },
   {
     title: "Deep Well Audio",
-    pitch: "Strong branding and design polish so a music business looks as established as it sounds.",
+    tag: "Portfolio Site",
+    showcaseKind: "live",
+    primaryLine: "Simple, focused site designed to showcase work and build credibility",
+    context: "Clean layout with emphasis on portfolio and easy contact.",
     previewSrc: "/images/showcase/deep-well-audio.jpg",
     previewAlt:
       "Homepage preview of Deep Well Audio — typography and hero art from the live music site",
@@ -31,11 +57,13 @@ export const LIVE_WEB_PROJECTS = [
     objectPosition: "center top",
     imageClassName: "object-cover md:object-contain",
     primaryCtaIsExternal: true,
-    primaryCtaLabel: "View live site",
   },
   {
     title: "StrainSpotter",
-    pitch: "AI-assisted identification and discovery — a product-style web app (demo may move; see Builds for detail).",
+    tag: "Product Build",
+    showcaseKind: "live",
+    primaryLine: "Web app built for a clear path from question to useful answers",
+    context: "Product-style UI with room to grow — see Builds for the full story.",
     previewSrc: "/images/mixedmakershop-umbrella-brand-hero.png",
     previewAlt: "StrainSpotter — product-style web app build by Topher (placeholder scene until a dedicated screenshot is added)",
     hostname: "strainspotter.app",
@@ -44,15 +72,18 @@ export const LIVE_WEB_PROJECTS = [
     objectPosition: "center center",
     imageClassName: "object-cover md:object-cover",
     primaryCtaIsExternal: true,
-    primaryCtaLabel: "View live demo",
+    primaryCtaLabel: "View Live Demo",
   },
-] as const;
+] as const satisfies readonly ShowcaseProject[];
 
 /** Henry AI — homepage featured #3; full write-up on Builds. Not duplicated in LIVE_WEB_PROJECTS so Builds “Web projects” row stays three sites. */
 export const HENRY_AI_SHOWCASE_PROJECT = {
   title: "Henry AI",
-  pitch:
-    "An AI workspace concept focused on tools, workflows, and systems — for when your business needs smart builds, not just pages.",
+  tag: "Concept Build",
+  showcaseKind: "concept",
+  primaryLine:
+    "Example layout showing how a service business can look clean and trustworthy online",
+  context: "Built to demonstrate structure, flow, and conversion-focused design.",
   previewSrc: "/images/mixedmaker-workspace-hero.png",
   previewAlt: "Henry AI — workspace and tools concept by Topher",
   hostname: "mixedmakershop.com",
@@ -61,19 +92,29 @@ export const HENRY_AI_SHOWCASE_PROJECT = {
   objectPosition: "center center",
   imageClassName: "object-cover md:object-cover",
   primaryCtaIsExternal: false,
-  primaryCtaLabel: "See Henry AI on Builds",
-} as const;
+} as const satisfies ShowcaseProject;
 
 export type LiveWebProject = (typeof LIVE_WEB_PROJECTS)[number];
 export type HenryAiShowcaseProject = typeof HENRY_AI_SHOWCASE_PROJECT;
-export type ShowcaseProject = LiveWebProject | HenryAiShowcaseProject;
+export type AnyShowcaseProject = LiveWebProject | HenryAiShowcaseProject;
 
-const showcaseCatalog: Record<string, ShowcaseProject> = {
+const showcaseCatalog: Record<string, AnyShowcaseProject> = {
   fresh_cut_property_care: LIVE_WEB_PROJECTS[0],
   deep_well_audio: LIVE_WEB_PROJECTS[1],
   strainspotter: LIVE_WEB_PROJECTS[2],
   henry_ai: HENRY_AI_SHOWCASE_PROJECT,
 };
+
+/** Default label for the first CTA (solid) — live site, demo, or example. */
+export function getShowcasePrimaryCtaLabel(project: ShowcaseProject): string {
+  if (project.primaryCtaLabel) return project.primaryCtaLabel;
+  return project.showcaseKind === "concept" ? "View Example" : "View Live Site";
+}
+
+/** Default label for the second CTA (outline) — lead capture. */
+export function getShowcaseSecondaryCtaLabel(project: ShowcaseProject): string {
+  return project.showcaseKind === "concept" ? "Get My Version" : "Request Something Similar";
+}
 
 /** Small-business homepage: two trust-building client sites + one tools/systems example (no niche app). */
 export const HOME_PAGE_FEATURED_ANALYTICS_IDS = [
@@ -82,6 +123,6 @@ export const HOME_PAGE_FEATURED_ANALYTICS_IDS = [
   "henry_ai",
 ] as const;
 
-export function getShowcaseProjectsByAnalyticsIds(ids: readonly string[]): ShowcaseProject[] {
-  return ids.map((id) => showcaseCatalog[id]).filter((p): p is ShowcaseProject => p != null);
+export function getShowcaseProjectsByAnalyticsIds(ids: readonly string[]): AnyShowcaseProject[] {
+  return ids.map((id) => showcaseCatalog[id]).filter((p): p is AnyShowcaseProject => p != null);
 }

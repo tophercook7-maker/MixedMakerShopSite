@@ -97,7 +97,7 @@ export function MockupPresentationCtaStrip() {
             whiteSpace: "nowrap",
           }}
         >
-          Contact Topher
+          Contact
         </Link>
       </div>
     </section>

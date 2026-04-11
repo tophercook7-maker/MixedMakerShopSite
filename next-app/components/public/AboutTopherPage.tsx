@@ -142,7 +142,7 @@ export function AboutTopherPage() {
                   "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                 )}
               >
-                Contact Topher
+                Contact
               </TrackedPublicLink>
             </div>
             <p className="mx-auto mt-4 max-w-lg text-xs font-medium text-[#5a6a62] sm:text-sm">

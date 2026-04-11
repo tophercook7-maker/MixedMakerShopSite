@@ -1,25 +1,43 @@
 import type { Metadata } from "next";
 import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-client";
+import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
 import { publicShellClass } from "@/lib/public-brand";
 import { mmsBtnPrimary, mmsEyebrow, mmsH1, mmsLead, mmsPageBg, mmsSectionY } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
+const canonical = "https://mixedmakershop.com/free-mockup";
+
 export const metadata: Metadata = {
-  title: "Get Your Free Website Mockup | MixedMakerShop",
+  title: "Free Website Preview | MixedMakerShop",
   description:
-    "Request a free custom homepage mockup for your small business — see what your new site could look like before you commit.",
+    "Request a free homepage preview for your business — see a real direction before you commit. Built and reviewed by Topher.",
+  alternates: { canonical },
   openGraph: {
-    title: "Get Your Free Website Mockup | MixedMakerShop",
+    title: "Free website preview | MixedMakerShop",
     description:
-      "I'll design a custom homepage preview so you can see the difference before you decide. Low pressure, no obligation.",
-    url: "https://mixedmakershop.com/free-mockup",
+      "A custom homepage direction for your business — low pressure, no obligation.",
+    url: canonical,
   },
   robots: { index: true, follow: true },
 };
 
 const shell = publicShellClass;
 
-export default function FreeMockupPage() {
+function normalizeSourceParam(raw: string | string[] | undefined): string | undefined {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const t = String(v || "").trim().toLowerCase();
+  return t.length ? t : undefined;
+}
+
+export default async function FreeMockupPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const funnelSource = normalizeSourceParam(sp.source);
+  const isFreshCutFunnel = funnelSource === "freshcut";
+
   return (
     <div className={mmsPageBg}>
       <section className="relative overflow-hidden border-b border-slate-200/65 bg-gradient-to-b from-white via-[#faf9f6] to-[#f4f3ef]">
@@ -32,14 +50,15 @@ export default function FreeMockupPage() {
           aria-hidden
         />
         <div className={cn(shell, mmsSectionY, "relative z-[1] max-w-3xl")}>
-          <p className={mmsEyebrow}>MixedMakerShop · Web design by Topher</p>
-          <h1 className={cn(mmsH1, "mt-6 max-w-[18ch] sm:max-w-none")}>Get your free website mockup</h1>
+          <p className={mmsEyebrow}>MixedMakerShop · Free preview</p>
+          <h1 className={cn(mmsH1, "mt-6 max-w-[18ch] sm:max-w-none")}>Get your free website preview</h1>
           <p className={cn(mmsLead, "mt-7 max-w-2xl")}>
-            Topher will show you what your site could look like before you commit.
+            Tell Topher about your business — you&apos;ll get a real homepage direction to react to, not a generic
+            template picker.
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href="#free-mockup-start" className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}>
-              Get a free website mockup
+              Start the form
             </a>
           </div>
           <p className="mt-4 text-sm font-medium text-slate-600">
@@ -58,7 +77,8 @@ export default function FreeMockupPage() {
           </div>
         </div>
       </section>
-      <FreeMockupFunnelClient />
+      {isFreshCutFunnel ? <FreeMockupSourceBannerFreshCut /> : null}
+      <FreeMockupFunnelClient funnelSource={funnelSource} />
     </div>
   );
 }

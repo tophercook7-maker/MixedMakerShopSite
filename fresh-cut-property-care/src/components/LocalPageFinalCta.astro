@@ -1,0 +1,24 @@
+---
+import type { LocalPage } from "../types/local-seo";
+
+type Props = {
+  page: LocalPage;
+};
+
+const { page } = Astro.props;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="final-cta">
+  <div class="fc-shell">
+    <div class="fc-card" style="padding: clamp(1.5rem, 4vw, 2rem); background: linear-gradient(135deg, #f3f7f2 0%, #fff 55%);">
+      <h2 id="final-cta" class="fc-h2">Ready for a clear plan and a fair quote?</h2>
+      <p class="fc-lead" style="margin: 0; max-width: 58ch;">
+        Tell me what you&apos;re dealing with — steep slopes, tight access, rental turnovers, or just a lawn that got away from you. I&apos;ll recommend practical next steps.
+      </p>
+      <div class="fc-btn-row">
+        <a class="fc-btn fc-btn--primary" href={page.primaryCtaHref}>{page.primaryCtaLabel}</a>
+        <a class="fc-btn fc-btn--secondary" href={page.secondaryCtaHref}>{page.secondaryCtaLabel}</a>
+      </div>
+    </div>
+  </div>
+</section>

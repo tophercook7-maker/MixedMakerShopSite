@@ -25,7 +25,7 @@ export default function WebsiteSamplesPage() {
     <section className="section">
       <div className="container">
         <div className="panel">
-          <h1 style={{ margin: "0 0 10px" }}>Website Samples</h1>
+          <h1 style={{ margin: "0 0 10px" }}>Website layout demos</h1>
           <p className="subhead" style={{ margin: "0 0 20px" }}>
             Polished demos for local businesses — trades, food, coffee, churches, and more. Pick up ideas for your own,
             or we can build something fully custom.
@@ -59,7 +59,7 @@ export default function WebsiteSamplesPage() {
                 If you want something like this for your business, I can put together a quick preview for you.
               </p>
               <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
-                Get My Free Website Preview
+                Get My Free Preview
               </Link>
               <p className="small copy-readable" style={{ margin: 0, opacity: 0.75, fontStyle: "italic" }}>
                 Built for real local businesses — not templates, not fluff.
@@ -182,7 +182,7 @@ export default function WebsiteSamplesPage() {
               No pressure — just something to help you see what&apos;s possible.
             </p>
             <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
-              Get My Free Website Preview
+              Get My Free Preview
             </Link>
             <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>
               Built for real local businesses — not templates, not fluff.

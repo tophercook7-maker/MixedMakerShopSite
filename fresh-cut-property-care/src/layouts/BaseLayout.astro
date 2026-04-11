@@ -1,0 +1,76 @@
+---
+import "../styles/global.css";
+import { getResolvedSite, pageUrl } from "../lib/get-site-config";
+import type { ResolvedSite } from "../types/client";
+
+type Props = {
+  title: string;
+  description: string;
+  /** Path only, e.g. `/lawn-care-hot-springs-ar` */
+  canonicalPath: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  site?: ResolvedSite;
+};
+
+const { title, description, canonicalPath, ogTitle, ogDescription, site: siteProp } = Astro.props;
+const site = siteProp ?? getResolvedSite();
+const canonical = pageUrl(canonicalPath);
+const ogT = ogTitle ?? title;
+const ogD = ogDescription ?? description;
+const c = site.colors;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.businessName} />
+    <meta property="og:title" content={ogT} />
+    <meta property="og:description" content={ogD} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogT} />
+    <meta name="twitter:description" content={ogD} />
+  </head>
+  <body
+    style={`--fc-accent: ${c.accent}; --fc-accent-dark: ${c.accentDark}; --fc-bg: ${c.bg}; --fc-ink: ${c.ink}; --fc-muted: ${c.muted};`}
+  >
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="fc-header">
+      <div class="fc-shell fc-header__inner">
+        <a class="fc-brand" href="/">{site.businessName}</a>
+        <nav class="fc-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="fc-footer">
+      <div class="fc-shell">
+        <p style="margin: 0 0 0.75rem;">
+          <strong style="color: var(--fc-ink);">{site.businessName}</strong> — {site.niche.tagline}
+        </p>
+        <p style="margin: 0 0 0.75rem; max-width: 70ch;">{site.serviceAreaDescription}</p>
+        <p style="margin: 0;">
+          <a href="/">Home</a>
+          &nbsp;·&nbsp;
+          <a href="/contact">Contact</a>
+          &nbsp;·&nbsp;
+          <a href="/pricing">Pricing</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -51,7 +51,7 @@ export default function TophersWebDesignPage() {
             </p>
             <div className="btn-row" style={{ marginTop: 20 }}>
               <Link href="/free-mockup" className="btn gold">
-                Get My Free Website Preview
+                Get My Free Preview
               </Link>
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function TophersWebDesignPage() {
             </p>
             <div className="btn-row" style={{ justifyContent: "center" }}>
               <Link href="/free-mockup" className="btn gold">
-                Get My Free Website Preview
+                Get My Free Preview
               </Link>
             </div>
           </div>

@@ -39,7 +39,7 @@ export function HomeLiveSitesOutro() {
             }
             className="home-btn-primary home-btn-primary--hero mx-auto mt-8 inline-flex min-h-[52px] w-full max-w-md items-center justify-center gap-2 font-semibold text-[#0c0e0d] no-underline sm:w-auto"
           >
-            Get My Free Website Preview
+            Get My Free Preview
             <ArrowRight className="h-4 w-4" strokeWidth={2.25} aria-hidden />
           </Link>
         </div>

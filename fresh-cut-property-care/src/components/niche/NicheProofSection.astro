@@ -1,0 +1,28 @@
+---
+import type { ResolvedSite } from "../../types/client";
+import { getProofSectionCopy } from "../../lib/get-niche-content";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+const proof = getProofSectionCopy(site);
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-proof">
+  <div class="fc-shell">
+    <h2 id="home-proof" class="fc-h2">{proof.title}</h2>
+    <p class="fc-lead" style="margin: 0 0 1rem; max-width: 65ch;">{proof.body}</p>
+    <div
+      class="fc-card"
+      style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); padding: 1.25rem;"
+    >
+      <div>
+        <p class="fc-kicker" style="margin-bottom: 0.35rem;">{proof.labels.before}</p>
+        <p class="fc-lead" style="margin: 0;">Representative “before” conditions we see in the field — algae, wear, overgrowth, or weathering.</p>
+      </div>
+      <div>
+        <p class="fc-kicker" style="margin-bottom: 0.35rem;">{proof.labels.after}</p>
+        <p class="fc-lead" style="margin: 0;">Clean edges, even color, and finishes that read well in photos — without overpromising impossible fixes.</p>
+      </div>
+    </div>
+  </div>
+</section>

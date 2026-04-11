@@ -10,12 +10,8 @@ export function PublicFooter() {
             <h2 className="small footer-premium-heading" style={{ margin: "0 0 10px", fontWeight: 600 }}>
               MixedMakerShop
             </h2>
-            <p className="small" style={{ margin: 0, opacity: 0.92 }}>
-              <strong style={{ fontWeight: 650 }}>MixedMakerShop — Web Design, 3D Printing, and Digital Builds by Topher</strong>
-            </p>
-            <p className="small" style={{ margin: "10px 0 0", lineHeight: 1.55 }}>
-              MixedMakerShop is Topher&apos;s umbrella studio for practical web design, custom 3D printing, and useful digital
-              builds.
+            <p className="small" style={{ margin: 0, opacity: 0.92, lineHeight: 1.55 }}>
+              MixedMakerShop is Topher&apos;s studio for practical web design, custom 3D printing, and useful digital builds.
             </p>
             <p className="small" style={{ margin: "10px 0 0" }}>
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
@@ -29,7 +25,7 @@ export function PublicFooter() {
           </div>
           <div className="footer-col">
             <h2 className="small footer-premium-heading" style={{ margin: "0 0 10px", fontWeight: 600 }}>
-              Web Design Services
+              Web Design
             </h2>
             <ul className="footer-links" style={{ margin: 0, padding: 0, listStyle: "none" }}>
               <li>
@@ -47,6 +43,15 @@ export function PublicFooter() {
               <li>
                 <Link href="/small-business-websites-hot-springs">Small Business Websites</Link>
               </li>
+              <li>
+                <Link href="/lawn-care-hot-springs-ar">Lawn Care (Hot Springs)</Link>
+              </li>
+              <li>
+                <Link href="/pressure-washing-hot-springs-ar">Pressure Washing (Hot Springs)</Link>
+              </li>
+              <li>
+                <Link href="/yard-cleanup-hot-springs-ar">Yard Cleanup (Hot Springs)</Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -54,6 +59,10 @@ export function PublicFooter() {
           <Link href="/">Home</Link>
           {" · "}
           <Link href="/web-design">Web Design</Link>
+          {" · "}
+          <Link href="/examples">Examples</Link>
+          {" · "}
+          <Link href="/3d-printing">3D Printing</Link>
           {" · "}
           <Link href="/builds">Builds</Link>
           {" · "}
@@ -67,7 +76,7 @@ export function PublicFooter() {
             Contact
           </TrackedPublicLink>
           {" · "}
-          <Link href="/free-mockup">Free preview</Link>
+          <Link href="/free-mockup">Free Preview</Link>
           {" · "}
           <Link href="/website-roast">Website Roast</Link>
         </div>

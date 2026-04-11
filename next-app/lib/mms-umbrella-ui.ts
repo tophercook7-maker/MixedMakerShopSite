@@ -25,11 +25,11 @@ export const mmsSectionY = "py-20 md:py-28 lg:py-36";
 
 /** Section titles — charcoal + tight tracking. */
 export const mmsH2 = cn(
-  "text-3xl font-bold tracking-[-0.02em] text-[#1e241f] md:text-4xl lg:text-[2.35rem] lg:leading-snug",
+  "text-3xl font-bold tracking-[-0.02em] text-neutral-950 md:text-4xl lg:text-[2.35rem] lg:leading-snug",
 );
 
 export const mmsH1 = cn(
-  "text-4xl font-bold tracking-[-0.035em] text-[#1e241f] sm:text-5xl lg:leading-[1.06]",
+  "text-4xl font-bold tracking-[-0.035em] text-neutral-950 sm:text-5xl lg:leading-[1.06]",
 );
 
 export const mmsEyebrow = cn(
@@ -87,30 +87,39 @@ export const mmsCard = cn(
   "transition-[box-shadow,transform] duration-300 ease-out",
 );
 
-/** Homepage / umbrella — strong white glass, readable on busy photography. */
+/**
+ * Homepage hero copy block — soft glass over umbrella photography (readable, premium).
+ */
+export const mmsGlassPanelHero = cn(
+  "rounded-xl border border-white/60 bg-[rgba(255,255,255,0.85)] shadow-[0_8px_30px_rgba(0,0,0,0.08)]",
+  "ring-1 ring-black/[0.04]",
+  "backdrop-blur-[6px] [-webkit-backdrop-filter:blur(6px)]",
+);
+
+/** Homepage / umbrella — sections over fixed hero (trust strip, secondary bands). */
 export const mmsGlassPanelHome =
-  "bg-white/80 backdrop-blur-2xl border border-white/40 shadow-xl shadow-black/10 rounded-2xl";
+  "bg-white/88 backdrop-blur-2xl border border-white/45 shadow-lg shadow-black/10 rounded-2xl ring-1 ring-black/[0.03]";
 
 export const mmsGlassPanelDenseHome =
-  "bg-white/85 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/15 rounded-2xl";
+  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/12 rounded-2xl ring-1 ring-black/[0.035]";
 
 export const mmsCtaPanelHome =
-  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/20 rounded-2xl";
+  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/18 rounded-2xl ring-1 ring-black/[0.04]";
 
 /** Base panels — builds, pricing, nested cards on public pages. */
 export const mmsGlassPanel =
-  "bg-white/80 backdrop-blur-2xl border border-white/40 shadow-lg shadow-black/10 rounded-xl";
+  "bg-white/85 backdrop-blur-2xl border border-white/45 shadow-lg shadow-black/10 rounded-xl ring-1 ring-black/[0.03]";
 
 export const mmsGlassPanelDense =
-  "bg-white/85 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/15 rounded-xl";
+  "bg-white/88 backdrop-blur-2xl border border-white/50 shadow-xl shadow-black/12 rounded-xl ring-1 ring-black/[0.035]";
 
 export const mmsCtaPanel =
-  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/20 rounded-xl";
+  "bg-white/90 backdrop-blur-2xl border border-white/50 shadow-2xl shadow-black/16 rounded-xl ring-1 ring-black/[0.04]";
 
 /** Body copy on frosted panels — pair with `mmsH2` / `mmsEyebrow`. */
-export const mmsBodyFrost = "text-neutral-800";
+export const mmsBodyFrost = "text-neutral-900";
 
-export const mmsBodyFrostMuted = "text-neutral-600";
+export const mmsBodyFrostMuted = "text-neutral-700";
 
 /** Headings on homepage dark glass — same scale as `mmsH2`, light text. */
 export const mmsH2OnGlass = cn(

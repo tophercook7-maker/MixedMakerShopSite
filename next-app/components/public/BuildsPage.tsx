@@ -5,7 +5,11 @@ import { ExternalLink, Layers } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicShellClass } from "@/lib/public-brand";
-import { LIVE_WEB_PROJECTS, type LiveWebProject } from "@/lib/live-web-projects";
+import {
+  getShowcasePrimaryCtaLabel,
+  LIVE_WEB_PROJECTS,
+  type LiveWebProject,
+} from "@/lib/live-web-projects";
 import {
   mmsBullet,
   mmsBtnPrimary,
@@ -70,11 +74,19 @@ function VisualProofPlaceholder({
 function WebProjectQuickCard({ project }: { project: LiveWebProject }) {
   return (
     <article className={cn(mmsGlassPanelDense, "flex h-full flex-col p-6 sm:p-7")}>
-      <p className={cn(mmsEyebrow, "!text-[#3f5a47] !text-[10px] md:!text-[11px]")}>Web project</p>
-      <h3 className="mt-3 text-lg font-bold tracking-tight text-[#1e241f] md:text-xl">{project.title}</h3>
+      <span className="inline-flex w-fit max-w-full rounded-full border border-[#3f5a47]/22 bg-white/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#3f5a47]">
+        {project.tag}
+      </span>
+      <p className={cn(mmsEyebrow, "mt-3 !text-[#3f5a47] !text-[10px] md:!text-[11px]")}>Web project</p>
+      <h3 className="mt-2 text-lg font-bold tracking-tight text-[#1e241f] md:text-xl">{project.title}</h3>
       <p className="mt-1 font-mono text-[11px] font-medium text-[#5a6a62] md:text-xs">https://{project.hostname}</p>
-      <p className="mt-4 flex-1 text-sm leading-relaxed text-[#354239]">{project.pitch}</p>
-      <div className="mt-6 flex flex-col gap-2 border-t border-[#3f5a47]/10 pt-5 sm:flex-row sm:flex-wrap">
+      <p className="mt-4 text-[15px] font-semibold leading-snug text-[#2d3a33]">{project.primaryLine}</p>
+      {project.context ? (
+        <p className="mt-2 flex-1 text-sm leading-relaxed text-[#354239]">{project.context}</p>
+      ) : (
+        <div className="flex-1" aria-hidden />
+      )}
+      <div className="mt-6 flex flex-col gap-3 border-t border-[#3f5a47]/10 pt-5 sm:flex-row sm:flex-wrap">
         <a
           href={project.url}
           target="_blank"
@@ -84,7 +96,7 @@ function WebProjectQuickCard({ project }: { project: LiveWebProject }) {
             "inline-flex min-h-[2.85rem] flex-1 items-center justify-center gap-2 px-5 text-[0.9rem] no-underline hover:no-underline sm:flex-initial",
           )}
         >
-          {project.primaryCtaLabel ?? "View live"}
+          {getShowcasePrimaryCtaLabel(project)}
           <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-90" aria-hidden />
         </a>
         <TrackedPublicLink
@@ -446,7 +458,7 @@ export function BuildsPage() {
                     ·
                   </span>
                   <Link href="/website-samples" className={cn(mmsTextLink, "font-semibold")}>
-                    Website samples — browse demo layouts
+                    Layout demos — browse demo layouts
                   </Link>
                 </li>
                 <li className="flex gap-2">
@@ -459,7 +471,7 @@ export function BuildsPage() {
                     eventProps={{ location: "builds_experiments", target: "free_mockup" }}
                     className={cn(mmsTextLink, "font-semibold")}
                   >
-                    Free homepage preview (mockup)
+                    Get My Free Preview
                   </TrackedPublicLink>
                 </li>
                 <li className="flex gap-2">
@@ -479,7 +491,7 @@ export function BuildsPage() {
                   </Link>
                   <span className="text-[#5a6a62]">·</span>
                   <Link href="/free-website-check" className={cn(mmsTextLink, "font-semibold")}>
-                    Free Website Check
+                    Website Check
                   </Link>
                 </li>
               </ul>
@@ -541,7 +553,7 @@ export function BuildsPage() {
                     "w-full justify-center px-10 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                   )}
                 >
-                  Web design services
+                  Web Design
                 </TrackedPublicLink>
                 <TrackedPublicLink
                   href="/free-mockup"
@@ -552,7 +564,7 @@ export function BuildsPage() {
                     "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                   )}
                 >
-                  Free preview
+                  Free Preview
                 </TrackedPublicLink>
                 <TrackedPublicLink
                   href="/contact"
@@ -563,7 +575,7 @@ export function BuildsPage() {
                     "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                   )}
                 >
-                  Contact Topher
+                  Contact
                 </TrackedPublicLink>
               </div>
             </div>

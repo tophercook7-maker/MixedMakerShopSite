@@ -4,7 +4,13 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
-import { getShowcaseProjectsByAnalyticsIds, LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
+import {
+  getShowcasePrimaryCtaLabel,
+  getShowcaseProjectsByAnalyticsIds,
+  getShowcaseSecondaryCtaLabel,
+  LIVE_WEB_PROJECTS,
+  type AnyShowcaseProject,
+} from "@/lib/live-web-projects";
 import {
   mmsBodyFrost,
   mmsBodyFrostMuted,
@@ -19,6 +25,7 @@ import {
   mmsTextLink,
 } from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
+import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { cn } from "@/lib/utils";
 
@@ -39,12 +46,25 @@ export type HomeFeaturedWebDesignWorkProps = {
   immersive?: boolean;
   /** When set, only these `analyticsId` values are shown (e.g. homepage subset). */
   featuredAnalyticsIds?: readonly string[];
+  /** Footer line under project cards. `null` hides the left promo (link-only strip). */
+  bottomStripLead?: string | null;
+  /** Footer link label (default: “See all examples →”). */
+  bottomStripLinkLabel?: string;
+  bottomStripHref?: string;
 };
 
-function selectProjects(featuredAnalyticsIds?: readonly string[]) {
+function selectProjects(featuredAnalyticsIds?: readonly string[]): AnyShowcaseProject[] {
   if (!featuredAnalyticsIds?.length) return [...LIVE_WEB_PROJECTS];
   return getShowcaseProjectsByAnalyticsIds(featuredAnalyticsIds);
 }
+
+const tagPill = (isLight: boolean) =>
+  cn(
+    "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
+    isLight
+      ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
+      : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
+  );
 
 function BrowserShowcasePreview({
   hostname,
@@ -114,6 +134,8 @@ function BrowserShowcasePreview({
 }
 
 /** Live client websites — primary proof for MixedMakerShop web design. */
+const defaultBottomStripLead = "Want something like this for your business? Start with a free homepage preview.";
+
 export function HomeFeaturedWebDesignWork({
   variant = "dark",
   heading = "Websites I've Built",
@@ -121,6 +143,9 @@ export function HomeFeaturedWebDesignWork({
   sectionId = "real-work",
   immersive = false,
   featuredAnalyticsIds,
+  bottomStripLead,
+  bottomStripLinkLabel = "See all examples →",
+  bottomStripHref = "/examples",
 }: HomeFeaturedWebDesignWorkProps) {
   const projects = selectProjects(featuredAnalyticsIds);
   const projectCount = projects.length;
@@ -217,6 +242,7 @@ export function HomeFeaturedWebDesignWork({
               </BrowserShowcasePreview>
 
               <div className="flex flex-col gap-3 px-0.5">
+                <span className={tagPill(isLight)}>{project.tag}</span>
                 <h3
                   className={cn(
                     "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
@@ -227,13 +253,23 @@ export function HomeFeaturedWebDesignWork({
                 </h3>
                 <p
                   className={cn(
-                    "text-sm leading-relaxed md:text-[15px]",
-                    isLight && immersive ? mmsBodyFrost : body,
+                    "text-[15px] font-semibold leading-snug md:text-base",
+                    isLight ? "text-[#2d3a33]" : "text-[#E8FDF5]/95",
                   )}
                 >
-                  {project.pitch}
+                  {project.primaryLine}
                 </p>
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
+                {project.context ? (
+                  <p
+                    className={cn(
+                      "text-sm leading-relaxed md:text-[15px]",
+                      isLight && immersive ? mmsBodyFrostMuted : isLight ? mmsBodyFrost : body,
+                    )}
+                  >
+                    {project.context}
+                  </p>
+                ) : null}
+                <PublicCtaRow className="pt-2">
                   {project.primaryCtaIsExternal === false ? (
                     <Link
                       href={project.url}
@@ -248,11 +284,11 @@ export function HomeFeaturedWebDesignWork({
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
                         isLight
-                          ? mmsBtnSecondary
-                          : "home-btn-secondary--hero rounded-xl",
+                          ? cn(mmsBtnPrimary, "rounded-xl")
+                          : "home-btn-primary home-btn-primary--hero rounded-xl text-[#0c0e0d]",
                       )}
                     >
-                      {project.primaryCtaLabel ?? "Learn more"}
+                      {getShowcasePrimaryCtaLabel(project)}
                       <ArrowRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
                     </Link>
                   ) : (
@@ -270,13 +306,11 @@ export function HomeFeaturedWebDesignWork({
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
                         isLight
-                          ? mmsBtnSecondary
-                          : "home-btn-secondary--hero rounded-xl",
+                          ? cn(mmsBtnPrimary, "rounded-xl")
+                          : "home-btn-primary home-btn-primary--hero rounded-xl text-[#0c0e0d]",
                       )}
                     >
-                      {"primaryCtaLabel" in project && project.primaryCtaLabel
-                        ? project.primaryCtaLabel
-                        : "View live site"}
+                      {getShowcasePrimaryCtaLabel(project)}
                       <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
                     </a>
                   )}
@@ -291,14 +325,16 @@ export function HomeFeaturedWebDesignWork({
                       })
                     }
                     className={cn(
-                      "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-5 text-center text-[0.9rem] font-semibold leading-snug no-underline sm:flex-initial sm:text-[0.9375rem]",
-                      isLight ? cn(mmsBtnPrimary, "rounded-xl") : "home-btn-primary home-btn-primary--hero text-[#0c0e0d] rounded-xl",
+                      "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-center text-[0.9375rem] font-semibold leading-snug no-underline sm:flex-initial sm:min-w-[11rem]",
+                      isLight
+                        ? cn(mmsBtnSecondary, "rounded-xl")
+                        : "home-btn-secondary--hero rounded-xl",
                     )}
                   >
-                    Get My Free Website Preview
+                    {getShowcaseSecondaryCtaLabel(project)}
                     <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden />
                   </Link>
-                </div>
+                </PublicCtaRow>
               </div>
             </article>
           ))}
@@ -309,34 +345,44 @@ export function HomeFeaturedWebDesignWork({
             "home-reveal mt-16 md:mt-20",
             isLight &&
               immersive &&
+              bottomStripLead !== null &&
               cn(
                 mmsGlassPanelDenseHome,
                 "flex flex-col gap-4 p-6 sm:p-8 md:flex-row md:items-center md:justify-between",
               ),
+            isLight &&
+              immersive &&
+              bottomStripLead === null &&
+              cn(mmsGlassPanelDenseHome, "flex justify-center p-6 sm:p-8"),
             (!immersive || !isLight) &&
               cn(
-                "flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
+                bottomStripLead !== null &&
+                  "flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
+                bottomStripLead === null && "flex justify-center border-t border-transparent pt-10",
                 isLight ? "border-[#3f5a47]/12" : "border-[rgba(232,253,245,0.08)]",
               ),
           )}
         >
-          <p
-            className={cn(
-              "max-w-xl text-sm md:text-[15px]",
-              isLight && immersive ? mmsBodyFrostMuted : body,
-            )}
-          >
-            Want something like this for your business? Start with a free homepage preview.
-          </p>
+          {bottomStripLead !== null ? (
+            <p
+              className={cn(
+                "max-w-xl text-sm md:text-[15px]",
+                isLight && immersive ? mmsBodyFrostMuted : body,
+              )}
+            >
+              {bottomStripLead === undefined ? defaultBottomStripLead : bottomStripLead}
+            </p>
+          ) : null}
           <Link
-            href="/builds#builds-experiments"
+            href={bottomStripHref}
             className={cn(
               isLight
                 ? mmsTextLink
                 : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
+              bottomStripLead === null && "text-base font-semibold",
             )}
           >
-            See full builds library →
+            {bottomStripLinkLabel}
           </Link>
         </div>
       </div>

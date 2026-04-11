@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getResolvedSite } from "../lib/get-site-config";
+
+const site = getResolvedSite();
+const title = `Pricing | ${site.businessName}`;
+const description = `${site.niche.name} pricing — ${site.niche.pricingTiers.map((t) => t.title).join(", ")}. ${site.brandDescription}`;
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/pricing" site={site}>
+  <section class="fc-section">
+    <div class="fc-shell">
+      <h1 class="fc-h1">Pricing</h1>
+      <p class="fc-lead" style="margin-top: 1rem; max-width: 60ch;">
+        {site.niche.name} uses {site.niche.pricingTiers[0]?.emphasis === "volume" ? "volume-based" : "estimate-driven"} quotes in most cases — here’s a readable outline. Final numbers depend on access, materials, and scope.
+      </p>
+      <div style="display: grid; gap: 1rem; margin-top: 2rem;">
+        {site.niche.pricingTiers.map((tier) => (
+          <div class="fc-card" style="padding: clamp(1.25rem, 3vw, 2rem);">
+            <h2 class="fc-h2" style="font-size: 1.25rem;">
+              {tier.title}
+              {tier.emphasis ? (
+                <span class="fc-lead" style="margin-left: 0.5rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">
+                  ({tier.emphasis})
+                </span>
+              ) : null}
+            </h2>
+            <p class="fc-lead" style="margin: 0.5rem 0 0;">
+              {tier.description}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div class="fc-btn-row" style="margin-top: 2rem;">
+        <a class="fc-btn fc-btn--primary" href={site.estimateCtaHref}>{site.estimateCtaLabel}</a>
+        <a class="fc-btn fc-btn--secondary" href="/contact">Contact</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,17 @@
+---
+import type { ResolvedSite } from "../../types/client";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-how">
+  <div class="fc-shell">
+    <h2 id="home-how" class="fc-h2">How it works</h2>
+    <ol class="fc-list" style="list-style: decimal;">
+      {site.niche.howItWorksSteps.map((step) => (
+        <li>{step}</li>
+      ))}
+    </ol>
+  </div>
+</section>

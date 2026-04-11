@@ -26,7 +26,14 @@ function toggleOutcome(
   return next;
 }
 
-export function FreeMockupFunnelClient() {
+export function FreeMockupFunnelClient({
+  funnelSource,
+}: {
+  /** e.g. `freshcut` from ?source=freshcut — soft defaults + contextual copy only */
+  funnelSource?: string | null;
+}) {
+  const isFreshCutFunnel = funnelSource === "freshcut";
+
   const [contactName, setContactName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
@@ -35,8 +42,12 @@ export function FreeMockupFunnelClient() {
   const [hasWebsite, setHasWebsite] = useState<"yes" | "no">("no");
   const [websiteUrl, setWebsiteUrl] = useState("");
 
-  const [designDirection, setDesignDirection] = useState<FunnelDesignDirectionId | "">("");
-  const [desiredOutcomes, setDesiredOutcomes] = useState<Set<FunnelDesiredOutcomeId>>(new Set());
+  const [designDirection, setDesignDirection] = useState<FunnelDesignDirectionId | "">(() =>
+    isFreshCutFunnel ? "local-trust" : "",
+  );
+  const [desiredOutcomes, setDesiredOutcomes] = useState<Set<FunnelDesiredOutcomeId>>(() =>
+    isFreshCutFunnel ? new Set<FunnelDesiredOutcomeId>(["get_more_calls", "get_more_leads"]) : new Set(),
+  );
 
   const [whatMakesYouDifferent, setWhatMakesYouDifferent] = useState("");
   const [specialOffer, setSpecialOffer] = useState("");
@@ -192,6 +203,7 @@ export function FreeMockupFunnelClient() {
     try {
       const mockupData = {
         funnelVersion: 2,
+        funnel_source: funnelSource?.trim() || undefined,
         contactName: cn,
         submitPhone: submitPhone.trim(),
         snapshot: snapshotBody,
@@ -250,14 +262,13 @@ export function FreeMockupFunnelClient() {
       <div className="container free-mockup-success" style={{ maxWidth: 640, padding: "48px 20px 80px" }}>
         <div className="panel" style={{ padding: "28px 24px" }}>
           <h2 className="section-heading" style={{ marginBottom: 12 }}>
-            You&apos;re in — I&apos;ve got your request
+            Got it — I&apos;ll take a look
           </h2>
           <div className="subhead" style={{ marginBottom: 20, lineHeight: 1.6 }}>
             <p style={{ margin: "0 0 12px" }}>
-              I&apos;m going to start putting together your custom homepage mockup using what you shared.
+              I&apos;ll review your info and start putting together your preview. If I need anything, I&apos;ll reach out.
             </p>
-            <p style={{ margin: "0 0 12px" }}>If you included your website, I&apos;ll review it.</p>
-            <p style={{ margin: 0 }}>You&apos;ll hear from me soon.</p>
+            <p style={{ margin: 0, fontWeight: 600 }}>You should hear from me within a day.</p>
           </div>
           <p className="small" style={{ color: "var(--muted)", marginBottom: 16, lineHeight: 1.55 }}>
             {confirmationEmailSent
@@ -278,7 +289,7 @@ export function FreeMockupFunnelClient() {
             One direction, done with care — we can refine after you&apos;ve seen it.
           </p>
           <Link href="/web-design" className="btn ghost">
-            Web design services
+            Web Design
           </Link>
         </div>
       </div>
@@ -290,75 +301,38 @@ export function FreeMockupFunnelClient() {
       <div className="free-mockup-funnel-grid">
         <div className="free-mockup-funnel-form card" style={{ padding: "20px 18px" }}>
           <h2 className="section-heading" style={{ marginBottom: 10, fontSize: "1.25rem" }}>
-            Get your free website preview
+            Your free preview
           </h2>
-          <p className="small" style={{ color: "var(--muted)", marginTop: 0, marginBottom: 16, lineHeight: 1.55 }}>
-            Tell me about your business and goals — I&apos;ll build a strong homepage direction you can react to. This is
-            a professional preview, not a generic template browser.
+          {isFreshCutFunnel ? (
+            <p
+              className="small"
+              style={{
+                color: "var(--text)",
+                marginTop: 0,
+                marginBottom: 14,
+                lineHeight: 1.55,
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid rgba(63, 90, 71, 0.18)",
+                background: "rgba(63, 90, 71, 0.06)",
+              }}
+            >
+              You&apos;re getting a clean, service-focused layout designed to turn visitors into estimate requests.
+            </p>
+          ) : null}
+          <p className="small" style={{ color: "var(--muted)", marginTop: 0, marginBottom: 20, lineHeight: 1.55 }}>
+            Four short sections — business basics, homepage goals, preferences, then contact. The live preview updates when
+            you&apos;ve filled enough for a direction.
           </p>
 
           <div
-            className="rounded-lg p-3 mb-4"
-            style={{ background: "rgba(0,255,178,0.06)", border: "1px solid rgba(0,255,178,0.2)" }}
+            className="mb-8 space-y-4 border-b pb-8"
+            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
           >
-            <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--text)" }}>
-              <strong>Design direction</strong>
+            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">1 · Business basics</h3>
+            <p className="small" style={{ margin: "-4px 0 0", color: "var(--muted)", lineHeight: 1.5 }}>
+              Fields marked <span className="font-semibold text-[var(--text)]">*</span> are required.
             </p>
-            <p className="small" style={{ margin: "8px 0 0", lineHeight: 1.55, color: "var(--muted)" }}>
-              Pick the direction that feels closest to your business. You do not need to overthink it — I&apos;ll handle
-              the strategy and design details from there.
-            </p>
-          </div>
-
-          <fieldset className="mb-4 border-0 p-0 m-0">
-            <legend className="block text-xs font-semibold mb-2" style={{ color: "var(--muted)" }}>
-              Design direction *
-            </legend>
-            <div className="grid gap-2">
-              {FUNNEL_DESIGN_DIRECTION_OPTIONS.map((opt) => (
-                <label
-                  key={opt.id}
-                  className="block cursor-pointer rounded-lg border p-3 transition-colors"
-                  style={{
-                    borderColor:
-                      designDirection === opt.id ? "rgba(0,255,178,0.45)" : "var(--pub-border, rgba(255,255,255,0.12))",
-                    background: designDirection === opt.id ? "rgba(0,255,178,0.05)" : "transparent",
-                  }}
-                >
-                  <div className="flex gap-3 items-start">
-                    <input
-                      type="radio"
-                      name="design-direction"
-                      checked={designDirection === opt.id}
-                      onChange={() => setDesignDirection(opt.id)}
-                      className="mt-1"
-                    />
-                    <div>
-                      <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                        {opt.label}
-                      </span>
-                      <p className="small" style={{ margin: "4px 0 0", color: "var(--muted)", lineHeight: 1.45 }}>
-                        {opt.description}
-                      </p>
-                      <p className="small" style={{ margin: "6px 0 0", color: "var(--muted)", lineHeight: 1.45 }}>
-                        <span style={{ opacity: 0.85 }}>Best for:</span> {opt.bestFor}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <div
-            className="rounded-lg p-3 mb-4"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--pub-border, rgba(255,255,255,0.1))" }}
-          >
-            <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--muted)" }}>
-              This free preview is meant to show the <strong style={{ color: "var(--text)" }}>best direction</strong>{" "}
-              for your business, not every possible version.
-            </p>
-          </div>
 
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             Your name *
@@ -385,9 +359,19 @@ export function FreeMockupFunnelClient() {
               className="form-input mt-1 w-full"
               value={businessType}
               onChange={(e) => setBusinessType(e.target.value)}
-              placeholder="e.g. Residential HVAC · Hot Springs, AR area"
+              placeholder={
+                isFreshCutFunnel
+                  ? "e.g. Local lawn care & property maintenance (service business)"
+                  : "e.g. Residential HVAC · Hot Springs, AR area"
+              }
             />
           </label>
+          {isFreshCutFunnel ? (
+            <p className="small mb-3" style={{ marginTop: -6, color: "var(--muted)", lineHeight: 1.5 }}>
+              Tip: if you&apos;re a local service business, say so here — I&apos;ll match the structure to calls and
+              estimates.
+            </p>
+          ) : null}
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             City or main service area *
             <input
@@ -395,15 +379,6 @@ export function FreeMockupFunnelClient() {
               value={cityOrArea}
               onChange={(e) => setCityOrArea(e.target.value)}
               placeholder="e.g. Hot Springs, AR / Garland County"
-            />
-          </label>
-          <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
-            Top services to feature on the homepage *
-            <textarea
-              className="form-textarea mt-1 w-full min-h-[88px]"
-              value={topServices}
-              onChange={(e) => setTopServices(e.target.value)}
-              placeholder="One per line or comma-separated — what should visitors see first?"
             />
           </label>
 
@@ -446,6 +421,22 @@ export function FreeMockupFunnelClient() {
               />
             </label>
           ) : null}
+          </div>
+
+          <div
+            className="mb-8 space-y-4 border-b pb-8"
+            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
+          >
+            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">2 · Homepage goals</h3>
+            <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
+              Top services to feature on the homepage *
+              <textarea
+                className="form-textarea mt-1 w-full min-h-[88px]"
+                value={topServices}
+                onChange={(e) => setTopServices(e.target.value)}
+                placeholder="One per line or comma-separated — what should visitors see first?"
+              />
+            </label>
 
           <fieldset className="mb-3 border-0 p-0 m-0">
             <legend className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
@@ -486,6 +477,77 @@ export function FreeMockupFunnelClient() {
               placeholder="e.g. Same-day estimates · 1-year workmanship warranty"
             />
           </label>
+          </div>
+
+          <div
+            className="mb-8 space-y-4 border-b pb-8"
+            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
+          >
+            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">3 · Preferences</h3>
+            <p className="small" style={{ margin: 0, color: "var(--muted)", lineHeight: 1.55 }}>
+              Choose the direction that feels closest — I&apos;ll refine from there.
+            </p>
+
+          <div
+            className="rounded-lg p-3 mb-2"
+            style={{ background: "rgba(0,255,178,0.06)", border: "1px solid rgba(0,255,178,0.2)" }}
+          >
+            <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--text)" }}>
+              <strong>Design direction *</strong>
+            </p>
+            <p className="small" style={{ margin: "8px 0 0", lineHeight: 1.55, color: "var(--muted)" }}>
+              Required so the live preview can match your business. Pick one — no need to overthink it.
+            </p>
+          </div>
+
+          <fieldset className="mb-4 border-0 p-0 m-0">
+            <legend className="sr-only">Design direction</legend>
+            <div className="grid gap-2">
+              {FUNNEL_DESIGN_DIRECTION_OPTIONS.map((opt) => (
+                <label
+                  key={opt.id}
+                  className="block cursor-pointer rounded-lg border p-3 transition-colors"
+                  style={{
+                    borderColor:
+                      designDirection === opt.id ? "rgba(0,255,178,0.45)" : "var(--pub-border, rgba(255,255,255,0.12))",
+                    background: designDirection === opt.id ? "rgba(0,255,178,0.05)" : "transparent",
+                  }}
+                >
+                  <div className="flex gap-3 items-start">
+                    <input
+                      type="radio"
+                      name="design-direction"
+                      checked={designDirection === opt.id}
+                      onChange={() => setDesignDirection(opt.id)}
+                      className="mt-1"
+                    />
+                    <div>
+                      <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                        {opt.label}
+                      </span>
+                      <p className="small" style={{ margin: "4px 0 0", color: "var(--muted)", lineHeight: 1.45 }}>
+                        {opt.description}
+                      </p>
+                      <p className="small" style={{ margin: "6px 0 0", color: "var(--muted)", lineHeight: 1.45 }}>
+                        <span style={{ opacity: 0.85 }}>Best for:</span> {opt.bestFor}
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div
+            className="rounded-lg p-3 mb-4"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--pub-border, rgba(255,255,255,0.1))" }}
+          >
+            <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--muted)" }}>
+              This preview shows one strong <strong style={{ color: "var(--text)" }}>direction</strong> for your business
+              — not every possible variation.
+            </p>
+          </div>
+
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             Anything to avoid? (optional)
             <input
@@ -504,6 +566,10 @@ export function FreeMockupFunnelClient() {
               placeholder="Timing, audience, brand constraints…"
             />
           </label>
+          </div>
+
+          <div className="mb-2 space-y-4">
+            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">4 · Contact</h3>
 
           <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
             Email *
@@ -527,6 +593,7 @@ export function FreeMockupFunnelClient() {
               autoComplete="tel"
             />
           </label>
+          </div>
 
           <div
             className="rounded-lg p-3 mb-3"
@@ -539,13 +606,34 @@ export function FreeMockupFunnelClient() {
             </p>
           </div>
 
+          {isFreshCutFunnel ? (
+            <div
+              className="rounded-xl p-4 mb-4"
+              style={{
+                background: "linear-gradient(135deg, rgba(63,90,71,0.08) 0%, rgba(184,92,30,0.06) 100%)",
+                border: "1px solid rgba(63, 90, 71, 0.2)",
+              }}
+            >
+              <h3 className="section-heading" style={{ marginBottom: 8, fontSize: "1.15rem" }}>
+                Let&apos;s build your version of this
+              </h3>
+              <p className="small" style={{ margin: 0, lineHeight: 1.6, color: "var(--text)" }}>
+                I&apos;ll put together a custom preview based on your business so you can see exactly how it could look
+                and work.
+              </p>
+              <p className="small" style={{ margin: "12px 0 0", lineHeight: 1.55, color: "var(--muted)" }}>
+                Built for real businesses like Fresh Cut Property Care
+              </p>
+            </div>
+          ) : null}
+
           {error ? (
             <p className="small" style={{ color: "#f87171", marginBottom: 10 }}>
               {error}
             </p>
           ) : null}
           <button type="button" className="btn gold w-full" disabled={loading} onClick={() => void submit()}>
-            {loading ? "Sending…" : "Submit my preview request"}
+            {loading ? "Sending…" : isFreshCutFunnel ? "Get My Free Preview" : "Submit my preview request"}
           </button>
           <p className="small" style={{ color: "var(--muted)", marginTop: 12, marginBottom: 0, lineHeight: 1.55 }}>
             No pressure — you&apos;re requesting a direction to react to, not locked-in creative rounds.
@@ -577,8 +665,8 @@ export function FreeMockupFunnelClient() {
                   Live preview
                 </p>
                 <p className="small" style={{ color: "var(--muted)", maxWidth: 360, margin: 0 }}>
-                  Choose a design direction and add your business basics — your sample homepage appears here (not a
-                  template gallery).
+                  Fill business basics and homepage goals, then pick a design direction — your sample homepage appears here
+                  (not a template gallery).
                 </p>
               </div>
             </div>

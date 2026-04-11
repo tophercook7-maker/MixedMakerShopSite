@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
 
+const canonical = "https://mixedmakershop.com";
+
 export const metadata: Metadata = {
-  title: "MixedMakerShop by Topher | Web Design, 3D Printing & Digital Builds",
+  title: "MixedMakerShop | Web Design for Real Businesses — Topher",
   description:
-    "MixedMakerShop is Topher's umbrella studio in Hot Springs, Arkansas — practical web design (main service), custom 3D printing, and useful digital builds.",
+    "MixedMakerShop is Topher's studio in Hot Springs, Arkansas — practical web design first, plus 3D printing and digital builds when you need them.",
+  alternates: { canonical },
   openGraph: {
-    title: "MixedMakerShop by Topher | Websites, prints & digital builds",
+    title: "MixedMakerShop | Web design, 3D printing & builds by Topher",
     description:
-      "Web design by Topher first — plus 3D printing and practical digital builds when you need them. Direct. No fluff.",
-    url: "https://mixedmakershop.com",
+      "Trustworthy business websites are the main focus — 3D printing and digital builds available through the same studio.",
+    url: canonical,
     images: ["/og-image"],
   },
   twitter: {

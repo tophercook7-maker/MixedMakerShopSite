@@ -14,17 +14,17 @@ export default function ConnectPage() {
               <span className="btn">Go →</span>
             </Link>
             <Link href="/free-website-check" className="card" style={{ textDecoration: "none" }}>
-              <h3>Free Website Check</h3>
+              <h3>Website Check</h3>
               <p className="small">Quick feedback on your current site.</p>
               <span className="btn">Go →</span>
             </Link>
-            <Link href="/website-samples" className="card" style={{ textDecoration: "none" }}>
-              <h3>View Portfolio</h3>
-              <p className="small">Sample websites in different styles.</p>
+            <Link href="/examples" className="card" style={{ textDecoration: "none" }}>
+              <h3>Examples</h3>
+              <p className="small">Live work and layout ideas.</p>
               <span className="btn">Go →</span>
             </Link>
             <Link href="/contact" className="card" style={{ textDecoration: "none" }}>
-              <h3>Contact Topher</h3>
+              <h3>Contact</h3>
               <p className="small">Ask a question or pitch an idea.</p>
               <span className="btn">Go →</span>
             </Link>

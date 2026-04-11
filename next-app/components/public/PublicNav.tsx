@@ -14,7 +14,10 @@ const navItems: {
 }[] = [
   { href: "/", label: "Home" },
   { href: "/web-design", label: "Web Design" },
+  { href: "/examples", label: "Examples" },
+  { href: "/3d-printing", label: "3D Printing" },
   { href: "/builds", label: "Builds" },
+  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
@@ -83,9 +86,6 @@ export function PublicNav() {
             }
           >
             Free Preview
-          </Link>
-          <Link href="/auth/login" className="pill pill--muted">
-            Admin
           </Link>
         </nav>
       </div>

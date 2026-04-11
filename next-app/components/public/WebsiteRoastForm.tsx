@@ -74,7 +74,7 @@ export function WebsiteRoastForm() {
         </p>
       )}
       <button type="submit" className="btn gold" disabled={loading}>
-        {loading ? "Sending…" : "Get My Free Website Roast"}
+        {loading ? "Sending…" : "Get My Free Roast"}
       </button>
     </form>
   );

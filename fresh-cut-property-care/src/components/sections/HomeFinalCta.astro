@@ -1,0 +1,19 @@
+---
+import type { ResolvedSite } from "../../types/client";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-final">
+  <div class="fc-shell">
+    <div class="fc-card" style="padding: clamp(1.25rem, 3vw, 2rem);">
+      <h2 id="home-final" class="fc-h2">{site.homepage.finalCtaTitle}</h2>
+      <p class="fc-lead" style="margin: 0 0 1rem; max-width: 62ch;">{site.homepage.finalCtaBody}</p>
+      <div class="fc-btn-row">
+        <a class="fc-btn fc-btn--primary" href={site.estimateCtaHref}>{site.estimateCtaLabel}</a>
+        <a class="fc-btn fc-btn--secondary" href="/contact">Contact</a>
+      </div>
+    </div>
+  </div>
+</section>

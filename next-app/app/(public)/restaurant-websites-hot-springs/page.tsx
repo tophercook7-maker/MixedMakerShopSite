@@ -37,13 +37,13 @@ export default function RestaurantWebsitesPage() {
           </div>
           <div className="btn-row" style={{ marginTop: 20 }}>
             <Link href="/free-mockup" className="btn gold">
-              Get My Free Website Preview
+              Get My Free Preview
             </Link>
-            <Link href="/website-samples" className="btn ghost">
-              View Website Samples
+            <Link href="/examples" className="btn ghost">
+              See Examples
             </Link>
             <Link href="/web-design" className="btn ghost">
-              Web Design Services
+              Web Design
             </Link>
           </div>
         </div>

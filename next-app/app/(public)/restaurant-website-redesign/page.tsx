@@ -120,7 +120,7 @@ export default function RestaurantRedesignPage() {
                 Brick &amp; Ember (portfolio)
               </Link>
               <Link href="/website-samples" className="btn ghost">
-                All website samples
+                Layout demos
               </Link>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function RestaurantRedesignPage() {
             </p>
             <div className="btn-row">
               <Link href="/free-mockup" className="btn gold">
-                Get My Free Website Preview
+                Get My Free Preview
               </Link>
               <Link href="/contact" className="btn ghost">
                 Contact

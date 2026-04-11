@@ -1,0 +1,26 @@
+---
+import type { ResolvedSite } from "../../types/client";
+import { getNicheHighlights } from "../../lib/get-niche-content";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+const items = getNicheHighlights(site.niche);
+---
+
+{items.length ? (
+  <section class="fc-section fc-section--tight" aria-labelledby="niche-highlights">
+    <div class="fc-shell">
+      <h2 id="niche-highlights" class="fc-h2">Highlights</h2>
+      <div style="display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1rem;">
+        {items.map((item) => (
+          <div class="fc-card" style="padding: 1.25rem;">
+            <h3 style="margin: 0; font-size: 1.05rem;">{item.title}</h3>
+            <p class="fc-lead" style="margin: 0.5rem 0 0;">
+              {item.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+) : null}

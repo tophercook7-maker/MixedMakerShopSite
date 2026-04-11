@@ -3,13 +3,14 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
+import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { UmbrellaHeroMedia } from "@/components/public/umbrella-hero-media";
 import {
   mmsBodyFrost,
-  mmsBodyFrostMuted,
   mmsBtnPrimary,
+  mmsBtnSecondary,
   mmsEyebrow,
-  mmsGlassPanelHome,
+  mmsGlassPanelHero,
 } from "@/lib/mms-umbrella-ui";
 import { publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
@@ -39,64 +40,75 @@ export function UmbrellaHomeHero() {
       className="relative max-md:border-b max-md:border-black/10"
       aria-label="MixedMakerShop introduction"
     >
-      {/* Mobile only: image scrolls with the page */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden md:hidden">
+      {/* Mobile only: image scrolls with the page (stacking: bg z-0, content z-[2]) */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden md:hidden">
         <UmbrellaHeroMedia className="min-h-[min(100svh,52rem)]" priority />
       </div>
 
       <div
         className={cn(
           shell,
-          "relative z-[1] flex min-h-[min(100svh,52rem)] flex-col justify-end pb-24 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-[max(100svh,52rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
+          "relative z-[2] flex min-h-[min(100svh,52rem)] flex-col justify-end pb-24 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-[max(100svh,52rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
         )}
       >
         <div
           className={cn(
-            mmsGlassPanelHome,
-            "max-w-[36rem] px-6 py-8 sm:px-8 sm:py-9 lg:max-w-[40rem] lg:px-10 lg:py-10",
+            mmsGlassPanelHero,
+            "max-w-[36rem] px-5 py-5 sm:px-7 sm:py-7 lg:max-w-[40rem] lg:px-8 lg:py-8",
           )}
         >
           <motion.p className={cn(mmsEyebrow, "!text-[#8a4b2a]")} {...fadeUp(0)}>
-            Web Design by Topher
+            Web design · MixedMakerShop
           </motion.p>
 
           <motion.h1
-            className="mt-5 font-bold tracking-[-0.035em] text-[#1e241f] text-[2.125rem] leading-[1.1] sm:text-4xl md:mt-6 md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]"
+            className="mt-5 font-bold tracking-[-0.035em] text-neutral-950 text-[2.125rem] leading-[1.1] sm:text-4xl md:mt-6 md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]"
             {...fadeUp(stagger)}
           >
-            Websites That Bring You Customers
+            Websites that help real businesses look trustworthy and get more calls
           </motion.h1>
 
           <motion.p
             className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsBodyFrost)}
             {...fadeUp(stagger * 2)}
           >
-            I build clean, modern websites for small businesses that actually turn visitors into calls, leads, and real
-            customers.
+            I&apos;m Topher, and MixedMakerShop is my studio for practical web design, custom builds, and useful tools —
+            with web design front and center for businesses that need a site that actually works.
           </motion.p>
 
-          <motion.p
-            className={cn("mt-5 text-base font-semibold leading-snug md:mt-6 md:text-lg md:leading-snug", mmsBodyFrost)}
-            {...fadeUp(stagger * 3)}
-          >
-            Want to see what your website could look like before committing?
-          </motion.p>
-
-          <motion.div className="mt-8 md:mt-9" {...fadeUp(stagger * 4)}>
-            <TrackedPublicLink
-              href="/free-mockup"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
+          <motion.div className="mt-8 md:mt-9" {...fadeUp(stagger * 3)}>
+            <PublicCtaRow>
+              <TrackedPublicLink
+                href="/free-mockup"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Get My Free Preview
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href="/examples"
+                eventName="public_web_design_sample_click"
+                eventProps={{ location: "home_hero_umbrella", label: "see_examples" }}
+                className={cn(
+                  mmsBtnSecondary,
+                  "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                See My Work
+              </TrackedPublicLink>
+            </PublicCtaRow>
+            <p
               className={cn(
-                mmsBtnPrimary,
-                "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                "mt-4 text-[0.7rem] font-normal leading-relaxed text-neutral-600 md:text-xs",
+                "max-w-[42ch]",
               )}
             >
-              Get My Free Website Preview
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </TrackedPublicLink>
-            <p className={cn("mt-4 text-xs font-medium leading-relaxed md:text-sm", mmsBodyFrostMuted)}>
-              No pressure. Just a real preview built for your business.
+              Built directly with me. No fluff. No hard sell.
             </p>
           </motion.div>
         </div>

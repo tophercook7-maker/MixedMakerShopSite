@@ -1,0 +1,53 @@
+---
+import type { RelatedLink } from "../lib/related-local-pages";
+
+type Props = {
+  sameCity: RelatedLink[];
+  sameServiceOtherLocations: RelatedLink[];
+};
+
+const { sameCity, sameServiceOtherLocations } = Astro.props;
+const showSameCity = sameCity.length > 0;
+const showSameService = sameServiceOtherLocations.length > 0;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="related-local">
+  <div class="fc-shell">
+    <h2 id="related-local" class="fc-h2">More ways to explore</h2>
+    <p class="fc-lead" style="margin: 0 0 1.25rem; max-width: 65ch;">
+      {showSameCity || showSameService
+        ? "Related local pages are generated automatically from our service areas — jump around without hunting the menu."
+        : "Browse the site for pricing and contact options."}
+    </p>
+
+    {showSameCity ? (
+      <div style="margin-bottom: 1.75rem;">
+        <h3 class="fc-h2" style="font-size: 1.1rem; margin-bottom: 0.65rem;">Other services in this area</h3>
+        <div class="fc-related-grid">
+          {sameCity.map((link) => (
+            <a href={link.href}>{link.label}</a>
+          ))}
+        </div>
+      </div>
+    ) : null}
+
+    {showSameService ? (
+      <div style="margin-bottom: 1.75rem;">
+        <h3 class="fc-h2" style="font-size: 1.1rem; margin-bottom: 0.65rem;">Same service nearby</h3>
+        <div class="fc-related-grid">
+          {sameServiceOtherLocations.map((link) => (
+            <a href={link.href}>{link.label}</a>
+          ))}
+        </div>
+      </div>
+    ) : null}
+
+    <p class="fc-lead" style="margin: 0;">
+      <a href="/">Homepage</a>
+      &nbsp;·&nbsp;
+      <a href="/contact">Contact / estimate</a>
+      &nbsp;·&nbsp;
+      <a href="/pricing">Pricing</a>
+    </p>
+  </div>
+</section>

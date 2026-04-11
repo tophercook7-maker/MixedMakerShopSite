@@ -148,7 +148,7 @@ export function UmbrellaGateway() {
                   }
                   className="btn gold inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
                 >
-                  Get My Free Website Preview <ArrowRight className="h-4 w-4" />
+                  Get My Free Preview <ArrowRight className="h-4 w-4" />
                 </Link>
                 <p className="text-center text-xs leading-relaxed text-slate-200/88 md:text-sm">
                   Real websites built to bring in leads, not just sit online.
@@ -314,7 +314,7 @@ export function UmbrellaGateway() {
                 }
                 className="btn gold mt-8 inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
               >
-                Get My Free Website Preview <ArrowRight className="h-4 w-4" />
+                Get My Free Preview <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </section>
@@ -403,7 +403,7 @@ export function UmbrellaGateway() {
                         }
                         className="btn gold inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
                       >
-                        Get My Free Website Preview{" "}
+                        Get My Free Preview{" "}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>
@@ -441,7 +441,7 @@ export function UmbrellaGateway() {
               }
               className="btn gold mt-6 inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-6 text-base font-semibold no-underline sm:w-auto"
             >
-              Get My Free Website Preview <ArrowRight className="h-4 w-4" />
+              Get My Free Preview <ArrowRight className="h-4 w-4" />
             </Link>
           </section>
         </div>
