@@ -18,9 +18,9 @@ import {
   mmsEyebrow,
   mmsGlassPanelDenseHome,
   mmsH2,
-  mmsSectionBorder,
   mmsSectionY,
   mmsStepCircle,
+  mmsUmbrellaSectionBackdrop,
   mmsTextLink,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
@@ -28,12 +28,7 @@ import { cn } from "@/lib/utils";
 const shell = publicShellClass;
 
 /** Desktop: let fixed umbrella read through; mobile: warm solid for stability. */
-const homeBackdrop = cn(
-  "border-b",
-  mmsSectionBorder,
-  "max-md:bg-[#ece7dd]",
-  "md:bg-transparent",
-);
+const homeBackdrop = mmsUmbrellaSectionBackdrop;
 
 const processSteps = [
   {

@@ -24,6 +24,24 @@ export type ShowcaseProject = {
   primaryCtaIsExternal: boolean;
   /** Overrides default label from `showcaseKind` (e.g. “View Live Demo”). */
   primaryCtaLabel?: string;
+  /** Who the work was for — mini case study, shown under the title. */
+  audienceLine?: string;
+  /** Pain / goal before the main result line. */
+  problemLine?: string;
+  /** Short “why it works” line after `context`. */
+  whyItWorksLine?: string;
+  /** Invite exploration / live demo after description (e.g. portfolio sites). */
+  engagementLine?: string;
+  /** Bullets inside “See how this was built” on case study cards. */
+  buildHighlights?: readonly string[];
+  /** Extra pill (e.g. Featured Project). */
+  featuredBadge?: string;
+  /** Ring / shadow emphasis on featured grids. */
+  emphasizeCard?: boolean;
+  /** Overrides second CTA label (e.g. Get My Version of This). */
+  secondaryCtaLabel?: string;
+  /** Overrides second CTA href (e.g. /free-mockup?example=freshcut). */
+  secondaryCtaHref?: string;
 };
 
 export const LIVE_WEB_PROJECTS = [
@@ -31,8 +49,21 @@ export const LIVE_WEB_PROJECTS = [
     title: "Fresh Cut Property Care",
     tag: "Local Service Business",
     showcaseKind: "live",
+    audienceLine: "Built for a lawn care business in Hot Springs, Arkansas",
+    problemLine: "They needed a clean, trustworthy site that made it easy for customers to request an estimate.",
     primaryLine: "Clean, local service site built to turn visitors into estimate requests",
     context: "Focused on simple navigation, strong service sections, and clear contact flow.",
+    whyItWorksLine: "Designed to guide visitors toward contacting without confusion or clutter.",
+    buildHighlights: [
+      "Clear service sections",
+      "Strong call-to-action placement",
+      "Mobile-first layout",
+      "Built for local search visibility",
+    ],
+    featuredBadge: "Featured Project",
+    emphasizeCard: true,
+    secondaryCtaLabel: "Get My Version of This",
+    secondaryCtaHref: "/free-mockup?example=freshcut",
     previewSrc: "/images/showcase/freshcut-property-care.jpg",
     previewAlt: "Homepage preview of Fresh Cut Property Care — lawn care hero and call-to-action",
     hostname: "freshcutpropertycare.com",
@@ -46,8 +77,12 @@ export const LIVE_WEB_PROJECTS = [
     title: "Deep Well Audio",
     tag: "Portfolio Site",
     showcaseKind: "live",
-    primaryLine: "Simple, focused site designed to showcase work and build credibility",
-    context: "Clean layout with emphasis on portfolio and easy contact.",
+    audienceLine: "Creative audio platform and portfolio experience",
+    primaryLine: "Simple, focused site designed to showcase content and build credibility.",
+    context: "Structured to make exploration easy and keep users engaged.",
+    engagementLine: "Explore the live experience to see how content and layout work together.",
+    primaryCtaLabel: "Visit DeepWellAudio.com",
+    secondaryCtaLabel: "Get My Version of This",
     previewSrc: "/images/showcase/deep-well-audio.jpg",
     previewAlt:
       "Homepage preview of Deep Well Audio — typography and hero art from the live music site",
@@ -74,7 +109,7 @@ export const LIVE_WEB_PROJECTS = [
     primaryCtaIsExternal: true,
     primaryCtaLabel: "View Live Demo",
   },
-] as const satisfies readonly ShowcaseProject[];
+] satisfies readonly ShowcaseProject[];
 
 /** Henry AI — homepage featured #3; full write-up on Builds. Not duplicated in LIVE_WEB_PROJECTS so Builds “Web projects” row stays three sites. */
 export const HENRY_AI_SHOWCASE_PROJECT = {
@@ -92,11 +127,11 @@ export const HENRY_AI_SHOWCASE_PROJECT = {
   objectPosition: "center center",
   imageClassName: "object-cover md:object-cover",
   primaryCtaIsExternal: false,
-} as const satisfies ShowcaseProject;
+} satisfies ShowcaseProject;
 
-export type LiveWebProject = (typeof LIVE_WEB_PROJECTS)[number];
-export type HenryAiShowcaseProject = typeof HENRY_AI_SHOWCASE_PROJECT;
-export type AnyShowcaseProject = LiveWebProject | HenryAiShowcaseProject;
+export type LiveWebProject = ShowcaseProject;
+export type HenryAiShowcaseProject = ShowcaseProject;
+export type AnyShowcaseProject = ShowcaseProject;
 
 const showcaseCatalog: Record<string, AnyShowcaseProject> = {
   fresh_cut_property_care: LIVE_WEB_PROJECTS[0],
@@ -113,7 +148,13 @@ export function getShowcasePrimaryCtaLabel(project: ShowcaseProject): string {
 
 /** Default label for the second CTA (outline) — lead capture. */
 export function getShowcaseSecondaryCtaLabel(project: ShowcaseProject): string {
+  if (project.secondaryCtaLabel) return project.secondaryCtaLabel;
   return project.showcaseKind === "concept" ? "Get My Version" : "Request Something Similar";
+}
+
+/** Second CTA destination — Fresh Cut and other funnels can override. */
+export function getShowcaseSecondaryCtaHref(project: ShowcaseProject): string {
+  return project.secondaryCtaHref ?? "/free-mockup";
 }
 
 /** Small-business homepage: two trust-building client sites + one tools/systems example (no niche app). */

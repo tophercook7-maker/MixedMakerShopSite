@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
+import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
+import { getShowcaseSecondaryCtaHref, getShowcaseSecondaryCtaLabel, LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { publicShellClass } from "@/lib/public-brand";
 import {
@@ -146,7 +147,7 @@ export function FreshCutFeaturedCaseStudy({
                   <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
                 </a>
                 <TrackedPublicLink
-                  href="/free-mockup?source=freshcut"
+                  href={getShowcaseSecondaryCtaHref(freshCut)}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: analyticsLocation, target: "free_mockup", project: freshCut.analyticsId }}
                   className={cn(
@@ -154,7 +155,7 @@ export function FreshCutFeaturedCaseStudy({
                     "inline-flex min-h-[3rem] flex-1 items-center justify-center px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[12rem] hover:no-underline",
                   )}
                 >
-                  Get Something Like This
+                  {getShowcaseSecondaryCtaLabel(freshCut)}
                 </TrackedPublicLink>
               </PublicCtaRow>
             </div>
@@ -176,6 +177,7 @@ export function FreshCutFeaturedCaseStudy({
                   sizes="(max-width: 1024px) 100vw, min(560px, 45vw)"
                   priority={variant === "home"}
                 />
+                <ExampleCardImageOverlay />
               </div>
             </div>
           </div>

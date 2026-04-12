@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
 import { buildFunnelPreviewFromSnapshot, type FunnelFormSnapshot } from "@/lib/crm-mockup";
 import {
@@ -13,6 +14,8 @@ import {
   FUNNEL_DESIRED_OUTCOME_LABELS,
   type FunnelDesiredOutcomeId,
 } from "@/lib/funnel-desired-outcomes";
+import { FreeMockupLivePreview } from "@/components/public/free-mockup-live-preview";
+import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 function toggleOutcome(
@@ -201,12 +204,14 @@ export function FreeMockupFunnelClient({
 
     setLoading(true);
     try {
+      const preview_snapshot = buildPreviewSnapshotFromFunnelSnapshot(snapshotBody, funnelSource?.trim() || null);
       const mockupData = {
         funnelVersion: 2,
         funnel_source: funnelSource?.trim() || undefined,
         contactName: cn,
         submitPhone: submitPhone.trim(),
         snapshot: snapshotBody,
+        preview_snapshot,
         preview: preview
           ? {
               stylePreset: preview.stylePreset,
@@ -297,38 +302,40 @@ export function FreeMockupFunnelClient({
   }
 
   return (
-    <div id="free-mockup-start" className="free-mockup-funnel scroll-mt-24">
+    <div
+      id="free-mockup-start"
+      className={cn("free-mockup-funnel scroll-mt-24", isFreshCutFunnel && "free-mockup-funnel--freshcut")}
+    >
       <div className="free-mockup-funnel-grid">
-        <div className="free-mockup-funnel-form card" style={{ padding: "20px 18px" }}>
-          <h2 className="section-heading" style={{ marginBottom: 10, fontSize: "1.25rem" }}>
-            Your free preview
-          </h2>
-          {isFreshCutFunnel ? (
-            <p
-              className="small"
-              style={{
-                color: "var(--text)",
-                marginTop: 0,
-                marginBottom: 14,
-                lineHeight: 1.55,
-                padding: "12px 14px",
-                borderRadius: 10,
-                border: "1px solid rgba(63, 90, 71, 0.18)",
-                background: "rgba(63, 90, 71, 0.06)",
-              }}
-            >
-              You&apos;re getting a clean, service-focused layout designed to turn visitors into estimate requests.
+        <div className="free-mockup-funnel-form card">
+          <div className="free-mockup-intake-head">
+            <p className="free-mockup-intake-eyebrow">Live preview · Guided intake</p>
+            <h2 className="free-mockup-intake-title">Your free preview</h2>
+            {isFreshCutFunnel ? (
+              <p
+                className="small"
+                style={{
+                  color: "var(--text)",
+                  marginTop: 12,
+                  marginBottom: 0,
+                  lineHeight: 1.55,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(63, 90, 71, 0.16)",
+                  background: "rgba(63, 90, 71, 0.05)",
+                }}
+              >
+                You&apos;re getting a layout tuned for local trust and estimate-style requests — the same pattern family
+                as the Fresh Cut example.
+              </p>
+            ) : null}
+            <p className="free-mockup-intake-lead small">
+              Four calm sections — basics, goals, preferences, contact. The preview on the right updates as you type;
+              once you pick a design direction and complete the basics, a full interactive sample loads underneath.
             </p>
-          ) : null}
-          <p className="small" style={{ color: "var(--muted)", marginTop: 0, marginBottom: 20, lineHeight: 1.55 }}>
-            Four short sections — business basics, homepage goals, preferences, then contact. The live preview updates when
-            you&apos;ve filled enough for a direction.
-          </p>
+          </div>
 
-          <div
-            className="mb-8 space-y-4 border-b pb-8"
-            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
-          >
+          <div className="free-mockup-form-section space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">1 · Business basics</h3>
             <p className="small" style={{ margin: "-4px 0 0", color: "var(--muted)", lineHeight: 1.5 }}>
               Fields marked <span className="font-semibold text-[var(--text)]">*</span> are required.
@@ -423,10 +430,7 @@ export function FreeMockupFunnelClient({
           ) : null}
           </div>
 
-          <div
-            className="mb-8 space-y-4 border-b pb-8"
-            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
-          >
+          <div className="free-mockup-form-section space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">2 · Homepage goals</h3>
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
               Top services to feature on the homepage *
@@ -479,10 +483,7 @@ export function FreeMockupFunnelClient({
           </label>
           </div>
 
-          <div
-            className="mb-8 space-y-4 border-b pb-8"
-            style={{ borderColor: "var(--pub-border, rgba(255,255,255,0.12))" }}
-          >
+          <div className="free-mockup-form-section space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">3 · Preferences</h3>
             <p className="small" style={{ margin: 0, color: "var(--muted)", lineHeight: 1.55 }}>
               Choose the direction that feels closest — I&apos;ll refine from there.
@@ -506,7 +507,7 @@ export function FreeMockupFunnelClient({
               {FUNNEL_DESIGN_DIRECTION_OPTIONS.map((opt) => (
                 <label
                   key={opt.id}
-                  className="block cursor-pointer rounded-lg border p-3 transition-colors"
+                  className="free-mockup-direction-option block cursor-pointer rounded-lg border p-3 transition-colors"
                   style={{
                     borderColor:
                       designDirection === opt.id ? "rgba(0,255,178,0.45)" : "var(--pub-border, rgba(255,255,255,0.12))",
@@ -568,7 +569,7 @@ export function FreeMockupFunnelClient({
           </label>
           </div>
 
-          <div className="mb-2 space-y-4">
+          <div className="free-mockup-form-section free-mockup-form-section--flush space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">4 · Contact</h3>
 
           <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
@@ -621,9 +622,6 @@ export function FreeMockupFunnelClient({
                 I&apos;ll put together a custom preview based on your business so you can see exactly how it could look
                 and work.
               </p>
-              <p className="small" style={{ margin: "12px 0 0", lineHeight: 1.55, color: "var(--muted)" }}>
-                Built for real businesses like Fresh Cut Property Care
-              </p>
             </div>
           ) : null}
 
@@ -632,45 +630,96 @@ export function FreeMockupFunnelClient({
               {error}
             </p>
           ) : null}
-          <button type="button" className="btn gold w-full" disabled={loading} onClick={() => void submit()}>
-            {loading ? "Sending…" : isFreshCutFunnel ? "Get My Free Preview" : "Submit my preview request"}
-          </button>
-          <p className="small" style={{ color: "var(--muted)", marginTop: 12, marginBottom: 0, lineHeight: 1.55 }}>
+          <div className="free-mockup-cta-row">
+            <button
+              type="button"
+              className={cn("btn gold", "w-full min-w-0 sm:w-auto sm:min-w-[220px]")}
+              disabled={loading}
+              onClick={() => void submit()}
+            >
+              {loading ? "Sending…" : isFreshCutFunnel ? "Get My Free Preview" : "Submit my preview request"}
+            </button>
+            <Link
+              href="/examples"
+              className={cn(
+                "btn ghost w-full justify-center text-center no-underline sm:w-auto",
+                "hover:no-underline",
+              )}
+            >
+              {isFreshCutFunnel ? "See the Fresh Cut example" : "Browse real work"}
+            </Link>
+          </div>
+          <p className="small" style={{ color: "var(--muted)", marginTop: 14, marginBottom: 0, lineHeight: 1.55 }}>
             No pressure — you&apos;re requesting a direction to react to, not locked-in creative rounds.
           </p>
         </div>
 
-        <div className="free-mockup-funnel-preview">
-          {preview ? (
-            <SampleDraftClient
-              initialDraft={preview.draft}
-              initialMode="presentation"
-              embedOptions={{
-                lockPresentation: true,
-                initialStylePreset: preview.stylePreset,
-                initialColorPreset: preview.colorPreset,
-                secondaryHref: "#services",
-                portfolioFooter: true,
-                portfolioFooterMessage:
-                  "This preview reflects your selected direction and details. Submit once when you’re ready — I’ll take it from there.",
-                portfolioCopy: true,
-                imageCategoryKey: preview.imageCategoryKey,
-                wideLayout: true,
-              }}
-            />
-          ) : (
-            <div className="free-mockup-placeholder">
-              <div>
-                <p className="font-semibold" style={{ marginBottom: 8 }}>
-                  Live preview
-                </p>
-                <p className="small" style={{ color: "var(--muted)", maxWidth: 360, margin: 0 }}>
-                  Fill business basics and homepage goals, then pick a design direction — your sample homepage appears here
-                  (not a template gallery).
-                </p>
-              </div>
+        <div className="free-mockup-funnel-preview free-mockup-preview-stack flex min-h-0 flex-col">
+          <div className="free-mockup-preview-frame">
+            <div className="free-mockup-preview-chrome" role="presentation" aria-hidden>
+              <span className="free-mockup-preview-chrome-dots">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="free-mockup-preview-chrome-label">Live homepage preview</span>
+              <span className="free-mockup-preview-chrome-spacer" />
             </div>
-          )}
+            <div className="free-mockup-preview-viewport" role="region" aria-label="Live homepage preview">
+              <FreeMockupLivePreview
+                variant="framed"
+                businessName={businessName}
+                city={cityOrArea}
+                servicesText={topServices}
+                businessType={businessType}
+                description={whatMakesYouDifferent}
+                specialOffer={specialOffer}
+                designDirection={designDirection}
+                desiredOutcomes={desiredOutcomeList}
+                isFreshCutFunnel={isFreshCutFunnel}
+              />
+              {preview ? (
+                <div className="free-mockup-sample-embed min-h-0 flex-1 overflow-y-auto">
+                  <SampleDraftClient
+                    initialDraft={preview.draft}
+                    initialMode="presentation"
+                    embedOptions={{
+                      lockPresentation: true,
+                      initialStylePreset: preview.stylePreset,
+                      initialColorPreset: preview.colorPreset,
+                      secondaryHref: "#services",
+                      portfolioFooter: true,
+                      portfolioFooterMessage:
+                        "This preview reflects your selected direction and details. Submit once when you’re ready — I’ll take it from there.",
+                      portfolioCopy: true,
+                      imageCategoryKey: preview.imageCategoryKey,
+                      wideLayout: true,
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="free-mockup-preview-empty flex flex-col justify-end">
+                  <div className="free-mockup-preview-skeleton" aria-hidden>
+                    <div className="free-mockup-preview-skeleton-bar free-mockup-preview-skeleton-bar--lg" />
+                    <div className="free-mockup-preview-skeleton-bar free-mockup-preview-skeleton-bar--md" />
+                    <div className="free-mockup-preview-skeleton-bar" />
+                    <div className="free-mockup-preview-skeleton-cards">
+                      <div className="free-mockup-preview-skeleton-card" />
+                      <div className="free-mockup-preview-skeleton-card" />
+                      <div className="free-mockup-preview-skeleton-card" />
+                    </div>
+                  </div>
+                  <div className="free-mockup-preview-empty-copy">
+                    <p className="free-mockup-preview-empty-title">Full interactive sample</p>
+                    <p className="free-mockup-preview-empty-text">
+                      Add your basics, services, area, and a design direction — a richer homepage loads here
+                      automatically while the live preview above tracks every change.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

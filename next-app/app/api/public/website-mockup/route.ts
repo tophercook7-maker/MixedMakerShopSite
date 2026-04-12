@@ -12,6 +12,7 @@ import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-serv
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import { normalizeFacebookUrl, normalizeWebsiteUrl as fingerprintWebsite } from "@/lib/leads-dedup";
 import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
+import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
 
 export async function GET() {
   return NextResponse.json({ error: "Method not allowed." }, { status: 405 });
@@ -256,6 +257,8 @@ export async function POST(request: Request) {
     const snapshot = normalizeSnapshot(snapshotIn, email, submitPhone);
     const contactName = String(parsed.data.contactName || "").trim();
 
+    const preview_snapshot = buildPreviewSnapshotFromFunnelSnapshot(snapshot, funnelSourceAttr || null);
+
     const mockRow = buildFunnelPublicMockupRow(snapshot);
     const origin = requestOrigin(request);
 
@@ -326,6 +329,9 @@ export async function POST(request: Request) {
       snapshot.special_offer_or_guarantee ? `Offer / guarantee: ${snapshot.special_offer_or_guarantee}` : "",
       snapshot.anything_to_avoid ? `Please avoid: ${snapshot.anything_to_avoid}` : "",
       snapshot.anything_else_i_should_know ? `Other notes: ${snapshot.anything_else_i_should_know}` : "",
+      preview_snapshot.previewSummary
+        ? `Live preview (what they saw): ${preview_snapshot.previewSummary}`
+        : "",
       notes ? `Visitor note: ${notes}` : "",
     ]
       .filter(Boolean)
@@ -428,6 +434,7 @@ export async function POST(request: Request) {
         business_phone: businessPhoneForNotes || null,
       },
       snapshot,
+      preview_snapshot,
       mock_row: {
         template_key: mockRow.template_key,
         business_name: mockRow.business_name,
@@ -458,6 +465,7 @@ export async function POST(request: Request) {
 
     const desiredOutcomesJson = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
 
+    const statusStamp = new Date().toISOString();
     const { data: submissionRow, error: submissionErr } = await supabase
       .from("mockup_submissions")
       .insert({
@@ -465,6 +473,8 @@ export async function POST(request: Request) {
         mockup_data: mockupDataForDb,
         notes,
         status: "new",
+        lead_status: "new",
+        status_updated_at: statusStamp,
         source: "free-mockup",
         funnel_source: funnelSourceAttr || null,
         selected_template_key: snapshot.selected_template_key,

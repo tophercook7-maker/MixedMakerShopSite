@@ -1,12 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { MockupLeadStatusBadge } from "@/components/admin/mockup-lead-status-badge";
+import { MockupPipelineQuickActions } from "@/components/admin/mockup-pipeline-quick-actions";
 import { MockupSubmissionGeneratePanel } from "@/components/admin/mockup-submission-generate-panel";
 import { MockupSubmissionStatusSelect } from "@/components/admin/mockup-submission-status-select";
 import type { AdminStoredGeneratedMockup } from "@/lib/admin-mockup-quick-generate";
 import { FUNNEL_DESIGN_DIRECTION_OPTIONS } from "@/lib/funnel-design-directions";
 import { FUNNEL_DESIRED_OUTCOME_LABELS, type FunnelDesiredOutcomeId } from "@/lib/funnel-desired-outcomes";
+import { getPreviewSnapshotFromMockupData } from "@/lib/free-mockup-preview-snapshot";
+import { buildMockupFollowUpDraftInputFromSubmissionRow } from "@/lib/admin-mockup-submission-follow-up-context";
+import {
+  MOCKUP_LEAD_STATUS_HINTS,
+  parseMockupLeadStatus,
+} from "@/lib/lead-status";
 import { createClient } from "@/lib/supabase/server";
+import { MockupFollowUpDraftPanel } from "@/components/admin/mockup-follow-up-draft-panel";
+import { MockupStaleLeadBanner } from "@/components/admin/mockup-stale-lead-banner";
+import { getLeadStaleState, MOCKUP_STALE_SUGGESTED_NUDGE } from "@/lib/lead-stale";
 
 type Row = {
   id: string;
@@ -14,6 +25,8 @@ type Row = {
   mockup_data: Record<string, unknown> | null;
   notes: string | null;
   status: string;
+  lead_status?: string | null;
+  status_updated_at?: string | null;
   source: string;
   funnel_source: string | null;
   created_at: string;
@@ -55,12 +68,14 @@ function formatOutcomes(raw: unknown): string {
 function Section({
   title,
   children,
+  id,
 }: {
   title: string;
   children: ReactNode;
+  id?: string;
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-6" id={id}>
       <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
         {title}
       </h2>
@@ -123,7 +138,8 @@ export default async function AdminMockupSubmissionDetailPage({
   if (!row) notFound();
 
   const r = row as unknown as Row;
-  const md = r.mockup_data || {};
+  const md = (r.mockup_data || {}) as Record<string, unknown>;
+  const previewSnap = getPreviewSnapshotFromMockupData(md);
   const snap =
     md && typeof md === "object" && "snapshot" in md && md.snapshot && typeof md.snapshot === "object"
       ? (md.snapshot as Record<string, unknown>)
@@ -151,9 +167,25 @@ export default async function AdminMockupSubmissionDetailPage({
   const json = JSON.stringify(r.mockup_data ?? {}, null, 2);
   const adminGenerated = parseAdminGenerated(r.admin_generated_mockup);
 
+  const { input: followUpInput, recipientEmail } = buildMockupFollowUpDraftInputFromSubmissionRow(r);
+  const followUpInputJson = JSON.stringify(followUpInput);
+  const pipeline = parseMockupLeadStatus(r.lead_status ?? r.status);
+  const stale = getLeadStaleState({
+    pipeline,
+    createdAt: r.created_at,
+    statusUpdatedAt: r.status_updated_at,
+    updatedAt: r.updated_at,
+  });
+
   return (
     <section className="admin-card">
       <MockupSubmissionGeneratePanel submissionId={r.id} initial={adminGenerated} />
+      <MockupStaleLeadBanner
+        isStale={stale.isStale}
+        reason={stale.reason}
+        severity={stale.severity}
+        suggestedMessage={MOCKUP_STALE_SUGGESTED_NUDGE}
+      />
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link
@@ -163,14 +195,28 @@ export default async function AdminMockupSubmissionDetailPage({
           >
             ← All mockup submissions
           </Link>
-          <h1 className="text-lg font-semibold mt-3" style={{ color: "var(--admin-fg)" }}>
-            {r.email}
-          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <h1 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
+              {r.email}
+            </h1>
+            <MockupLeadStatusBadge status={pipeline} />
+          </div>
           <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
             <span className="mr-3">Created {r.created_at ? new Date(r.created_at).toLocaleString() : "—"}</span>
             <span>Updated {r.updated_at ? new Date(r.updated_at).toLocaleString() : "—"}</span>
           </p>
-          <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
+          {r.status_updated_at ? (
+            <p className="text-xs mt-1" style={{ color: "var(--admin-muted)" }}>
+              Pipeline updated {new Date(r.status_updated_at).toLocaleString()}
+            </p>
+          ) : null}
+          <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
+            {MOCKUP_LEAD_STATUS_HINTS[pipeline]}
+          </p>
+          <p className="text-xs mt-2 max-w-xl leading-relaxed" style={{ color: "var(--admin-muted)" }}>
+            Status helps track where this lead is in your workflow. Change it anytime — you stay in control.
+          </p>
+          <p className="text-sm mt-2" style={{ color: "var(--admin-muted)" }}>
             Source: {r.source}
             {r.funnel_source ? (
               <>
@@ -187,32 +233,28 @@ export default async function AdminMockupSubmissionDetailPage({
             </p>
           ) : null}
         </div>
-        <MockupSubmissionStatusSelect submissionId={r.id} initialStatus={r.status} />
+        <MockupSubmissionStatusSelect submissionId={r.id} initialPipelineStatus={pipeline} />
       </div>
 
-      <Section title="Follow-up message templates (copy/paste)">
+      <Section title="Follow-up draft" id="follow-up-draft">
+        <MockupFollowUpDraftPanel
+          submissionId={r.id}
+          recipientEmail={recipientEmail}
+          inputJson={followUpInputJson}
+        />
+        <MockupPipelineQuickActions submissionId={r.id} />
         <div
-          className="rounded-lg border border-[rgba(201,97,44,0.25)] p-4 text-sm leading-relaxed space-y-4"
-          style={{ color: "var(--admin-fg)", background: "rgba(0,0,0,0.15)" }}
+          className="mt-4 rounded-lg border border-[rgba(201,97,44,0.2)] p-4 text-sm leading-relaxed"
+          style={{ color: "var(--admin-muted)", background: "rgba(0,0,0,0.12)" }}
         >
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
-              First reply
-            </p>
-            <p className="whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
-              {`Hey — I took a look at your request.\n\nI’ve got a good direction in mind for your site. Before I build it out, quick question:\n\n[ask 1 relevant question about their business]`}
-            </p>
-          </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
-              If no response (~2 days)
-            </p>
-            <p className="whitespace-pre-wrap" style={{ color: "var(--admin-muted)" }}>
-              {`Hey — just wanted to follow up on this.\n\nI’ve got an idea for your site that I think would work really well. Let me know if you still want me to put it together.\n\n– Topher`}
-            </p>
-          </div>
-          <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
-            Use <strong style={{ color: "var(--admin-fg)" }}>Status → Contacted</strong> when you’ve reached out.
+          <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
+            If no response (~2 days)
+          </p>
+          <p className="whitespace-pre-wrap">
+            {`Hey — just wanted to follow up on this.\n\nI’ve got an idea for your site that I think would work really well. Let me know if you still want me to put it together.\n\n– Topher`}
+          </p>
+          <p className="text-xs mt-3" style={{ color: "var(--admin-muted)" }}>
+            After you send, use <strong style={{ color: "var(--admin-fg)" }}>Quick status → Mark contacted</strong> or the pipeline dropdown.
           </p>
         </div>
       </Section>
@@ -253,6 +295,62 @@ export default async function AdminMockupSubmissionDetailPage({
         <p className="text-sm rounded-lg border border-[rgba(201,97,44,0.2)] p-3 bg-[rgba(0,0,0,0.2)]">
           {labelForDirection(String(dir))}
         </p>
+      </Section>
+
+      <Section title="Preview snapshot">
+        {previewSnap ? (
+          <div className="space-y-4 rounded-lg border border-[rgba(201,97,44,0.2)] p-4 bg-[rgba(0,0,0,0.2)]">
+            <p className="text-xs" style={{ color: "var(--admin-muted)" }}>
+              Copy the lead saw in the live preview at submit time{previewSnap.generatedAt ? ` (${previewSnap.generatedAt})` : ""}.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Business kind (inferred)" value={String(previewSnap.businessKind || "")} />
+              <Field label="Example / funnel source" value={String(previewSnap.exampleSource || r.funnel_source || "—")} />
+              <Field label="Fresh Cut mode" value={previewSnap.isFreshCutFunnel ? "Yes" : "No"} />
+              <Field label="Design direction (snapshot)" value={String(previewSnap.designDirection || "—")} />
+            </div>
+            <Field label="Headline" value={previewSnap.headline} />
+            <Field label="Subheadline" value={previewSnap.subheadline} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="CTA label" value={previewSnap.ctaLabel} />
+              <Field label="CTA support line" value={previewSnap.ctaSupport} />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
+                Services (generated)
+              </p>
+              <ul className="space-y-2">
+                {previewSnap.services.slice(0, 3).map((s, i) => (
+                  <li
+                    key={`${s.title}-${i}`}
+                    className="rounded-md border border-[rgba(201,97,44,0.15)] p-3 text-sm"
+                    style={{ color: "var(--admin-fg)" }}
+                  >
+                    <p className="font-semibold">{s.title}</p>
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--admin-muted)" }}>
+                      {s.description}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--admin-muted)" }}>
+                Trust points
+              </p>
+              <ul className="list-disc pl-5 text-sm space-y-1" style={{ color: "var(--admin-fg)" }}>
+                {previewSnap.trustPoints.map((t, i) => (
+                  <li key={`${i}-${t}`}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm rounded-lg border border-[rgba(201,97,44,0.2)] p-3 bg-[rgba(0,0,0,0.2)]" style={{ color: "var(--admin-muted)" }}>
+            Could not derive a preview snapshot from saved data (incomplete snapshot or legacy shape). Raw JSON is still
+            available below.
+          </p>
+        )}
       </Section>
 
       <Section title="Notes">

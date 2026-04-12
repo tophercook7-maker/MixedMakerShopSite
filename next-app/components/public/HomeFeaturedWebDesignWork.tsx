@@ -5,8 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import {
+  ShowcaseCaseStudyAfterContext,
+  ShowcaseCaseStudyBeforePrimary,
+} from "@/components/public/ShowcaseCaseStudyFields";
+import {
   getShowcasePrimaryCtaLabel,
   getShowcaseProjectsByAnalyticsIds,
+  getShowcaseSecondaryCtaHref,
   getShowcaseSecondaryCtaLabel,
   LIVE_WEB_PROJECTS,
   type AnyShowcaseProject,
@@ -25,6 +30,7 @@ import {
   mmsTextLink,
 } from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
+import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { cn } from "@/lib/utils";
@@ -64,6 +70,14 @@ const tagPill = (isLight: boolean) =>
     isLight
       ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
       : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
+  );
+
+const featuredPill = (isLight: boolean) =>
+  cn(
+    "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
+    isLight
+      ? "border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 text-[#8a4b2a]"
+      : "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]",
   );
 
 function BrowserShowcasePreview({
@@ -213,6 +227,9 @@ export function HomeFeaturedWebDesignWork({
                   cn(
                     immersive ? mmsGlassPanelDenseHome : mmsCard,
                     "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]",
+                    project.emphasizeCard &&
+                      immersive &&
+                      "ring-2 ring-[#b85c1e]/28 shadow-[0_28px_72px_-34px_rgba(184,92,30,0.24)] md:ring-[#b85c1e]/22",
                   ),
               )}
             >
@@ -238,11 +255,17 @@ export function HomeFeaturedWebDesignWork({
                     )}
                     style={{ objectPosition: project.objectPosition }}
                   />
+                  <ExampleCardImageOverlay />
                 </div>
               </BrowserShowcasePreview>
 
               <div className="flex flex-col gap-3 px-0.5">
-                <span className={tagPill(isLight)}>{project.tag}</span>
+                <div className="flex flex-wrap gap-2">
+                  <span className={tagPill(isLight)}>{project.tag}</span>
+                  {project.featuredBadge ? (
+                    <span className={featuredPill(isLight)}>{project.featuredBadge}</span>
+                  ) : null}
+                </div>
                 <h3
                   className={cn(
                     "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
@@ -251,6 +274,7 @@ export function HomeFeaturedWebDesignWork({
                 >
                   {project.title}
                 </h3>
+                <ShowcaseCaseStudyBeforePrimary project={project} variant={isLight ? "light" : "dark"} />
                 <p
                   className={cn(
                     "text-[15px] font-semibold leading-snug md:text-base",
@@ -269,6 +293,7 @@ export function HomeFeaturedWebDesignWork({
                     {project.context}
                   </p>
                 ) : null}
+                <ShowcaseCaseStudyAfterContext project={project} variant={isLight ? "light" : "dark"} />
                 <PublicCtaRow className="pt-2">
                   {project.primaryCtaIsExternal === false ? (
                     <Link
@@ -315,7 +340,7 @@ export function HomeFeaturedWebDesignWork({
                     </a>
                   )}
                   <Link
-                    href="/free-mockup"
+                    href={getShowcaseSecondaryCtaHref(project)}
                     onClick={() =>
                       trackPublicEvent("public_contact_cta_click", {
                         location: "web_design",

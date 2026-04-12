@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowDown, ArrowRight, ExternalLink } from "lucide-react";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import {
@@ -9,18 +9,31 @@ import {
   type ExamplesConceptCard,
   type ExamplesRealWorkEntry,
 } from "@/lib/examples-page-data";
+import {
+  getShowcasePrimaryCtaLabel,
+  getShowcaseSecondaryCtaHref,
+  getShowcaseSecondaryCtaLabel,
+} from "@/lib/live-web-projects";
+import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { UmbrellaHeroMedia } from "@/components/public/umbrella-hero-media";
 import { publicShellClass } from "@/lib/public-brand";
 import {
   mmsBodyFrost,
   mmsBtnPrimary,
   mmsBtnSecondary,
-  mmsGlassPanelDense,
+  mmsCtaPanelHome,
+  mmsGlassPanelDenseHome,
+  mmsGlassPanelHero,
   mmsH2,
-  mmsPageBg,
-  mmsSectionBorder,
   mmsSectionY,
   mmsTextLink,
+  mmsUmbrellaSectionBackdrop,
 } from "@/lib/mms-umbrella-ui";
+import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
+import {
+  ShowcaseCaseStudyAfterContext,
+  ShowcaseCaseStudyBeforePrimary,
+} from "@/components/public/ShowcaseCaseStudyFields";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -28,11 +41,25 @@ const shell = publicShellClass;
 const pillBase =
   "inline-flex max-w-full rounded-full border border-[#3f5a47]/22 bg-white/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#3f5a47]";
 
+const featuredPill =
+  "inline-flex max-w-full rounded-full border border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a4b2a]";
+
+const exampleThumbFrame =
+  "relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/14 bg-[#cfd8d0] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]";
+
 function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
   const { project, badge, industry } = entry;
+  const primaryLabel = getShowcasePrimaryCtaLabel(project);
+  const secondaryLabel = getShowcaseSecondaryCtaLabel(project);
   return (
-    <article className={cn(mmsGlassPanelDense, "flex h-full flex-col p-6 sm:p-8")}>
-      <div className="relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/12 bg-[#cfd8d0]">
+    <article
+      className={cn(
+        mmsGlassPanelDenseHome,
+        "flex h-full flex-col p-6 sm:p-8",
+        project.emphasizeCard && "ring-2 ring-[#b85c1e]/28 shadow-[0_28px_70px_-32px_rgba(184,92,30,0.22)]",
+      )}
+    >
+      <div className={exampleThumbFrame}>
         <Image
           src={project.previewSrc}
           alt={project.previewAlt}
@@ -41,6 +68,7 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
           style={{ objectPosition: project.objectPosition }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
+        <ExampleCardImageOverlay />
       </div>
       <div className="mt-6 flex flex-1 flex-col">
         <div className="flex flex-wrap gap-2">
@@ -48,12 +76,15 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
           {industry ? (
             <span className={cn(pillBase, "border-[#3f5a47]/14 bg-white/50 text-[#3f5a47]/90")}>{industry}</span>
           ) : null}
+          {project.featuredBadge ? <span className={cn(featuredPill, "w-fit")}>{project.featuredBadge}</span> : null}
         </div>
         <h3 className="mt-4 text-xl font-bold tracking-tight text-[#1e241f] md:text-2xl">{project.title}</h3>
+        <ShowcaseCaseStudyBeforePrimary project={project} variant="light" className="mt-2" />
         <p className="mt-3 text-[15px] font-semibold leading-snug text-[#2d3a33] md:text-base">{project.primaryLine}</p>
         {project.context ? (
           <p className="mt-2 text-sm leading-relaxed text-[#354239] md:text-[15px]">{project.context}</p>
         ) : null}
+        <ShowcaseCaseStudyAfterContext project={project} variant="light" className="mt-3" />
         <PublicCtaRow className="mt-auto pt-6">
           {project.primaryCtaIsExternal === false ? (
             <Link
@@ -63,7 +94,7 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
                 "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[11rem]",
               )}
             >
-              View Live Site
+              {primaryLabel}
               <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
             </Link>
           ) : (
@@ -76,20 +107,25 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
                 "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[11rem]",
               )}
             >
-              View Live Site
+              {primaryLabel}
               <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
             </a>
           )}
           <TrackedPublicLink
-            href="/free-mockup"
+            href={getShowcaseSecondaryCtaHref(project)}
             eventName="public_contact_cta_click"
-            eventProps={{ location: "examples_page", target: "free_mockup", project: project.analyticsId, cta: "get_something_like_this" }}
+            eventProps={{
+              location: "examples_page",
+              target: "free_mockup",
+              project: project.analyticsId,
+              cta: secondaryLabel,
+            }}
             className={cn(
               mmsBtnSecondary,
               "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[11rem]",
             )}
           >
-            Get Something Like This
+            {secondaryLabel}
             <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
           </TrackedPublicLink>
         </PublicCtaRow>
@@ -103,8 +139,8 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
   const secondaryHref = card.secondaryCtaHref ?? "/free-mockup";
 
   return (
-    <article className={cn(mmsGlassPanelDense, "flex h-full flex-col p-6 sm:p-8")}>
-      <div className="relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/12 bg-[#cfd8d0]">
+    <article className={cn(mmsGlassPanelDenseHome, "flex h-full flex-col p-6 sm:p-8")}>
+      <div className={exampleThumbFrame}>
         <Image
           src={card.previewSrc}
           alt={card.previewAlt}
@@ -113,6 +149,7 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
           style={{ objectPosition: card.objectPosition ?? "center center" }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
+        <ExampleCardImageOverlay />
       </div>
       <div className="mt-6 flex flex-1 flex-col">
         <span className={cn(pillBase, "w-fit")}>{card.tag}</span>
@@ -174,53 +211,76 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
 
 export function ExamplesPageContent() {
   return (
-    <div className={mmsPageBg}>
-      {/* HERO */}
-      <section
-        className={cn(
-          "border-b bg-gradient-to-b from-[#f7f4ee] via-[#ece7dd] to-[#e2dcd0]/90",
-          mmsSectionBorder,
-        )}
-      >
-        <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8a4b2a]">MixedMakerShop</p>
-          <h1 className="mt-4 text-3xl font-bold tracking-[-0.035em] text-[#1e241f] md:text-4xl lg:text-[2.65rem] lg:leading-[1.12]">
-            Examples of websites and builds designed to look better and work harder
-          </h1>
-          <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-            A mix of real client work, concept builds, and practical projects from MixedMakerShop. If you want something
-            in this direction, I can put together a free preview for your business.
-          </p>
-          <PublicCtaRow className="mt-10">
-            <TrackedPublicLink
-              href="/free-mockup"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "examples_page", target: "free_mockup", cta: "hero_primary" }}
-              className={cn(
-                mmsBtnPrimary,
-                "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
-              )}
-            >
-              Get My Free Preview
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </TrackedPublicLink>
-            <a
-              href="#real-work"
-              className={cn(
-                mmsBtnSecondary,
-                "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
-              )}
-            >
-              See Real Work
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </a>
-          </PublicCtaRow>
-        </div>
-      </section>
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+      <FixedHeroMedia />
+      <div className="relative z-[5] w-full">
+        {/* HERO — same umbrella + glass rhythm as homepage */}
+        <section className="relative max-md:border-b max-md:border-black/10" aria-labelledby="examples-hero-title">
+          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden md:hidden">
+            <UmbrellaHeroMedia className="min-h-[min(100svh,48rem)]" priority />
+          </div>
+          <div
+            className={cn(
+              shell,
+              mmsSectionY,
+              "relative z-[2] max-w-[40rem]",
+            )}
+          >
+            <div className={cn(mmsGlassPanelHero, "px-5 py-5 sm:px-7 sm:py-7 lg:px-8 lg:py-8")}>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8a4b2a]">MixedMakerShop</p>
+              <h1
+                id="examples-hero-title"
+                className="mt-4 text-3xl font-bold tracking-[-0.035em] text-[#1e241f] md:text-4xl lg:text-[2.65rem] lg:leading-[1.12]"
+              >
+                Examples of websites and builds designed to look better and work harder
+              </h1>
+              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
+                A mix of real client work, concept builds, and practical projects from MixedMakerShop. If you want something
+                in this direction, I can put together a free preview for your business.
+              </p>
+              <PublicCtaRow className="mt-10">
+                <TrackedPublicLink
+                  href="/free-mockup"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "examples_page", target: "free_mockup", cta: "hero_primary" }}
+                  className={cn(
+                    mmsBtnPrimary,
+                    "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
+                  )}
+                >
+                  Get My Free Preview
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+                <a
+                  href="#real-work"
+                  className={cn(
+                    mmsBtnSecondary,
+                    "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
+                  )}
+                >
+                  See Real Work
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </a>
+              </PublicCtaRow>
+              <p className="mt-10 flex flex-col items-start gap-1.5 text-sm font-semibold text-[#5a6a62] sm:mt-12">
+                <a
+                  href="#real-work"
+                  className="group inline-flex items-center gap-2 text-[#4a5850] underline-offset-4 transition-colors hover:text-[#2f4a38] hover:underline"
+                >
+                  <span className="tracking-tight">Real projects below</span>
+                  <ArrowDown
+                    className="h-4 w-4 shrink-0 opacity-80 transition-transform duration-300 ease-out group-hover:translate-y-0.5"
+                    aria-hidden
+                  />
+                </a>
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* REAL WORK */}
-      <section className={cn("border-b", mmsSectionBorder)}>
-        <div className={cn(shell, mmsSectionY)}>
+        {/* REAL WORK */}
+        <section className={mmsUmbrellaSectionBackdrop}>
+          <div className={cn(shell, mmsSectionY)}>
           <h2 className={mmsH2} id="real-work">
             Real Work
           </h2>
@@ -228,18 +288,21 @@ export function ExamplesPageContent() {
             Real projects built to help businesses look trustworthy, explain what they do clearly, and make it easier
             for people to reach out.
           </p>
+          <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-[#3d4a41] md:text-[15px]">
+            Built directly with me — no agency layers, no handoffs.
+          </p>
 
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
             {EXAMPLES_REAL_WORK.map((entry) => (
               <RealWorkCard key={entry.project.analyticsId} entry={entry} />
             ))}
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* CONCEPT BUILDS */}
-      <section className={cn("border-b", mmsSectionBorder)}>
-        <div className={cn(shell, mmsSectionY)}>
+        {/* CONCEPT BUILDS */}
+        <section className={mmsUmbrellaSectionBackdrop}>
+          <div className={cn(shell, mmsSectionY)}>
           <h2 className={mmsH2} id="concept-builds">
             Concept Builds
           </h2>
@@ -260,46 +323,53 @@ export function ExamplesPageContent() {
               <ConceptBuildCard key={card.id} card={card} />
             ))}
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* CTA BAND */}
-      <section className={cn("border-b", mmsSectionBorder, "bg-gradient-to-b from-[#eef1ea] to-[#e4e8df]/95")}>
-        <div className={cn(shell, mmsSectionY, "max-w-3xl text-center")}>
-          <h2 className="text-2xl font-bold tracking-tight text-[#1e241f] md:text-3xl">
-            Want something built around your business?
-          </h2>
-          <p className={cn("mx-auto mt-5 max-w-xl text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-            I can put together a free homepage-style preview so you can see the direction before committing to anything.
-          </p>
-          <PublicCtaRow className="mx-auto mt-10 max-w-xl" align="center">
-            <TrackedPublicLink
-              href="/free-mockup"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "examples_page", target: "free_mockup", cta: "footer_band_primary" }}
-              className={cn(
-                mmsBtnPrimary,
-                "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
-              )}
-            >
-              Get My Free Preview
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </TrackedPublicLink>
-            <TrackedPublicLink
-              href="/contact"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "examples_page", target: "contact", cta: "footer_band_secondary" }}
-              className={cn(
-                mmsBtnSecondary,
-                "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
-              )}
-            >
-              Contact Me
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </TrackedPublicLink>
-          </PublicCtaRow>
-        </div>
-      </section>
+        {/* CTA BAND — matches homepage contact strip */}
+        <section
+          className={cn(
+            "border-t",
+            mmsUmbrellaSectionBackdrop,
+            "max-md:bg-gradient-to-b max-md:from-[#e8e3da] max-md:to-[#dcd6cc]",
+          )}
+        >
+          <div className={cn(shell, "py-24 md:py-32")}>
+            <div className={cn(mmsCtaPanelHome, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
+              <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Want something built around your business?</h2>
+              <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsBodyFrost)}>
+                I can put together a free homepage-style preview so you can see the direction before committing to anything.
+              </p>
+              <PublicCtaRow className="mx-auto mt-10 w-full max-w-xl justify-center" align="center">
+                <TrackedPublicLink
+                  href="/free-mockup"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "examples_page", target: "free_mockup", cta: "footer_band_primary" }}
+                  className={cn(
+                    mmsBtnPrimary,
+                    "inline-flex w-full min-w-[12rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:w-auto sm:flex-initial sm:min-w-[14rem]",
+                  )}
+                >
+                  Get My Free Preview
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+                <TrackedPublicLink
+                  href="/contact"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "examples_page", target: "contact", cta: "footer_band_secondary" }}
+                  className={cn(
+                    mmsBtnSecondary,
+                    "inline-flex w-full min-w-[12rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:w-auto sm:flex-initial sm:min-w-[14rem]",
+                  )}
+                >
+                  Contact Me
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+              </PublicCtaRow>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

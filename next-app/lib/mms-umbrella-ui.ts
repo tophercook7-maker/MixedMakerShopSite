@@ -57,6 +57,17 @@ export const mmsTextLink = cn(
 /** Subtle section border (bottom dividers). */
 export const mmsSectionBorder = "border-[#3f5a47]/10";
 
+/**
+ * Homepage + umbrella-aligned marketing pages: warm cream on small screens, transparent on md+
+ * so content scrolls over `FixedHeroMedia` (see `.public-site--light-umbrella:has(.home-umbrella-canvas)` in globals).
+ */
+export const mmsUmbrellaSectionBackdrop = cn(
+  "border-b",
+  mmsSectionBorder,
+  "max-md:bg-[#ece7dd]",
+  "md:bg-transparent",
+);
+
 /** Primary CTA — burnt orange / leather, restrained depth. */
 export const mmsBtnPrimary = cn(
   "inline-flex min-h-[3rem] items-center justify-center rounded-xl",

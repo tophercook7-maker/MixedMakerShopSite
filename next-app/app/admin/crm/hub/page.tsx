@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Building2, DollarSign, FolderKanban, ListChecks, Printer, Users } from "lucide-react";
 import { CrmAlertsPanel } from "@/components/admin/crm-alerts-panel";
+import { MockupStaleHubSummary } from "@/components/admin/mockup-stale-hub-summary";
 
 const crmModules = [
   {
@@ -67,6 +68,21 @@ export default function AdminCrmHubPage() {
       </section>
 
       <CrmAlertsPanel />
+
+      <section className="admin-card">
+        <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
+          Mockup funnel
+        </h2>
+        <MockupStaleHubSummary />
+        <div className="flex flex-wrap gap-2 mt-3">
+          <Link href="/admin/mockup-submissions" className="admin-btn-ghost text-xs">
+            Free mockup submissions
+          </Link>
+          <Link href="/admin/mockup-submissions?needs_attention=1" className="admin-btn-ghost text-xs">
+            Mockup needs attention
+          </Link>
+        </div>
+      </section>
 
       <section className="admin-card">
         <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--admin-fg)" }}>
