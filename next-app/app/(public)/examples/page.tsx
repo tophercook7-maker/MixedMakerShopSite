@@ -4,14 +4,14 @@ import { ExamplesPageContent } from "@/components/public/ExamplesPageContent";
 const canonical = "https://mixedmakershop.com/examples";
 
 export const metadata: Metadata = {
-  title: "Website Examples & Live Work | MixedMakerShop",
+  title: "Website Examples — Real Work & Concept Builds | MixedMakerShop",
   description:
-    "See real client websites and builds by Topher — Fresh Cut Property Care, Deep Well Audio, and more. Web design is the primary service at MixedMakerShop.",
+    "Real client sites first, then concept builds and layout demos. See Fresh Cut Property Care, Deep Well Audio, and more — request a free preview for your business.",
   alternates: { canonical },
   openGraph: {
-    title: "Website examples & live work | MixedMakerShop",
+    title: "Website examples — real work & concept builds | MixedMakerShop",
     description:
-      "Real business sites and practical builds from Topher’s studio — trustworthy, conversion-focused web design first.",
+      "Examples of websites and builds designed to look better and work harder. Mix of real client work and demos — get a free preview for your business.",
     url: canonical,
   },
   robots: { index: true, follow: true },
