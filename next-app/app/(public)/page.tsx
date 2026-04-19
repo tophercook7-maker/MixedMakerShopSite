@@ -4,21 +4,22 @@ import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
 const canonical = "https://mixedmakershop.com";
 
 export const metadata: Metadata = {
-  title: "MixedMakerShop | Web Design for Real Businesses — Topher",
+  title: "MixedMakerShop | Your Website Should Be Bringing You Clients",
   description:
-    "MixedMakerShop is Topher's studio in Hot Springs, Arkansas — practical web design first, plus 3D printing and digital builds when you need them.",
+    "Custom websites, mockups, and growth tools built to help real businesses get more leads.",
   alternates: { canonical },
   openGraph: {
-    title: "MixedMakerShop | Web design, 3D printing & builds by Topher",
+    title: "MixedMakerShop | Your Website Should Be Bringing You Clients",
     description:
-      "Trustworthy business websites are the main focus — 3D printing and digital builds available through the same studio.",
+      "Custom websites, mockups, and growth tools built to help real businesses get more leads.",
     url: canonical,
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MixedMakerShop by Topher",
-    description: "Web design, 3D printing, and practical digital builds — Hot Springs & nationwide.",
+    title: "MixedMakerShop | Your Website Should Be Bringing You Clients",
+    description:
+      "Custom websites, mockups, and growth tools built to help real businesses get more leads.",
     images: ["/og-image"],
   },
 };

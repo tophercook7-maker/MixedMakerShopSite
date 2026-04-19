@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
-import { buildLeadPath } from "@/lib/lead-route";
+import { buildPrintLeadPath } from "@/lib/lead-route";
 import {
   computePrintJobAmountDueUsd,
   formatUsdAmount,
@@ -146,7 +146,7 @@ export function ThreeDPrintRequestsTable({
         <tbody>
           {leads.map((lead) => {
             const busy = busyId === lead.id;
-            const href = buildLeadPath(lead.id, lead.business_name);
+            const href = buildPrintLeadPath(lead.id, lead.business_name);
             const tags = (lead.print_tags || []).filter(Boolean);
             const lane = resolvePrintUiLane(lead);
             const fuToday = isFollowUpDueTodayUtc(lead.next_follow_up_at);

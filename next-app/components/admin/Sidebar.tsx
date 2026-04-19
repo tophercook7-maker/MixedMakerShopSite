@@ -17,7 +17,7 @@ import {
 
 const links = [
   { href: "/admin/today", label: "Today", icon: Sun },
-  { href: "/admin/leads", label: "Leads", icon: Users, title: "Businesses you saved" },
+  { href: "/admin/crm/web", label: "Web CRM", icon: Users, title: "Web design leads" },
   { href: "/admin/conversations", label: "Conversations", icon: MessageSquare },
   { href: "/admin/scout", label: "Find businesses", icon: Crosshair, title: "Scout — discover local businesses" },
   { href: "/admin/outreach", label: "Outreach", icon: Send },
@@ -85,10 +85,10 @@ export default function Sidebar() {
         <a href="/admin/print-dashboard" className="block py-1 hover:text-[var(--admin-gold)]">
           3D print dashboard
         </a>
-        <a href="/admin/leads?crm_source=3d_printing" className="block py-1 hover:text-[var(--admin-gold)]">
-          3D print leads
+        <a href="/admin/crm/print" className="block py-1 hover:text-[var(--admin-gold)]">
+          3D print CRM
         </a>
-        <a href="/admin/leads?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
+        <a href="/admin/crm/web?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
           Top Picks
         </a>
         <a href="/admin/crm/hub" className="block py-1 hover:text-[var(--admin-gold)]">

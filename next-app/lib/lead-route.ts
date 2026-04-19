@@ -34,8 +34,16 @@ export function buildLeadPath(
 ): string {
   void businessName;
   const id = String(leadId || "").trim();
-  if (!id) return "/admin/leads";
-  return `/admin/leads/${encodeURIComponent(id)}`;
+  if (!id) return "/admin/crm/web";
+  return `/admin/crm/web/${encodeURIComponent(id)}`;
+}
+
+/** 3D print job workspace (same `leads` row, separate admin surface). */
+export function buildPrintLeadPath(leadId: string | null | undefined, businessName: string | null | undefined) {
+  void businessName;
+  const id = String(leadId || "").trim();
+  if (!id) return "/admin/crm/print";
+  return `/admin/crm/print/${encodeURIComponent(id)}`;
 }
 
 export function isUuidLike(value: string | null | undefined): boolean {

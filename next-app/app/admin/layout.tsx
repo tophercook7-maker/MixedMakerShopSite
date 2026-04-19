@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="admin-quick-actions">
-                <Link href="/admin/leads?add=1">
+                <Link href="/admin/crm/web?add=1">
                   <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Add business
                 </Link>

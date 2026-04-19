@@ -9,19 +9,22 @@ import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicShellClass } from "@/lib/public-brand";
 import {
-  mmsBodyFrost,
-  mmsBodyFrostMuted,
-  mmsBullet,
   mmsBtnPrimary,
-  mmsBtnSecondary,
-  mmsCtaPanelHome,
-  mmsEyebrow,
-  mmsGlassPanelDenseHome,
-  mmsH2,
+  mmsBtnSecondaryOnGlass,
+  mmsBulletOnGlass,
+  mmsH2OnGlass,
+  mmsOnGlassCtaRowWrap,
+  mmsSectionEyebrowOnGlass,
+  mmsH3OnGlass,
+  mmsH3OnGlassLg,
+  mmsHomeGlassStackGap,
+  mmsOnGlassPrimary,
+  mmsOnGlassSecondary,
+  mmsOnGlassMuted,
   mmsSectionY,
-  mmsStepCircle,
+  mmsStepCircleOnGlass,
   mmsUmbrellaSectionBackdrop,
-  mmsTextLink,
+  mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
@@ -33,15 +36,15 @@ const homeBackdrop = mmsUmbrellaSectionBackdrop;
 const processSteps = [
   {
     title: "Tell me about your business",
-    body: "Give me a few details and I’ll understand what you actually need.",
+    body: "Share what you sell, who you serve, and what a strong lead looks like for you.",
   },
   {
     title: "I build your preview",
-    body: "I create a homepage-style mockup so you can see the direction.",
+    body: "You get a real homepage-style mockup so you can see layout, tone, and direction before you commit.",
   },
   {
     title: "You decide",
-    body: "If you like it, we move forward. If not, no pressure.",
+    body: "If it fits, we keep going. If not, no pressure.",
   },
 ] as const;
 
@@ -55,62 +58,61 @@ export function UmbrellaHomePage() {
 
         <section className={cn(homeBackdrop)} id="web-design">
           <div className={cn(shell, mmsSectionY)}>
-            <div className={cn(mmsGlassPanelDenseHome, "relative overflow-hidden p-8 sm:p-10 lg:p-12")}>
-              <div
-                className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-[#b85c1e]/10 blur-3xl"
-                aria-hidden
-              />
-              <div className="relative max-w-3xl">
-                <p className={cn(mmsEyebrow, "!text-[#8a4b2a]")}>Web design · primary service</p>
-                <h2 className={cn(mmsH2, "mt-4")}>Web Design by Topher</h2>
-                <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                  You work directly with me to build a website that helps you show up and get calls — clean, trustworthy, and
-                  built around your business. No bloated agency process. No handoffs.
-                </p>
-                <p className={cn("mt-4 text-sm font-medium md:text-[15px]", mmsBodyFrostMuted)}>
-                  Built for local businesses that need to get found, not just look “nice” online.
-                </p>
-                <ul className={cn("mt-9 space-y-3.5 md:text-[17px]", mmsBodyFrost)}>
-                  {[
-                    "Clean, modern design that builds trust fast",
-                    "Built to turn visitors into calls and leads",
-                    "Designed to help you show up when people search locally",
-                    "Straightforward structure so people don’t get lost",
-                    "Ongoing updates and support available if you want it",
-                  ].map((line) => (
-                    <li key={line} className="flex gap-3">
-                      <span className={mmsBullet} aria-hidden>
-                        ·
-                      </span>
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-9">
-                  <PublicCtaRow>
-                    <TrackedPublicLink
-                      href="/examples"
-                      eventName="public_web_design_sample_click"
-                      eventProps={{ location: "home_primary_web", label: "see_examples" }}
-                      className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
-                    >
-                      See My Work
-                    </TrackedPublicLink>
-                  </PublicCtaRow>
-                </div>
+            <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
+              <p className={mmsSectionEyebrowOnGlass}>Lead-focused web design</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Websites that help you win trust—and clients</h2>
+              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                You work directly with me on a site that turns searches and visits into calls and inquiries—clear, credible,
+                and built around how you actually sell. No bloated agency process. No handoffs.
+              </p>
+              <p className={cn("mt-4 text-sm font-medium md:text-[15px]", mmsOnGlassSecondary)}>
+                For local businesses that need more leads and clearer trust—not just a prettier page.
+              </p>
+              <p className={cn("mt-3 text-sm leading-snug md:text-[15px]", mmsOnGlassMuted)}>
+                Perfect for landscapers, local services, contractors, and small businesses that depend on calls, bookings,
+                and trust.
+              </p>
+              <ul className={cn("mt-9 space-y-3.5 md:text-[17px]", mmsOnGlassPrimary)}>
+                {[
+                  "Design that builds trust fast when someone lands on your site",
+                  "Structure built to turn visitors into calls, chats, and form fills",
+                  "Built to help you show up when locals search for what you offer",
+                  "Simple paths so people know what to do next—not bounce",
+                  "Ongoing updates when you want to sharpen conversion over time",
+                ].map((line) => (
+                  <li key={line} className="flex gap-3">
+                    <span className={mmsBulletOnGlass} aria-hidden>
+                      ·
+                    </span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className={mmsOnGlassCtaRowWrap}>
+                <PublicCtaRow>
+                  <TrackedPublicLink
+                    href="/examples"
+                    eventName="public_web_design_sample_click"
+                    eventProps={{ location: "home_primary_web", label: "see_examples" }}
+                    className={cn(mmsBtnSecondaryOnGlass, "px-8 no-underline hover:no-underline")}
+                  >
+                    See My Work
+                  </TrackedPublicLink>
+                </PublicCtaRow>
               </div>
             </div>
           </div>
         </section>
 
         <section className={cn(homeBackdrop, "max-md:bg-[#e8ede8]/90")} id="show-up-google">
-          <div className={cn(shell, "py-14 md:py-20")}>
-            <div className={cn(mmsGlassPanelDenseHome, "mx-auto max-w-3xl p-6 sm:p-8 md:p-10")}>
-              <h2 className={mmsH2}>Want to show up on Google too?</h2>
-              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                I build sites with simple, effective structure so your business has a better chance of being found locally.
+          <div className={cn(shell, mmsSectionY)}>
+            <div className={cn("public-glass-box public-glass-box--pad mx-auto max-w-3xl")}>
+              <h2 className={mmsH2OnGlass}>Get found—then get the call</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                A lot of new business still starts with search. I build clear structure and pages so the right people can find
+                you—and see why you&apos;re the right call.
               </p>
-              <div className="mt-8">
+              <div className={mmsOnGlassCtaRowWrap}>
                 <PublicCtaRow>
                   <TrackedPublicLink
                     href="/free-mockup"
@@ -131,7 +133,7 @@ export function UmbrellaHomePage() {
           immersive
           featuredAnalyticsIds={HOME_PAGE_FEATURED_ANALYTICS_IDS}
           heading="Featured Work"
-          subhead="Examples of sites built to look sharp, load fast, and help your business show up when people search."
+          subhead="Live sites for real businesses—fast, clear, and built to turn visits into leads."
           bottomStripLead={null}
           bottomStripLinkLabel="View All Examples →"
           bottomStripHref="/examples"
@@ -141,17 +143,25 @@ export function UmbrellaHomePage() {
 
         <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#dde8df]")} id="simple-process">
           <div className={cn(shell, mmsSectionY)}>
-            <div className={cn(mmsGlassPanelDenseHome, "max-w-3xl p-6 sm:p-8")}>
-              <h2 className={mmsH2}>Simple Process</h2>
+            <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
+              <h2 className={mmsH2OnGlass}>Simple Process</h2>
+              <p className={cn("mt-3 max-w-2xl text-base leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
+                From your goals to a real preview—straightforward steps, no agency maze.
+              </p>
             </div>
-            <div className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6 lg:mt-12 lg:gap-8">
+            <div
+              className={cn(
+                "grid gap-8 md:grid-cols-3 md:gap-6 lg:gap-8",
+                mmsHomeGlassStackGap,
+              )}
+            >
               {processSteps.map((step, i) => (
-                <div key={step.title} className={cn(mmsGlassPanelDenseHome, "p-7 sm:p-8")}>
-                  <span className={mmsStepCircle} aria-hidden>
+                <div key={step.title} className={cn("public-glass-box--soft public-glass-box--pad")}>
+                  <span className={mmsStepCircleOnGlass} aria-hidden>
                     {i + 1}
                   </span>
-                  <h3 className="text-lg font-bold text-[#1e241f] md:text-xl">{step.title}</h3>
-                  <p className={cn("mt-4 leading-relaxed md:text-[17px]", mmsBodyFrost)}>{step.body}</p>
+                  <h3 className={mmsH3OnGlass}>{step.title}</h3>
+                  <p className={cn("mt-4 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>{step.body}</p>
                 </div>
               ))}
             </div>
@@ -160,29 +170,29 @@ export function UmbrellaHomePage() {
 
         <section className={cn("border-b", homeBackdrop, "max-md:bg-[#dde8df]")}>
           <div className={cn(shell, mmsSectionY)}>
-            <div className={cn(mmsGlassPanelDenseHome, "max-w-3xl p-6 sm:p-8")}>
-              <h2 className={mmsH2}>Other Things I Build</h2>
-              <p className={cn("mt-5 max-w-2xl text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                MixedMakerShop isn’t just websites. I also build practical tools, custom 3D prints, and small digital systems
-                when they actually solve real problems.
+            <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
+              <h2 className={mmsH2OnGlass}>Other Things I Build</h2>
+              <p className={cn("mt-5 max-w-2xl text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                Websites stay the center of what I do. When it genuinely helps your business, I also deliver practical 3D
+                prints and small tools that remove friction and save time.
               </p>
             </div>
-            <div className="mt-10 grid gap-8 lg:grid-cols-2 lg:mt-12">
-              <div className={cn(mmsGlassPanelDenseHome, "p-9 sm:p-10")}>
-                <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">3D Printing</h3>
-                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsBodyFrost)}>
-                  Useful prints like mounts, holders, replacements, and functional designs.
+            <div className={cn("grid gap-8 lg:grid-cols-2", mmsHomeGlassStackGap)}>
+              <div className={cn("public-glass-box--soft public-glass-box--pad")}>
+                <h3 className={mmsH3OnGlassLg}>3D Printing</h3>
+                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
+                  Functional prints—mounts, holders, replacements—when a physical fix keeps your team or customers moving.
                 </p>
-                <Link href="/3d-printing" className={cn(mmsTextLink, "mt-7 inline-block text-[15px]")}>
+                <Link href="/3d-printing" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
                   3D printing →
                 </Link>
               </div>
-              <div className={cn(mmsGlassPanelDenseHome, "p-9 sm:p-10")}>
-                <h3 className="text-xl font-bold text-[#1e241f] md:text-2xl">Builds &amp; Tools</h3>
-                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsBodyFrost)}>
-                  Custom tools, automations, and small systems built for real use.
+              <div className={cn("public-glass-box--soft public-glass-box--pad")}>
+                <h3 className={mmsH3OnGlassLg}>Builds &amp; Tools</h3>
+                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
+                  Small automations and custom tools when they save hours, cut errors, or support how you serve customers.
                 </p>
-                <Link href="/builds" className={cn(mmsTextLink, "mt-7 inline-block text-[15px]")}>
+                <Link href="/builds" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
                   Builds &amp; tools →
                 </Link>
               </div>
@@ -192,18 +202,19 @@ export function UmbrellaHomePage() {
 
         <section className={cn(homeBackdrop, "max-md:bg-[#ece7dd]")} id="about-topher">
           <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-            <div className={cn(mmsGlassPanelDenseHome, "p-8 sm:p-10")}>
-              <h2 className={mmsH2}>About Topher</h2>
-              <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                I’m Topher. I build websites and tools for real businesses that want something simple, clean, and effective.
+            <div className={cn("public-glass-box--soft public-glass-box--pad")}>
+              <h2 className={mmsH2OnGlass}>About Topher</h2>
+              <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                I&apos;m Topher. I build websites and tools for owners who want clarity, credibility, and more real leads—not
+                more complexity.
               </p>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                MixedMakerShop is how I bring everything together — web design first, with 3D printing and custom builds when
-                they actually make sense.
+              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                MixedMakerShop starts with web design and free previews, with 3D printing and custom builds when they
+                genuinely support how you operate.
               </p>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-                You won’t be passed around or stuck dealing with layers of people. You work directly with me from start to
-                finish.
+              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                You won&apos;t get passed around. You work directly with me from first conversation to launch—and beyond if
+                you want it.
               </p>
             </div>
           </div>
@@ -217,15 +228,15 @@ export function UmbrellaHomePage() {
           )}
           id="home-contact"
         >
-          <div className={cn(shell, "py-24 md:py-32")}>
-            <div className={cn(mmsCtaPanelHome, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
-              <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>
-                Want to see what your business could look like online?
+          <div className={cn(shell, mmsSectionY)}>
+            <div className={cn("public-glass-box public-glass-box--pad mx-auto max-w-2xl text-center")}>
+              <h2 className={cn(mmsH2OnGlass, "!text-2xl md:!text-3xl")}>
+                Ready for a site that brings in more leads?
               </h2>
-              <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsBodyFrost)}>
-                I’ll put together a free homepage-style preview so you can see the direction before committing to anything.
+              <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsOnGlassPrimary)}>
+                I&apos;ll build a free homepage-style preview so you can see the direction—then you decide if we keep going.
               </p>
-              <PublicCtaRow align="center" className="mt-10 w-full justify-center">
+              <PublicCtaRow align="center" className={cn(mmsOnGlassCtaRowWrap, "w-full justify-center")}>
                 <TrackedPublicLink
                   href="/free-mockup"
                   eventName="public_contact_cta_click"
@@ -243,15 +254,18 @@ export function UmbrellaHomePage() {
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_cta", target: "contact" }}
                   className={cn(
-                    mmsBtnSecondary,
+                    mmsBtnSecondaryOnGlass,
                     "w-full min-w-[10rem] justify-center px-8 sm:w-auto no-underline hover:no-underline",
                   )}
                 >
                   Contact Me
                 </TrackedPublicLink>
               </PublicCtaRow>
-              <p className={cn("mx-auto mt-4 max-w-lg text-xs font-medium sm:text-sm", mmsBodyFrostMuted)}>
-                No pressure. Just a real preview if you want one.
+              <p className={cn("mx-auto mt-4 max-w-lg text-sm font-medium sm:text-[15px]", mmsOnGlassSecondary)}>
+                If your business depends on calls, bookings, or local visibility—this is built for you.
+              </p>
+              <p className={cn("mx-auto mt-3 max-w-lg text-xs sm:text-sm", mmsOnGlassMuted)}>
+                No pressure—just a clear preview when you&apos;re ready.
               </p>
             </div>
           </div>

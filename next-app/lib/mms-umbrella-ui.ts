@@ -48,6 +48,12 @@ export const mmsStepCircle = cn(
   "bg-[#3f5a47]/12 text-sm font-bold text-[#3f5a47]",
 );
 
+/** Numbered step circle on dark / soft glass (umbrella homepage). */
+export const mmsStepCircleOnGlass = cn(
+  "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-full",
+  "border border-white/18 bg-white/10 text-sm font-bold text-white",
+);
+
 /** Inline text link (leather → orange hover). */
 export const mmsTextLink = cn(
   "text-sm font-semibold text-[#8a4b2a] underline-offset-4",
@@ -142,8 +148,53 @@ export const mmsEyebrowOnGlass = cn(
   "text-[11px] font-semibold uppercase tracking-[0.22em] text-[#eab08a] md:text-xs",
 );
 
+/**
+ * Section label inside boxed glass (`<p>` above `<h2>`) — soft white, wide tracking.
+ * Matches: `text-white/70 text-sm uppercase tracking-[0.18em]`
+ */
+export const mmsSectionEyebrowOnGlass = cn("text-sm uppercase tracking-[0.18em] text-white/70");
+
 export const mmsOnGlassPrimary = "text-white";
 export const mmsOnGlassSecondary = "text-white/80";
+
+/** Fine print / disclaimer lines on dark glass */
+export const mmsOnGlassMuted = "text-white/65";
+
+/** H3 — soft glass cards, process steps, compact titles */
+export const mmsH3OnGlass = cn(
+  "font-bold tracking-tight text-white",
+  "text-lg md:text-xl",
+);
+
+/** H3 — larger service / highlight titles on soft glass */
+export const mmsH3OnGlassLg = cn(
+  "font-bold tracking-tight text-white",
+  "text-xl md:text-2xl",
+);
+
+/**
+ * Umbrella homepage: gap from a glass intro panel to the next row (cards, grid, or media).
+ * Use for consistent vertical rhythm over the immersive background.
+ */
+export const mmsHomeGlassStackGap = "mt-10 md:mt-12";
+
+/** Space after a dense card grid before a footer strip (e.g. featured work → “view all”). */
+export const mmsHomeGlassBlockEndGap = "mt-12 md:mt-16";
+
+/** Top rule + padding only — use after body margin, or compose into `mmsOnGlassCtaRowWrap`. */
+export const mmsOnGlassCtaSeparator = "border-t border-white/10 pt-8";
+
+/**
+ * Separates body copy from a CTA row inside a glass panel (margin + subtle rule + padding).
+ */
+export const mmsOnGlassCtaRowWrap = cn("mt-9", mmsOnGlassCtaSeparator);
+
+/** Hero `<h1>` on dark glass (umbrella / immersive marketing). */
+export const mmsHeroTitleOnGlass = cn(
+  "font-bold tracking-[-0.035em] text-white",
+  "text-[2.125rem] leading-[1.1] sm:text-4xl md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]",
+  "[text-shadow:0_2px_20px_rgba(0,0,0,0.55),0_1px_3px_rgba(0,0,0,0.5)]",
+);
 
 export const mmsBulletOnGlass = "font-bold text-white/80";
 

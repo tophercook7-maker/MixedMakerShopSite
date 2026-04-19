@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
-import { buildLeadPath } from "@/lib/lead-route";
+import { buildPrintLeadPath } from "@/lib/lead-route";
 import { normalizePrintPaymentStatus, PRINT_PAYMENT_STATUS_LABELS } from "@/lib/crm/print-payment";
 import { isFollowUpDueTodayUtc } from "@/lib/crm/simple-lead-status-ui";
 import { LeadServiceTypeBadge } from "@/components/admin/crm/lead-service-type-badge";
@@ -70,7 +70,7 @@ export function ThreeDPrintLeadsList({
   return (
     <ul className="space-y-3 list-none p-0 m-0">
       {leads.map((lead) => {
-        const href = buildLeadPath(lead.id, lead.business_name);
+        const href = buildPrintLeadPath(lead.id, lead.business_name);
         const pay = normalizePrintPaymentStatus(lead.payment_status);
         const busy = busyId === lead.id;
         const lane = resolvePrintUiLane(lead);

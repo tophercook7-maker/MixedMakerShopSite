@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { GripVertical } from "lucide-react";
 import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
-import { buildLeadPath } from "@/lib/lead-route";
+import { buildPrintLeadPath } from "@/lib/lead-route";
 import {
   computePrintJobAmountDueUsd,
   formatUsdAmount,
@@ -95,7 +95,7 @@ function KanbanCard({
   patchLead: (leadId: string, patch: Record<string, unknown>, okMsg: string, log?: string) => Promise<void>;
   onQuotedPaymentRequest?: (lead: WorkflowLead) => void;
 }) {
-  const href = buildLeadPath(lead.id, lead.business_name);
+  const href = buildPrintLeadPath(lead.id, lead.business_name);
   const thumb = lead.print_attachment_url && isPrintAttachmentImageUrl(lead.print_attachment_url) ? lead.print_attachment_url : null;
   const { due, dueKind } = computePrintJobAmountDueUsd(lead);
   const duePrefix = dueKind === "deposit" ? "Dep " : dueKind === "balance" ? "Bal " : dueKind === "full" ? "" : "";

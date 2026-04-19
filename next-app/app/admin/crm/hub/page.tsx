@@ -12,7 +12,7 @@ const crmModules = [
   },
   {
     title: "Leads",
-    href: "/admin/leads",
+    href: "/admin/crm/web",
     description: "Manage inbound and discovered opportunities in one pipeline.",
     icon: Users,
   },
@@ -60,7 +60,7 @@ export default function AdminCrmHubPage() {
             <Link href="/admin/scout/review" className="admin-btn-ghost text-sm shrink-0">
               Scout review queue
             </Link>
-            <Link href="/admin/leads?pool=top_picks" className="admin-btn-ghost text-sm shrink-0">
+            <Link href="/admin/crm/web?pool=top_picks" className="admin-btn-ghost text-sm shrink-0">
               Top Picks (database)
             </Link>
           </div>
@@ -89,22 +89,22 @@ export default function AdminCrmHubPage() {
           Quick workflow views
         </h2>
         <div className="flex flex-wrap gap-2">
-          <Link href="/admin/leads" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/web" className="admin-btn-ghost text-xs">
             All leads
           </Link>
-          <Link href="/admin/leads?queue=attention" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/web?queue=attention" className="admin-btn-ghost text-xs">
             Needs attention
           </Link>
-          <Link href="/admin/leads?follow_up_today=1" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/web?follow_up_today=1" className="admin-btn-ghost text-xs">
             Follow up today
           </Link>
-          <Link href="/admin/leads?queue=new" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/web?queue=new" className="admin-btn-ghost text-xs">
             New leads
           </Link>
-          <Link href="/admin/leads?needs_reply=1" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/web?needs_reply=1" className="admin-btn-ghost text-xs">
             Waiting on reply
           </Link>
-          <Link href="/admin/leads?crm_source=3d_printing" className="admin-btn-ghost text-xs">
+          <Link href="/admin/crm/print" className="admin-btn-ghost text-xs">
             3D print leads
           </Link>
           <Link href="/admin/scout/review" className="admin-btn-ghost text-xs">

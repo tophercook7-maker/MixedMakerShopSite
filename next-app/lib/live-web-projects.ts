@@ -47,7 +47,7 @@ export type ShowcaseProject = {
 export const LIVE_WEB_PROJECTS = [
   {
     title: "Fresh Cut Property Care",
-    tag: "Local Service Business",
+    tag: "Local landscaping",
     showcaseKind: "live",
     audienceLine: "Built for a lawn care business in Hot Springs, Arkansas",
     problemLine: "They needed a clean, trustworthy site that made it easy for customers to request an estimate.",

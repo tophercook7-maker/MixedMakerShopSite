@@ -109,15 +109,107 @@
   color: var(--pub-fg);
 }
 
+/* === GLOBAL PUBLIC BACKGROUND (ALL PAGES) === */
+
+.public-site--immersive {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  /* Swap asset without hunting selectors */
+  --public-workspace-img: url("/images/mixedmaker-workspace-hero.png");
+}
+
+.public-site__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background-color: #0b0f0e;
+  background-image: var(--public-workspace-img);
+  background-size: cover;
+  background-position: 62% 42%;
+  background-repeat: no-repeat;
+
+  filter: brightness(0.9) saturate(0.95);
+}
+
+.public-site__veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  background: linear-gradient(
+    100deg,
+    rgba(5, 6, 8, 0.5) 0%,
+    rgba(8, 9, 11, 0.3) 50%,
+    rgba(10, 11, 12, 0.15) 100%
+  );
+}
+
+.public-site__inner {
+  position: relative;
+  z-index: 2;
+}
+
 /* Umbrella marketing pages (homepage, /examples, …): on md+, drop the solid cream shell so FixedHeroMedia shows through */
 @media (min-width: 768px) {
   .public-site--light-umbrella:has(.home-umbrella-canvas) {
     background-color: transparent;
   }
 
+  /* Don’t stack the global workspace photo under the umbrella hero canvas */
+  .public-site--light-umbrella:has(.home-umbrella-canvas) .public-site__bg,
+  .public-site--light-umbrella:has(.home-umbrella-canvas) .public-site__veil {
+    display: none;
+  }
+
   .public-site--light-umbrella:has(.home-umbrella-canvas) main {
     background-color: transparent;
   }
+}
+
+/* === REUSABLE SEE-THROUGH CONTENT BOXES === */
+
+.public-glass-box {
+  border: 1px solid rgba(232, 149, 92, 0.18);
+
+  background: linear-gradient(
+    180deg,
+    rgba(11, 13, 14, 0.55) 0%,
+    rgba(11, 14, 15, 0.35) 50%,
+    rgba(11, 14, 15, 0.22) 100%
+  );
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  border-radius: 20px;
+}
+
+.public-glass-box--soft {
+  border: 1px solid rgba(232, 149, 92, 0.12);
+
+  background: linear-gradient(
+    180deg,
+    rgba(11, 13, 14, 0.4) 0%,
+    rgba(11, 14, 15, 0.25) 50%,
+    rgba(11, 14, 15, 0.15) 100%
+  );
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border-radius: 18px;
+}
+
+.public-glass-box--pad {
+  padding: 1.5rem;
 }
 
 .public-site--light-umbrella .btn.gold {

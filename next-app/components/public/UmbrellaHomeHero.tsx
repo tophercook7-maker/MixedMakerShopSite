@@ -6,11 +6,13 @@ import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { UmbrellaHeroMedia } from "@/components/public/umbrella-hero-media";
 import {
-  mmsBodyFrost,
   mmsBtnPrimary,
-  mmsBtnSecondary,
-  mmsEyebrow,
-  mmsGlassPanelHero,
+  mmsBtnSecondaryOnGlass,
+  mmsHeroTitleOnGlass,
+  mmsOnGlassCtaSeparator,
+  mmsOnGlassMuted,
+  mmsOnGlassSecondary,
+  mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
@@ -53,62 +55,64 @@ export function UmbrellaHomeHero() {
       >
         <div
           className={cn(
-            mmsGlassPanelHero,
-            "max-w-[36rem] px-5 py-5 sm:px-7 sm:py-7 lg:max-w-[40rem] lg:px-8 lg:py-8",
+            "home-hero-copy-shade public-glass-box public-glass-box--pad max-w-[36rem] lg:max-w-[40rem]",
           )}
         >
-          <motion.p className={cn(mmsEyebrow, "!text-[#8a4b2a]")} {...fadeUp(0)}>
-            Web design · MixedMakerShop
+          <motion.p className={mmsSectionEyebrowOnGlass} {...fadeUp(0)}>
+            MixedMakerShop
           </motion.p>
 
           <motion.h1
-            className="mt-5 font-bold tracking-[-0.035em] text-neutral-950 text-[2.125rem] leading-[1.1] sm:text-4xl md:mt-6 md:text-[2.65rem] md:leading-[1.06] lg:text-[3.15rem]"
+            className={cn(mmsHeroTitleOnGlass, "mt-5 md:mt-6")}
             {...fadeUp(stagger)}
           >
-            Websites that help real businesses look trustworthy and get more calls
+            Your website should be bringing you clients.
           </motion.h1>
 
           <motion.p
-            className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsBodyFrost)}
+            className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2)}
           >
-            I&apos;m Topher, and MixedMakerShop is my studio for practical web design, custom builds, and useful tools —
-            with web design front and center for businesses that need a site that actually works.
+            Custom sites, mockups, and growth tools built to help real businesses get more leads. Built for real
+            businesses—from local services to small teams that rely on calls and leads.
           </motion.p>
 
-          <motion.div className="mt-8 md:mt-9" {...fadeUp(stagger * 3)}>
-            <PublicCtaRow>
-              <TrackedPublicLink
-                href="/free-mockup"
-                eventName="public_contact_cta_click"
-                eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
-                className={cn(
-                  mmsBtnPrimary,
-                  "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
-                )}
-              >
-                Get My Free Preview
-                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-              </TrackedPublicLink>
-              <TrackedPublicLink
-                href="/examples"
-                eventName="public_web_design_sample_click"
-                eventProps={{ location: "home_hero_umbrella", label: "see_examples" }}
-                className={cn(
-                  mmsBtnSecondary,
-                  "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
-                )}
-              >
-                See My Work
-              </TrackedPublicLink>
-            </PublicCtaRow>
+          <motion.div className={cn("mt-8 md:mt-9")} {...fadeUp(stagger * 3)}>
+            <div className={mmsOnGlassCtaSeparator}>
+              <PublicCtaRow>
+                <TrackedPublicLink
+                  href="/free-mockup"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
+                  className={cn(
+                    mmsBtnPrimary,
+                    "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                  )}
+                >
+                  Get My Free Preview
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+                <TrackedPublicLink
+                  href="/examples"
+                  eventName="public_web_design_sample_click"
+                  eventProps={{ location: "home_hero_umbrella", label: "see_examples" }}
+                  className={cn(
+                    mmsBtnSecondaryOnGlass,
+                    "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                  )}
+                >
+                  See My Work
+                </TrackedPublicLink>
+              </PublicCtaRow>
+            </div>
             <p
               className={cn(
-                "mt-4 text-[0.7rem] font-normal leading-relaxed text-neutral-600 md:text-xs",
+                "mt-4 text-[0.7rem] font-normal leading-relaxed md:text-xs",
+                mmsOnGlassMuted,
                 "max-w-[42ch]",
               )}
             >
-              Built directly with me. No fluff. No hard sell.
+              You work with me directly—no layers. Sites built to earn trust and real leads.
             </p>
           </motion.div>
         </div>

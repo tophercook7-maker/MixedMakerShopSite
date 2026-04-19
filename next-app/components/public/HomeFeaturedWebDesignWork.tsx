@@ -21,13 +21,20 @@ import {
   mmsBodyFrostMuted,
   mmsBtnPrimary,
   mmsBtnSecondary,
+  mmsBtnSecondaryOnGlass,
   mmsCard,
   mmsGlassPanelDense,
-  mmsGlassPanelDenseHome,
   mmsH2,
+  mmsH2OnGlass,
+  mmsH3OnGlassLg,
+  mmsHomeGlassBlockEndGap,
+  mmsHomeGlassStackGap,
+  mmsOnGlassCtaSeparator,
+  mmsOnGlassSecondary,
   mmsSectionBorder,
   mmsSectionY,
   mmsTextLink,
+  mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
 import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
@@ -64,20 +71,24 @@ function selectProjects(featuredAnalyticsIds?: readonly string[]): AnyShowcasePr
   return getShowcaseProjectsByAnalyticsIds(featuredAnalyticsIds);
 }
 
-const tagPill = (isLight: boolean) =>
+const tagPill = (isLight: boolean, immersive?: boolean) =>
   cn(
     "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
-    isLight
-      ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
-      : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
+    immersive && isLight
+      ? "border-white/22 bg-white/10 text-[#c5ddd2]"
+      : isLight
+        ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
+        : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
   );
 
-const featuredPill = (isLight: boolean) =>
+const featuredPill = (isLight: boolean, immersive?: boolean) =>
   cn(
     "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
-    isLight
-      ? "border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 text-[#8a4b2a]"
-      : "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]",
+    immersive && isLight
+      ? "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]"
+      : isLight
+        ? "border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 text-[#8a4b2a]"
+        : "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]",
   );
 
 function BrowserShowcasePreview({
@@ -164,8 +175,10 @@ export function HomeFeaturedWebDesignWork({
   const projects = selectProjects(featuredAnalyticsIds);
   const projectCount = projects.length;
   const isLight = variant === "light";
-  const h2 = isLight ? mmsH2 : h2Dark;
-  const body = isLight ? (immersive ? mmsBodyFrost : bodyLight) : bodyDark;
+  /** Soft glass cards use dark-on-glass copy tokens from showcase helpers */
+  const showcaseVariant = isLight && !immersive ? "light" : "dark";
+  const h2 = isLight ? (immersive ? mmsH2OnGlass : mmsH2) : h2Dark;
+  const body = isLight ? (immersive ? mmsOnGlassSecondary : bodyLight) : bodyDark;
   const sectionClass = isLight
     ? cn(
         immersive
@@ -190,7 +203,7 @@ export function HomeFeaturedWebDesignWork({
         <div
           className={cn(
             "home-reveal max-w-[min(100%,56rem)]",
-            immersive && isLight && cn(mmsGlassPanelDenseHome, "p-6 sm:p-8 md:p-9"),
+            immersive && isLight && cn("public-glass-box public-glass-box--pad"),
           )}
         >
           <h2
@@ -212,7 +225,8 @@ export function HomeFeaturedWebDesignWork({
 
         <div
           className={cn(
-            "home-reveal mt-14 grid grid-cols-1 gap-12 md:mt-16 md:gap-16 lg:gap-20",
+            "home-reveal grid grid-cols-1 gap-12 md:gap-16 lg:gap-20",
+            immersive && isLight ? mmsHomeGlassStackGap : "mt-14 md:mt-16",
             projectCount === 1 && "md:mx-auto md:max-w-4xl",
             projectCount === 2 && "md:grid-cols-2",
             projectCount >= 3 && "md:grid-cols-2 lg:grid-cols-3",
@@ -225,11 +239,15 @@ export function HomeFeaturedWebDesignWork({
                 "flex min-w-0 flex-col gap-6",
                 isLight &&
                   cn(
-                    immersive ? mmsGlassPanelDenseHome : mmsCard,
-                    "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]",
+                    immersive
+                      ? "public-glass-box--soft public-glass-box--pad hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(0,0,0,0.35)]"
+                      : cn(
+                          mmsCard,
+                          "p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(30,36,31,0.24)]",
+                        ),
                     project.emphasizeCard &&
                       immersive &&
-                      "ring-2 ring-[#b85c1e]/28 shadow-[0_28px_72px_-34px_rgba(184,92,30,0.24)] md:ring-[#b85c1e]/22",
+                      "ring-2 ring-[#eab08a]/35 shadow-[0_28px_72px_-34px_rgba(0,0,0,0.45)] md:ring-[#eab08a]/28",
                   ),
               )}
             >
@@ -261,24 +279,24 @@ export function HomeFeaturedWebDesignWork({
 
               <div className="flex flex-col gap-3 px-0.5">
                 <div className="flex flex-wrap gap-2">
-                  <span className={tagPill(isLight)}>{project.tag}</span>
+                  <span className={tagPill(isLight, immersive)}>{project.tag}</span>
                   {project.featuredBadge ? (
-                    <span className={featuredPill(isLight)}>{project.featuredBadge}</span>
+                    <span className={featuredPill(isLight, immersive)}>{project.featuredBadge}</span>
                   ) : null}
                 </div>
                 <h3
                   className={cn(
-                    "text-xl font-bold tracking-tight md:text-2xl lg:text-[1.65rem]",
-                    isLight ? "text-[#1e241f]" : "text-[#E8FDF5]",
+                    "tracking-tight lg:text-[1.65rem]",
+                    isLight ? (immersive ? mmsH3OnGlassLg : "text-xl font-bold text-[#1e241f] md:text-2xl") : "text-xl font-bold text-[#E8FDF5] md:text-2xl",
                   )}
                 >
                   {project.title}
                 </h3>
-                <ShowcaseCaseStudyBeforePrimary project={project} variant={isLight ? "light" : "dark"} />
+                <ShowcaseCaseStudyBeforePrimary project={project} variant={showcaseVariant} />
                 <p
                   className={cn(
                     "text-[15px] font-semibold leading-snug md:text-base",
-                    isLight ? "text-[#2d3a33]" : "text-[#E8FDF5]/95",
+                    isLight ? (immersive ? "text-[#E8FDF5]/95" : "text-[#2d3a33]") : "text-[#E8FDF5]/95",
                   )}
                 >
                   {project.primaryLine}
@@ -287,14 +305,19 @@ export function HomeFeaturedWebDesignWork({
                   <p
                     className={cn(
                       "text-sm leading-relaxed md:text-[15px]",
-                      isLight && immersive ? mmsBodyFrostMuted : isLight ? mmsBodyFrost : body,
+                      isLight && immersive ? mmsOnGlassSecondary : isLight ? mmsBodyFrost : body,
                     )}
                   >
                     {project.context}
                   </p>
                 ) : null}
-                <ShowcaseCaseStudyAfterContext project={project} variant={isLight ? "light" : "dark"} />
-                <PublicCtaRow className="pt-2">
+                <ShowcaseCaseStudyAfterContext project={project} variant={showcaseVariant} />
+                <div
+                  className={cn(
+                    isLight && immersive ? cn(mmsOnGlassCtaSeparator, "pt-5") : "pt-2",
+                  )}
+                >
+                  <PublicCtaRow>
                   {project.primaryCtaIsExternal === false ? (
                     <Link
                       href={project.url}
@@ -352,14 +375,17 @@ export function HomeFeaturedWebDesignWork({
                     className={cn(
                       "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-center text-[0.9375rem] font-semibold leading-snug no-underline sm:flex-initial sm:min-w-[11rem]",
                       isLight
-                        ? cn(mmsBtnSecondary, "rounded-xl")
+                        ? immersive
+                          ? cn(mmsBtnSecondaryOnGlass, "rounded-xl")
+                          : cn(mmsBtnSecondary, "rounded-xl")
                         : "home-btn-secondary--hero rounded-xl",
                     )}
                   >
                     {getShowcaseSecondaryCtaLabel(project)}
                     <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden />
                   </Link>
-                </PublicCtaRow>
+                  </PublicCtaRow>
+                </div>
               </div>
             </article>
           ))}
@@ -367,18 +393,19 @@ export function HomeFeaturedWebDesignWork({
 
         <div
           className={cn(
-            "home-reveal mt-16 md:mt-20",
+            "home-reveal",
+            isLight && immersive ? mmsHomeGlassBlockEndGap : "mt-16 md:mt-20",
             isLight &&
               immersive &&
               bottomStripLead !== null &&
               cn(
-                mmsGlassPanelDenseHome,
-                "flex flex-col gap-4 p-6 sm:p-8 md:flex-row md:items-center md:justify-between",
+                "public-glass-box--soft public-glass-box--pad",
+                "flex flex-col gap-4 md:flex-row md:items-center md:justify-between",
               ),
             isLight &&
               immersive &&
               bottomStripLead === null &&
-              cn(mmsGlassPanelDenseHome, "flex justify-center p-6 sm:p-8"),
+              cn("public-glass-box--soft public-glass-box--pad", "flex justify-center"),
             (!immersive || !isLight) &&
               cn(
                 bottomStripLead !== null &&
@@ -392,7 +419,7 @@ export function HomeFeaturedWebDesignWork({
             <p
               className={cn(
                 "max-w-xl text-sm md:text-[15px]",
-                isLight && immersive ? mmsBodyFrostMuted : body,
+                isLight && immersive ? mmsOnGlassSecondary : body,
               )}
             >
               {bottomStripLead === undefined ? defaultBottomStripLead : bottomStripLead}
@@ -402,7 +429,9 @@ export function HomeFeaturedWebDesignWork({
             href={bottomStripHref}
             className={cn(
               isLight
-                ? mmsTextLink
+                ? immersive
+                  ? mmsTextLinkOnGlass
+                  : mmsTextLink
                 : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
               bottomStripLead === null && "text-base font-semibold",
             )}

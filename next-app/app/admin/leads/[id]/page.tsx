@@ -667,12 +667,17 @@ export default async function AdminLeadDetailPage({
         </p>
         <SaveLocalLeadToWorkspace localLeadId={targetId} redirectQuery={redirectQuery} />
         <div className="mt-4 flex gap-2">
-          <Link href="/admin/leads" className="admin-btn-primary">
-            Back to Leads
+          <Link href="/admin/crm/web" className="admin-btn-primary">
+            Back to Web CRM
           </Link>
         </div>
       </section>
     );
+  }
+
+  if (isUuidLike(targetId)) {
+    const qs = redirectQuery ? `?${redirectQuery}` : "";
+    redirect(`/admin/crm/web/${encodeURIComponent(targetId)}${qs}`);
   }
 
   const loadWarnings: string[] = [];

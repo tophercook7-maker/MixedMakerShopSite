@@ -17,7 +17,7 @@ export function saveLeadsListReturnContext() {
 /** Only the list route (`/admin/leads` + query), not a lead workspace path. */
 export function isStoredLeadsListHref(raw: string): boolean {
   const path = raw.split("?")[0].split("#")[0];
-  return path === "/admin/leads";
+  return path === "/admin/leads" || path === "/admin/crm/web" || path === "/admin/crm/print";
 }
 
 type Props = ComponentPropsWithoutRef<typeof Link> & {
