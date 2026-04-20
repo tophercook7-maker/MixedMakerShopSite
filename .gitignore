@@ -13,3 +13,12 @@ next-app/.env.local
 
 # Nested repo: Scout Brain (separate origin)
 Massive_Brain/scout-brain/
+
+# Finder duplicate exports (accidental copies next to real files)
+**/* 2.tsx
+**/* 2.ts
+**/* 2.jsx
+**/* 2.js
+
+# Local project dump / scratch (not part of this app)
+mixedmakershop/
