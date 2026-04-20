@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
 
 export function PublicFooter() {
   return (
@@ -19,8 +19,8 @@ export function PublicFooter() {
             </p>
             <p className="small" style={{ marginTop: 6 }}>Topher@mixedmakershop.com</p>
             <p className="small" style={{ marginTop: 10 }}>
-              <a href="https://share.google.com/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener noreferrer">
-                Find MixedMakerShop on Google
+              <a href={publicGoogleMapsSearchHref} target="_blank" rel="noopener noreferrer">
+                Open in Google Maps
               </a>
             </p>
           </div>
@@ -56,33 +56,61 @@ export function PublicFooter() {
             </ul>
           </div>
         </div>
-        <div className="small" style={{ marginTop: 20, lineHeight: 1.55 }}>
-          <Link href="/">Home</Link>
-          {" · "}
-          <Link href="/web-design">Web Design</Link>
-          {" · "}
-          <Link href="/examples">Examples</Link>
-          {" · "}
-          <Link href="/3d-printing">3D Printing</Link>
-          {" · "}
-          <Link href="/tools">Tools</Link>
-          {" · "}
-          <Link href="/ad-lab">Ad Lab</Link>
-          {" · "}
-          <Link href="/about">About</Link>
-          {" · "}
-          <TrackedPublicLink
-            href="/contact"
-            eventName="public_contact_cta_click"
-            eventProps={{ location: "footer" }}
-          >
-            Contact
-          </TrackedPublicLink>
-          {" · "}
-          <Link href={publicFreeMockupFunnelHref}>Free Preview</Link>
-          {" · "}
-          <Link href="/website-roast">Website Roast</Link>
-        </div>
+
+        <nav className="footer-sitemap" aria-label="Site overview">
+          <div className="footer-sitemap__group">
+            <p className="footer-sitemap__label">Explore</p>
+            <div className="footer-sitemap__links">
+              <Link href="/">Home</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href="/web-design">Web Design</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href="/examples">Examples</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href="/3d-printing">3D Printing</Link>
+            </div>
+          </div>
+          <div className="footer-sitemap__group">
+            <p className="footer-sitemap__label">Tools &amp; labs</p>
+            <div className="footer-sitemap__links">
+              <Link href="/tools">Tools</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href="/ad-lab">Ad Lab</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href="/website-roast">Website Roast</Link>
+            </div>
+          </div>
+          <div className="footer-sitemap__group">
+            <p className="footer-sitemap__label">Studio</p>
+            <div className="footer-sitemap__links">
+              <Link href="/about">About</Link>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <TrackedPublicLink
+                href="/contact"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "footer" }}
+              >
+                Contact
+              </TrackedPublicLink>
+              <span className="footer-sitemap__sep" aria-hidden>
+                ·
+              </span>
+              <Link href={publicFreeMockupFunnelHref}>Free Preview</Link>
+            </div>
+          </div>
+        </nav>
       </div>
     </footer>
   );

@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Layers } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
@@ -28,7 +29,7 @@ import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
 
-const pageBand = cn("border-b", mmsSectionBorder, "max-md:bg-[#ece7dd]/95", "md:bg-transparent");
+const pageBand = cn("border-b", mmsSectionBorder, "max-md:bg-[#0f100e]/96", "md:bg-transparent");
 
 function contactNeedHref(need: string) {
   return `/contact?need=${encodeURIComponent(need)}`;
@@ -36,6 +37,11 @@ function contactNeedHref(need: string) {
 
 const STRAINSPOTTER_VIDEO_SRC = "/videos/strainspotter_ad_v2.mp4";
 const STRAINSPOTTER_VIDEO_FILENAME = "strainspotter_ad_v2.mp4";
+const STRAINSPOTTER_SCANNER_STILL_SRC = "/images/showcase/strainspotter-scanner.png";
+
+const HENRY_AI_HOME_SRC = "/images/showcase/henry-ai-home.png";
+const HENRY_AI_MODES_SRC = "/images/showcase/henry-ai-modes.png";
+const HENRY_AI_COST_DASHBOARD_SRC = "/images/showcase/henry-ai-cost-dashboard.png";
 
 const strainspotterVideoAbs = path.join(
   process.cwd(),
@@ -119,7 +125,7 @@ function WebProjectQuickCard({ project }: { project: LiveWebProject }) {
 
 export function BuildsPage() {
   return (
-    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
       <FixedHeroMedia />
       <div className="relative z-[5] w-full">
         <section className={pageBand} aria-labelledby="builds-page-title">
@@ -276,6 +282,7 @@ export function BuildsPage() {
                             loop
                             playsInline
                             preload="metadata"
+                            poster={STRAINSPOTTER_SCANNER_STILL_SRC}
                             aria-label="StrainSpotter — scanner and UI preview"
                           >
                             <source src={STRAINSPOTTER_VIDEO_SRC} type="video/mp4" />
@@ -286,11 +293,24 @@ export function BuildsPage() {
                         </p>
                       </div>
                     ) : (
-                      <VisualProofPlaceholder
-                        title="Motion preview"
-                        description="A short product clip can be published here to highlight the scanner and UI flow."
-                        className="min-h-[220px] sm:min-h-[240px]"
-                      />
+                      <div
+                        className={cn(
+                          "overflow-hidden rounded-[1.15rem] border border-[#3f5a47]/20",
+                          "bg-[#1e241f]/95 shadow-[0_28px_64px_-28px_rgba(30,36,31,0.45)] ring-1 ring-[#b85c1e]/18",
+                        )}
+                      >
+                        <Image
+                          src={STRAINSPOTTER_SCANNER_STILL_SRC}
+                          alt="StrainSpotter — Scanner upload flow and Garden tools (product screenshot)"
+                          width={880}
+                          height={340}
+                          className="h-auto w-full object-cover"
+                          sizes="(min-width: 1024px) 520px, 100vw"
+                        />
+                        <p className="border-t border-[#3f5a47]/12 bg-[#1a221e]/90 px-4 py-3 text-center text-[11px] font-medium text-[#e8e0d6]">
+                          StrainSpotter — product preview (still)
+                        </p>
+                      </div>
                     )}
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <VisualProofPlaceholder
@@ -337,28 +357,63 @@ export function BuildsPage() {
                 )}
               >
                 <div className="grid gap-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)] lg:gap-14 lg:items-start">
-                  <div className="min-w-0 lg:order-1">
-                    <div
+                  <div className="min-w-0 space-y-4 lg:order-1">
+                    <figure
                       className={cn(
-                        mmsGlassPanelDense,
-                        "relative flex min-h-[260px] flex-col justify-center gap-4 overflow-hidden p-8 sm:min-h-[280px] sm:p-10",
-                        "bg-gradient-to-br from-[#fbf9f4] via-[#f2efe8] to-[#e8efe8]/95",
+                        "overflow-hidden rounded-[1.15rem] border border-[#3f5a47]/18",
+                        "bg-[#0a0c10] shadow-[0_28px_64px_-28px_rgba(0,0,0,0.45)] ring-1 ring-white/[0.06]",
                       )}
                     >
-                      <span
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#3f5a47]/14 bg-white/70 text-[#3f5a47] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]"
-                        aria-hidden
+                      <Image
+                        src={HENRY_AI_HOME_SRC}
+                        alt="Henry AI — home screen with starter actions and chat entry"
+                        width={1024}
+                        height={634}
+                        className="h-auto w-full object-cover object-top"
+                        sizes="(min-width: 1024px) min(520px, 48vw), 100vw"
+                        priority
+                      />
+                      <figcaption className="border-t border-white/[0.06] bg-[#12151c]/95 px-4 py-2.5 text-center text-[11px] font-medium text-[#c8d0dc]">
+                        Home · starter actions
+                      </figcaption>
+                    </figure>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <figure
+                        className={cn(
+                          "overflow-hidden rounded-xl border border-[#3f5a47]/16",
+                          "bg-[#0a0c10] shadow-md ring-1 ring-white/[0.05]",
+                        )}
                       >
-                        <Layers className="h-6 w-6 opacity-90" strokeWidth={2} />
-                      </span>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8a4b2a]">Henry AI</p>
-                      <p className="text-lg font-semibold leading-snug text-[#1e241f] md:text-xl">
-                        Workspace, assistant, and systems — built as one coherent product story.
-                      </p>
-                      <p className="text-sm leading-relaxed text-[#354239] md:text-[15px]">
-                        Screenshots and walkthrough media can be shared on request for serious projects. The spotlight here is
-                        intent, depth, and how the pieces connect — not a wireframe dump.
-                      </p>
+                        <Image
+                          src={HENRY_AI_MODES_SRC}
+                          alt="Henry AI — Modes screen with built-in operating modes"
+                          width={1024}
+                          height={631}
+                          className="h-auto w-full object-cover object-top"
+                          sizes="(min-width: 640px) 260px, 100vw"
+                        />
+                        <figcaption className="border-t border-white/[0.06] bg-[#12151c]/95 px-3 py-2 text-center text-[10px] font-medium text-[#aeb8c4]">
+                          Modes
+                        </figcaption>
+                      </figure>
+                      <figure
+                        className={cn(
+                          "overflow-hidden rounded-xl border border-[#3f5a47]/16",
+                          "bg-[#0a0c10] shadow-md ring-1 ring-white/[0.05]",
+                        )}
+                      >
+                        <Image
+                          src={HENRY_AI_COST_DASHBOARD_SRC}
+                          alt="Henry AI — Cost Dashboard for AI provider spend"
+                          width={1024}
+                          height={631}
+                          className="h-auto w-full object-cover object-top"
+                          sizes="(min-width: 640px) 260px, 100vw"
+                        />
+                        <figcaption className="border-t border-white/[0.06] bg-[#12151c]/95 px-3 py-2 text-center text-[10px] font-medium text-[#aeb8c4]">
+                          Cost dashboard
+                        </figcaption>
+                      </figure>
                     </div>
                   </div>
 

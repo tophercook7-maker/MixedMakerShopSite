@@ -4,7 +4,7 @@ import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-c
 import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupOnPageHash, publicShellClass } from "@/lib/public-brand";
-import { mmsBulletOnGlass, mmsOnGlassSecondary, mmsSectionY, mmsUmbrellaSectionBackdrop } from "@/lib/mms-umbrella-ui";
+import { mmsBulletOnGlass, mmsOnGlassSecondary, mmsSectionY, mmsUmbrellaSectionBackdropImmersive } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
 const canonical = "https://mixedmakershop.com/free-mockup";
@@ -53,12 +53,12 @@ export default async function FreeMockupPage({
   const isFreshCutFunnel = funnelSource === "freshcut";
 
   return (
-    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
       <FixedHeroMedia />
 
       <div className="relative z-[5] w-full">
         {/* Hero — high-confidence offer, readable above the fold */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, "py-12 md:py-16 lg:py-20")}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className="text-white/70 text-sm uppercase tracking-[0.18em]">Free website preview</p>
@@ -83,7 +83,7 @@ export default async function FreeMockupPage({
         </section>
 
         {/* Form intro — directly above intake */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, "flex flex-col gap-4 pb-10 pt-2 md:gap-5 md:pb-12 md:pt-0")}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className="text-white text-xl font-semibold">Before you start</h2>
@@ -133,7 +133,7 @@ export default async function FreeMockupPage({
         <FreeMockupFunnelClient funnelSource={funnelSource} />
 
         {/* How it works — after form so the top stays hero → intro → form */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, "py-14 md:py-20")}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className="text-lg font-bold tracking-tight text-white md:text-xl">How it works</h2>
@@ -151,7 +151,7 @@ export default async function FreeMockupPage({
         </section>
 
         {/* Why preview + trust */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, "flex flex-col gap-6 py-14 md:py-20")}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className="text-lg font-bold tracking-tight text-white md:text-xl">Why start with the preview?</h2>
@@ -177,7 +177,7 @@ export default async function FreeMockupPage({
         </section>
 
         {/* Reassurance right before final decision CTA */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, "pb-6 md:pb-8")}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className="text-white text-xl font-semibold">Good to know</h2>
@@ -212,7 +212,7 @@ export default async function FreeMockupPage({
         </section>
 
         {/* Closing CTA */}
-        <section className={cn(mmsUmbrellaSectionBackdrop, "border-b-0")}>
+        <section className={cn(mmsUmbrellaSectionBackdropImmersive, "border-b-0")}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-2xl">
               <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">

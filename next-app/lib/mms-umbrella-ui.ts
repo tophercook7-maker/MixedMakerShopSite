@@ -74,6 +74,14 @@ export const mmsUmbrellaSectionBackdrop = cn(
   "md:bg-transparent",
 );
 
+/** Immersive umbrella pages (Ad Lab, Tools, Builds, …): dark mobile band + light inherited text; homepage keeps `mmsUmbrellaSectionBackdrop`. */
+export const mmsUmbrellaSectionBackdropImmersive = cn(
+  "border-b",
+  mmsSectionBorder,
+  "max-md:bg-[#0f100e]",
+  "md:bg-transparent",
+);
+
 /** Primary CTA — burnt orange / leather, restrained depth. */
 export const mmsBtnPrimary = cn(
   "inline-flex min-h-[3rem] items-center justify-center rounded-xl",

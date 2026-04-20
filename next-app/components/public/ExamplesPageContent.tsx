@@ -34,7 +34,7 @@ import {
   mmsSectionY,
   mmsTextLink,
   mmsTextLinkOnGlass,
-  mmsUmbrellaSectionBackdrop,
+  mmsUmbrellaSectionBackdropImmersive,
 } from "@/lib/mms-umbrella-ui";
 import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
 import {
@@ -218,7 +218,7 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
 
 export function ExamplesPageContent() {
   return (
-    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
       <FixedHeroMedia />
       <div className="relative z-[5] w-full">
         {/* HERO — same umbrella + glass rhythm as homepage */}
@@ -290,7 +290,7 @@ export function ExamplesPageContent() {
         </section>
 
         {/* REAL WORK */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
           <h2 className={mmsH2} id="real-work">
             Real Work
@@ -342,7 +342,7 @@ export function ExamplesPageContent() {
         </section>
 
         {/* CONVERSION BRIDGE */}
-        <section className={mmsUmbrellaSectionBackdrop} aria-labelledby="examples-bridge-title">
+        <section className={mmsUmbrellaSectionBackdropImmersive} aria-labelledby="examples-bridge-title">
           <div className={cn(shell, mmsSectionY)}>
             <div className="max-w-2xl border-t border-[#3f5a47]/12 pt-10">
               <h2 id="examples-bridge-title" className="sr-only">
@@ -368,7 +368,7 @@ export function ExamplesPageContent() {
         </section>
 
         {/* CONCEPT BUILDS */}
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
           <h2 className={mmsH2} id="concept-builds">
             Concept Builds
@@ -405,13 +405,7 @@ export function ExamplesPageContent() {
         </section>
 
         {/* FINAL CTA — dark glass, conversion-focused */}
-        <section
-          className={cn(
-            "border-t",
-            mmsUmbrellaSectionBackdrop,
-            "max-md:bg-gradient-to-b max-md:from-[#e8e3da] max-md:to-[#dcd6cc]",
-          )}
-        >
+        <section className={cn("border-t", mmsUmbrellaSectionBackdropImmersive)}>
           <div className={cn(shell, "py-24 md:py-32")}>
             <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl text-center sm:px-2">
               <h2 className={cn(mmsH2OnGlass, "!text-2xl md:!text-3xl")}>See a direction you like?</h2>

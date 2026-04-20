@@ -79,6 +79,7 @@ export function PublicNav() {
               {item.label}
             </Link>
           ))}
+          <span className="nav-cta-divider" aria-hidden="true" />
           <Link
             href={publicFreeMockupFunnelHref}
             className="pill cta"

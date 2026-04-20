@@ -16,7 +16,7 @@ import {
   mmsSectionEyebrowOnGlass,
   mmsTextLinkOnGlass,
   mmsSectionY,
-  mmsUmbrellaSectionBackdrop,
+  mmsUmbrellaSectionBackdropImmersive,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
@@ -54,11 +54,11 @@ export const metadata: Metadata = {
 
 export default function ToolsPage() {
   return (
-    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
       <FixedHeroMedia />
 
       <div className="relative z-[5] w-full">
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Apps &amp; Tools</p>
@@ -76,7 +76,7 @@ export default function ToolsPage() {
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>What can be built</h2>
@@ -94,7 +94,7 @@ export default function ToolsPage() {
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>Why this matters</h2>
@@ -119,7 +119,7 @@ export default function ToolsPage() {
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>Who this is good for</h2>
@@ -137,7 +137,7 @@ export default function ToolsPage() {
           </div>
         </section>
 
-        <section className={cn(mmsUmbrellaSectionBackdrop, "border-b-0")}>
+        <section className={cn(mmsUmbrellaSectionBackdropImmersive, "border-b-0")}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>Need something custom?</h2>

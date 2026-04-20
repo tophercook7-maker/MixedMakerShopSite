@@ -101,8 +101,9 @@ export const LIVE_WEB_PROJECTS = [
     showcaseKind: "live",
     primaryLine: "Web app built for a clear path from question to useful answers",
     context: "Product-style UI with room to grow — see Builds for the full story.",
-    previewSrc: "/images/mixedmakershop-umbrella-brand-hero.png",
-    previewAlt: "StrainSpotter — product-style web app build by Topher (placeholder scene until a dedicated screenshot is added)",
+    previewSrc: "/images/showcase/strainspotter-scanner.png",
+    previewAlt:
+      "StrainSpotter — Scanner upload flow with photo tips and Garden tools section (product screenshot)",
     hostname: "strainspotter.app",
     url: "https://strainspotter.replit.app",
     analyticsId: "strainspotter",
@@ -121,8 +122,9 @@ export const HENRY_AI_SHOWCASE_PROJECT = {
   primaryLine:
     "Example layout showing how a service business can look clean and trustworthy online",
   context: "Built to demonstrate structure, flow, and conversion-focused design.",
-  previewSrc: "/images/mixedmaker-workspace-hero.png",
-  previewAlt: "Henry AI — workspace and tools concept by Topher",
+  previewSrc: "/images/showcase/henry-ai-home.png",
+  previewAlt:
+    "Henry AI — home screen with starter actions, modes, and workspace tools (product screenshot)",
   hostname: "mixedmakershop.com",
   url: "/builds#build-spotlight-henry",
   analyticsId: "henry_ai",

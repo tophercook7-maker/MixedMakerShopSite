@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
@@ -17,32 +18,72 @@ import {
   mmsSectionEyebrowOnGlass,
   mmsSectionY,
   mmsTextLinkOnGlass,
-  mmsUmbrellaSectionBackdrop,
+  mmsUmbrellaSectionBackdropImmersive,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
 
-const adTypes = [
+type FeaturedAd = {
+  id: string;
+  title: string;
+  src: string;
+  width: number;
+  height: number;
+  purpose: string;
+  bestFor: string;
+};
+
+const featuredAds: readonly FeaturedAd[] = [
   {
-    title: "Local service ad concepts",
-    body: "Simple hooks and visuals for call-driven businesses like lawn care, cleaning, trades, and local home services.",
+    id: "fresh-cut-before-after",
+    title: "Fresh Cut before / after ad",
+    src: "/images/ads/freshcut-before-after.jpg",
+    width: 682,
+    height: 1024,
+    purpose:
+      "Built to grab attention fast with a rough-vs-clean visual and a direct promise people understand immediately.",
+    bestFor: "Facebook ads, local service promos, fast lead generation",
   },
   {
-    title: "Website redesign ads",
-    body: "Before-and-after style concept directions that highlight trust, clarity, and stronger first impressions.",
+    id: "fresh-cut-services",
+    title: "Fresh Cut services ad",
+    src: "/images/ads/freshcut-services.jpg",
+    width: 1024,
+    height: 682,
+    purpose:
+      "Built to quickly show services, free estimates, and a clear way to contact without making people guess.",
+    bestFor: "Local service pages, seasonal promos, mobile-first campaigns",
   },
   {
-    title: "Free preview / mockup ads",
-    body: "Offer-led concepts that invite prospects to start low-risk and see a direction before committing.",
+    id: "website-customer-getting",
+    title: "Website customer-getting ad",
+    src: "/images/ads/website-customers.jpg",
+    width: 682,
+    height: 1024,
+    purpose:
+      "Built to sell the outcome in plain English: more customers, more calls, and a site that actually works.",
+    bestFor: "Website offers, package explainers, local awareness",
   },
   {
-    title: "Tool and app promo concepts",
-    body: "Messaging angles for practical internal tools, lightweight systems, or customer-facing helpers.",
+    id: "website-before-after",
+    title: "Website before / after ad",
+    src: "/images/ads/website-before-after.jpg",
+    width: 682,
+    height: 1024,
+    purpose:
+      "Built to show the difference between being invisible online and having a site that helps people find and call you.",
+    bestFor: "Redesign pitches, credibility, comparison-style social ads",
   },
   {
-    title: "Seasonal or offer-based ads",
-    body: "Campaign directions built around timing, urgency windows, or focused promotions without hype.",
+    id: "scrap-metal",
+    title: "Scrap metal pickup ad",
+    src: "/images/ads/scrap-metal.jpg",
+    width: 682,
+    height: 1024,
+    purpose:
+      "Built with a tougher, high-energy style to match the service and stop the scroll fast.",
+    bestFor: "Industrial or haul-away services, bold feed placements",
   },
 ] as const;
 
@@ -52,19 +93,42 @@ const whyItMatters = [
   "A strong concept makes it easier for people to understand why they should act now.",
 ] as const;
 
+function AdShowcaseCard({ ad }: { ad: FeaturedAd }) {
+  return (
+    <article className="public-glass-box--soft public-glass-box--pad flex flex-col gap-4">
+      <h3 className="text-lg font-semibold tracking-tight text-white">{ad.title}</h3>
+      <div className="overflow-hidden rounded-xl bg-black/35 ring-1 ring-white/[0.08]">
+        <Image
+          src={ad.src}
+          alt={ad.title}
+          width={ad.width}
+          height={ad.height}
+          className="h-auto w-full object-cover object-top"
+          sizes="(min-width: 768px) 45vw, 100vw"
+        />
+      </div>
+      <p className={cn("text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>{ad.purpose}</p>
+      <p className={cn("text-[13px] leading-snug", mmsOnGlassMuted)}>
+        <span className="font-semibold text-white/75">Best for: </span>
+        {ad.bestFor}
+      </p>
+    </article>
+  );
+}
+
 export const metadata: Metadata = {
   title: "Ad Lab | MixedMakerShop",
   description:
-    "Ad concepts, promo ideas, and practical marketing directions for real businesses. Built to support trust, clarity, and lead generation.",
+    "Real ad examples and campaign concepts for local businesses—clear offers, strong visuals, and obvious next steps.",
 };
 
 export default function AdLabPage() {
   return (
-    <div className="home-umbrella-canvas relative w-full antialiased text-[#2f3e34]">
+    <div className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
       <FixedHeroMedia />
 
       <div className="relative z-[5] w-full">
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Ad Lab</p>
@@ -72,17 +136,16 @@ export default function AdLabPage() {
                 Ad concepts built to help businesses get noticed.
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                This is where promo ideas, ad directions, and campaign concepts live. It supports websites, offers, local
-                business campaigns, and practical growth ideas without overhype.
+                Promo angles, ad directions, and campaign concepts—aligned with real offers and pages, not hype.
               </p>
               <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                The ad gets attention. The page turns that attention into action.
+                The ad earns attention; your site turns it into the next step.
               </p>
             </div>
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>What this page is</h2>
@@ -116,44 +179,51 @@ export default function AdLabPage() {
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
-            <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <h2 className={mmsH2OnGlass}>Example ad types</h2>
-              <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                Concept categories—framed as practical directions, not fake finished campaigns.
+            <div className="public-glass-box public-glass-box--pad max-w-4xl">
+              <h2 className={mmsH2OnGlass}>Real ad examples</h2>
+              <p className={cn("mt-4 text-base leading-relaxed md:text-[17px]", mmsOnGlassPrimary)}>
+                A few ad concepts built to grab attention, explain the offer fast, and make the next step obvious.
+              </p>
+              <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
+                These are real ad examples built for different offers, services, and business angles.
               </p>
             </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {adTypes.map((item) => (
-                <div key={item.title} className="public-glass-box--soft public-glass-box--pad">
-                  <h3 className="text-lg font-semibold tracking-tight text-white">{item.title}</h3>
-                  <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>{item.body}</p>
-                </div>
+
+            <div className="mx-auto mt-12 grid max-w-6xl gap-8 md:grid-cols-2 md:gap-10">
+              {featuredAds.map((ad) => (
+                <AdShowcaseCard key={ad.id} ad={ad} />
               ))}
             </div>
 
-            <div className="public-glass-box--soft public-glass-box--pad mt-10 max-w-3xl">
-              <h3 className={mmsH3OnGlassLg}>Ad example</h3>
-              <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl bg-black/40">
-                <video
-                  controls
-                  playsInline
-                  preload="metadata"
-                  poster="/images/ad-lab/bamboo-ad-poster.png"
-                  className="h-full w-full object-cover"
-                >
-                  <source src="/videos/bamboo-ad.mp4" type="video/mp4" />
-                </video>
+            <div className="mx-auto mt-14 max-w-3xl">
+              <div className="public-glass-box--soft public-glass-box--pad">
+                <h3 className={cn(mmsH3OnGlassLg, "!text-xl md:!text-2xl")}>Video example</h3>
+                <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                  Real product-focused ad for a bamboo-pole seller—clear hook, simple visuals.
+                </p>
+                <div className="mt-5 aspect-video w-full overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
+                  <video
+                    controls
+                    playsInline
+                    preload="auto"
+                    poster="/images/ad-lab/bamboo-ad-poster.png"
+                    className="h-full w-full object-contain"
+                    aria-label="Bamboo poles ad creative video"
+                  >
+                    <source src="/videos/bamboo-ad.mp4" type="video/mp4" />
+                  </video>
+                </div>
+                <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
+                  Short product-focused ad showing how I approach clear visuals and simple messaging.
+                </p>
               </div>
-              <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                Product-focused ad for bamboo poles — clear visuals and simple message.
-              </p>
             </div>
           </div>
         </section>
 
-        <section className={mmsUmbrellaSectionBackdrop}>
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
               <h2 className={mmsH2OnGlass}>Why this matters</h2>
@@ -171,16 +241,16 @@ export default function AdLabPage() {
           </div>
         </section>
 
-        <section className={cn(mmsUmbrellaSectionBackdrop, "border-b-0")}>
+        <section className={cn(mmsUmbrellaSectionBackdropImmersive, "border-b-0")}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <h2 className={mmsH2OnGlass}>Want a concept for your business?</h2>
+              <h2 className={mmsH2OnGlass}>Want something like this for your business?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                If you want help shaping an ad concept, offer direction, landing page, or full website path, tell me what
-                you&apos;re trying to promote and where prospects get stuck.
+                I can help with ad concepts, website direction, landing pages, and simple offers that make the next step
+                clearer.
               </p>
               <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                Want something like this for your business?
+                No pitch deck—just a clear next step.
               </p>
               <PublicCtaRow className="mt-7">
                 <TrackedPublicLink
@@ -192,7 +262,7 @@ export default function AdLabPage() {
                     "inline-flex min-h-[3rem] items-center justify-center gap-2 px-8 no-underline hover:no-underline",
                   )}
                 >
-                  Tell me what you want to promote
+                  Contact
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
@@ -204,7 +274,7 @@ export default function AdLabPage() {
                     "inline-flex min-h-[3rem] items-center justify-center px-8 no-underline hover:no-underline",
                   )}
                 >
-                  Start with a free preview
+                  Free preview
                 </TrackedPublicLink>
               </PublicCtaRow>
             </div>

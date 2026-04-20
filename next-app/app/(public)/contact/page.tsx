@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 export default function ContactPage() {
@@ -236,7 +236,7 @@ export default function ContactPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label" htmlFor="contact-website">
-                    Website <span className="text-slate-400 font-normal">(optional)</span>
+                    Website <span className="font-normal opacity-75">(optional)</span>
                   </label>
                   <input
                     className="form-input"
@@ -263,7 +263,7 @@ export default function ContactPage() {
                 <div className="form-group">
                   <label className="form-label" htmlFor="contact-extra">
                     Anything else you want me to know?{" "}
-                    <span className="text-slate-400 font-normal">(optional)</span>
+                    <span className="font-normal opacity-75">(optional)</span>
                   </label>
                   <textarea
                     className="form-textarea"
@@ -359,23 +359,11 @@ export default function ContactPage() {
             </div>
 
             <p className="small" style={{ marginTop: 24, lineHeight: 1.55 }}>
-              Find MixedMakerShop on Google:{" "}
-              <a
-                href="https://share.google.com/cJA3CmiybFK1WNE5D"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View our listing
-              </a>{" "}
-              — or{" "}
-              <a
-                href="https://share.google.com/cJA3CmiybFK1WNE5D"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                leave a review
-              </a>{" "}
-              if we&apos;ve worked together.
+              Prefer maps?{" "}
+              <a href={publicGoogleMapsSearchHref} target="_blank" rel="noopener noreferrer">
+                Open MixedMakerShop in Google Maps
+              </a>
+              . For reviews, use the review link on the Maps listing when it appears.
             </p>
 
             <div style={{ marginTop: 22 }} className="contact-side-card">
