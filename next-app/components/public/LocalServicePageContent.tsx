@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { LOCAL_SERVICE_PAGES, type LocalServicePageConfig } from "@/lib/local-service-pages";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import {
   mmsBodyFrost,
   mmsBtnPrimary,
@@ -148,7 +148,7 @@ export function LocalServicePageContent({ config }: { config: LocalServicePageCo
               </p>
               <PublicCtaRow align="center" className="mt-8 justify-center">
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "local_service_page", slug: config.slug, target: "free_mockup" }}
                   className={cn(

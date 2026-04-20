@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
   title: "See Your Website Preview | MixedMakerShop",
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function SeeYourWebsiteRedirectPage() {
-  redirect("/free-mockup");
+  redirect(publicFreeMockupFunnelHref);
 }

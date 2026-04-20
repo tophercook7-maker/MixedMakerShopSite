@@ -329,9 +329,32 @@ export function FreeMockupFunnelClient({
                 as the Fresh Cut example.
               </p>
             ) : null}
+            <div
+              className="free-mockup-friction-hint"
+              style={{
+                marginTop: 14,
+                padding: "12px 14px",
+                borderRadius: 14,
+                border: "1px solid rgba(63, 90, 71, 0.14)",
+                background: "rgba(255,255,255,0.55)",
+              }}
+            >
+              <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--text)", fontWeight: 600 }}>
+                Quick &amp; low stress
+              </p>
+              <ul className="small" style={{ margin: "10px 0 0", paddingLeft: "1.1rem", lineHeight: 1.55, color: "var(--muted)" }}>
+                <li>Takes about 2 minutes to get the basics in.</li>
+                <li>You don&apos;t need to know exactly what you want yet—honest answers are enough.</li>
+                <li>A Facebook page or business name is enough to start; add more if you have it.</li>
+              </ul>
+            </div>
+            <p className="small" style={{ marginTop: 12, marginBottom: 0, lineHeight: 1.55, color: "var(--muted)" }}>
+              Best for local services, small businesses, and anyone who depends on trust and inbound leads—not a
+              one-size-fits-all template.
+            </p>
             <p className="free-mockup-intake-lead small">
-              Four calm sections — basics, goals, preferences, contact. The preview on the right updates as you type;
-              once you pick a design direction and complete the basics, a full interactive sample loads underneath.
+              Four calm sections—basics, goals, preferences, contact. The preview on the right updates as you go; after you
+              pick a design direction and fill in the basics, a fuller interactive sample appears below the live strip.
             </p>
           </div>
 
@@ -637,7 +660,7 @@ export function FreeMockupFunnelClient({
               disabled={loading}
               onClick={() => void submit()}
             >
-              {loading ? "Sending…" : isFreshCutFunnel ? "Get My Free Preview" : "Submit my preview request"}
+              {loading ? "Sending…" : "Get my free preview"}
             </button>
             <Link
               href="/examples"
@@ -650,11 +673,21 @@ export function FreeMockupFunnelClient({
             </Link>
           </div>
           <p className="small" style={{ color: "var(--muted)", marginTop: 14, marginBottom: 0, lineHeight: 1.55 }}>
-            No pressure — you&apos;re requesting a direction to react to, not locked-in creative rounds.
+            No payment, no contract—just a serious preview request. I&apos;ll follow up with your direction so you can
+            decide what&apos;s next.
           </p>
         </div>
 
         <div className="free-mockup-funnel-preview free-mockup-preview-stack flex min-h-0 flex-col">
+          <div className="free-mockup-preview-star-label">
+            <p className="free-mockup-preview-star-kicker">Your preview builds here</p>
+            <p className="free-mockup-preview-star-sub">
+              This is the kind of direction you&apos;ll get—clear, professional, built around calls and trust.
+            </p>
+            <p className="free-mockup-preview-star-hint">
+              As you fill out the form, you&apos;ll see the direction start to take shape.
+            </p>
+          </div>
           <div className="free-mockup-preview-frame">
             <div className="free-mockup-preview-chrome" role="presentation" aria-hidden>
               <span className="free-mockup-preview-chrome-dots">

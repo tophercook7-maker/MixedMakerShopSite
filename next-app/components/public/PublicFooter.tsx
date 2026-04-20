@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export function PublicFooter() {
   return (
@@ -11,7 +12,7 @@ export function PublicFooter() {
               MixedMakerShop
             </h2>
             <p className="small" style={{ margin: 0, opacity: 0.92, lineHeight: 1.55 }}>
-              MixedMakerShop is Topher&apos;s studio for practical web design, custom 3D printing, and useful digital builds.
+              MixedMakerShop is Topher&apos;s studio for practical web design, custom 3D printing, and useful digital tools.
             </p>
             <p className="small" style={{ margin: "10px 0 0" }}>
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
@@ -64,7 +65,9 @@ export function PublicFooter() {
           {" · "}
           <Link href="/3d-printing">3D Printing</Link>
           {" · "}
-          <Link href="/builds">Builds</Link>
+          <Link href="/tools">Tools</Link>
+          {" · "}
+          <Link href="/ad-lab">Ad Lab</Link>
           {" · "}
           <Link href="/about">About</Link>
           {" · "}
@@ -76,7 +79,7 @@ export function PublicFooter() {
             Contact
           </TrackedPublicLink>
           {" · "}
-          <Link href="/free-mockup">Free Preview</Link>
+          <Link href={publicFreeMockupFunnelHref}>Free Preview</Link>
           {" · "}
           <Link href="/website-roast">Website Roast</Link>
         </div>

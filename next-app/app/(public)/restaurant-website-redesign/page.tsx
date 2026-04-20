@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
   title: "Restaurant Website Redesign | MixedMakerShop",
@@ -142,7 +143,7 @@ export default function RestaurantRedesignPage() {
               more covers and takeout orders.
             </p>
             <div className="btn-row">
-              <Link href="/free-mockup" className="btn gold">
+              <Link href={publicFreeMockupFunnelHref} className="btn gold">
                 Get My Free Preview
               </Link>
               <Link href="/contact" className="btn ghost">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata = {
   title: "Web Design Hot Springs AR | Small Business Website Designer",
@@ -44,7 +45,7 @@ export default function WebDesignHotSpringsPage() {
           </p>
 
           <div className="btn-row" style={{ marginTop: 22 }}>
-            <Link href="/free-mockup" className="btn gold">
+            <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
             <Link href="/examples" className="btn ghost">

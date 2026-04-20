@@ -1,4 +1,5 @@
 import { permanentRedirect } from "next/navigation";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 /**
  * Legacy share URLs redirect to the branded `/preview/{slug}` route.
@@ -6,6 +7,6 @@ import { permanentRedirect } from "next/navigation";
 export default async function LegacyMockupRedirectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const s = String(slug || "").trim();
-  if (!s) permanentRedirect("/free-mockup");
+  if (!s) permanentRedirect(publicFreeMockupFunnelHref);
   permanentRedirect(`/preview/${encodeURIComponent(s)}`);
 }

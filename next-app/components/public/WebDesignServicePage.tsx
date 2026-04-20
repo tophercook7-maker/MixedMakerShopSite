@@ -2,7 +2,7 @@ import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { WEB_DESIGN_PACKAGES } from "@/lib/web-design-packages";
 import {
   mmsBullet,
@@ -49,7 +49,7 @@ function WebDesignMockupCtaBand({
           </p>
           <div className="mt-9">
             <TrackedPublicLink
-              href="/free-mockup"
+              href={publicFreeMockupFunnelHref}
               eventName="public_contact_cta_click"
               eventProps={{ location: analyticsLocation, target: "free_mockup" }}
               className={cn(mmsBtnPrimary, "inline-flex px-8 no-underline hover:no-underline")}
@@ -95,7 +95,7 @@ export function WebDesignServicePage() {
           </p>
           <PublicCtaRow className="mt-12">
             <TrackedPublicLink
-              href="/free-mockup"
+              href={publicFreeMockupFunnelHref}
               eventName="public_contact_cta_click"
               eventProps={{ location: "web_design_hero", target: "free_mockup" }}
               className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
@@ -210,7 +210,7 @@ export function WebDesignServicePage() {
           </p>
           <div className="mt-8">
             <TrackedPublicLink
-              href="/free-mockup"
+              href={publicFreeMockupFunnelHref}
               eventName="public_contact_cta_click"
               eventProps={{ location: "web_design_seo_cta", target: "free_mockup" }}
               className={cn(mmsBtnPrimary, "inline-flex px-8 no-underline hover:no-underline")}
@@ -311,7 +311,7 @@ export function WebDesignServicePage() {
             </p>
             <PublicCtaRow align="center" className="mt-10 justify-center">
               <TrackedPublicLink
-                href="/free-mockup"
+                href={publicFreeMockupFunnelHref}
                 eventName="public_contact_cta_click"
                 eventProps={{ location: "web_design_final_cta", target: "free_mockup" }}
                 className={cn(mmsBtnPrimary, "justify-center px-8 no-underline hover:no-underline")}

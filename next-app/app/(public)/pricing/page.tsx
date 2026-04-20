@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection";
 import { PRICING_TIERS } from "@/lib/pricing-tiers";
 import {
@@ -151,7 +151,7 @@ export default function PricingPage() {
           <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Want to see what your business could look like?</h2>
           <PublicCtaRow align="center" className="mt-8 w-full justify-center">
             <TrackedPublicLink
-              href="/free-mockup"
+              href={publicFreeMockupFunnelHref}
               eventName="public_contact_cta_click"
               eventProps={{ location: "pricing_page", target: "free_mockup", section: "final_cta" }}
               className={cn(

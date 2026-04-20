@@ -17,8 +17,9 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
-const CTA_HREF = "/free-mockup";
+const CTA_HREF = publicFreeMockupFunnelHref;
 
 function OfferCtaPrimary({ className = "" }: { className?: string }) {
   return (

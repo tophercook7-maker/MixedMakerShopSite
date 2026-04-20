@@ -23,6 +23,7 @@ import {
   mmsH3OnGlassLg,
   mmsHomeGlassStackGap,
   mmsOnGlassCtaSeparator,
+  mmsOnGlassMuted,
   mmsOnGlassPrimary,
   mmsOnGlassSecondary,
   mmsSectionBorder,
@@ -38,12 +39,22 @@ if (freshCutResolved === undefined) {
 }
 const freshCut = freshCutResolved;
 
-const whatWasBuilt = [
-  "Service pages that spell out mowing, cleanup, and property care in plain language",
-  "Layout that nudges visitors toward a call or estimate—not confusion",
-  "Mobile-first—because most customers browse before they pick up the phone",
-  "Fast, focused pages so trust turns into a lead—not a bounce",
+const beforeProblems = [
+  "Outdated or weak website",
+  "Hard to trust at first glance",
+  "Not turning visitors into calls",
+  "Poor mobile experience",
 ] as const;
+
+const whatChanged = [
+  "Clear, professional first impression",
+  "Mobile-friendly layout that’s easy to navigate",
+  "Strong call-to-action placement",
+  "Built to turn visits into real inquiries",
+] as const;
+
+const whyItWorksBody =
+  "This works because people decide fast. When your site is clear, trustworthy, and easy to act on, more visitors turn into real calls.";
 
 export type FreshCutFeaturedCaseStudyProps = {
   /** Analytics location for CTA events */
@@ -79,7 +90,7 @@ export function FreshCutFeaturedCaseStudy({
     >
       <div className={cn(shell, mmsSectionY)}>
         {onGlass ? (
-          <div className="public-glass-box--soft public-glass-box--pad">
+          <div className="public-glass-box public-glass-box--pad">
             <h2 id="featured-case-study-heading" className={mmsH2OnGlass}>
               Featured Project
             </h2>
@@ -124,6 +135,11 @@ export function FreshCutFeaturedCaseStudy({
   );
 }
 
+const softPanelClass = (onGlass: boolean) =>
+  onGlass
+    ? "public-glass-box--soft public-glass-box--pad"
+    : "rounded-xl border border-[#3f5a47]/12 bg-white/70 p-4 shadow-sm sm:p-5";
+
 function FreshCutCopyColumn({
   analyticsLocation,
   onGlass,
@@ -133,9 +149,11 @@ function FreshCutCopyColumn({
   onGlass: boolean;
   secondaryBtnClass: string;
 }) {
+  const mockupHref = getShowcaseSecondaryCtaHref(freshCut);
+
   return (
-    <div className="min-w-0 space-y-8">
-      <header className="space-y-4">
+    <div className={cn("min-w-0 space-y-6", onGlass && "space-y-5")}>
+      <header className="space-y-3">
         <span
           className={cn(
             "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
@@ -156,30 +174,40 @@ function FreshCutCopyColumn({
         </h3>
         <p
           className={cn(
-            "text-xl font-semibold leading-snug tracking-tight md:text-2xl md:leading-snug",
-            onGlass ? mmsOnGlassPrimary : "text-[#1e241f]",
+            "text-base font-medium leading-snug md:text-[17px]",
+            onGlass ? mmsOnGlassSecondary : "text-[#1e241f]/85",
           )}
         >
-          A clean site built to turn local searches into estimate requests
+          Local landscaping business that needed more calls and better first impressions online.
         </p>
-        <p className={cn("text-sm font-medium md:text-[15px]", onGlass ? mmsOnGlassSecondary : mmsBodyFrostMuted)}>
+        <p className={cn("text-sm font-medium md:text-[15px]", onGlass ? mmsOnGlassMuted : mmsBodyFrostMuted)}>
           Landscaping &amp; property care · Hot Springs, Arkansas
         </p>
       </header>
 
-      <div>
-        <p className={cn("text-base leading-relaxed md:text-[17px]", onGlass ? mmsOnGlassPrimary : mmsBodyFrost)}>
-          Fresh Cut Property Care needed to look legitimate online and give potential customers a dead-simple path to
-          request an estimate. Like most local crews, the win wasn&apos;t flashy—it was trust, clarity, and more qualified
-          calls.
-        </p>
+      <div className={softPanelClass(onGlass)}>
+        <h4 className={cn("text-sm font-semibold uppercase tracking-[0.12em]", onGlass ? "text-white/90" : "text-[#1e241f]")}>
+          Before
+        </h4>
+        <ul className={cn("mt-3 space-y-2.5 text-sm md:text-[15px]", onGlass ? mmsOnGlassSecondary : mmsBodyFrost)}>
+          {beforeProblems.map((line) => (
+            <li key={line} className="flex gap-2.5">
+              <span className={onGlass ? mmsBulletOnGlass : mmsBullet} aria-hidden>
+                ·
+              </span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div>
-        <h4 className={cn(onGlass ? mmsH3OnGlass : "text-lg font-bold text-[#1e241f] md:text-xl")}>What I built</h4>
-        <ul className={cn("mt-4 space-y-3 text-base md:text-[17px]", onGlass ? mmsOnGlassPrimary : mmsBodyFrost)}>
-          {whatWasBuilt.map((line) => (
-            <li key={line} className="flex gap-3">
+      <div className={softPanelClass(onGlass)}>
+        <h4 className={cn("text-sm font-semibold uppercase tracking-[0.12em]", onGlass ? "text-white/90" : "text-[#1e241f]")}>
+          What changed
+        </h4>
+        <ul className={cn("mt-3 space-y-2.5 text-sm md:text-[15px]", onGlass ? mmsOnGlassSecondary : mmsBodyFrost)}>
+          {whatChanged.map((line) => (
+            <li key={line} className="flex gap-2.5">
               <span className={onGlass ? mmsBulletOnGlass : mmsBullet} aria-hidden>
                 ·
               </span>
@@ -190,47 +218,55 @@ function FreshCutCopyColumn({
       </div>
 
       <div>
-        <h4 className={cn(onGlass ? mmsH3OnGlass : "text-lg font-bold text-[#1e241f] md:text-xl")}>What it does now</h4>
-        <p className={cn("mt-4 text-base leading-relaxed md:text-[17px]", onGlass ? mmsOnGlassPrimary : mmsBodyFrost)}>
-          The site gives the business a strong first impression, makes it easy for customers to understand what they offer,
-          and creates a clear path to reach out for work. It&apos;s built to support real local traffic and turn visitors
-          into actual leads. This structure also supports local search, helping the business show up when people look for
-          services in the area.
+        <h4 className={cn(onGlass ? mmsH3OnGlass : "text-lg font-bold text-[#1e241f] md:text-xl")}>Why it works</h4>
+        <p className={cn("mt-3 text-base leading-relaxed md:text-[17px]", onGlass ? mmsOnGlassSecondary : mmsBodyFrost)}>
+          {whyItWorksBody}
         </p>
       </div>
 
-      <div className={cn(mmsOnGlassCtaSeparator, "pt-6")}>
-        <PublicCtaRow>
-        <a
-          href={freshCut.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() =>
-            trackPublicEvent("public_external_project_click", {
-              location: analyticsLocation,
-              section: "featured_case_study",
-              project: freshCut.analyticsId,
-            })
-          }
+      <div className={cn(onGlass ? "space-y-3" : "space-y-2")}>
+        <TrackedPublicLink
+          href={mockupHref}
+          eventName="public_contact_cta_click"
+          eventProps={{
+            location: analyticsLocation,
+            target: "free_mockup",
+            project: freshCut.analyticsId,
+            section: "featured_case_study_mockup",
+          }}
           className={cn(
             mmsBtnPrimary,
-            "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[12rem] hover:no-underline",
+            "inline-flex min-h-[3rem] w-full items-center justify-center px-6 text-center text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto sm:min-w-[min(100%,20rem)]",
           )}
         >
-          View Live Site
-          <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-        </a>
-        <TrackedPublicLink
-          href={getShowcaseSecondaryCtaHref(freshCut)}
-          eventName="public_contact_cta_click"
-          eventProps={{ location: analyticsLocation, target: "free_mockup", project: freshCut.analyticsId }}
-          className={cn(
-            secondaryBtnClass,
-            "inline-flex min-h-[3rem] flex-1 items-center justify-center px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[12rem] hover:no-underline",
-          )}
-        >
-          {getShowcaseSecondaryCtaLabel(freshCut)}
+          See what this could look like for your business
         </TrackedPublicLink>
+        <p className={cn("text-center text-sm sm:text-left", onGlass ? mmsOnGlassMuted : "text-[#3f5a47]/80")}>
+          Get a free preview before you commit to anything.
+        </p>
+      </div>
+
+      <div className={cn(mmsOnGlassCtaSeparator, "pt-2")}>
+        <PublicCtaRow>
+          <a
+            href={freshCut.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              trackPublicEvent("public_external_project_click", {
+                location: analyticsLocation,
+                section: "featured_case_study",
+                project: freshCut.analyticsId,
+              })
+            }
+            className={cn(
+              secondaryBtnClass,
+              "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[12rem] hover:no-underline",
+            )}
+          >
+            View Live Site
+            <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+          </a>
         </PublicCtaRow>
       </div>
     </div>

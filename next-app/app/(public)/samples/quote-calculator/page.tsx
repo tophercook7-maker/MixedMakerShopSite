@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 const HERO = "/images/mixedmaker-workspace-hero.png";
 
@@ -48,7 +49,7 @@ export default function QuoteCalculatorSamplePage() {
                 free website check
               </Link>{" "}
               or{" "}
-              <Link href="/free-mockup" className="font-medium text-emerald-300 underline-offset-2 hover:underline">
+              <Link href={publicFreeMockupFunnelHref} className="font-medium text-emerald-300 underline-offset-2 hover:underline">
                 mockup funnel
               </Link>{" "}
               for a concrete first direction.

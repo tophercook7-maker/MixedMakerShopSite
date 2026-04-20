@@ -8,6 +8,20 @@ export const publicGatewayPageBgClass =
 export const publicShellClass =
   "mx-auto w-full max-w-[min(100%,87.5rem)] px-5 sm:px-8 md:px-10 lg:px-12";
 
+/**
+ * Free mockup funnel anchor — use for CTAs already on `/free-mockup` (same-page scroll to intake).
+ * For links from any other route, footer, or shareable URLs, use `publicFreeMockupFunnelHref` instead.
+ */
+export const publicFreeMockupOnPageHash = "#free-mockup-start";
+
+/**
+ * Full path for internal nav, cross-page links, and copy/paste share URLs — lands on the intake form.
+ */
+export const publicFreeMockupFunnelHref = "/free-mockup#free-mockup-start";
+
+/** Fresh Cut example funnel — query preserved; hash lands on intake. */
+export const publicFreeMockupFunnelHrefFreshCut = "/free-mockup?example=freshcut#free-mockup-start";
+
 export const publicSectionYClass = "py-20 md:py-28";
 
 /** Section h2 — web (mint family) */

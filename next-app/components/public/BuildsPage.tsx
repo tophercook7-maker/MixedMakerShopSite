@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink, Layers } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import {
   getShowcasePrimaryCtaLabel,
   LIVE_WEB_PROJECTS,
@@ -466,7 +466,7 @@ export function BuildsPage() {
                     ·
                   </span>
                   <TrackedPublicLink
-                    href="/free-mockup"
+                    href={publicFreeMockupFunnelHref}
                     eventName="public_contact_cta_click"
                     eventProps={{ location: "builds_experiments", target: "free_mockup" }}
                     className={cn(mmsTextLink, "font-semibold")}
@@ -556,7 +556,7 @@ export function BuildsPage() {
                   Web Design
                 </TrackedPublicLink>
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "builds_footer_cta", target: "free_mockup" }}
                   className={cn(

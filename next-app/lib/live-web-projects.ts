@@ -3,6 +3,8 @@
  * homepage uses a conversion-focused subset (see HOME_PAGE_FEATURED_ANALYTICS_IDS).
  */
 
+import { publicFreeMockupFunnelHref, publicFreeMockupFunnelHrefFreshCut } from "@/lib/public-brand";
+
 export type ShowcaseKind = "live" | "concept";
 
 export type ShowcaseProject = {
@@ -40,7 +42,7 @@ export type ShowcaseProject = {
   emphasizeCard?: boolean;
   /** Overrides second CTA label (e.g. Get My Version of This). */
   secondaryCtaLabel?: string;
-  /** Overrides second CTA href (e.g. /free-mockup?example=freshcut). */
+  /** Overrides second CTA href (e.g. funnel with Fresh Cut query + `#free-mockup-start`). */
   secondaryCtaHref?: string;
 };
 
@@ -63,7 +65,7 @@ export const LIVE_WEB_PROJECTS = [
     featuredBadge: "Featured Project",
     emphasizeCard: true,
     secondaryCtaLabel: "Get My Version of This",
-    secondaryCtaHref: "/free-mockup?example=freshcut",
+    secondaryCtaHref: publicFreeMockupFunnelHrefFreshCut,
     previewSrc: "/images/showcase/freshcut-property-care.jpg",
     previewAlt: "Homepage preview of Fresh Cut Property Care — lawn care hero and call-to-action",
     hostname: "freshcutpropertycare.com",
@@ -154,7 +156,7 @@ export function getShowcaseSecondaryCtaLabel(project: ShowcaseProject): string {
 
 /** Second CTA destination — Fresh Cut and other funnels can override. */
 export function getShowcaseSecondaryCtaHref(project: ShowcaseProject): string {
-  return project.secondaryCtaHref ?? "/free-mockup";
+  return project.secondaryCtaHref ?? publicFreeMockupFunnelHref;
 }
 
 /** Small-business homepage: two trust-building client sites + one tools/systems example (no niche app). */

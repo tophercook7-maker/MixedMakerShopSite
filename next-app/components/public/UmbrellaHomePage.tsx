@@ -7,7 +7,7 @@ import { HOME_PAGE_FEATURED_ANALYTICS_IDS } from "@/lib/live-web-projects";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -115,7 +115,7 @@ export function UmbrellaHomePage() {
               <div className={mmsOnGlassCtaRowWrap}>
                 <PublicCtaRow>
                   <TrackedPublicLink
-                    href="/free-mockup"
+                    href={publicFreeMockupFunnelHref}
                     eventName="public_contact_cta_click"
                     eventProps={{ location: "home_seo_cta", target: "free_mockup" }}
                     className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
@@ -176,6 +176,11 @@ export function UmbrellaHomePage() {
                 Websites stay the center of what I do. When it genuinely helps your business, I also deliver practical 3D
                 prints and small tools that remove friction and save time.
               </p>
+              <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
+                <Link href="/ad-lab" className={cn(mmsTextLinkOnGlass, "text-[15px] font-medium")}>
+                  See sample ad ideas →
+                </Link>
+              </p>
             </div>
             <div className={cn("grid gap-8 lg:grid-cols-2", mmsHomeGlassStackGap)}>
               <div className={cn("public-glass-box--soft public-glass-box--pad")}>
@@ -188,12 +193,13 @@ export function UmbrellaHomePage() {
                 </Link>
               </div>
               <div className={cn("public-glass-box--soft public-glass-box--pad")}>
-                <h3 className={mmsH3OnGlassLg}>Builds &amp; Tools</h3>
+                <h3 className={mmsH3OnGlassLg}>Apps &amp; Tools</h3>
                 <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
-                  Small automations and custom tools when they save hours, cut errors, or support how you serve customers.
+                  Practical helpers, bots, and lightweight systems when they save hours, reduce repetitive work, or make
+                  follow-up easier.
                 </p>
-                <Link href="/builds" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
-                  Builds &amp; tools →
+                <Link href="/tools" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
+                  Apps &amp; tools →
                 </Link>
               </div>
             </div>
@@ -238,7 +244,7 @@ export function UmbrellaHomePage() {
               </p>
               <PublicCtaRow align="center" className={cn(mmsOnGlassCtaRowWrap, "w-full justify-center")}>
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_cta", target: "free_mockup" }}
                   className={cn(

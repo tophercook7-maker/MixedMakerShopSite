@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
+import { publicBodyMutedClass, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 
 const shell = publicShellClass;
 const body = publicBodyMutedClass;
@@ -37,7 +37,7 @@ export function WebDesignSalesPage() {
             look legit and actually get results.
           </p>
           <div className="home-reveal mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-            <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero w-full min-w-[200px] sm:w-auto">
+            <Link href={publicFreeMockupFunnelHref} className="home-btn-primary home-btn-primary--hero w-full min-w-[200px] sm:w-auto">
               Get My Free Preview
             </Link>
             <Link href="/examples" className="home-btn-secondary--hero w-full min-w-[200px] sm:w-auto">
@@ -87,7 +87,7 @@ export function WebDesignSalesPage() {
             >
               See Examples
             </TrackedPublicLink>
-            <Link href="/free-mockup" className="home-btn-primary home-btn-primary--hero inline-flex justify-center px-8 py-3">
+            <Link href={publicFreeMockupFunnelHref} className="home-btn-primary home-btn-primary--hero inline-flex justify-center px-8 py-3">
               Get My Free Preview
             </Link>
           </div>
@@ -192,7 +192,7 @@ export function WebDesignSalesPage() {
             >
               Start My Project
             </TrackedPublicLink>
-            <Link href="/free-mockup" className="home-btn-secondary--hero w-full max-w-sm sm:w-auto justify-center">
+            <Link href={publicFreeMockupFunnelHref} className="home-btn-secondary--hero w-full max-w-sm sm:w-auto justify-center">
               Get My Free Preview
             </Link>
           </div>

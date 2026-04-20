@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 export default function ContactPage() {
@@ -149,7 +150,7 @@ export default function ContactPage() {
             </div>
 
             <div className="flex flex-col gap-2 sm:max-w-md" style={{ marginTop: "0.25rem" }}>
-              <Link href="/free-mockup" className="contact-prompt-link">
+              <Link href={publicFreeMockupFunnelHref} className="contact-prompt-link">
                 <span style={{ color: "var(--pub-accent)", fontWeight: 650 }}>
                   →
                 </span>
@@ -344,7 +345,7 @@ export default function ContactPage() {
                   See examples, pricing, or start with a free preview.
                 </p>
                 <PublicCtaRow className="mt-1">
-                  <Link href="/free-mockup" className="btn">
+                  <Link href={publicFreeMockupFunnelHref} className="btn">
                     Free Preview
                   </Link>
                   <Link href="/examples" className="btn">

@@ -14,7 +14,7 @@ import {
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -81,7 +81,7 @@ export function UmbrellaHomeHero() {
             <div className={mmsOnGlassCtaSeparator}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
                   className={cn(

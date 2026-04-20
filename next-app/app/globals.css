@@ -2437,11 +2437,54 @@ a.sample-contact-v:hover {
   animation: free-mockup-funnel-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Let umbrella immersive background read through on large screens (form card stays solid). */
+@media (min-width: 768px) {
+  .public-site--light-umbrella .home-umbrella-canvas .free-mockup-funnel {
+    background: transparent;
+  }
+}
+
 .free-mockup-funnel--freshcut {
   background:
     radial-gradient(ellipse 100% 60% at 8% 0%, rgba(63, 90, 71, 0.09), transparent 50%),
     radial-gradient(ellipse 80% 50% at 95% 10%, rgba(184, 92, 30, 0.05), transparent 46%),
     linear-gradient(180deg, #e9eee9 0%, #f2efe8 48%, #e6e8e2 100%);
+}
+
+@media (min-width: 768px) {
+  .public-site--light-umbrella .home-umbrella-canvas .free-mockup-funnel--freshcut {
+    background: transparent;
+  }
+}
+
+.free-mockup-preview-star-label {
+  margin-bottom: 0.85rem;
+  padding: 0.65rem 0.15rem 0;
+}
+
+.free-mockup-preview-star-kicker {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pub-muted);
+}
+
+.free-mockup-preview-star-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--pub-fg-heading);
+}
+
+.free-mockup-preview-star-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--pub-muted);
 }
 
 .free-mockup-funnel .free-mockup-funnel-grid {

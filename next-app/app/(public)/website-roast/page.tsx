@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { WebsiteRoastForm } from "@/components/public/WebsiteRoastForm";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 const canonical = "https://mixedmakershop.com/website-roast";
 
@@ -114,7 +115,7 @@ export default function WebsiteRoastPage() {
           </div>
           <p className="small" style={{ marginTop: 22, opacity: 0.85, maxWidth: "56ch" }}>
             Want a new direction afterward?{" "}
-            <Link href="/free-mockup" className="font-semibold underline-offset-4 hover:underline">
+            <Link href={publicFreeMockupFunnelHref} className="font-semibold underline-offset-4 hover:underline">
               Get My Free Preview
             </Link>{" "}
             or{" "}

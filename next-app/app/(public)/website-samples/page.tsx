@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ResilientCardImage } from "@/components/sample/resilient-sample-images";
 import { PORTFOLIO_SAMPLES } from "@/lib/portfolio-samples";
 import { imageCategoryFromPortfolioRouteSlug } from "@/lib/sample-fallback-images";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import {
   WEBSITE_SAMPLES,
   SAMPLE_CATEGORIES,
@@ -58,7 +59,7 @@ export default function WebsiteSamplesPage() {
               <p className="small" style={{ margin: "0 0 14px", lineHeight: 1.55, maxWidth: 640 }}>
                 If you want something like this for your business, I can put together a quick preview for you.
               </p>
-              <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
+              <Link href={publicFreeMockupFunnelHref} className="btn gold" style={{ marginBottom: 10 }}>
                 Get My Free Preview
               </Link>
               <p className="small copy-readable" style={{ margin: 0, opacity: 0.75, fontStyle: "italic" }}>
@@ -181,7 +182,7 @@ export default function WebsiteSamplesPage() {
             <p className="small" style={{ margin: "0 0 18px", lineHeight: 1.55, maxWidth: 640 }}>
               No pressure — just something to help you see what&apos;s possible.
             </p>
-            <Link href="/free-mockup" className="btn gold" style={{ marginBottom: 10 }}>
+            <Link href={publicFreeMockupFunnelHref} className="btn gold" style={{ marginBottom: 10 }}>
               Get My Free Preview
             </Link>
             <p className="small" style={{ margin: 0, opacity: 0.75, fontStyle: "italic", maxWidth: 560 }}>

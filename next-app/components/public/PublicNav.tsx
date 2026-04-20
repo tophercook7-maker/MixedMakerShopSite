@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const navItems: {
@@ -16,7 +17,7 @@ const navItems: {
   { href: "/web-design", label: "Web Design" },
   { href: "/examples", label: "Examples" },
   { href: "/3d-printing", label: "3D Printing" },
-  { href: "/builds", label: "Builds" },
+  { href: "/tools", label: "Tools" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
@@ -79,7 +80,7 @@ export function PublicNav() {
             </Link>
           ))}
           <Link
-            href="/free-mockup"
+            href={publicFreeMockupFunnelHref}
             className="pill cta"
             onClick={() =>
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })

@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { getPortfolioSampleBySlug } from "@/lib/portfolio-samples";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { trackGatewayNav, trackPublicEvent } from "@/lib/public-analytics";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { HomeDeepWellShowcase } from "@/components/public/HomeDeepWellShowcase";
@@ -138,7 +139,7 @@ export function UmbrellaGateway() {
               </p>
               <div className="mx-auto mt-9 flex max-w-xl flex-col items-center gap-3">
                 <Link
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   onClick={() =>
                     trackPublicEvent("public_contact_cta_click", {
                       location: "gateway",
@@ -304,7 +305,7 @@ export function UmbrellaGateway() {
                 Not sure what you need? I&apos;ll design a free preview first.
               </p>
               <Link
-                href="/free-mockup"
+                href={publicFreeMockupFunnelHref}
                 onClick={() =>
                   trackPublicEvent("public_contact_cta_click", {
                     location: "gateway",
@@ -393,7 +394,7 @@ export function UmbrellaGateway() {
                     </div>
                     <div className="mt-8 flex justify-center">
                       <Link
-                        href="/free-mockup"
+                        href={publicFreeMockupFunnelHref}
                         onClick={() =>
                           trackPublicEvent("public_contact_cta_click", {
                             location: "gateway",
@@ -431,7 +432,7 @@ export function UmbrellaGateway() {
               see the direction before committing.
             </p>
             <Link
-              href="/free-mockup"
+              href={publicFreeMockupFunnelHref}
               onClick={() =>
                 trackPublicEvent("public_contact_cta_click", {
                   location: "gateway",

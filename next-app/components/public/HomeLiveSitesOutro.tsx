@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { publicBodyMutedClass, publicShellClass } from "@/lib/public-brand";
+import { publicBodyMutedClass, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,7 @@ export function HomeLiveSitesOutro() {
             we&apos;re a fit.
           </p>
           <Link
-            href="/free-mockup"
+            href={publicFreeMockupFunnelHref}
             onClick={() =>
               trackPublicEvent("public_contact_cta_click", {
                 location: "web_design",

@@ -2,6 +2,8 @@
  * Public pricing tiers — /pricing (full cards) and shared summaries elsewhere.
  */
 
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+
 export type PricingTier = {
   id: "starter" | "growth" | "custom";
   title: string;
@@ -23,7 +25,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
     description: "A clean, simple website for businesses that just need to look legit and be easy to contact.",
     includes: ["1–3 pages", "Mobile-friendly design", "Basic SEO setup", "Contact form"],
     ctaLabel: "Get My Free Preview",
-    ctaHref: "/free-mockup",
+    ctaHref: publicFreeMockupFunnelHref,
   },
   {
     id: "growth",
@@ -38,7 +40,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
       "Faster performance",
     ],
     ctaLabel: "Get My Free Preview",
-    ctaHref: "/free-mockup",
+    ctaHref: publicFreeMockupFunnelHref,
     featured: true,
     badge: "Most Common",
   },
@@ -49,6 +51,6 @@ export const PRICING_TIERS: readonly PricingTier[] = [
     description: "For businesses that need something more tailored, automated, or unique.",
     includes: ["Advanced features", "Custom integrations", "Ongoing support options", "Scalable structure"],
     ctaLabel: "Start With a Preview",
-    ctaHref: "/free-mockup",
+    ctaHref: publicFreeMockupFunnelHref,
   },
 ] as const;

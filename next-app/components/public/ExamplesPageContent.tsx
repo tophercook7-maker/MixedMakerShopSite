@@ -16,17 +16,24 @@ import {
 } from "@/lib/live-web-projects";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { UmbrellaHeroMedia } from "@/components/public/umbrella-hero-media";
-import { publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import {
   mmsBodyFrost,
   mmsBtnPrimary,
   mmsBtnSecondary,
-  mmsCtaPanelHome,
+  mmsBtnSecondaryOnGlass,
+  mmsBulletOnGlass,
   mmsGlassPanelDenseHome,
   mmsGlassPanelHero,
   mmsH2,
+  mmsH2OnGlass,
+  mmsH3OnGlassLg,
+  mmsOnGlassMuted,
+  mmsOnGlassPrimary,
+  mmsOnGlassSecondary,
   mmsSectionY,
   mmsTextLink,
+  mmsTextLinkOnGlass,
   mmsUmbrellaSectionBackdrop,
 } from "@/lib/mms-umbrella-ui";
 import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
@@ -136,7 +143,7 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
 
 function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
   const secondaryLabel = card.secondaryCtaLabel ?? "Get My Free Preview";
-  const secondaryHref = card.secondaryCtaHref ?? "/free-mockup";
+  const secondaryHref = card.secondaryCtaHref ?? publicFreeMockupFunnelHref;
 
   return (
     <article className={cn(mmsGlassPanelDenseHome, "flex h-full flex-col p-6 sm:p-8")}>
@@ -238,9 +245,13 @@ export function ExamplesPageContent() {
                 A mix of real client work, concept builds, and practical projects from MixedMakerShop. If you want something
                 in this direction, I can put together a free preview for your business.
               </p>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#4a5850] md:text-[15px]">
+                These examples show the kind of layout clarity and trust-building direction I can create—so you can
+                picture what might fit your own business.
+              </p>
               <PublicCtaRow className="mt-10">
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "examples_page", target: "free_mockup", cta: "hero_primary" }}
                   className={cn(
@@ -292,11 +303,67 @@ export function ExamplesPageContent() {
             Built directly with me — no agency layers, no handoffs.
           </p>
 
+          <div className="public-glass-box--soft public-glass-box--pad mt-8 max-w-2xl">
+            <h3 className={mmsH3OnGlassLg}>How to use these examples</h3>
+            <ul className={cn("mt-4 space-y-2.5 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+              {[
+                "Look for layout direction and how information is organized.",
+                "Notice how trust is built before someone scrolls or clicks.",
+                "Imagine what would fit your business—not a copy-paste, but the idea.",
+                "When you’re ready, start with a free preview tailored to you.",
+              ].map((line) => (
+                <li key={line} className="flex gap-2.5">
+                  <span className={mmsBulletOnGlass} aria-hidden>
+                    ·
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <p className={cn("mt-5 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
+              Good design earns trust; trust makes conversion easier.{" "}
+              <TrackedPublicLink
+                href={publicFreeMockupFunnelHref}
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "examples_page", target: "free_mockup", cta: "how_to_block_preview" }}
+                className={mmsTextLinkOnGlass}
+              >
+                Start your free preview
+              </TrackedPublicLink>
+            </p>
+          </div>
+
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
             {EXAMPLES_REAL_WORK.map((entry) => (
               <RealWorkCard key={entry.project.analyticsId} entry={entry} />
             ))}
           </div>
+          </div>
+        </section>
+
+        {/* CONVERSION BRIDGE */}
+        <section className={mmsUmbrellaSectionBackdrop} aria-labelledby="examples-bridge-title">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="max-w-2xl border-t border-[#3f5a47]/12 pt-10">
+              <h2 id="examples-bridge-title" className="sr-only">
+                Next step after browsing examples
+              </h2>
+              <p className={cn("text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
+                If you see a direction you like, the next step is a free preview shaped for your business—no pressure,
+                just a clearer idea of what your site could look like.
+              </p>
+              <p className="mt-4 text-sm leading-relaxed text-[#354239] md:text-[15px]">
+                <TrackedPublicLink
+                  href={publicFreeMockupFunnelHref}
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "examples_page", target: "free_mockup", cta: "mid_page_bridge" }}
+                  className={mmsTextLink}
+                >
+                  Start your free preview
+                </TrackedPublicLink>{" "}
+                <span className="text-[#5a6a62]">(takes a few minutes)</span>
+              </p>
+            </div>
           </div>
         </section>
 
@@ -317,6 +384,17 @@ export function ExamplesPageContent() {
             </Link>
             .
           </p>
+          <p className={cn("mt-4 max-w-2xl text-sm leading-relaxed text-[#354239] md:text-[15px]", mmsBodyFrost)}>
+            These entries show what gets built and presented online. For promo directions and attention hooks, see the{" "}
+            <Link href="/ad-lab" className={mmsTextLink}>
+              Ad Lab
+            </Link>
+            . For lightweight apps and systems that support day-to-day work after the click, see{" "}
+            <Link href="/tools" className={mmsTextLink}>
+              Apps &amp; Tools
+            </Link>
+            .
+          </p>
 
           <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
             {EXAMPLES_CONCEPT_BUILDS.map((card) => (
@@ -326,7 +404,7 @@ export function ExamplesPageContent() {
           </div>
         </section>
 
-        {/* CTA BAND — matches homepage contact strip */}
+        {/* FINAL CTA — dark glass, conversion-focused */}
         <section
           className={cn(
             "border-t",
@@ -335,16 +413,16 @@ export function ExamplesPageContent() {
           )}
         >
           <div className={cn(shell, "py-24 md:py-32")}>
-            <div className={cn(mmsCtaPanelHome, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
-              <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Want something built around your business?</h2>
-              <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsBodyFrost)}>
-                I can put together a free homepage-style preview so you can see the direction before committing to anything.
+            <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl text-center sm:px-2">
+              <h2 className={cn(mmsH2OnGlass, "!text-2xl md:!text-3xl")}>See a direction you like?</h2>
+              <p className={cn("mx-auto mt-5 max-w-lg text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                Start with a free preview for your business. You can see a direction before committing to anything.
               </p>
               <PublicCtaRow className="mx-auto mt-10 w-full max-w-xl justify-center" align="center">
                 <TrackedPublicLink
-                  href="/free-mockup"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "examples_page", target: "free_mockup", cta: "footer_band_primary" }}
+                  eventProps={{ location: "examples_page", target: "free_mockup", cta: "footer_glass_primary" }}
                   className={cn(
                     mmsBtnPrimary,
                     "inline-flex w-full min-w-[12rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:w-auto sm:flex-initial sm:min-w-[14rem]",
@@ -356,9 +434,9 @@ export function ExamplesPageContent() {
                 <TrackedPublicLink
                   href="/contact"
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "examples_page", target: "contact", cta: "footer_band_secondary" }}
+                  eventProps={{ location: "examples_page", target: "contact", cta: "footer_glass_secondary" }}
                   className={cn(
-                    mmsBtnSecondary,
+                    mmsBtnSecondaryOnGlass,
                     "inline-flex w-full min-w-[12rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:w-auto sm:flex-initial sm:min-w-[14rem]",
                   )}
                 >

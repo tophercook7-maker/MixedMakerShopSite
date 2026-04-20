@@ -6,6 +6,7 @@
 import { PORTFOLIO_SAMPLES } from "@/lib/portfolio-samples";
 import { HENRY_AI_SHOWCASE_PROJECT, LIVE_WEB_PROJECTS } from "@/lib/live-web-projects";
 import type { ShowcaseProject } from "@/lib/live-web-projects";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { SAMPLE_CATEGORIES, WEBSITE_SAMPLES, type SampleCategory } from "@/lib/website-samples";
 
 /** Live client sites only (not demos or product concepts). */
@@ -65,7 +66,7 @@ function henryConcept(): ExamplesConceptCard {
     isExternal: false,
     primaryCtaLabel: "View Example",
     secondaryCtaLabel: "Get My Version",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: p.objectPosition,
     imageClassName: p.imageClassName,
   };
@@ -86,7 +87,7 @@ function strainspotterConcept(): ExamplesConceptCard {
     isExternal: true,
     primaryCtaLabel: "View Demo",
     secondaryCtaLabel: "Ask About Something Similar",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: p.objectPosition,
     imageClassName: p.imageClassName,
   };
@@ -105,7 +106,7 @@ function quoteCalculatorConcept(): ExamplesConceptCard {
     isExternal: false,
     primaryCtaLabel: "View sample",
     secondaryCtaLabel: "Get My Free Preview",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   };
@@ -123,7 +124,7 @@ const NICHE_TOPIC_PAGES: ExamplesConceptCard[] = [
     href: "/coffee-shop-websites-hot-springs",
     isExternal: false,
     primaryCtaLabel: "Read page",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   },
@@ -138,7 +139,7 @@ const NICHE_TOPIC_PAGES: ExamplesConceptCard[] = [
     href: "/restaurant-websites-hot-springs",
     isExternal: false,
     primaryCtaLabel: "Read page",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   },
@@ -153,7 +154,7 @@ const NICHE_TOPIC_PAGES: ExamplesConceptCard[] = [
     href: "/church-websites-hot-springs",
     isExternal: false,
     primaryCtaLabel: "Read page",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   },
@@ -168,7 +169,7 @@ const NICHE_TOPIC_PAGES: ExamplesConceptCard[] = [
     href: "/small-business-websites-hot-springs",
     isExternal: false,
     primaryCtaLabel: "Read page",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   },
@@ -183,7 +184,7 @@ const NICHE_TOPIC_PAGES: ExamplesConceptCard[] = [
     href: "/web-design-hot-springs-ar",
     isExternal: false,
     primaryCtaLabel: "Read page",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   },
@@ -201,7 +202,7 @@ function portfolioConcepts(): ExamplesConceptCard[] {
     isExternal: false,
     primaryCtaLabel: "View layout demo",
     secondaryCtaLabel: "Get My Free Preview",
-    secondaryCtaHref: "/free-mockup",
+    secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: "center center",
     imageClassName: "object-cover",
   }));
@@ -226,7 +227,7 @@ function websiteSampleConcepts(): ExamplesConceptCard[] {
       isExternal: external,
       primaryCtaLabel: external ? "Open link" : "View example",
       secondaryCtaLabel: "Get My Free Preview",
-      secondaryCtaHref: "/free-mockup",
+      secondaryCtaHref: publicFreeMockupFunnelHref,
       objectPosition: "center center",
       imageClassName: "object-cover",
     };

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { WEBSITE_SAMPLES } from "@/lib/website-samples";
 
 export const metadata = {
@@ -50,7 +51,7 @@ export default function TophersWebDesignPage() {
               Starter setups from $400 · Full business setups from $900 · Custom builds on quote
             </p>
             <div className="btn-row" style={{ marginTop: 20 }}>
-              <Link href="/free-mockup" className="btn gold">
+              <Link href={publicFreeMockupFunnelHref} className="btn gold">
                 Get My Free Preview
               </Link>
             </div>
@@ -157,7 +158,7 @@ export default function TophersWebDesignPage() {
               I&apos;ll show you exactly what I&apos;d fix — no pressure.
             </p>
             <div className="btn-row" style={{ justifyContent: "center" }}>
-              <Link href="/free-mockup" className="btn gold">
+              <Link href={publicFreeMockupFunnelHref} className="btn gold">
                 Get My Free Preview
               </Link>
             </div>
