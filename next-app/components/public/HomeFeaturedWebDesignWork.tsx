@@ -18,18 +18,17 @@ import {
 } from "@/lib/live-web-projects";
 import {
   mmsBodyFrost,
-  mmsBodyFrostMuted,
   mmsBtnPrimary,
   mmsBtnSecondary,
   mmsBtnSecondaryOnGlass,
   mmsCard,
-  mmsGlassPanelDense,
   mmsH2,
   mmsH2OnGlass,
   mmsH3OnGlassLg,
   mmsHomeGlassBlockEndGap,
   mmsHomeGlassStackGap,
   mmsOnGlassCtaSeparator,
+  mmsOnGlassPrimary,
   mmsOnGlassSecondary,
   mmsSectionBorder,
   mmsSectionY,
@@ -50,7 +49,8 @@ const bodyDark = publicBodyMutedClass;
 const bodyLight = "text-[#4a5750]";
 
 export type HomeFeaturedWebDesignWorkProps = {
-  variant?: "dark" | "light";
+  /** `warmSmoke`: web-design page — medium-dark smoked panels, light text (not homepage deep black). */
+  variant?: "dark" | "light" | "warmSmoke";
   heading?: string;
   subhead?: string;
   /** Defaults to `real-work` for backward-compatible in-page anchors. */
@@ -71,24 +71,28 @@ function selectProjects(featuredAnalyticsIds?: readonly string[]): AnyShowcasePr
   return getShowcaseProjectsByAnalyticsIds(featuredAnalyticsIds);
 }
 
-const tagPill = (isLight: boolean, immersive?: boolean) =>
+const tagPill = (isLight: boolean, immersive?: boolean, isWarmSmoke?: boolean) =>
   cn(
     "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
-    immersive && isLight
-      ? "border-white/22 bg-white/10 text-[#c5ddd2]"
-      : isLight
-        ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
-        : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
+    isWarmSmoke
+      ? "border-white/18 bg-white/[0.07] text-[rgba(236,224,206,0.88)]"
+      : immersive && isLight
+        ? "border-white/22 bg-white/10 text-[#c5ddd2]"
+        : isLight
+          ? "border-[#3f5a47]/22 bg-white/70 text-[#3f5a47]"
+          : "border-white/[0.22] bg-black/25 text-[#c5ddd2]",
   );
 
-const featuredPill = (isLight: boolean, immersive?: boolean) =>
+const featuredPill = (isLight: boolean, immersive?: boolean, isWarmSmoke?: boolean) =>
   cn(
     "inline-flex w-fit max-w-full rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]",
-    immersive && isLight
-      ? "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]"
-      : isLight
-        ? "border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 text-[#8a4b2a]"
-        : "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]",
+    isWarmSmoke
+      ? "border-[#eab08a]/35 bg-[rgba(36,28,24,0.45)] text-[#f0c49a]"
+      : immersive && isLight
+        ? "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]"
+        : isLight
+          ? "border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 text-[#8a4b2a]"
+          : "border-[#eab08a]/35 bg-white/10 text-[#f0c49a]",
   );
 
 function BrowserShowcasePreview({
@@ -174,24 +178,31 @@ export function HomeFeaturedWebDesignWork({
 }: HomeFeaturedWebDesignWorkProps) {
   const projects = selectProjects(featuredAnalyticsIds);
   const projectCount = projects.length;
+  const isWarmSmoke = variant === "warmSmoke";
   const isLight = variant === "light";
   /** Soft glass cards use dark-on-glass copy tokens from showcase helpers */
-  const showcaseVariant = isLight && !immersive ? "light" : "dark";
-  const h2 = isLight ? (immersive ? mmsH2OnGlass : mmsH2) : h2Dark;
-  const body = isLight ? (immersive ? mmsOnGlassSecondary : bodyLight) : bodyDark;
-  const sectionClass = isLight
+  const showcaseVariant = isLight && !immersive && !isWarmSmoke ? "light" : "dark";
+  const h2 = isWarmSmoke ? mmsH2OnGlass : isLight ? (immersive ? mmsH2OnGlass : mmsH2) : h2Dark;
+  const body = isWarmSmoke ? mmsOnGlassSecondary : isLight ? (immersive ? mmsOnGlassSecondary : bodyLight) : bodyDark;
+  const sectionClass = isWarmSmoke
     ? cn(
-        immersive
-          ? cn(
-              "border-y border-[#3f5a47]/28 bg-transparent max-md:bg-gradient-to-b max-md:from-[#ebe6dc] max-md:via-[#f2ede4] max-md:to-[#ece7dd]",
-              mmsSectionBorder,
-            )
-          : cn(
-              "border-y bg-gradient-to-b from-[#e8e3d9] via-[#f0ebe3] to-[#e5dfd4]",
-              mmsSectionBorder,
-            ),
+        "border-y border-[rgba(214,154,96,0.14)]",
+        mmsSectionBorder,
+        "bg-gradient-to-b from-[rgb(52_46_42)] via-[rgb(46_40_36)] to-[rgb(42_38_36)]",
       )
-    : "home-band home-band--deep border-y border-[rgba(232,253,245,0.08)]";
+    : isLight
+      ? cn(
+          immersive
+            ? cn(
+                "border-y border-[#3f5a47]/28 bg-transparent max-md:bg-gradient-to-b max-md:from-[#ebe6dc] max-md:via-[#f2ede4] max-md:to-[#ece7dd]",
+                mmsSectionBorder,
+              )
+            : cn(
+                "border-y bg-gradient-to-b from-[#e8e3d9] via-[#f0ebe3] to-[#e5dfd4]",
+                mmsSectionBorder,
+              ),
+        )
+      : "home-band home-band--deep border-y border-[rgba(232,253,245,0.08)]";
 
   return (
     <section
@@ -204,6 +215,7 @@ export function HomeFeaturedWebDesignWork({
           className={cn(
             "home-reveal max-w-[min(100%,56rem)]",
             immersive && isLight && cn("public-glass-box public-glass-box--pad"),
+            isWarmSmoke && cn("web-design-surface public-glass-box--pad"),
           )}
         >
           <h2
@@ -217,6 +229,7 @@ export function HomeFeaturedWebDesignWork({
               "mt-6 max-w-[42rem] text-sm md:text-base leading-relaxed",
               body,
               immersive && isLight && "font-medium",
+              isWarmSmoke && "font-medium",
             )}
           >
             {subhead}
@@ -237,7 +250,14 @@ export function HomeFeaturedWebDesignWork({
               key={project.analyticsId}
               className={cn(
                 "flex min-w-0 flex-col gap-6",
+                isWarmSmoke &&
+                  cn(
+                    "web-design-surface p-6 sm:p-8 hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(0,0,0,0.35)]",
+                    project.emphasizeCard &&
+                      "ring-1 ring-[rgba(214,154,96,0.35)] shadow-[0_28px_72px_-34px_rgba(0,0,0,0.45)]",
+                  ),
                 isLight &&
+                  !isWarmSmoke &&
                   cn(
                     immersive
                       ? "public-glass-box--soft public-glass-box--pad hover:-translate-y-px hover:shadow-[0_26px_58px_-24px_rgba(0,0,0,0.35)]"
@@ -251,7 +271,7 @@ export function HomeFeaturedWebDesignWork({
                   ),
               )}
             >
-              <BrowserShowcasePreview hostname={project.hostname} theme={variant}>
+              <BrowserShowcasePreview hostname={project.hostname} theme={isWarmSmoke ? "light" : variant}>
                 <div
                   className={cn(
                     "relative w-full overflow-hidden",
@@ -279,15 +299,21 @@ export function HomeFeaturedWebDesignWork({
 
               <div className="flex flex-col gap-3 px-0.5">
                 <div className="flex flex-wrap gap-2">
-                  <span className={tagPill(isLight, immersive)}>{project.tag}</span>
+                  <span className={tagPill(isLight, immersive, isWarmSmoke)}>{project.tag}</span>
                   {project.featuredBadge ? (
-                    <span className={featuredPill(isLight, immersive)}>{project.featuredBadge}</span>
+                    <span className={featuredPill(isLight, immersive, isWarmSmoke)}>{project.featuredBadge}</span>
                   ) : null}
                 </div>
                 <h3
                   className={cn(
                     "tracking-tight lg:text-[1.65rem]",
-                    isLight ? (immersive ? mmsH3OnGlassLg : "text-xl font-bold text-[#1e241f] md:text-2xl") : "text-xl font-bold text-[#E8FDF5] md:text-2xl",
+                    isWarmSmoke
+                      ? mmsH3OnGlassLg
+                      : isLight
+                        ? immersive
+                          ? mmsH3OnGlassLg
+                          : "text-xl font-bold text-[#1e241f] md:text-2xl"
+                        : "text-xl font-bold text-[#E8FDF5] md:text-2xl",
                   )}
                 >
                   {project.title}
@@ -296,7 +322,13 @@ export function HomeFeaturedWebDesignWork({
                 <p
                   className={cn(
                     "text-[15px] font-semibold leading-snug md:text-base",
-                    isLight ? (immersive ? "text-[#E8FDF5]/95" : "text-[#2d3a33]") : "text-[#E8FDF5]/95",
+                    isWarmSmoke
+                      ? mmsOnGlassPrimary
+                      : isLight
+                        ? immersive
+                          ? "text-[#E8FDF5]/95"
+                          : "text-[#2d3a33]"
+                        : "text-[#E8FDF5]/95",
                   )}
                 >
                   {project.primaryLine}
@@ -305,7 +337,13 @@ export function HomeFeaturedWebDesignWork({
                   <p
                     className={cn(
                       "text-sm leading-relaxed md:text-[15px]",
-                      isLight && immersive ? mmsOnGlassSecondary : isLight ? mmsBodyFrost : body,
+                      isWarmSmoke
+                        ? mmsOnGlassSecondary
+                        : isLight && immersive
+                          ? mmsOnGlassSecondary
+                          : isLight
+                            ? mmsBodyFrost
+                            : body,
                     )}
                   >
                     {project.context}
@@ -314,7 +352,7 @@ export function HomeFeaturedWebDesignWork({
                 <ShowcaseCaseStudyAfterContext project={project} variant={showcaseVariant} />
                 <div
                   className={cn(
-                    isLight && immersive ? cn(mmsOnGlassCtaSeparator, "pt-5") : "pt-2",
+                    (isLight && immersive) || isWarmSmoke ? cn(mmsOnGlassCtaSeparator, "pt-5") : "pt-2",
                   )}
                 >
                   <PublicCtaRow>
@@ -331,7 +369,7 @@ export function HomeFeaturedWebDesignWork({
                       }
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
-                        isLight
+                        isLight || isWarmSmoke
                           ? cn(mmsBtnPrimary, "rounded-xl")
                           : "home-btn-primary home-btn-primary--hero rounded-xl text-[#0c0e0d]",
                       )}
@@ -353,7 +391,7 @@ export function HomeFeaturedWebDesignWork({
                       }
                       className={cn(
                         "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:flex-initial sm:min-w-[11rem]",
-                        isLight
+                        isLight || isWarmSmoke
                           ? cn(mmsBtnPrimary, "rounded-xl")
                           : "home-btn-primary home-btn-primary--hero rounded-xl text-[#0c0e0d]",
                       )}
@@ -374,11 +412,13 @@ export function HomeFeaturedWebDesignWork({
                     }
                     className={cn(
                       "inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 px-6 text-center text-[0.9375rem] font-semibold leading-snug no-underline sm:flex-initial sm:min-w-[11rem]",
-                      isLight
-                        ? immersive
-                          ? cn(mmsBtnSecondaryOnGlass, "rounded-xl")
-                          : cn(mmsBtnSecondary, "rounded-xl")
-                        : "home-btn-secondary--hero rounded-xl",
+                      isWarmSmoke
+                        ? cn(mmsBtnSecondaryOnGlass, "rounded-xl")
+                        : isLight
+                          ? immersive
+                            ? cn(mmsBtnSecondaryOnGlass, "rounded-xl")
+                            : cn(mmsBtnSecondary, "rounded-xl")
+                          : "home-btn-secondary--hero rounded-xl",
                     )}
                   >
                     {getShowcaseSecondaryCtaLabel(project)}
@@ -395,8 +435,18 @@ export function HomeFeaturedWebDesignWork({
           className={cn(
             "home-reveal",
             isLight && immersive ? mmsHomeGlassBlockEndGap : "mt-16 md:mt-20",
+            isWarmSmoke &&
+              bottomStripLead !== null &&
+              cn(
+                "web-design-surface public-glass-box--pad",
+                "flex flex-col gap-4 md:flex-row md:items-center md:justify-between",
+              ),
+            isWarmSmoke &&
+              bottomStripLead === null &&
+              cn("web-design-surface public-glass-box--pad", "flex justify-center"),
             isLight &&
               immersive &&
+              !isWarmSmoke &&
               bottomStripLead !== null &&
               cn(
                 "public-glass-box--soft public-glass-box--pad",
@@ -404,9 +454,11 @@ export function HomeFeaturedWebDesignWork({
               ),
             isLight &&
               immersive &&
+              !isWarmSmoke &&
               bottomStripLead === null &&
               cn("public-glass-box--soft public-glass-box--pad", "flex justify-center"),
             (!immersive || !isLight) &&
+              !isWarmSmoke &&
               cn(
                 bottomStripLead !== null &&
                   "flex flex-col items-start gap-4 border-t pt-10 md:flex-row md:items-center md:justify-between",
@@ -419,7 +471,7 @@ export function HomeFeaturedWebDesignWork({
             <p
               className={cn(
                 "max-w-xl text-sm md:text-[15px]",
-                isLight && immersive ? mmsOnGlassSecondary : body,
+                isWarmSmoke || (isLight && immersive) ? mmsOnGlassSecondary : body,
               )}
             >
               {bottomStripLead === undefined ? defaultBottomStripLead : bottomStripLead}
@@ -428,11 +480,13 @@ export function HomeFeaturedWebDesignWork({
           <Link
             href={bottomStripHref}
             className={cn(
-              isLight
-                ? immersive
-                  ? mmsTextLinkOnGlass
-                  : mmsTextLink
-                : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
+              isWarmSmoke
+                ? mmsTextLinkOnGlass
+                : isLight
+                  ? immersive
+                    ? mmsTextLinkOnGlass
+                    : mmsTextLink
+                  : "text-[0.9375rem] font-semibold text-[#00FFB2] underline-offset-4 hover:text-[#35ffc1] hover:underline",
               bottomStripLead === null && "text-base font-semibold",
             )}
           >

@@ -197,26 +197,48 @@ export default function AdLabPage() {
               ))}
             </div>
 
-            <div className="mx-auto mt-14 max-w-3xl">
+            <div className="mx-auto mt-14 max-w-4xl">
               <div className="public-glass-box--soft public-glass-box--pad">
-                <h3 className={cn(mmsH3OnGlassLg, "!text-xl md:!text-2xl")}>Video example</h3>
+                <h3 className={cn(mmsH3OnGlassLg, "!text-xl md:!text-2xl")}>Bamboo ad concept</h3>
                 <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                  Real product-focused ad for a bamboo-pole seller—clear hook, simple visuals.
+                  Two frames from the same vertical ad concept built for a bamboo supply business.
                 </p>
-                <div className="mt-5 aspect-video w-full overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
-                  <video
-                    controls
-                    playsInline
-                    preload="auto"
-                    poster="/images/ad-lab/bamboo-ad-poster.png"
-                    className="h-full w-full object-contain"
-                    aria-label="Bamboo poles ad creative video"
-                  >
-                    <source src="/videos/bamboo-ad.mp4" type="video/mp4" />
-                  </video>
+                <div className="mt-6 grid gap-8 md:grid-cols-2 md:gap-10">
+                  <figure className="m-0">
+                    <div className="overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
+                      <Image
+                        src="/images/ad-lab/bamboo-ad-steven-james-supply.png"
+                        alt="Bamboo ad frame: warehouse stacks with Steven James bulk supply headline"
+                        width={323}
+                        height={576}
+                        className="h-auto w-full object-contain object-top"
+                        sizes="(min-width: 768px) 45vw, 100vw"
+                      />
+                    </div>
+                    <figcaption className={cn("mt-3 text-xs leading-snug md:text-[13px]", mmsOnGlassMuted)}>
+                      Version A — supply / trust angle
+                    </figcaption>
+                  </figure>
+                  <figure className="m-0">
+                    <div className="overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
+                      <Image
+                        src="/images/ad-lab/bamboo-ad-strong-straight.png"
+                        alt="Bamboo ad frame: close-up stalk with Strong and Straight headline"
+                        width={323}
+                        height={576}
+                        className="h-auto w-full object-contain object-top"
+                        sizes="(min-width: 768px) 45vw, 100vw"
+                      />
+                    </div>
+                    <figcaption className={cn("mt-3 text-xs leading-snug md:text-[13px]", mmsOnGlassMuted)}>
+                      Version B — product / strength angle
+                    </figcaption>
+                  </figure>
                 </div>
-                <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                  Short product-focused ad showing how I approach clear visuals and simple messaging.
+                <p className={cn("mt-6 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
+                  Full-motion export with sound can replace these stills when the real video file is ready—drop it in as{" "}
+                  <code className="rounded bg-white/10 px-1.5 py-0.5 text-[13px] text-white/85">/videos/bamboo-ad.mp4</code>{" "}
+                  and wire the player in this section.
                 </p>
               </div>
             </div>

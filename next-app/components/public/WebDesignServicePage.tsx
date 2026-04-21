@@ -5,45 +5,49 @@ import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { WEB_DESIGN_PACKAGES } from "@/lib/web-design-packages";
 import {
-  mmsBullet,
   mmsBtnPrimary,
-  mmsBtnSecondary,
-  mmsCard,
-  mmsCtaPanel,
-  mmsEyebrow,
+  mmsBtnSecondaryOnGlass,
   mmsH1,
   mmsH2,
-  mmsLead,
-  mmsPageBg,
   mmsSectionBorder,
   mmsSectionY,
-  mmsStepCircle,
+  mmsStepCircleOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
 
+/** Warm medium-dark / on-glass text (web-design page only) */
+const wdFg = "text-[rgba(248,242,232,0.96)]";
+const wdBody = "text-[rgba(236,224,206,0.82)]";
+const wdMuted = "text-[rgba(214,197,176,0.68)]";
+const wdEyebrow = "text-[#d4a574]";
+const wdBullet = "font-bold text-[#c9a078]";
+const wdLink = cn(
+  "font-semibold text-[#f0c49a] underline-offset-4 transition-colors hover:text-[#fdebd4] hover:underline",
+);
+
+const wdH1 = cn(mmsH1, wdFg);
+const wdH2 = cn(mmsH2, wdFg);
+
 const sectionYRelaxed = cn(mmsSectionY, "lg:py-[5.5rem]");
 const heroSectionY = "py-24 md:py-32 lg:py-40";
 
+const sectionBand = cn("border-b border-[rgba(214,154,96,0.12)]", mmsSectionBorder);
+
 function WebDesignMockupCtaBand({
-  bgClass,
+  altBand,
   analyticsLocation,
 }: {
-  bgClass: string;
+  altBand?: boolean;
   analyticsLocation: string;
 }) {
   return (
-    <section className={cn("border-b", mmsSectionBorder, bgClass)}>
+    <section className={cn(sectionBand, altBand && "web-design-section--alt")}>
       <div className={cn(shell, sectionYRelaxed)}>
-        <div
-          className={cn(
-            mmsCard,
-            "mx-auto max-w-3xl border-[#3f5a47]/16 bg-gradient-to-br from-white via-[#f6f3ec] to-[#e8efe8]/75 p-8 sm:p-10 shadow-[0_22px_55px_-28px_rgba(30,36,31,0.14)]",
-          )}
-        >
-          <h2 className={mmsH2}>Want to see direction before you commit?</h2>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+        <div className={cn("web-design-surface mx-auto max-w-3xl p-8 sm:p-10")}>
+          <h2 className={wdH2}>Want to see direction before you commit?</h2>
+          <p className={cn("mt-6 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             I can put together a free homepage preview so you can react to something real — not a generic template
             gallery.
           </p>
@@ -57,9 +61,7 @@ function WebDesignMockupCtaBand({
               Get My Free Preview
             </TrackedPublicLink>
           </div>
-          <p className="mt-4 text-xs font-medium text-[#5a6a62] sm:text-sm">
-            No pressure · No obligation · Just a preview
-          </p>
+          <p className={cn("mt-4 text-xs font-medium sm:text-sm", wdMuted)}>No pressure · No obligation · Just a preview</p>
         </div>
       </div>
     </section>
@@ -68,70 +70,59 @@ function WebDesignMockupCtaBand({
 
 export function WebDesignServicePage() {
   return (
-    <div className={mmsPageBg}>
-      <section
-        className={cn(
-          "relative overflow-hidden border-b bg-gradient-to-b from-[#f7f4ee] via-[#ece7dd] to-[#e2dcd0]/90",
-          mmsSectionBorder,
-          "shadow-[inset_0_-1px_0_rgba(47,62,52,0.05)]",
-        )}
-      >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-100"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse 85% 55% at 15% -10%, rgba(184, 92, 30, 0.075), transparent 55%), radial-gradient(ellipse 60% 45% at 95% 15%, rgba(63, 90, 71, 0.07), transparent 50%), linear-gradient(180deg, rgba(255,255,255,0.42) 0%, transparent 42%)",
-          }}
-          aria-hidden
-        />
+    <div className="web-design-page w-full antialiased">
+      <section className={cn("relative overflow-hidden", sectionBand)}>
+        <div className="pointer-events-none absolute inset-0 z-0 web-design-hero-atmosphere" aria-hidden />
         <div className={cn(shell, heroSectionY, "relative z-[1] max-w-4xl")}>
-          <p className={mmsEyebrow}>MixedMakerShop · Web design</p>
-          <h1 className={cn(mmsH1, "mt-6 max-w-[22ch] sm:max-w-none")}>
-            Websites that help your business earn trust and get leads
-          </h1>
-          <p className={cn(mmsLead, "mt-8 max-w-2xl")}>
-            Topher builds clear, dependable sites for real businesses — so visitors understand what you do, why you&apos;re
-            credible, and how to reach you.
-          </p>
-          <PublicCtaRow className="mt-12">
-            <TrackedPublicLink
-              href={publicFreeMockupFunnelHref}
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "web_design_hero", target: "free_mockup" }}
-              className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
-            >
-              Get My Free Preview
-            </TrackedPublicLink>
-            <TrackedPublicLink
-              href="/examples"
-              eventName="public_web_design_sample_click"
-              eventProps={{ location: "web_design_hero", label: "examples" }}
-              className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
-            >
-              See Examples
-            </TrackedPublicLink>
-            <TrackedPublicLink
-              href="/contact"
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "web_design_hero", target: "contact" }}
-              className={cn(mmsBtnSecondary, "px-8 no-underline hover:no-underline")}
-            >
-              Contact
-            </TrackedPublicLink>
-          </PublicCtaRow>
-          <p className="mt-6 text-xs font-medium text-[#5a6a62] sm:text-sm">
-            No pressure · One business day response on contact
-          </p>
+          <div className="web-design-page-hero-card px-6 py-8 sm:px-10 sm:py-10 lg:px-12 lg:py-12">
+            <p className={cn("text-[11px] font-semibold uppercase tracking-[0.22em] md:text-xs", wdEyebrow)}>
+              MixedMakerShop · Web design
+            </p>
+            <h1 className={cn(wdH1, "mt-6 max-w-[22ch] sm:max-w-none")}>
+              Websites that help your business earn trust and get leads
+            </h1>
+            <p className={cn("mt-8 max-w-2xl text-lg leading-[1.65] md:text-xl md:leading-[1.7]", wdBody)}>
+              Topher builds clear, dependable sites for real businesses — so visitors understand what you do, why you&apos;re
+              credible, and how to reach you.
+            </p>
+            <PublicCtaRow className="mt-12">
+              <TrackedPublicLink
+                href={publicFreeMockupFunnelHref}
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "web_design_hero", target: "free_mockup" }}
+                className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
+              >
+                Get My Free Preview
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href="/examples"
+                eventName="public_web_design_sample_click"
+                eventProps={{ location: "web_design_hero", label: "examples" }}
+                className={cn(mmsBtnSecondaryOnGlass, "px-8 no-underline hover:no-underline")}
+              >
+                See Examples
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href="/contact"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "web_design_hero", target: "contact" }}
+                className={cn(mmsBtnSecondaryOnGlass, "px-8 no-underline hover:no-underline")}
+              >
+                Contact
+              </TrackedPublicLink>
+            </PublicCtaRow>
+            <p className={cn("mt-6 text-xs font-medium sm:text-sm", wdMuted)}>No pressure · One business day response on contact</p>
+          </div>
         </div>
       </section>
 
-      <section className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.06)]", mmsSectionBorder)}>
+      <section className={cn(sectionBand, "web-design-section--alt")}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
-          <h2 className={mmsH2}>Why most small-business websites underperform</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>Why most small-business websites underperform</h2>
+          <p className={cn("mt-8 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             It&apos;s rarely one flashy mistake — it&apos;s a pile of small misses that make people bounce.
           </p>
-          <ul className="mt-10 space-y-3.5 text-[#3d4a42] md:text-[17px]">
+          <ul className={cn("mt-10 space-y-3.5 md:text-[17px]", wdBody)}>
             {[
               "The headline doesn&apos;t match what visitors expect",
               "Contact paths are buried or unclear",
@@ -140,7 +131,7 @@ export function WebDesignServicePage() {
               "Mobile layout makes the business look careless",
             ].map((line) => (
               <li key={line} className="flex gap-3">
-                <span className={mmsBullet} aria-hidden>
+                <span className={wdBullet} aria-hidden>
                   ·
                 </span>
                 <span>{line}</span>
@@ -150,15 +141,10 @@ export function WebDesignServicePage() {
         </div>
       </section>
 
-      <section
-        className={cn(
-          "border-b bg-gradient-to-b from-[#dde8df]/55 via-[#ece7dd]/90 to-[#e4dfd6]",
-          mmsSectionBorder,
-        )}
-      >
+      <section className={sectionBand}>
         <div className={cn(shell, sectionYRelaxed)}>
-          <h2 className={mmsH2}>What actually works</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>What actually works</h2>
+          <p className={cn("mt-8 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             Practical pages built around clarity, credibility, and one obvious next step.
           </p>
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -169,22 +155,22 @@ export function WebDesignServicePage() {
               "One primary action: call, text, or book",
               "Simple structure — easy to maintain",
             ].map((title) => (
-              <div key={title} className={cn(mmsCard, "p-8 shadow-sm sm:p-9")}>
-                <p className="text-base font-bold text-[#1e241f]">{title}</p>
+              <div key={title} className={cn("web-design-surface p-8 shadow-sm sm:p-9")}>
+                <p className={cn("text-base font-bold", wdFg)}>{title}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className={cn("border-b bg-white/93 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
+      <section className={cn(sectionBand, "web-design-section--alt")}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
-          <h2 className={mmsH2}>Built to show up when people search</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>Built to show up when people search</h2>
+          <p className={cn("mt-8 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             A good-looking site doesn&apos;t matter if no one finds it. I build websites that are structured to show up when
             people search for services in your area.
           </p>
-          <ul className="mt-10 space-y-3.5 text-[#3d4a42] md:text-[17px]">
+          <ul className={cn("mt-10 space-y-3.5 md:text-[17px]", wdBody)}>
             {[
               "Pages built around real search terms (like “lawn care in [city]”)",
               "Clear structure Google understands",
@@ -192,7 +178,7 @@ export function WebDesignServicePage() {
               "Simple, clean content that matches what people are searching for",
             ].map((line) => (
               <li key={line} className="flex gap-3">
-                <span className={mmsBullet} aria-hidden>
+                <span className={wdBullet} aria-hidden>
                   ·
                 </span>
                 <span>{line}</span>
@@ -202,10 +188,10 @@ export function WebDesignServicePage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-[#eef3ee]/90", mmsSectionBorder)}>
+      <section className={sectionBand}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
-          <h2 className={mmsH2}>Want to show up on Google too?</h2>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>Want to show up on Google too?</h2>
+          <p className={cn("mt-6 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             I build sites with simple, effective structure so your business has a better chance of being found locally.
           </p>
           <div className="mt-8">
@@ -221,16 +207,16 @@ export function WebDesignServicePage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-white/93 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
+      <section className={cn(sectionBand, "web-design-section--alt")}>
         <div className={cn(shell, sectionYRelaxed)}>
-          <h2 className={mmsH2}>Pricing / packages</h2>
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>Pricing / packages</h2>
+          <p className={cn("mt-8 max-w-2xl text-base leading-relaxed md:text-lg", wdBody)}>
             Straightforward tiers — pick what matches where you are. Details stay the same on the{" "}
             <TrackedPublicLink
               href="/pricing"
               eventName="public_contact_cta_click"
               eventProps={{ location: "web_design_pricing", target: "pricing_page" }}
-              className="font-semibold text-[#8a4b2a] underline-offset-4 hover:underline"
+              className={wdLink}
             >
               pricing page
             </TrackedPublicLink>
@@ -238,22 +224,22 @@ export function WebDesignServicePage() {
           </p>
           <div className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
             {WEB_DESIGN_PACKAGES.map((pkg) => (
-              <div key={pkg.name} className={cn(mmsCard, "flex flex-col p-8 sm:p-9")}>
-                <h3 className="text-lg font-bold tracking-tight text-[#1e241f] md:text-xl">{pkg.name}</h3>
-                <p className="mt-3 text-2xl font-semibold tracking-tight text-[#8a4b2a] md:text-[1.65rem]">{pkg.price}</p>
-                <p className="mt-5 text-sm leading-relaxed text-[#354239] md:text-[15px]">{pkg.blurb}</p>
+              <div key={pkg.name} className={cn("web-design-surface flex flex-col p-8 sm:p-9")}>
+                <h3 className={cn("text-lg font-bold tracking-tight md:text-xl", wdFg)}>{pkg.name}</h3>
+                <p className="mt-3 text-2xl font-semibold tracking-tight text-[#f0c49a] md:text-[1.65rem]">{pkg.price}</p>
+                <p className={cn("mt-5 text-sm leading-relaxed md:text-[15px]", wdBody)}>{pkg.blurb}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <MonthlySeoPackSection analyticsLocation="web_design_monthly_seo_pack" />
+      <MonthlySeoPackSection analyticsLocation="web_design_monthly_seo_pack" tone="warmSmoke" />
 
-      <section className={cn("border-b bg-[#f4f3ef]/90", mmsSectionBorder)}>
+      <section className={sectionBand}>
         <div className={cn(shell, sectionYRelaxed, "max-w-3xl")}>
-          <h2 className={mmsH2}>Why ongoing support matters</h2>
-          <p className="mt-8 text-base leading-relaxed text-[#354239] md:text-lg">
+          <h2 className={wdH2}>Why ongoing support matters</h2>
+          <p className={cn("mt-8 text-base leading-relaxed md:text-lg", wdBody)}>
             A site isn&apos;t “done” when it launches — hours change, photos need swaps, offers evolve, and Google
             rewards fresh, accurate pages. Monthly support is optional, but it&apos;s the practical way to keep your site
             aligned with how you actually operate — small fixes, updates, and improvements without starting over.
@@ -261,9 +247,9 @@ export function WebDesignServicePage() {
         </div>
       </section>
 
-      <section className={cn("border-b bg-white/93 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
+      <section className={cn(sectionBand, "web-design-section--alt")}>
         <div className={cn(shell, sectionYRelaxed)}>
-          <h2 className={mmsH2}>Simple process</h2>
+          <h2 className={wdH2}>Simple process</h2>
           <div className="mt-14 grid gap-8 md:grid-cols-3 md:gap-10">
             {[
               {
@@ -282,31 +268,31 @@ export function WebDesignServicePage() {
                 line: "Go live with a trustworthy site — refine as you learn what visitors respond to.",
               },
             ].map((step) => (
-              <div key={step.n} className={cn(mmsCard, "p-8 sm:p-9")}>
-                <span className={mmsStepCircle} aria-hidden>
+              <div key={step.n} className={cn("web-design-surface p-8 sm:p-9")}>
+                <span className={mmsStepCircleOnGlass} aria-hidden>
                   {step.n}
                 </span>
-                <h3 className="text-lg font-bold leading-snug text-[#1e241f]">{step.title}</h3>
-                <p className="mt-4 text-sm leading-relaxed text-[#354239] md:text-[15px]">{step.line}</p>
+                <h3 className={cn("text-lg font-bold leading-snug", wdFg)}>{step.title}</h3>
+                <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", wdBody)}>{step.line}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <WebDesignMockupCtaBand bgClass="bg-[#f4f3ef]/80" analyticsLocation="web_design_mid_mockup" />
+      <WebDesignMockupCtaBand altBand analyticsLocation="web_design_mid_mockup" />
 
       <HomeFeaturedWebDesignWork
-        variant="light"
+        variant="warmSmoke"
         heading="Featured work"
         subhead="Live client sites — built to help you show up and get calls, not just look pretty online."
       />
 
-      <section className={cn("bg-gradient-to-b from-[#ece7dd] via-[#e5e0d6] to-[#dcd6cc]", mmsSectionBorder, "border-t")}>
+      <section className={cn(sectionBand, "border-t web-design-section--alt")}>
         <div className={cn(shell, "px-5 py-24 md:py-32")}>
-          <div className={cn(mmsCtaPanel, "mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
-            <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Tell me what you&apos;re trying to fix or launch</h2>
-            <p className="mx-auto mt-5 max-w-lg text-[#354239] md:text-lg">
+          <div className={cn("web-design-surface mx-auto max-w-2xl px-8 py-12 text-center sm:px-12 sm:py-14")}>
+            <h2 className={cn(wdH2, "!text-2xl md:!text-3xl")}>Tell me what you&apos;re trying to fix or launch</h2>
+            <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", wdBody)}>
               Free preview when it helps — or reach out directly if you already know what you need.
             </p>
             <PublicCtaRow align="center" className="mt-10 justify-center">
@@ -322,12 +308,12 @@ export function WebDesignServicePage() {
                 href="/contact"
                 eventName="public_contact_cta_click"
                 eventProps={{ location: "web_design_final_cta", target: "contact" }}
-                className={cn(mmsBtnSecondary, "justify-center px-8 no-underline hover:no-underline")}
+                className={cn(mmsBtnSecondaryOnGlass, "justify-center px-8 no-underline hover:no-underline")}
               >
                 Contact
               </TrackedPublicLink>
             </PublicCtaRow>
-            <p className="mx-auto mt-4 max-w-lg text-xs font-medium text-[#5a6a62] sm:text-sm">
+            <p className={cn("mx-auto mt-4 max-w-lg text-xs font-medium sm:text-sm", wdMuted)}>
               No pressure · No obligation · Reply within one business day on contact
             </p>
           </div>
