@@ -24,10 +24,11 @@ import {
   mmsBtnSecondaryOnGlass,
   mmsBulletOnGlass,
   mmsGlassPanelDenseHome,
-  mmsGlassPanelHero,
+  mmsEyebrowOnGlass,
   mmsH2,
   mmsH2OnGlass,
   mmsH3OnGlassLg,
+  mmsHeroTitleOnGlass,
   mmsOnGlassMuted,
   mmsOnGlassPrimary,
   mmsOnGlassSecondary,
@@ -233,19 +234,21 @@ export function ExamplesPageContent() {
               "relative z-[2] max-w-[40rem]",
             )}
           >
-            <div className={cn(mmsGlassPanelHero, "px-5 py-5 sm:px-7 sm:py-7 lg:px-8 lg:py-8")}>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8a4b2a]">MixedMakerShop</p>
-              <h1
-                id="examples-hero-title"
-                className="mt-4 text-3xl font-bold tracking-[-0.035em] text-[#1e241f] md:text-4xl lg:text-[2.65rem] lg:leading-[1.12]"
-              >
+            <div
+              className={cn(
+                "public-glass-box public-glass-box--pad examples-page-hero-card",
+                "px-5 py-5 sm:px-7 sm:py-7 lg:px-8 lg:py-8",
+              )}
+            >
+              <p className={cn(mmsEyebrowOnGlass, "tracking-[0.18em]")}>MixedMakerShop</p>
+              <h1 id="examples-hero-title" className={cn("mt-4", mmsHeroTitleOnGlass)}>
                 Examples of websites and builds designed to look better and work harder
               </h1>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
+              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 A mix of real client work, concept builds, and practical projects from MixedMakerShop. If you want something
                 in this direction, I can put together a free preview for your business.
               </p>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#4a5850] md:text-[15px]">
+              <p className={cn("mt-4 max-w-xl text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
                 These examples show the kind of layout clarity and trust-building direction I can create—so you can
                 picture what might fit your own business.
               </p>
@@ -265,7 +268,7 @@ export function ExamplesPageContent() {
                 <a
                   href="#real-work"
                   className={cn(
-                    mmsBtnSecondary,
+                    mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3rem] flex-1 items-center justify-center gap-2 px-8 text-[0.9375rem] no-underline hover:no-underline sm:flex-initial sm:min-w-[14rem]",
                   )}
                 >
@@ -273,14 +276,17 @@ export function ExamplesPageContent() {
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </a>
               </PublicCtaRow>
-              <p className="mt-10 flex flex-col items-start gap-1.5 text-sm font-semibold text-[#5a6a62] sm:mt-12">
+              <p className={cn("mt-10 flex flex-col items-start gap-1.5 text-sm font-semibold sm:mt-12", mmsOnGlassMuted)}>
                 <a
                   href="#real-work"
-                  className="group inline-flex items-center gap-2 text-[#4a5850] underline-offset-4 transition-colors hover:text-[#2f4a38] hover:underline"
+                  className={cn(
+                    mmsTextLinkOnGlass,
+                    "group inline-flex items-center gap-2 text-base font-semibold no-underline hover:underline",
+                  )}
                 >
                   <span className="tracking-tight">Real projects below</span>
                   <ArrowDown
-                    className="h-4 w-4 shrink-0 opacity-80 transition-transform duration-300 ease-out group-hover:translate-y-0.5"
+                    className="h-4 w-4 shrink-0 opacity-90 transition-transform duration-300 ease-out group-hover:translate-y-0.5"
                     aria-hidden
                   />
                 </a>

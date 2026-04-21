@@ -216,6 +216,39 @@
   padding: 1.5rem;
 }
 
+/* Examples page hero — darker smoked glass over bright umbrella photography */
+.public-glass-box.examples-page-hero-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(232, 149, 92, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(8, 10, 12, 0.94) 0%,
+    rgba(10, 12, 16, 0.91) 45%,
+    rgba(14, 12, 10, 0.88) 100%
+  );
+  backdrop-filter: blur(26px) saturate(155%);
+  -webkit-backdrop-filter: blur(26px) saturate(155%);
+  box-shadow:
+    0 38px 92px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.public-glass-box.examples-page-hero-card::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 85% at 50% 0%, rgba(0, 0, 0, 0.42) 0%, transparent 58%);
+  z-index: 0;
+}
+
+.public-glass-box.examples-page-hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .public-site--light-umbrella .btn.gold {
   border-color: rgba(138, 75, 42, 0.38);
   background: linear-gradient(135deg, #c96a28 0%, #b85c1e 48%, #8a4b2a 100%);

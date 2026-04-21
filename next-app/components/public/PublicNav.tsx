@@ -18,6 +18,7 @@ const navItems: {
   { href: "/examples", label: "Examples" },
   { href: "/3d-printing", label: "3D Printing" },
   { href: "/tools", label: "Tools" },
+  { href: "/ad-lab", label: "Ad Lab" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
