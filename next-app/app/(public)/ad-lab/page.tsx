@@ -119,54 +119,91 @@ function StevenJamesAdSection({
 }) {
   return (
     <section className="relative mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
-      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-black/30 shadow-2xl backdrop-blur-sm">
-        <div className="border-b border-white/10 px-5 py-4 md:px-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-300/90">Ad Lab</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-white md:text-3xl">Steven James Promo Ad</h2>
-          <p className="mt-2 max-w-2xl text-sm text-white/70 md:text-base">
-            Bold vertical creative with a clear offer and an easy way to get in touch.
-          </p>
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.14),transparent_30%)]" />
+
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="flex flex-col gap-3 border-b border-white/10 px-5 py-5 md:px-7 md:py-6">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-orange-300/90">Ad Lab</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white md:text-3xl">Steven James Promo Ad</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70 md:text-base">
+              A clean featured local ad preview built for strong mobile viewing and easy playback.
+            </p>
+          </div>
         </div>
 
         <div className="p-4 md:p-6">
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-            {hasVideo ? (
-              <video
-                className="h-full max-h-[75vh] w-full bg-black object-cover"
-                controls
-                playsInline
-                preload="metadata"
-                {...(hasPoster ? { poster: STEVEN_JAMES_POSTER_SRC } : {})}
-              >
-                <source src={STEVEN_JAMES_VIDEO_SRC} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : hasPoster ? (
-              <div className="relative aspect-[9/16] max-h-[75vh] w-full bg-black md:aspect-auto md:min-h-[min(75vh,720px)]">
-                <Image
-                  src={STEVEN_JAMES_POSTER_SRC}
-                  alt="Steven James promotional ad still"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 768px) 100vw, 896px"
-                  priority
+          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/70">
+            <div className="relative">
+              {hasVideo ? (
+                <video
+                  className="h-full max-h-[78vh] w-full bg-black object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  {...(hasPoster ? { poster: STEVEN_JAMES_POSTER_SRC } : {})}
+                >
+                  <source src={STEVEN_JAMES_VIDEO_SRC} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              ) : hasPoster ? (
+                <div className="relative aspect-[9/16] max-h-[78vh] w-full bg-black md:aspect-auto md:min-h-[min(78vh,720px)]">
+                  <Image
+                    src={STEVEN_JAMES_POSTER_SRC}
+                    alt="Steven James promotional ad still"
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 896px"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div
+                  className="aspect-[9/16] max-h-[78vh] min-h-[280px] w-full bg-gradient-to-b from-zinc-900 via-zinc-950 to-black md:min-h-[min(78vh,520px)]"
+                  role="img"
+                  aria-label="Steven James ad preview"
                 />
-              </div>
-            ) : (
-              <div
-                className="aspect-[9/16] max-h-[75vh] min-h-[280px] w-full bg-gradient-to-b from-zinc-900 via-zinc-950 to-black md:min-h-[min(75vh,520px)]"
-                role="img"
-                aria-label="Steven James ad preview placeholder"
-              />
-            )}
+              )}
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 md:p-6">
-              <div className="max-w-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-300/90">Featured Local Ad</p>
-                <h3 className="mt-2 text-xl font-extrabold text-white md:text-3xl">Steven James</h3>
-                <p className="mt-1 text-sm text-white/85 md:text-base">Call or text: 870-341-0375</p>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-4 pb-4 pt-16 md:px-6 md:pb-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-orange-300/90">
+                      Featured Local Ad
+                    </p>
+                    <h3 className="mt-2 text-2xl font-extrabold text-white drop-shadow md:text-4xl">Steven James</h3>
+                    <p className="mt-2 text-sm font-medium text-white/85 md:text-base">Call or text: 870-341-0375</p>
+                  </div>
+
+                  <div className="pointer-events-auto shrink-0">
+                    <a
+                      href="tel:8703410375"
+                      className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-orange-500 px-5 py-3 text-sm font-semibold text-black shadow-lg shadow-orange-900/30 transition hover:bg-orange-400 sm:w-auto"
+                    >
+                      Call Now
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:px-5">
+            <div>
+              <p className="text-sm font-semibold text-white">Need this style of ad for your business?</p>
+              <p className="mt-1 text-sm text-white/65">
+                MixedMakerShop builds promo-ready pages, ads, and media sections for local businesses.
+              </p>
+            </div>
+
+            <TrackedPublicLink
+              href="/contact"
+              eventName="public_contact_cta_click"
+              eventProps={{ location: "ad_lab_page", target: "steven_james_request_preview" }}
+              className="inline-flex min-h-[44px] w-full shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/15 md:w-auto"
+            >
+              Request a Free Preview
+            </TrackedPublicLink>
           </div>
         </div>
       </div>
