@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import fs from "node:fs";
+import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -11,7 +13,6 @@ import {
   mmsBtnSecondaryOnGlass,
   mmsBulletOnGlass,
   mmsH2OnGlass,
-  mmsH3OnGlassLg,
   mmsOnGlassPrimary,
   mmsOnGlassSecondary,
   mmsOnGlassMuted,
@@ -23,6 +24,22 @@ import {
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
+
+const STEVEN_JAMES_VIDEO_FILE = "steven-james-ad.mp4";
+const STEVEN_JAMES_POSTER_FILE = "steven-james-poster.jpg";
+const stevenJamesVideoAbs = path.join(process.cwd(), "public", "videos", STEVEN_JAMES_VIDEO_FILE);
+const stevenJamesPosterAbs = path.join(
+  process.cwd(),
+  "public",
+  "images",
+  "ad-lab",
+  STEVEN_JAMES_POSTER_FILE,
+);
+const hasStevenJamesVideo = fs.existsSync(stevenJamesVideoAbs);
+const hasStevenJamesPoster = fs.existsSync(stevenJamesPosterAbs);
+
+const STEVEN_JAMES_VIDEO_SRC = `/videos/${STEVEN_JAMES_VIDEO_FILE}`;
+const STEVEN_JAMES_POSTER_SRC = `/images/ad-lab/${STEVEN_JAMES_POSTER_FILE}`;
 
 type FeaturedAd = {
   id: string;
@@ -92,6 +109,70 @@ const whyItMatters = [
   "Visual choices and headline framing shape trust before someone clicks.",
   "A strong concept makes it easier for people to understand why they should act now.",
 ] as const;
+
+function StevenJamesAdSection({
+  hasVideo,
+  hasPoster,
+}: {
+  hasVideo: boolean;
+  hasPoster: boolean;
+}) {
+  return (
+    <section className="relative mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-black/30 shadow-2xl backdrop-blur-sm">
+        <div className="border-b border-white/10 px-5 py-4 md:px-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-300/90">Ad Lab</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-white md:text-3xl">Steven James Promo Ad</h2>
+          <p className="mt-2 max-w-2xl text-sm text-white/70 md:text-base">
+            Bold vertical creative with a clear offer and an easy way to get in touch.
+          </p>
+        </div>
+
+        <div className="p-4 md:p-6">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
+            {hasVideo ? (
+              <video
+                className="h-full max-h-[75vh] w-full bg-black object-cover"
+                controls
+                playsInline
+                preload="metadata"
+                {...(hasPoster ? { poster: STEVEN_JAMES_POSTER_SRC } : {})}
+              >
+                <source src={STEVEN_JAMES_VIDEO_SRC} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : hasPoster ? (
+              <div className="relative aspect-[9/16] max-h-[75vh] w-full bg-black md:aspect-auto md:min-h-[min(75vh,720px)]">
+                <Image
+                  src={STEVEN_JAMES_POSTER_SRC}
+                  alt="Steven James promotional ad still"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, 896px"
+                  priority
+                />
+              </div>
+            ) : (
+              <div
+                className="aspect-[9/16] max-h-[75vh] min-h-[280px] w-full bg-gradient-to-b from-zinc-900 via-zinc-950 to-black md:min-h-[min(75vh,520px)]"
+                role="img"
+                aria-label="Steven James ad preview placeholder"
+              />
+            )}
+
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 md:p-6">
+              <div className="max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-300/90">Featured Local Ad</p>
+                <h3 className="mt-2 text-xl font-extrabold text-white md:text-3xl">Steven James</h3>
+                <p className="mt-1 text-sm text-white/85 md:text-base">Call or text: 870-341-0375</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function AdShowcaseCard({ ad }: { ad: FeaturedAd }) {
   return (
@@ -197,50 +278,8 @@ export default function AdLabPage() {
               ))}
             </div>
 
-            <div className="mx-auto mt-14 max-w-4xl">
-              <div className="public-glass-box--soft public-glass-box--pad">
-                <h3 className={cn(mmsH3OnGlassLg, "!text-xl md:!text-2xl")}>Bamboo ad concept</h3>
-                <p className={cn("mt-3 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                  Two frames from the same vertical ad concept built for a bamboo supply business.
-                </p>
-                <div className="mt-6 grid gap-8 md:grid-cols-2 md:gap-10">
-                  <figure className="m-0">
-                    <div className="overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
-                      <Image
-                        src="/images/ad-lab/bamboo-ad-steven-james-supply.png"
-                        alt="Bamboo ad frame: warehouse stacks with Steven James bulk supply headline"
-                        width={323}
-                        height={576}
-                        className="h-auto w-full object-contain object-top"
-                        sizes="(min-width: 768px) 45vw, 100vw"
-                      />
-                    </div>
-                    <figcaption className={cn("mt-3 text-xs leading-snug md:text-[13px]", mmsOnGlassMuted)}>
-                      Version A — supply / trust angle
-                    </figcaption>
-                  </figure>
-                  <figure className="m-0">
-                    <div className="overflow-hidden rounded-xl bg-black/50 ring-1 ring-white/10">
-                      <Image
-                        src="/images/ad-lab/bamboo-ad-strong-straight.png"
-                        alt="Bamboo ad frame: close-up stalk with Strong and Straight headline"
-                        width={323}
-                        height={576}
-                        className="h-auto w-full object-contain object-top"
-                        sizes="(min-width: 768px) 45vw, 100vw"
-                      />
-                    </div>
-                    <figcaption className={cn("mt-3 text-xs leading-snug md:text-[13px]", mmsOnGlassMuted)}>
-                      Version B — product / strength angle
-                    </figcaption>
-                  </figure>
-                </div>
-                <p className={cn("mt-6 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                  Full-motion export with sound can replace these stills when the real video file is ready—drop it in as{" "}
-                  <code className="rounded bg-white/10 px-1.5 py-0.5 text-[13px] text-white/85">/videos/bamboo-ad.mp4</code>{" "}
-                  and wire the player in this section.
-                </p>
-              </div>
+            <div className="mt-14 w-full">
+              <StevenJamesAdSection hasVideo={hasStevenJamesVideo} hasPoster={hasStevenJamesPoster} />
             </div>
           </div>
         </section>
