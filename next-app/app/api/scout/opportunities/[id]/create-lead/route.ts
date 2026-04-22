@@ -6,6 +6,7 @@ import { evaluateScoutIntakeTarget, scoreScoutLead } from "@/lib/scout-conversio
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import { markScoutResultLinked, markScoutResultLinkedByOpportunity } from "@/lib/scout/scout-results-service";
 import { mapScoutSourceTypeToLeadSource } from "@/lib/crm/lead-source";
+import { resolveWorkspaceIdForOwner } from "@/lib/calendar-events";
 
 type OpportunityRow = {
   id: string;
@@ -225,7 +226,34 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       { status: opportunityScopeBlocked ? 403 : 404 }
     );
   }
-  const workspaceId = String(opp.workspace_id || "").trim();
+  const opportunityWorkspaceId = String(opp.workspace_id || "").trim();
+  let fallbackWorkspaceId: string | null = null;
+  if (!opportunityWorkspaceId) {
+    console.info("[Action Debug] create-lead workspace fallback lookup started", {
+      request_id: requestId,
+      opportunityId,
+      ownerId,
+    });
+    fallbackWorkspaceId = await resolveWorkspaceIdForOwner(ownerId);
+    console.info("[Action Debug] create-lead workspace fallback lookup finished", {
+      request_id: requestId,
+      opportunityId,
+      ownerId,
+      fallback_workspace_id: fallbackWorkspaceId,
+      fallback_used: Boolean(fallbackWorkspaceId),
+    });
+  }
+  const workspaceId = opportunityWorkspaceId || String(fallbackWorkspaceId || "").trim();
+  const usedFallbackWorkspace = !opportunityWorkspaceId && Boolean(workspaceId);
+  console.info("[Action Debug] create-lead workspace resolution", {
+    request_id: requestId,
+    opportunityId,
+    ownerId,
+    opportunity_workspace_id: opportunityWorkspaceId || null,
+    fallback_workspace_id: fallbackWorkspaceId,
+    workspace_id: workspaceId || null,
+    fallback_used: usedFallbackWorkspace,
+  });
   if (!workspaceId) {
     return fail(422, "missing_workspace_id", "Opportunity has no workspace_id, so lead creation was blocked.");
   }
@@ -266,6 +294,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const intake = evaluateScoutIntakeTarget({
     category: opp.category,
+    business_name: opp.business_name,
     website: websiteRaw,
     facebookUrl: facebookRaw,
     phone: phoneRaw,
@@ -277,13 +306,15 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       created: false,
       reason: intake.skipReason || "skipped",
       message:
-        intake.skipReason === "non_priority_category"
-          ? "Lead skipped: category not in priority list (pressure washing, detailing, landscaping, plumbing, HVAC, roofing)."
-          : intake.skipReason === "has_standalone_website"
-            ? "Lead skipped: already has a standalone website."
-            : intake.skipReason === "missing_contact"
-              ? "Lead skipped: needs phone or email."
-              : "Lead skipped by scout intake rules.",
+        intake.skipReason === "has_standalone_website"
+          ? "Lead skipped: already has a standalone website."
+          : intake.skipReason === "missing_contact"
+            ? "Lead skipped: needs phone or email."
+            : intake.skipReason === "online_only"
+              ? "Lead skipped: online-only business."
+              : intake.skipReason === "not_small_business"
+                ? "Lead skipped: not a small-business target."
+                : "Lead skipped by scout intake rules.",
     });
   }
 
@@ -420,6 +451,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     opportunityId,
     businessName,
     workspaceId,
+    usedFallbackWorkspace,
   });
   const { data: insertedRows, error: insertError } = await supabase
     .from("leads")

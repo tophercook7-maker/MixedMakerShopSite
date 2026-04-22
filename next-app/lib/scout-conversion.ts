@@ -58,6 +58,30 @@ const LOCAL_SERVICE_KEYWORDS = [
   "lawn",
   "home",
   "local",
+  "salon",
+  "barber",
+  "spa",
+  "pet",
+  "groom",
+  "dentist",
+  "chiropr",
+  "bakery",
+  "restaurant",
+  "cafe",
+  "boutique",
+  "florist",
+  "moving",
+  "junk",
+  "pest",
+  "electric",
+  "handyman",
+  "flooring",
+  "painting",
+  "tree",
+  "pool",
+  "towing",
+  "auto repair",
+  "mechanic",
 ];
 
 const ONLINE_ONLY_KEYWORDS = [
@@ -83,6 +107,32 @@ const LARGE_BRAND_KEYWORDS = [
   "kroger",
   "corporate",
   "franchise",
+  "chain",
+];
+
+const SMALL_BUSINESS_EXCLUDE_KEYWORDS = [
+  "enterprise",
+  "corporate",
+  "franchise",
+  "chain",
+  "national brand",
+  "big box",
+  "amazon",
+  "walmart",
+  "target",
+  "costco",
+  "mcdonald",
+  "starbucks",
+  "home depot",
+  "lowe",
+  "saas",
+  "software",
+  "ecommerce",
+  "e-commerce",
+  "dropshipping",
+  "online only",
+  "digital product",
+  "online course",
 ];
 
 function hasAny(haystack: string, tokens: string[]): boolean {
@@ -91,6 +141,12 @@ function hasAny(haystack: string, tokens: string[]): boolean {
 
 function normalizeText(value: unknown): string {
   return String(value || "").trim().toLowerCase();
+}
+
+function looksLikeSmallBusiness(category: string, businessName: string): boolean {
+  const text = `${category} | ${businessName}`;
+  if (!text.trim()) return true;
+  return !hasAny(text, SMALL_BUSINESS_EXCLUDE_KEYWORDS);
 }
 
 function clampScore(value: number): number {
@@ -113,6 +169,8 @@ export function scoreScoutLead(input: ConversionInput): ConversionResult {
   const onlineOnly = hasAny(`${category} | ${businessName}`, ONLINE_ONLY_KEYWORDS);
   const largeCorporate =
     hasAny(`${category} | ${businessName}`, LARGE_BRAND_KEYWORDS) || reviewCount > 500;
+  const smallBusinessLike = looksLikeSmallBusiness(category, businessName);
+
   const hasBadWebsiteSignals =
     websiteStatus === "broken_website" ||
     websiteStatus === "outdated_website" ||
@@ -125,32 +183,40 @@ export function scoreScoutLead(input: ConversionInput): ConversionResult {
     issueText.includes("not mobile") ||
     issueText.includes("mobile") ||
     issueText.includes("missing contact");
+
   const website_quality: "good" | "bad" = !has_website || hasBadWebsiteSignals ? "bad" : "good";
 
   let lead_score = 0;
   if (!has_website) lead_score += 30;
   if (has_website && website_quality === "bad") lead_score += 25;
   if (has_phone) lead_score += 20;
+  if (has_email) lead_score += 10;
   if (reviewCount >= 5 && reviewCount <= 100) lead_score += 15;
   if (prioritized_category) lead_score += 10;
   if (is_local_service) lead_score += 10;
+  if (smallBusinessLike) lead_score += 10;
 
   const whyParts: string[] = [];
   if (!has_website) whyParts.push("No website");
   else if (website_quality === "bad") whyParts.push("Outdated/weak website");
   if (reviewCount > 0) whyParts.push(`${reviewCount} reviews`);
   if (has_phone) whyParts.push("has phone");
+  if (has_email) whyParts.push("has email");
   if (prioritized_category) whyParts.push("target category");
   if (is_local_service) whyParts.push("local service");
-  const why_this_lead =
-    whyParts.length > 0 ? whyParts.join(" + ") : "Contactable local business opportunity";
+  if (smallBusinessLike) whyParts.push("small business");
 
-  const excluded = onlineOnly || largeCorporate;
+  const why_this_lead =
+    whyParts.length > 0 ? whyParts.join(" + ") : "Contactable small business opportunity";
+
+  const excluded = onlineOnly || largeCorporate || !smallBusinessLike;
   const excluded_reason = onlineOnly
     ? "online_only"
     : largeCorporate
       ? "large_corporate"
-      : null;
+      : !smallBusinessLike
+        ? "not_small_business"
+        : null;
 
   return {
     lead_score: clampScore(lead_score),
@@ -173,11 +239,13 @@ function isFacebookHost(host: string): boolean {
 }
 
 /**
- * Scout intake: no standalone website OR Facebook-only presence, plus phone/email,
- * and (for now) a priority local-service category.
+ * Scout intake: targets local small businesses with no standalone website
+ * (or Facebook-only presence), plus phone/email.
+ * Priority trade/service categories still score higher, but are no longer required.
  */
 export function evaluateScoutIntakeTarget(input: {
   category?: string | null;
+  business_name?: string | null;
   website?: string | null;
   facebookUrl?: string | null;
   phone?: string | null;
@@ -189,19 +257,30 @@ export function evaluateScoutIntakeTarget(input: {
   prioritized_category: boolean;
 } {
   const category = normalizeText(input.category);
+  const businessName = normalizeText(input.business_name);
+  const smallBusinessLike = looksLikeSmallBusiness(category, businessName);
+  const onlineOnlyCategory = hasAny(`${category} | ${businessName}`, ONLINE_ONLY_KEYWORDS);
+  const clearlyLargeBrandCategory = hasAny(`${category} | ${businessName}`, LARGE_BRAND_KEYWORDS);
   const prioritized_category = hasAny(category, PRIORITY_CATEGORY_KEYWORDS);
   const has_phone = Boolean(String(input.phone || "").trim());
   const has_email = Boolean(String(input.email || "").trim());
+
   if (!has_phone && !has_email) {
     return { ok: false, skipReason: "missing_contact", intakeReason: null, prioritized_category };
   }
-  if (!prioritized_category) {
-    return { ok: false, skipReason: "non_priority_category", intakeReason: null, prioritized_category };
+
+  if (onlineOnlyCategory) {
+    return { ok: false, skipReason: "online_only", intakeReason: null, prioritized_category };
+  }
+
+  if (clearlyLargeBrandCategory || !smallBusinessLike) {
+    return { ok: false, skipReason: "not_small_business", intakeReason: null, prioritized_category };
   }
 
   const fbRaw = String(input.facebookUrl || "").trim();
   const webRaw = String(input.website || "").trim().toLowerCase();
   let websiteIsOnlyFacebook = false;
+
   if (webRaw) {
     try {
       const u = new URL(webRaw.startsWith("http") ? webRaw : `https://${webRaw}`);
@@ -232,4 +311,3 @@ export function evaluateScoutIntakeTarget(input: {
 
   return { ok: true, skipReason: null, intakeReason, prioritized_category };
 }
-

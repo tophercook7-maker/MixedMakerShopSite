@@ -1,0 +1,536 @@
+# scout/morning_runner.py lines 2305-2836 inclusive
+# Fragment is the body of def run(...) from its start through post-filter candidate prep;
+# run() continues at line 2837 in the real file (case generation, etc.)
+
+def run(
+    current_lat: float | None = None,
+    current_lng: float | None = None,
+    scan_settings: dict | None = None,
+    progress_callback=None,
+    cancel_callback=None,
+):
+    places_reduced_mode_notice: str | None = None
+    def is_cancelled() -> bool:
+        if not cancel_callback:
+            return False
+        try:
+            return bool(cancel_callback())
+        except Exception:
+            return False
+
+    def ensure_not_cancelled() -> None:
+        if is_cancelled():
+            raise ScoutRunError(
+                "cancelled",
+                "Scout cancelled by user",
+                "Scout cancelled",
+            )
+
+    def report_progress(stage: str, progress: int, message: str, **extra):
+        if not progress_callback:
+            return
+        payload = {
+            "stage": stage,
+            "progress": max(0, min(100, int(progress))),
+            "message": message,
+        }
+        if extra:
+            payload.update(extra)
+        try:
+            progress_callback(payload)
+        except Exception:
+            # Progress telemetry should never break the scout run.
+            pass
+
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(SCRIPT_DIR / ".env")
+        load_dotenv(SCRIPT_DIR.parent / ".env")
+    except ImportError:
+        pass
+
+    try:
+        try:
+            from .places_client import get_places_reduced_mode_notice
+        except ImportError:
+            from places_client import get_places_reduced_mode_notice
+        # Clear stale notice from prior runs in the same process.
+        get_places_reduced_mode_notice(clear=True)
+    except Exception:
+        pass
+
+    config = load_config()
+    settings = scan_settings if isinstance(scan_settings, dict) else {}
+    scan_scope = str(settings.get("scope") or "").strip().lower()
+    selected_city = str(settings.get("single_city") or settings.get("city") or "").strip()
+    selected_region = str(settings.get("region") or "").strip().lower()
+    selected_categories = [
+        str(v or "").strip()
+        for v in (settings.get("categories") or [])
+        if str(v or "").strip()
+    ]
+    if not selected_categories and str(settings.get("category") or "").strip():
+        selected_categories = [str(settings.get("category") or "").strip()]
+    selected_issue_filters = [
+        str(v or "").strip().lower()
+        for v in (settings.get("issue_filters") or [])
+        if str(v or "").strip()
+    ]
+    selected_depth = str(settings.get("depth") or "").strip().lower()
+    selected_mode = str(settings.get("mode") or "").strip().lower()
+    selected_discovery_mode = str(settings.get("discovery_mode") or "").strip().lower()
+    if selected_mode == "discovery":
+        selected_discovery_mode = "paid_discovery"
+    elif selected_mode == "reduced":
+        selected_discovery_mode = "reduced_free"
+    if not selected_discovery_mode:
+        selected_discovery_mode = "reduced_free"
+    force_reduced_mode = selected_discovery_mode != "paid_discovery"
+    if selected_categories:
+        config["categories"] = selected_categories
+    if scan_scope == "single_city" and selected_city:
+        config["multi_city_enabled"] = True
+        config["max_cities_per_run"] = 1
+        config["target_cities"] = [{"city_name": selected_city, "state": "AR"}]
+    elif scan_scope == "nearby_cities" and selected_city:
+        config["multi_city_enabled"] = True
+        config["max_cities_per_run"] = max(8, int(config.get("max_cities_per_run", 8)))
+        config["target_cities"] = [{"city_name": selected_city, "state": "AR"}]
+        config["home_city"] = selected_city
+        config["nearby_city_seed"] = selected_city
+    elif scan_scope == "arkansas_region" and selected_region:
+        region_key = selected_region.replace(" ", "_").lower()
+        if region_key in ARKANSAS_REGION_CITIES:
+            config["multi_city_enabled"] = True
+            config["target_cities"] = [{"city_name": city, "state": "AR"} for city in ARKANSAS_REGION_CITIES[region_key]]
+            config["max_cities_per_run"] = max(
+                len(ARKANSAS_REGION_CITIES[region_key]),
+                int(config.get("max_cities_per_run", len(ARKANSAS_REGION_CITIES[region_key]))),
+            )
+    elif scan_scope == "all_arkansas":
+        config["multi_city_enabled"] = True
+        config["target_cities"] = [{"city_name": city, "state": "AR"} for city in ARKANSAS_CITIES_STATEWIDE]
+        config["max_cities_per_run"] = max(len(ARKANSAS_CITIES_STATEWIDE), int(config.get("max_cities_per_run", 40)))
+    home_city = config.get("home_city", "City")
+    target_cities = _resolve_target_cities(config)
+    radius = config.get("search_radius_miles", 25)
+    categories = _resolve_discovery_categories(config)
+    base_radii_miles = config.get("search_radii_miles", [10])
+    expansion_radii_miles = config.get("expansion_radii_miles", [10, 25, 50])
+    city_expansion_threshold = max(1, int(config.get("city_expansion_threshold", 100)))
+    max_total_results = int(
+        config.get(
+            "DISCOVERY_MAX_PER_RUN",
+            config.get("discovery_max_per_run", config.get("max_total_results_per_run", 800)),
+        )
+    )
+    max_total_results = max(350, max_total_results)
+    max_total_results = min(max_total_results, int(config.get("max_businesses_per_run", 900) or 900))
+    max_total_results = _scan_depth_limit(selected_depth, max_total_results)
+    requested_lead_limit = int(settings.get("lead_limit") or 0) if str(settings.get("lead_limit") or "").strip() else 0
+    if requested_lead_limit > 0:
+        max_total_results = max(1, min(400, requested_lead_limit))
+    max_results_per_city = max(200, int(config.get("max_results_per_city", 400)))
+    max_per = int(config.get("max_results_per_query", config.get("max_results_per_category", 100)))
+    max_per = max(1, min(100, max_per))
+    ignore_chains = config.get("ignore_chains", True)
+    deep_scan_max_per_run = max(
+        1, int(config.get("DEEP_SCAN_MAX_PER_RUN", config.get("deep_scan_max_per_run", 15)))
+    )
+    max_concurrency = max(
+        1,
+        min(
+            12,
+            int(
+                os.environ.get(
+                    "SCOUT_MAX_CONCURRENCY",
+                    config.get("SCOUT_MAX_CONCURRENCY", config.get("max_concurrency", 10)),
+                )
+            ),
+        ),
+    )
+    screenshot_score_threshold = max(
+        0,
+        int(
+            os.environ.get(
+                "SCOUT_SCREENSHOT_SCORE_THRESHOLD",
+                config.get("SCOUT_SCREENSHOT_SCORE_THRESHOLD", 70),
+            )
+        ),
+    )
+    deep_audit_score_threshold = max(
+        0,
+        int(
+            os.environ.get(
+                "SCOUT_DEEP_AUDIT_SCORE_THRESHOLD",
+                config.get("SCOUT_DEEP_AUDIT_SCORE_THRESHOLD", 80),
+            )
+        ),
+    )
+    screenshot_max_per_run = max(
+        1, int(config.get("SCREENSHOT_MAX_PER_RUN", config.get("screenshot_max_per_run", 10)))
+    )
+    screenshot_concurrency = max(
+        1, min(5, int(config.get("SCREENSHOT_CONCURRENCY", config.get("screenshot_concurrency", 3))))
+    )
+    deep_scan_concurrency = max(
+        1,
+        min(
+            5,
+            int(
+                config.get(
+                    "DEEP_SCAN_CONCURRENCY",
+                    config.get("deep_scan_concurrency", screenshot_concurrency),
+                )
+            ),
+        ),
+    )
+    website_fetch_timeout = max(
+        2, int(config.get("WEBSITE_FETCH_TIMEOUT_SECONDS", config.get("website_fetch_timeout_seconds", 6)))
+    )
+    screenshot_timeout = max(
+        5, int(config.get("SCREENSHOT_TIMEOUT_SECONDS", config.get("screenshot_timeout_seconds", 12)))
+    )
+    deep_analysis_timeout = max(10, int(config.get("deep_analysis_timeout_seconds", 45)))
+    api_key = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
+
+    print("Morning Runner — automated local client finder")
+    print(f"  home_city: {home_city}, radius: {radius} mi")
+    print(f"  target cities: {len(target_cities)}")
+    active_region = str(os.environ.get("SCOUT_REGION_OVERRIDE", "") or "").strip().lower()
+    if active_region:
+        print(f"  active region override: {active_region}")
+    print(f"  search_radii_miles: {base_radii_miles}")
+    print(f"  expansion_radii_miles: {expansion_radii_miles}")
+    print(f"  city_expansion_threshold: {city_expansion_threshold}")
+    print(f"  categories: {categories}, max_results_per_query: {max_per}, ignore_chains: {ignore_chains}")
+    print(f"  discovery_max_per_run: {max_total_results}")
+    if settings:
+        print(
+            "  scan settings applied: "
+            f"scope={scan_scope or 'default'}, city={selected_city or 'n/a'}, region={selected_region or 'n/a'}, "
+            f"categories={len(selected_categories)}, issue_filters={len(selected_issue_filters)}, "
+            f"depth={selected_depth or 'default'}, discovery_mode={selected_discovery_mode}"
+        )
+    print(f"  deep_scan_max_per_run: {deep_scan_max_per_run}")
+    print(f"  max_concurrency: {max_concurrency}")
+    print(f"  screenshot_max_per_run: {screenshot_max_per_run}")
+    print(f"  screenshot_score_threshold: {screenshot_score_threshold}")
+    print(f"  deep_audit_score_threshold: {deep_audit_score_threshold}")
+    print(f"  screenshot_concurrency: {screenshot_concurrency}")
+    print(f"  deep_scan_concurrency: {deep_scan_concurrency}")
+    print(
+        "  timeouts (sec): "
+        f"website_fetch={website_fetch_timeout}, "
+        f"screenshot={screenshot_timeout}, "
+        f"deep_analysis={deep_analysis_timeout}"
+    )
+    if current_lat is not None and current_lng is not None:
+        print(f"  location mode: current ({current_lat}, {current_lng})")
+    else:
+        print(f"  location mode: saved config ({home_city})")
+    if force_reduced_mode:
+        places_reduced_mode_notice = (
+            "Reduced mode (free) selected. Google Places discovery skipped. "
+            "Scout is running in reduced enrichment mode."
+        )
+        try:
+            try:
+                from .places_client import _set_places_reduced_mode_notice
+            except ImportError:
+                from places_client import _set_places_reduced_mode_notice
+            _set_places_reduced_mode_notice(places_reduced_mode_notice)
+        except Exception:
+            pass
+        _write_empty(
+            f"{places_reduced_mode_notice} No paid discovery executed for this run.",
+            reduced_mode_notice=places_reduced_mode_notice,
+        )
+        return
+    if not api_key:
+        places_reduced_mode_notice = (
+            "Google Places discovery is unavailable because API key is missing. "
+            "Scout is running in reduced mode."
+        )
+        try:
+            try:
+                from .places_client import _set_places_reduced_mode_notice
+            except ImportError:
+                from places_client import _set_places_reduced_mode_notice
+            _set_places_reduced_mode_notice(places_reduced_mode_notice)
+        except Exception:
+            pass
+        _write_empty(
+            f"{places_reduced_mode_notice} No paid discovery executed for this run.",
+            reduced_mode_notice=places_reduced_mode_notice,
+        )
+        return
+    print()
+    report_progress("discovering_businesses", 10, "Discovery started")
+
+    places = []
+    search_metrics: dict = {"raw_api_rows": 0, "dedupe_skips_in_search": 0}
+    scout_funnel_stage: dict | None = None
+    seen_place_ids: set[str] = set()
+    total_duplicates_skipped = 0
+    cities_scanned_count = 0
+    try:
+        total_cities = max(1, len(target_cities))
+        for city_idx, target in enumerate(target_cities, start=1):
+            ensure_not_cancelled()
+            city_name = target.get("city_name") or home_city
+            state = target.get("state") or ""
+            city_label = f"{city_name}, {state}" if state else city_name
+            city_lat = target.get("latitude")
+            city_lng = target.get("longitude")
+            scan_lat = current_lat if (current_lat is not None and current_lng is not None and len(target_cities) == 1) else city_lat
+            scan_lng = current_lng if (current_lat is not None and current_lng is not None and len(target_cities) == 1) else city_lng
+            print(f"  city being scanned: {city_label}")
+            city_places = _fetch_places(
+                city_label,
+                categories,
+                max_per,
+                radius,
+                current_lat=scan_lat,
+                current_lng=scan_lng,
+                radii_miles=base_radii_miles,
+                max_total_results=max_results_per_city,
+                search_metrics=search_metrics,
+            )
+            if len(city_places) < city_expansion_threshold:
+                print(
+                    f"  city under threshold ({len(city_places)}<{city_expansion_threshold}), "
+                    "expanding radius tiers"
+                )
+                expanded_places = _fetch_places(
+                    city_label,
+                    categories,
+                    max_per,
+                    radius,
+                    current_lat=scan_lat,
+                    current_lng=scan_lng,
+                    radii_miles=expansion_radii_miles,
+                    max_total_results=max_results_per_city,
+                    search_metrics=search_metrics,
+                )
+                expanded_existing_ids = {
+                    str(p.get("place_id") or "").strip() for p in city_places if str(p.get("place_id") or "").strip()
+                }
+                for p in expanded_places:
+                    pid = str(p.get("place_id") or "").strip()
+                    if pid and pid in expanded_existing_ids:
+                        continue
+                    city_places.append(p)
+                    if pid:
+                        expanded_existing_ids.add(pid)
+                    if len(city_places) >= max_results_per_city:
+                        break
+            city_added = 0
+            city_dupes = 0
+            for p in city_places:
+                pid = str(p.get("place_id") or "").strip()
+                if pid and pid in seen_place_ids:
+                    city_dupes += 1
+                    total_duplicates_skipped += 1
+                    continue
+                if pid:
+                    seen_place_ids.add(pid)
+                p["city"] = city_name
+                p["state"] = state
+                places.append(p)
+                city_added += 1
+                if len(places) >= max_total_results:
+                    break
+            cities_scanned_count += 1
+            print(f"  businesses discovered: {city_added}")
+            print(f"  duplicates skipped: {city_dupes}")
+            discovery_progress = 10 + int((city_idx / total_cities) * 15)
+            report_progress(
+                "discovering_businesses",
+                discovery_progress,
+                f"Discovered {len(places)} businesses ({city_idx}/{total_cities} cities scanned)",
+                discovered_count=len(places),
+                cities_scanned=cities_scanned_count,
+                total_cities=total_cities,
+            )
+            if len(places) >= max_total_results:
+                break
+    except ScoutRunError:
+        raise
+    except Exception as e:
+        err_str = str(e).upper()
+        if "REQUEST_DENIED" in err_str or "LEGACY" in err_str:
+            raise ScoutRunError(
+                "request_denied",
+                str(e),
+                "Scout failed: Places API returned REQUEST_DENIED. "
+                "Enable 'Places API (New)' in your Google Cloud project. "
+                "Geocoding is optional and is no longer required for lead discovery. "
+                "You may be calling a legacy API that is not enabled.",
+            ) from e
+        err_lower = err_str.lower()
+        if "certificate" in err_lower or "ssl" in err_lower:
+            raise ScoutRunError(
+                "ssl_verify_failed",
+                str(e),
+                "Scout failed: Python SSL certificate verification failed while calling Google APIs.",
+            ) from e
+        if "geocode" in err_lower or "resolve" in err_lower:
+            raise ScoutRunError(
+                "geocode_failed",
+                str(e),
+                "Scout geocoding failed, but discovery should continue in text-search mode. "
+                "Check logs for soft geocoding warnings.",
+            ) from e
+        raise ScoutRunError(
+            "places_api_failed",
+            str(e),
+            f"Scout failed: {str(e)}",
+        ) from e
+
+    try:
+        try:
+            from .places_client import get_places_reduced_mode_notice
+        except ImportError:
+            from places_client import get_places_reduced_mode_notice
+        places_reduced_mode_notice = get_places_reduced_mode_notice(clear=False)
+        if places_reduced_mode_notice:
+            print(f"  [Scout] reduced mode: {places_reduced_mode_notice}")
+    except Exception:
+        places_reduced_mode_notice = None
+
+    if not places:
+        empty_summary = "No businesses discovered from Places for this run."
+        if places_reduced_mode_notice:
+            empty_summary = f"{places_reduced_mode_notice} {empty_summary}"
+        _write_empty(empty_summary, reduced_mode_notice=places_reduced_mode_notice)
+        return
+
+    places_snapshot_pre_filter = list(places)
+    unique_places_after_city_aggregate = len(places)
+    raw_api_rows_total = int(search_metrics.get("raw_api_rows") or 0)
+    dedupe_skips_in_places_client = int(search_metrics.get("dedupe_skips_in_search") or 0)
+    cat_summary = _scout_brain_category_summary(places_snapshot_pre_filter)
+
+    pre_chain = places
+    if ignore_chains:
+        places = [p for p in places if not _is_chain(p.get("name") or "")]
+    excluded_large_corporate = len(pre_chain) - len(places)
+
+    pre_online = places
+    places = [
+        p
+        for p in places
+        if not _looks_online_only_business(str(p.get("name") or ""), str(p.get("category") or p.get("industry") or ""))
+    ]
+    excluded_online_only = len(pre_online) - len(places)
+
+    # Focus on easy-close local service models (expanded small-business set).
+    pre_easy_close = places
+    places = [
+        p for p in places
+        if _is_easy_close_category(p.get("category") or p.get("industry") or "")
+    ]
+    excluded_not_easy_close_category = len(pre_easy_close) - len(places)
+    if not places:
+        _write_empty("No businesses matched easy-close category focus.")
+        return
+
+    def _is_real_active_place(place: dict) -> bool:
+        status = str(place.get("business_status") or "").strip().lower()
+        if status in {"closed", "permanently_closed", "temporarily_closed"}:
+            return False
+        review_count = _as_int(place.get("review_count"), 0)
+        activity = bool(
+            review_count > 0
+            or bool(place.get("owner_post_detected"))
+            or bool(place.get("new_photos_detected"))
+            or bool(place.get("listing_recently_updated"))
+        )
+        has_website = bool(str(place.get("website") or "").strip())
+        return bool(activity or has_website)
+
+    pre_active = places
+    active_places = [p for p in places if _is_real_active_place(p)]
+    excluded_inactive_listing = len(pre_active) - len(active_places)
+    places = active_places
+    if not places:
+        _write_empty("No active businesses matched the focus filters.")
+        return
+
+    places_after_active = list(places)
+    excluded_standalone_website = sum(1 for p in places_after_active if _has_standalone_website_url(p))
+
+    pre_missing_contact = places
+    places = [p for p in places if _has_discovery_contact_row(p)]
+    excluded_missing_contact = len(pre_missing_contact) - len(places)
+
+    print(f"[Scout Brain] raw categories summary: {json.dumps(cat_summary, ensure_ascii=False)}")
+    print(f"[Scout Brain] raw candidates fetched: {raw_api_rows_total}")
+    print(f"[Scout Brain] after dedup: {unique_places_after_city_aggregate}")
+    print(f"[Scout Brain] excluded online_only: {excluded_online_only}")
+    print(f"[Scout Brain] excluded large_corporate: {excluded_large_corporate}")
+    print(f"[Scout Brain] excluded standalone_website: {excluded_standalone_website}")
+    print(f"[Scout Brain] excluded missing_contact: {excluded_missing_contact}")
+    print(f"[Scout Brain] final candidates kept: {len(places)}")
+
+    # Prioritize businesses with visible phone/contact and simple service model.
+    def _place_priority(place: dict) -> tuple[int, int, int]:
+        has_phone = 1 if str(place.get("phone") or "").strip() else 0
+        has_contact_hint = 1 if str(place.get("website") or "").strip() or has_phone else 0
+        simple_service = 1 if _is_easy_close_category(place.get("category") or place.get("industry") or "") else 0
+        return (-has_phone, -has_contact_hint, -simple_service)
+
+    places = sorted(places, key=_place_priority)
+
+    sample_size = min(5, len(places))
+    if sample_size:
+        print("  source payload sample (first 5)")
+        for idx, raw in enumerate(places[:sample_size], start=1):
+            sample_name = str(raw.get("name") or "").strip() or "(missing)"
+            sample = {
+                "name": sample_name,
+                "website": raw.get("website"),
+                "formatted_address": raw.get("address") or raw.get("vicinity"),
+                "phone": raw.get("phone"),
+                "place_url": raw.get("maps_url"),
+                "place_id": raw.get("place_id"),
+                "facebook_url": raw.get("facebook_url") or raw.get("facebook"),
+            }
+            print(f"    [{idx}] {json.dumps(sample, ensure_ascii=False)}")
+
+    no_website = [p for p in places if not (p.get("website") or "").strip()]
+    weak_website = [p for p in places if (p.get("website") or "").strip()]
+    scout_funnel_stage = {
+        "raw_fetched": raw_api_rows_total,
+        "deduped_skips_in_places_client": dedupe_skips_in_places_client,
+        "unique_after_city_aggregate": unique_places_after_city_aggregate,
+        "cross_city_duplicate_skips": total_duplicates_skipped,
+        "excluded_large_corporate": excluded_large_corporate,
+        "excluded_online_only": excluded_online_only,
+        "excluded_not_easy_close_category": excluded_not_easy_close_category,
+        "excluded_inactive_listing": excluded_inactive_listing,
+        "excluded_standalone_website": excluded_standalone_website,
+        "excluded_missing_contact": excluded_missing_contact,
+        "final_candidates_kept": len(places),
+        "bucket_no_website": len(no_website),
+        "bucket_has_website_weak_scan": len(weak_website),
+    }
+    print(f"  total businesses discovered: {len(places)}")
+    print(f"  duplicates skipped: {total_duplicates_skipped}")
+
+    print(f"  No website: {len(no_website)} | Weak website: {len(weak_website)}")
+    print()
+    total_businesses = len(no_website) + len(weak_website)
+    report_progress(
+        "businesses_discovered",
+        25,
+        f"Websites collected for {total_businesses} businesses",
+        total_businesses=total_businesses,
+    )
+    report_progress(
+        "quick_scans_running",
+        45,
+        f"Quick scans running for {total_businesses} businesses",
+        total_businesses=total_businesses,
+    )

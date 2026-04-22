@@ -112,6 +112,7 @@ export async function upsertLeadFromOpportunity(
 
   const intake = evaluateScoutIntakeTarget({
     category: String(opp.category || opp.industry || "").trim() || null,
+    business_name: businessName,
     website,
     facebookUrl: null,
     phone,
