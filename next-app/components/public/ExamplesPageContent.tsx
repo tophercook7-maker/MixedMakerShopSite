@@ -55,6 +55,34 @@ const featuredPill =
 const exampleThumbFrame =
   "relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/14 bg-[#cfd8d0] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]";
 
+const proofWallSections = [
+  {
+    title: "Website Examples",
+    body: "Real sites, concept builds, SEO landing pages, and free preview directions for local businesses.",
+    href: "#real-work",
+  },
+  {
+    title: "GiGi’s Print Shop Examples",
+    body: "Bookmarks, useful holders, replacement parts, seasonal prints, and custom requests as the shop grows.",
+    href: "/3d-printing#what-gigi-makes",
+  },
+  {
+    title: "Property Care Examples",
+    body: "Before-and-after outdoor help, lawn care, cleanup, and property work when available.",
+    href: "/property-care",
+  },
+  {
+    title: "Tools & Ideas",
+    body: "Small apps, templates, digital helpers, and Idea Lab experiments before they become full offers.",
+    href: "/idea-lab",
+  },
+  {
+    title: "Before & After",
+    body: "Transformation-focused examples where the change is easier to understand visually.",
+    href: "#concept-builds",
+  },
+] as const;
+
 function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
   const { project, badge, industry } = entry;
   const primaryLabel = getShowcasePrimaryCtaLabel(project);
@@ -291,6 +319,36 @@ export function ExamplesPageContent() {
                   />
                 </a>
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className={mmsUmbrellaSectionBackdropImmersive} aria-labelledby="proof-wall-title">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={cn(mmsEyebrowOnGlass, "tracking-[0.18em]")}>Proof Wall</p>
+              <h2 id="proof-wall-title" className={cn(mmsH2OnGlass, "mt-4")}>
+                Examples across the MixedMakerShop departments
+              </h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                MixedMakerShop is an umbrella brand, so this proof wall is organized by path: websites, GiGi’s Print
+                Shop, property care, tools, ideas, and visual before-and-after work.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+              {proofWallSections.map((section) => (
+                <Link
+                  key={section.title}
+                  href={section.href}
+                  className="group public-glass-box--soft public-glass-box--pad flex min-h-[13rem] flex-col no-underline transition hover:-translate-y-1 hover:bg-white/12 hover:no-underline"
+                >
+                  <h3 className={mmsH3OnGlassLg}>{section.title}</h3>
+                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed", mmsOnGlassSecondary)}>{section.body}</p>
+                  <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                    View section <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

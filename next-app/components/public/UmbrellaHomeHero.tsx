@@ -66,42 +66,49 @@ export function UmbrellaHomeHero() {
             className={cn(mmsHeroTitleOnGlass, "mt-5 md:mt-6")}
             {...fadeUp(stagger)}
           >
-            Your website should be bringing you clients.
+            MixedMakerShop
           </motion.h1>
 
           <motion.p
-            className={cn("mt-6 text-base leading-relaxed md:mt-7 md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
+            className={cn("mt-4 text-xl font-semibold leading-snug text-white md:text-2xl", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2)}
           >
-            Custom sites, mockups, and growth tools built to help real businesses get more leads. Built for real
-            businesses—from local services to small teams that rely on calls and leads.
+            Useful things built online, outside, and in the workshop.
+          </motion.p>
+          <motion.p
+            className={cn("mt-6 text-base leading-relaxed md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
+            {...fadeUp(stagger * 2.5)}
+          >
+            I&apos;m Topher — the idea engine behind MixedMakerShop. I build websites, digital tools, local service pages,
+            and practical online systems for small businesses. MixedMakerShop is the home for everything we&apos;re
+            building: websites, tools, property help, GiGi&apos;s 3D printed items, and new ideas we&apos;re testing.
           </motion.p>
 
           <motion.div className={cn("mt-8 md:mt-9")} {...fadeUp(stagger * 3)}>
             <div className={mmsOnGlassCtaSeparator}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href={publicFreeMockupFunnelHref}
+                  href="#choose"
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "chooser" }}
                   className={cn(
                     mmsBtnPrimary,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Get My Free Preview
+                  Choose What You Need
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
-                  href="/examples"
-                  eventName="public_web_design_sample_click"
-                  eventProps={{ location: "home_hero_umbrella", label: "see_examples" }}
+                  href={publicFreeMockupFunnelHref}
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "home_hero_umbrella", target: "free_mockup_secondary" }}
                   className={cn(
                     mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  See My Work
+                  Get a Free Website Preview
                 </TrackedPublicLink>
               </PublicCtaRow>
             </div>
@@ -112,7 +119,7 @@ export function UmbrellaHomeHero() {
                 "max-w-[42ch]",
               )}
             >
-              You work with me directly—no layers. Sites built to earn trust and real leads.
+              MixedMakerShop is organized like departments under one roof, so you can pick the path that fits.
             </p>
           </motion.div>
         </div>

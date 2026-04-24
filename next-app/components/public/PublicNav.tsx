@@ -13,13 +13,12 @@ const navItems: {
   label: string;
   event?: { name: string; props?: Record<string, string | number | boolean | undefined> };
 }[] = [
-  { href: "/", label: "Home" },
-  { href: "/web-design", label: "Web Design" },
+  { href: "/start-here", label: "Start Here" },
+  { href: "/websites-tools", label: "Websites & Tools" },
+  { href: "/3d-printing", label: "GiGi’s Print Shop" },
+  { href: "/property-care", label: "Property Care" },
+  { href: "/idea-lab", label: "Idea Lab" },
   { href: "/examples", label: "Examples" },
-  { href: "/3d-printing", label: "3D Printing" },
-  { href: "/tools", label: "Tools" },
-  { href: "/ad-lab", label: "Ad Lab" },
-  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
@@ -59,9 +58,9 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Web design, 3D printing &amp; digital builds by Topher</strong>
+              <strong>Useful things built online, outside, and in the workshop</strong>
             </div>
-            <div className="small nav-brand-meta">Hot Springs, Arkansas</div>
+            <div className="small nav-brand-meta">Topher &amp; GiGi · Hot Springs, Arkansas</div>
           </div>
         </Link>
         <button ref={toggleRef} className="menu-toggle" type="button" aria-label="Open menu">
@@ -88,7 +87,7 @@ export function PublicNav() {
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "free_mockup" })
             }
           >
-            Free Preview
+            Free Website Preview
           </Link>
         </nav>
       </div>

@@ -11,16 +11,13 @@ import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
-  mmsBulletOnGlass,
   mmsH2OnGlass,
   mmsOnGlassCtaRowWrap,
   mmsSectionEyebrowOnGlass,
   mmsH3OnGlass,
-  mmsH3OnGlassLg,
   mmsHomeGlassStackGap,
   mmsOnGlassPrimary,
   mmsOnGlassSecondary,
-  mmsOnGlassMuted,
   mmsSectionY,
   mmsStepCircleOnGlass,
   mmsUmbrellaSectionBackdrop,
@@ -33,18 +30,69 @@ const shell = publicShellClass;
 /** Desktop: let fixed umbrella read through; mobile: warm solid for stability. */
 const homeBackdrop = mmsUmbrellaSectionBackdrop;
 
-const processSteps = [
+const chooserCards = [
   {
-    title: "Tell me about your business",
-    body: "Share what you sell, who you serve, and what a strong lead looks like for you.",
+    title: "I need a better website",
+    body: "Websites for local businesses that need more calls, bookings, and leads.",
+    href: "/websites-tools",
+    cta: "Explore Websites & Tools",
   },
   {
-    title: "I build your preview",
-    body: "You get a real homepage-style mockup so you can see layout, tone, and direction before you commit.",
+    title: "I need a digital tool or template",
+    body: "Simple tools, forms, templates, downloads, and business kits.",
+    href: "/websites-tools#templates-kits",
+    cta: "View Tools & Kits",
   },
   {
-    title: "You decide",
-    body: "If it fits, we keep going. If not, no pressure.",
+    title: "I need something 3D printed",
+    body: "Useful prints, bookmarks, gifts, replacement pieces, and custom requests from GiGi’s Print Shop.",
+    href: "/3d-printing",
+    cta: "Visit GiGi’s Print Shop",
+    accent: "pink",
+  },
+  {
+    title: "I need lawn or property help",
+    body: "Local outdoor help, cleanup, and property services.",
+    href: "/property-care",
+    cta: "View Property Care",
+  },
+  {
+    title: "I want to see what’s new",
+    body: "Vote on ideas, suggest something, or see what we’re building next.",
+    href: "/idea-lab",
+    cta: "Visit the Idea Lab",
+  },
+] as const;
+
+const departmentFeatures = [
+  {
+    eyebrow: "Websites & Tools",
+    title: "Websites, landing pages, and small systems for local businesses.",
+    body: "Topher builds practical online systems that help small businesses look better, explain what they do, and get more calls, bookings, and leads.",
+    href: "/websites-tools",
+    cta: "Explore Websites & Tools",
+  },
+  {
+    eyebrow: "GiGi’s Print Shop",
+    title: "Useful 3D printed items with a practical handmade feel.",
+    body: "GiGi handles most of the 3D printing side: bookmarks, gifts, holders, replacement pieces, church items, seasonal prints, and custom requests.",
+    href: "/3d-printing",
+    cta: "Start a Print Request",
+    className: "border-pink-300/30 bg-gradient-to-br from-pink-500/12 via-white/8 to-orange-400/8",
+  },
+  {
+    eyebrow: "Property Care",
+    title: "Outdoor help for yards, cleanup, and local property needs.",
+    body: "A separate department for local property services around Hot Springs: lawn care, yard cleanup, property cleanup, and pressure washing when actively offered.",
+    href: "/property-care",
+    cta: "Request Property Help",
+  },
+  {
+    eyebrow: "Idea Lab",
+    title: "New ideas before they become full services or tools.",
+    body: "Vote on what sounds useful, suggest something, or see what Topher is testing next.",
+    href: "/idea-lab",
+    cta: "Suggest an Idea",
   },
 ] as const;
 
@@ -56,73 +104,78 @@ export function UmbrellaHomePage() {
       <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
 
-        <section className={cn(homeBackdrop)} id="web-design">
+        <section className={cn(homeBackdrop)} id="choose">
           <div className={cn(shell, mmsSectionY)}>
-            <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
-              <p className={mmsSectionEyebrowOnGlass}>Lead-focused web design</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Websites that help you win trust—and clients</h2>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                You work directly with me on a site that turns searches and visits into calls and inquiries—clear, credible,
-                and built around how you actually sell. No bloated agency process. No handoffs.
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Start Here</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>What do you need help with today?</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Pick the department that fits. MixedMakerShop stays broad, but each path is organized around one clear
+                need.
               </p>
-              <p className={cn("mt-4 text-sm font-medium md:text-[15px]", mmsOnGlassSecondary)}>
-                For local businesses that need more leads and clearer trust—not just a prettier page.
-              </p>
-              <p className={cn("mt-3 text-sm leading-snug md:text-[15px]", mmsOnGlassMuted)}>
-                Perfect for landscapers, local services, contractors, and small businesses that depend on calls, bookings,
-                and trust.
-              </p>
-              <ul className={cn("mt-9 space-y-3.5 md:text-[17px]", mmsOnGlassPrimary)}>
-                {[
-                  "Design that builds trust fast when someone lands on your site",
-                  "Structure built to turn visitors into calls, chats, and form fills",
-                  "Built to help you show up when locals search for what you offer",
-                  "Simple paths so people know what to do next—not bounce",
-                  "Ongoing updates when you want to sharpen conversion over time",
-                ].map((line) => (
-                  <li key={line} className="flex gap-3">
-                    <span className={mmsBulletOnGlass} aria-hidden>
-                      ·
-                    </span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className={mmsOnGlassCtaRowWrap}>
-                <PublicCtaRow>
-                  <TrackedPublicLink
-                    href="/examples"
-                    eventName="public_web_design_sample_click"
-                    eventProps={{ location: "home_primary_web", label: "see_examples" }}
-                    className={cn(mmsBtnSecondaryOnGlass, "px-8 no-underline hover:no-underline")}
-                  >
-                    See My Work
-                  </TrackedPublicLink>
-                </PublicCtaRow>
-              </div>
+            </div>
+            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
+              {chooserCards.map((card) => (
+                <Link
+                  key={card.title}
+                  href={card.href}
+                  className={cn(
+                    "group public-glass-box--soft public-glass-box--pad flex min-h-[15rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline",
+                    "accent" in card && card.accent === "pink" && "border-pink-300/25 bg-pink-400/10",
+                  )}
+                >
+                  <h3 className={mmsH3OnGlass}>{card.title}</h3>
+                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                    {card.body}
+                  </p>
+                  <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                    {card.cta}
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className={cn(homeBackdrop, "max-md:bg-[#e8ede8]/90")} id="show-up-google">
+        <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="departments">
           <div className={cn(shell, mmsSectionY)}>
-            <div className={cn("public-glass-box public-glass-box--pad mx-auto max-w-3xl")}>
-              <h2 className={mmsH2OnGlass}>Get found—then get the call</h2>
-              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                A lot of new business still starts with search. I build clear structure and pages so the right people can find
-                you—and see why you&apos;re the right call.
+            <div className="grid gap-6 lg:grid-cols-2">
+              {departmentFeatures.map((feature) => (
+                <article
+                  key={feature.title}
+                  className={cn(
+                    "public-glass-box--soft public-glass-box--pad",
+                    "className" in feature && feature.className,
+                  )}
+                >
+                  <p className={mmsSectionEyebrowOnGlass}>{feature.eyebrow}</p>
+                  <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>{feature.title}</h2>
+                  <p className={cn("mt-5 text-base leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
+                    {feature.body}
+                  </p>
+                  <Link href={feature.href} className={cn(mmsTextLinkOnGlass, "mt-7 inline-flex items-center gap-2")}>
+                    {feature.cta}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                </article>
+              ))}
+            </div>
+            <div className={cn("public-glass-box public-glass-box--pad mt-8 max-w-3xl")}>
+              <p className={mmsSectionEyebrowOnGlass}>Free website preview</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Want to see what your business could look like online?</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Topher can build a homepage-style preview so you can see the direction before you commit.
               </p>
               <div className={mmsOnGlassCtaRowWrap}>
-                <PublicCtaRow>
-                  <TrackedPublicLink
-                    href={publicFreeMockupFunnelHref}
-                    eventName="public_contact_cta_click"
-                    eventProps={{ location: "home_seo_cta", target: "free_mockup" }}
-                    className={cn(mmsBtnPrimary, "px-8 no-underline hover:no-underline")}
-                  >
-                    Get My Free Preview
-                  </TrackedPublicLink>
-                </PublicCtaRow>
+                <TrackedPublicLink
+                  href={publicFreeMockupFunnelHref}
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "home_department_feature", target: "free_mockup" }}
+                  className={cn(mmsBtnPrimary, "inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}
+                >
+                  Get a Free Website Preview
+                </TrackedPublicLink>
               </div>
             </div>
           </div>
@@ -141,87 +194,42 @@ export function UmbrellaHomePage() {
 
         <FreshCutFeaturedCaseStudy analyticsLocation="home_case_study_fresh_cut" variant="home" />
 
-        <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#dde8df]")} id="simple-process">
+        <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#111510]")} id="about-topher-gigi">
           <div className={cn(shell, mmsSectionY)}>
             <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
-              <h2 className={mmsH2OnGlass}>Simple Process</h2>
-              <p className={cn("mt-3 max-w-2xl text-base leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
-                From your goals to a real preview—straightforward steps, no agency maze.
+              <p className={mmsSectionEyebrowOnGlass}>About Topher &amp; GiGi</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>About Topher</h2>
+              <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                I&apos;m Topher, the idea engine behind MixedMakerShop.
+              </p>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                I build websites, digital tools, local service pages, and practical online systems for small businesses.
+                I&apos;ve always had more ideas than one simple website could hold, so MixedMakerShop became the home base —
+                a place where web design, digital tools, property services, 3D printing, and new experiments can all live
+                under one organized roof.
+              </p>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                The goal is simple: build useful things that help real people.
+              </p>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Some projects are for local businesses. Some are for homeowners. Some are digital. Some are printed. Some
+                are still being tested in the Idea Lab. But everything here starts with the same question:
+              </p>
+              <p className="mt-7 rounded-2xl border border-white/12 bg-white/10 px-5 py-4 text-lg font-semibold text-white">
+                “What would actually help someone?”
               </p>
             </div>
-            <div
-              className={cn(
-                "grid gap-8 md:grid-cols-3 md:gap-6 lg:gap-8",
-                mmsHomeGlassStackGap,
-              )}
-            >
-              {processSteps.map((step, i) => (
-                <div key={step.title} className={cn("public-glass-box--soft public-glass-box--pad")}>
-                  <span className={mmsStepCircleOnGlass} aria-hidden>
-                    {i + 1}
-                  </span>
-                  <h3 className={mmsH3OnGlass}>{step.title}</h3>
-                  <p className={cn("mt-4 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>{step.body}</p>
+            <div className={cn("grid gap-6 md:grid-cols-3", mmsHomeGlassStackGap)}>
+              {[
+                "Topher builds websites, tools, funnels, and idea-driven projects.",
+                "GiGi handles most of the 3D printing side through GiGi’s Print Shop.",
+                "MixedMakerShop keeps the departments organized under one practical creative studio.",
+              ].map((line, i) => (
+                <div key={line} className="public-glass-box--soft public-glass-box--pad">
+                  <span className={mmsStepCircleOnGlass} aria-hidden>{i + 1}</span>
+                  <p className={cn("text-base leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>{line}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        <section className={cn("border-b", homeBackdrop, "max-md:bg-[#dde8df]")}>
-          <div className={cn(shell, mmsSectionY)}>
-            <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
-              <h2 className={mmsH2OnGlass}>Other Things I Build</h2>
-              <p className={cn("mt-5 max-w-2xl text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                Websites stay the center of what I do. When it genuinely helps your business, I also deliver practical 3D
-                prints and small tools that remove friction and save time.
-              </p>
-              <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassMuted)}>
-                <Link href="/ad-lab" className={cn(mmsTextLinkOnGlass, "text-[15px] font-medium")}>
-                  See sample ad ideas →
-                </Link>
-              </p>
-            </div>
-            <div className={cn("grid gap-8 lg:grid-cols-2", mmsHomeGlassStackGap)}>
-              <div className={cn("public-glass-box--soft public-glass-box--pad")}>
-                <h3 className={mmsH3OnGlassLg}>3D Printing</h3>
-                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
-                  Functional prints—mounts, holders, replacements—when a physical fix keeps your team or customers moving.
-                </p>
-                <Link href="/3d-printing" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
-                  3D printing →
-                </Link>
-              </div>
-              <div className={cn("public-glass-box--soft public-glass-box--pad")}>
-                <h3 className={mmsH3OnGlassLg}>Apps &amp; Tools</h3>
-                <p className={cn("mt-5 leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
-                  Practical helpers, bots, and lightweight systems when they save hours, reduce repetitive work, or make
-                  follow-up easier.
-                </p>
-                <Link href="/tools" className={cn(mmsTextLinkOnGlass, "mt-7 inline-block text-[15px]")}>
-                  Apps &amp; tools →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={cn(homeBackdrop, "max-md:bg-[#ece7dd]")} id="about-topher">
-          <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-            <div className={cn("public-glass-box--soft public-glass-box--pad")}>
-              <h2 className={mmsH2OnGlass}>About Topher</h2>
-              <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                I&apos;m Topher. I build websites and tools for owners who want clarity, credibility, and more real leads—not
-                more complexity.
-              </p>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                MixedMakerShop starts with web design and free previews, with 3D printing and custom builds when they
-                genuinely support how you operate.
-              </p>
-              <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                You won&apos;t get passed around. You work directly with me from first conversation to launch—and beyond if
-                you want it.
-              </p>
             </div>
           </div>
         </section>
@@ -237,10 +245,11 @@ export function UmbrellaHomePage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className={cn("public-glass-box public-glass-box--pad mx-auto max-w-2xl text-center")}>
               <h2 className={cn(mmsH2OnGlass, "!text-2xl md:!text-3xl")}>
-                Ready for a site that brings in more leads?
+                Ready to choose a path?
               </h2>
               <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsOnGlassPrimary)}>
-                I&apos;ll build a free homepage-style preview so you can see the direction—then you decide if we keep going.
+                Start with a free website preview, send GiGi a print idea, ask about property help, or suggest something
+                new for the Idea Lab.
               </p>
               <PublicCtaRow align="center" className={cn(mmsOnGlassCtaRowWrap, "w-full justify-center")}>
                 <TrackedPublicLink
@@ -252,7 +261,7 @@ export function UmbrellaHomePage() {
                     "inline-flex w-full min-w-[12rem] items-center justify-center gap-2 px-8 sm:w-auto no-underline hover:no-underline",
                   )}
                 >
-                  Get My Free Preview
+                  Get a Free Website Preview
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
@@ -264,14 +273,11 @@ export function UmbrellaHomePage() {
                     "w-full min-w-[10rem] justify-center px-8 sm:w-auto no-underline hover:no-underline",
                   )}
                 >
-                  Contact Me
+                  Contact Topher
                 </TrackedPublicLink>
               </PublicCtaRow>
               <p className={cn("mx-auto mt-4 max-w-lg text-sm font-medium sm:text-[15px]", mmsOnGlassSecondary)}>
-                If your business depends on calls, bookings, or local visibility—this is built for you.
-              </p>
-              <p className={cn("mx-auto mt-3 max-w-lg text-xs sm:text-sm", mmsOnGlassMuted)}>
-                No pressure—just a clear preview when you&apos;re ready.
+                Useful things built online, outside, and in the workshop.
               </p>
             </div>
           </div>
