@@ -18,25 +18,25 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Idea Lab | MixedMakerShop",
   description:
-    "See new MixedMakerShop ideas, vote on what should be built next, and suggest practical tools, services, and products.",
+    "See active MixedMakerShop builds, final-polish projects, experiments, and future concepts. Vote, suggest, or ask about what is being built.",
 };
 
 const shell = publicShellClass;
 
-const ideaCards = [
+const featuredActiveBuilds = [
   {
     name: "Henry AI",
-    status: "Concept / future assistant project",
+    status: "Final polish / active build",
     description:
-      "A practical AI helper concept meant to connect tools, workflows, and business ideas into one useful system.",
+      "A practical AI assistant project being shaped to connect ideas, tools, workflows, and business systems into one useful helper.",
     audience: "Small business owners, makers, and busy operators who need one organized helper.",
     button: "Ask About This",
   },
   {
     name: "StrainSpotter",
-    status: "Active app-style project",
+    status: "Final polish / active app build",
     description:
-      "A visual cannabis strain helper focused on scanning, likely matches, and practical strain information.",
+      "A scanning-focused cannabis strain helper built to return likely visual matches, useful strain details, and practical next steps.",
     audience: "Curious shoppers, growers, and app users who want quick, useful strain context.",
     button: "Suggest / Vote",
   },
@@ -56,6 +56,9 @@ const ideaCards = [
     audience: "Local business owners who need a clearer website direction before buying a full build.",
     button: "Ask About This",
   },
+] as const;
+
+const ideasInTesting = [
   {
     name: "Facebook Post & Ad Tracker",
     status: "Planning / workflow tool",
@@ -82,6 +85,34 @@ const ideaCards = [
   },
 ] as const;
 
+function IdeaCard({ idea }: { idea: (typeof featuredActiveBuilds)[number] | (typeof ideasInTesting)[number] }) {
+  return (
+    <article className="public-glass-box--soft public-glass-box--pad flex min-h-[20rem] flex-col">
+      <p className="w-fit rounded-full border border-orange-300/25 bg-orange-300/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-orange-100">
+        {idea.status}
+      </p>
+      <h3 className="mt-5 text-2xl font-bold tracking-tight text-white">{idea.name}</h3>
+      <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+        {idea.description}
+      </p>
+      <div className="mt-5 rounded-2xl border border-white/10 bg-white/8 p-4">
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/65">Suggested audience</p>
+        <p className={cn("mt-2 text-sm leading-relaxed", mmsOnGlassPrimary)}>{idea.audience}</p>
+      </div>
+      <Link
+        href="#suggest-an-idea"
+        className={cn(
+          mmsBtnSecondaryOnGlass,
+          "mt-auto inline-flex w-full justify-center px-5 text-sm no-underline hover:no-underline",
+        )}
+      >
+        {idea.button}
+        <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+      </Link>
+    </article>
+  );
+}
+
 export default function IdeaLabPage() {
   return (
     <main className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
@@ -96,9 +127,8 @@ export default function IdeaLabPage() {
                 Topher always has something cooking.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                This is where we share some of the newest MixedMakerShop ideas before they become full services,
-                products, tools, or offers. Vote on what you like, suggest improvements, or tell us what would actually
-                help you.
+                Some MixedMakerShop ideas are active builds. Some are in final polish. Some are experiments. Some are
+                future concepts. Vote on what you like, suggest improvements, or ask about what is being built.
               </p>
               <Link href="#suggest-an-idea" className={cn(mmsBtnSecondaryOnGlass, "mt-9 inline-flex px-8 no-underline hover:no-underline")}>
                 Suggest an Idea
@@ -111,36 +141,50 @@ export default function IdeaLabPage() {
         <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <p className={mmsSectionEyebrowOnGlass}>Ideas on the board</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Real MixedMakerShop ideas you can react to.</h2>
+              <p className={mmsSectionEyebrowOnGlass}>Featured Active Builds</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Projects already being built and polished.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Vote, suggest improvements, or ask about one of these. Feedback goes through the existing idea/contact
-                form below.
+                These are not placeholder ideas. They are active MixedMakerShop projects, live tools, or final-polish
+                builds that can still benefit from feedback.
               </p>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {ideaCards.map((idea) => (
-                <article key={idea.name} className="public-glass-box--soft public-glass-box--pad flex min-h-[20rem] flex-col">
-                  <p className="w-fit rounded-full border border-orange-300/25 bg-orange-300/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-orange-100">
-                    {idea.status}
-                  </p>
-                  <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">{idea.name}</h2>
-                  <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                    {idea.description}
-                  </p>
-                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/8 p-4">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/65">Suggested audience</p>
-                    <p className={cn("mt-2 text-sm leading-relaxed", mmsOnGlassPrimary)}>{idea.audience}</p>
-                  </div>
-                  <Link
-                    href="#suggest-an-idea"
-                    className={cn(mmsBtnSecondaryOnGlass, "mt-auto inline-flex w-full justify-center px-5 text-sm no-underline hover:no-underline")}
-                  >
-                    {idea.button}
-                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
-                  </Link>
-                </article>
+              {featuredActiveBuilds.map((idea) => (
+                <IdeaCard key={idea.name} idea={idea} />
               ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Ideas in Testing</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Experiments, workflows, and product directions being shaped.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                These ideas are being tested for usefulness, audience fit, and whether they should become a page,
+                service, tool, or downloadable product.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {ideasInTesting.map((idea) => (
+                <IdeaCard key={idea.name} idea={idea} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={mmsUmbrellaSectionBackdropImmersive}>
+          <div className={cn(shell, "pb-8 pt-0 md:pb-12")}>
+            <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Future Concepts</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>
+                Reserved for maybe-someday ideas.
+              </h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Future concepts are only for ideas that are truly early-stage. Henry AI and StrainSpotter belong in
+                active builds because they are already in final-stage polish.
+              </p>
             </div>
           </div>
         </section>
