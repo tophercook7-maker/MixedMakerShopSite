@@ -32,6 +32,8 @@ export type ShowcaseProject = {
   problemLine?: string;
   /** Short “why it works” line after `context`. */
   whyItWorksLine?: string;
+  /** Portfolio proof statement shown on examples/proof cards. */
+  proofLine?: string;
   /** Invite exploration / live demo after description (e.g. portfolio sites). */
   engagementLine?: string;
   /** Bullets inside “See how this was built” on case study cards. */
@@ -56,6 +58,7 @@ export const LIVE_WEB_PROJECTS = [
     primaryLine: "Clean, local service site built to turn visitors into estimate requests",
     context: "Focused on simple navigation, strong service sections, and clear contact flow.",
     whyItWorksLine: "Designed to guide visitors toward contacting without confusion or clutter.",
+    proofLine: "A real local service website built to turn visitors into estimate requests.",
     buildHighlights: [
       "Clear service sections",
       "Strong call-to-action placement",
@@ -66,14 +69,15 @@ export const LIVE_WEB_PROJECTS = [
     emphasizeCard: true,
     secondaryCtaLabel: "Get My Version of This",
     secondaryCtaHref: publicFreeMockupFunnelHrefFreshCut,
-    previewSrc: "/images/showcase/freshcut-property-care.jpg",
-    previewAlt: "Homepage preview of Fresh Cut Property Care — lawn care hero and call-to-action",
+    previewSrc: "/images/freshcut-new.png",
+    previewAlt: "Homepage preview of Fresh Cut Property Care — full lawn care website hero",
     hostname: "freshcutpropertycare.com",
     url: "https://freshcutpropertycare.com",
     analyticsId: "fresh_cut_property_care",
-    objectPosition: "center top",
-    imageClassName: "object-cover md:object-contain",
+    objectPosition: "center center",
+    imageClassName: "object-contain",
     primaryCtaIsExternal: true,
+    primaryCtaLabel: "Visit Fresh Cut",
   },
   {
     title: "Deep Well Audio",
@@ -82,8 +86,9 @@ export const LIVE_WEB_PROJECTS = [
     audienceLine: "Creative audio platform and portfolio experience",
     primaryLine: "Simple, focused site designed to showcase content and build credibility.",
     context: "Structured to make exploration easy and keep users engaged.",
+    proofLine: "A clean content-driven experience with organized navigation and a polished creative feel.",
     engagementLine: "Explore the live experience to see how content and layout work together.",
-    primaryCtaLabel: "Visit DeepWellAudio.com",
+    primaryCtaLabel: "Visit Deep Well Audio",
     secondaryCtaLabel: "Get My Version of This",
     previewSrc: "/images/showcase/deep-well-audio.jpg",
     previewAlt:
@@ -105,7 +110,7 @@ export const LIVE_WEB_PROJECTS = [
     previewAlt:
       "StrainSpotter — Scanner upload flow with photo tips and Garden tools section (product screenshot)",
     hostname: "strainspotter.app",
-    url: "https://strainspotter.replit.app",
+    url: "https://strainspotter.app",
     analyticsId: "strainspotter",
     objectPosition: "center center",
     imageClassName: "object-cover md:object-cover",

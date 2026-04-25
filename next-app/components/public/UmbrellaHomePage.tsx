@@ -1,9 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
-import { FreshCutFeaturedCaseStudy } from "@/components/public/FreshCutFeaturedCaseStudy";
-import { HomeFeaturedWebDesignWork } from "@/components/public/HomeFeaturedWebDesignWork";
-import { HOME_PAGE_FEATURED_ANALYTICS_IDS } from "@/lib/live-web-projects";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
@@ -64,6 +61,37 @@ const chooserCards = [
   },
 ] as const;
 
+const featuredWork = [
+  {
+    title: "Fresh Cut Property Care",
+    body: "A focused property-care website for lawn care, cleanup, and local estimate requests.",
+    href: "https://freshcutpropertycare.com/",
+    cta: "Visit Fresh Cut",
+    external: true,
+  },
+  {
+    title: "Deep Well Audio",
+    body: "A clean creative/audio platform built around organized content and exploration.",
+    href: "https://deepwellaudio.com/",
+    cta: "Visit Deep Well Audio",
+    external: true,
+  },
+  {
+    title: "StrainSpotter",
+    body: "A practical app-style project built around fast scanning, helpful results, and interactive tools.",
+    href: "https://strainspotter.app/",
+    cta: "Visit StrainSpotter",
+    external: true,
+  },
+  {
+    title: "Website Preview Generator",
+    body: "A MixedMakerShop tool for showing local businesses what a better website could look like.",
+    href: publicFreeMockupFunnelHref,
+    cta: "Start a Free Preview",
+    external: false,
+  },
+] as const;
+
 const departmentFeatures = [
   {
     eyebrow: "Websites & Tools",
@@ -82,10 +110,10 @@ const departmentFeatures = [
   },
   {
     eyebrow: "Property Care",
-    title: "Outdoor help for yards, cleanup, and local property needs.",
-    body: "A separate department for local property services around Hot Springs: lawn care, yard cleanup, property cleanup, and pressure washing when actively offered.",
+    title: "Fresh Cut is the focused property-care path.",
+    body: "MixedMakerShop points property-care visitors to Fresh Cut Property Care for lawn care, yard cleanup, brush clearing, and estimate requests.",
     href: "/property-care",
-    cta: "Request Property Help",
+    cta: "View Fresh Cut Bridge",
   },
   {
     eyebrow: "Idea Lab",
@@ -138,6 +166,56 @@ export function UmbrellaHomePage() {
           </div>
         </section>
 
+        <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="featured-work">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Featured Work</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Proof that the paths under MixedMakerShop are real.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                A quick proof wall before the departments: local service sites, creative platforms, app-style tools, and
+                the free preview flow.
+              </p>
+            </div>
+            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-4", mmsHomeGlassStackGap)}>
+              {featuredWork.map((work) =>
+                work.external ? (
+                  <a
+                    key={work.title}
+                    href={work.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group public-glass-box--soft public-glass-box--pad flex min-h-[14rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline"
+                  >
+                    <h3 className={mmsH3OnGlass}>{work.title}</h3>
+                    <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                      {work.body}
+                    </p>
+                    <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                      {work.cta}
+                      <ExternalLink className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                    </span>
+                  </a>
+                ) : (
+                  <Link
+                    key={work.title}
+                    href={work.href}
+                    className="group public-glass-box--soft public-glass-box--pad flex min-h-[14rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline"
+                  >
+                    <h3 className={mmsH3OnGlass}>{work.title}</h3>
+                    <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                      {work.body}
+                    </p>
+                    <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                      {work.cta}
+                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                    </span>
+                  </Link>
+                ),
+              )}
+            </div>
+          </div>
+        </section>
+
         <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="departments">
           <div className={cn(shell, mmsSectionY)}>
             <div className="grid gap-6 lg:grid-cols-2">
@@ -180,19 +258,6 @@ export function UmbrellaHomePage() {
             </div>
           </div>
         </section>
-
-        <HomeFeaturedWebDesignWork
-          variant="light"
-          immersive
-          featuredAnalyticsIds={HOME_PAGE_FEATURED_ANALYTICS_IDS}
-          heading="Featured Work"
-          subhead="Live sites for real businesses—fast, clear, and built to turn visits into leads."
-          bottomStripLead={null}
-          bottomStripLinkLabel="View All Examples →"
-          bottomStripHref="/examples"
-        />
-
-        <FreshCutFeaturedCaseStudy analyticsLocation="home_case_study_fresh_cut" variant="home" />
 
         <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#111510]")} id="about-topher-gigi">
           <div className={cn(shell, mmsSectionY)}>

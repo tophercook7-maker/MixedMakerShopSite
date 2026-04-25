@@ -8,39 +8,56 @@ export function PublicFooter() {
       title: "MixedMakerShop",
       links: [
         { href: "/start-here", label: "Start Here" },
-        { href: "/about", label: "About" },
         { href: "/examples", label: "Examples" },
+        { href: "/idea-lab", label: "Idea Lab" },
         { href: "/contact", label: "Contact" },
       ],
     },
     {
       title: "Websites & Tools",
       links: [
-        { href: "/web-design", label: "Web Design" },
+        { href: "/websites-tools", label: "Websites & Tools" },
         { href: publicFreeMockupFunnelHref, label: "Free Website Preview" },
+        { href: "/web-design", label: "Web Design" },
         { href: "/tools", label: "Digital Tools" },
-        { href: "/websites-tools#templates-kits", label: "Templates & Kits" },
-        { href: "/idea-lab", label: "Idea Lab" },
       ],
     },
     {
       title: "GiGi’s Print Shop",
       links: [
-        { href: "/3d-printing", label: "Custom 3D Printing" },
-        { href: "/3d-printing#what-gigi-makes", label: "Useful Prints" },
+        { href: "/3d-printing", label: "GiGi’s Print Shop" },
+        { href: "/3d-printing#print-request", label: "Start a Print Request" },
         { href: "/3d-printing#seasonal-prints", label: "Bookmarks & Gifts" },
-        { href: "/3d-printing#print-request", label: "Print Request" },
+        { href: "/3d-printing#what-gigi-makes", label: "Useful Prints" },
       ],
     },
     {
       title: "Property Care",
       links: [
-        { href: "/property-care#lawn-care", label: "Lawn Care" },
-        { href: "/property-care#yard-cleanup", label: "Yard Cleanup" },
-        { href: "/property-care#property-cleanup", label: "Property Cleanup" },
+        { href: "/property-care", label: "Property Care" },
+        { href: "https://freshcutpropertycare.com/", label: "Fresh Cut Property Care", external: true },
+        { href: "https://freshcutpropertycare.com/contact/", label: "Request Fresh Cut Estimate", external: true },
       ],
     },
   ] as const;
+
+  function renderFooterLink(link: (typeof linkGroups)[number]["links"][number]) {
+    if ("external" in link && link.external) {
+      return (
+        <a href={link.href} target="_blank" rel="noopener noreferrer">
+          {link.label}
+        </a>
+      );
+    }
+    if (link.href === "/contact") {
+      return (
+        <TrackedPublicLink href={link.href} eventName="public_contact_cta_click" eventProps={{ location: "footer" }}>
+          {link.label}
+        </TrackedPublicLink>
+      );
+    }
+    return <Link href={link.href}>{link.label}</Link>;
+  }
 
   return (
     <footer className="footer footer--premium" id="contact">
@@ -63,6 +80,11 @@ export function PublicFooter() {
                 Open in Google Maps
               </a>
             </p>
+            <ul className="footer-links mt-4 list-none p-0">
+              {linkGroups[0].links.map((link) => (
+                <li key={`MixedMakerShop-${link.href}`}>{renderFooterLink(link)}</li>
+              ))}
+            </ul>
           </div>
           {linkGroups.slice(1).map((group) => (
             <div key={group.title} className="footer-col">
@@ -72,7 +94,7 @@ export function PublicFooter() {
               <ul className="footer-links m-0 list-none p-0">
                 {group.links.map((link) => (
                   <li key={`${group.title}-${link.href}`}>
-                    <Link href={link.href}>{link.label}</Link>
+                    {renderFooterLink(link)}
                   </li>
                 ))}
               </ul>
@@ -92,17 +114,7 @@ export function PublicFooter() {
                       ·
                     </span>
                   ) : null}
-                  {link.href === "/contact" ? (
-                    <TrackedPublicLink
-                      href={link.href}
-                      eventName="public_contact_cta_click"
-                      eventProps={{ location: "footer" }}
-                    >
-                      {link.label}
-                    </TrackedPublicLink>
-                  ) : (
-                    <Link href={link.href}>{link.label}</Link>
-                  )}
+                  {renderFooterLink(link)}
                 </span>
               ))}
             </div>

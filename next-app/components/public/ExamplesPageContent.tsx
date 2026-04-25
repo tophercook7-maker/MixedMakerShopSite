@@ -53,7 +53,7 @@ const featuredPill =
   "inline-flex max-w-full rounded-full border border-[#b85c1e]/35 bg-gradient-to-r from-[#fff7ed]/95 to-white/85 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8a4b2a]";
 
 const exampleThumbFrame =
-  "relative aspect-[16/11] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/14 bg-[#cfd8d0] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]";
+  "relative aspect-[16/9] w-full overflow-hidden rounded-2xl border border-[#3f5a47]/14 bg-[#cfd8d0] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]";
 
 const proofWallSections = [
   {
@@ -100,7 +100,7 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
           src={project.previewSrc}
           alt={project.previewAlt}
           fill
-          className={cn(project.imageClassName, "object-cover")}
+          className={cn("object-cover", project.imageClassName)}
           style={{ objectPosition: project.objectPosition }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
@@ -119,6 +119,14 @@ function RealWorkCard({ entry }: { entry: ExamplesRealWorkEntry }) {
         <p className="mt-3 text-[15px] font-semibold leading-snug text-[#2d3a33] md:text-base">{project.primaryLine}</p>
         {project.context ? (
           <p className="mt-2 text-sm leading-relaxed text-[#354239] md:text-[15px]">{project.context}</p>
+        ) : null}
+        {project.proofLine ? (
+          <div className="mt-4 rounded-2xl border border-[#3f5a47]/14 bg-[#f7f0e6]/85 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8a4b2a]">What this proves</p>
+            <p className="mt-2 text-sm font-semibold leading-relaxed text-[#243028] md:text-[15px]">
+              {project.proofLine}
+            </p>
+          </div>
         ) : null}
         <ShowcaseCaseStudyAfterContext project={project} variant="light" className="mt-3" />
         <PublicCtaRow className="mt-auto pt-6">
@@ -181,7 +189,7 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
           src={card.previewSrc}
           alt={card.previewAlt}
           fill
-          className={cn(card.imageClassName ?? "object-cover", "object-cover")}
+          className={cn("object-cover", card.imageClassName)}
           style={{ objectPosition: card.objectPosition ?? "center center" }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
@@ -193,6 +201,14 @@ function ConceptBuildCard({ card }: { card: ExamplesConceptCard }) {
         <p className="mt-3 text-[15px] font-semibold leading-snug text-[#2d3a33] md:text-base">{card.primaryLine}</p>
         {card.context ? (
           <p className="mt-2 text-sm leading-relaxed text-[#354239] md:text-[15px]">{card.context}</p>
+        ) : null}
+        {card.proofLine ? (
+          <div className="mt-4 rounded-2xl border border-[#3f5a47]/14 bg-[#f7f0e6]/85 p-4">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8a4b2a]">What this proves</p>
+            <p className="mt-2 text-sm font-semibold leading-relaxed text-[#243028] md:text-[15px]">
+              {card.proofLine}
+            </p>
+          </div>
         ) : null}
         <PublicCtaRow className="mt-auto pt-6">
           {card.isExternal ? (

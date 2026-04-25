@@ -23,12 +23,63 @@ export const metadata: Metadata = {
 
 const shell = publicShellClass;
 
-const ideaBuckets = [
-  { title: "Coming Soon", body: "Small tools, printable products, seasonal offers, and local service ideas being shaped." },
-  { title: "Vote on This", body: "Tell us which ideas sound useful before they become full pages or products." },
-  { title: "Suggest an Idea", body: "Send what would actually help you, your business, church, family, or property." },
-  { title: "Recently Built", body: "Finished pages, ad concepts, print requests, and little tools will be collected here." },
-  { title: "Maybe, Maybe Not", body: "A safe spot for half-formed ideas that need feedback before they become real." },
+const ideaCards = [
+  {
+    name: "Henry AI",
+    status: "Concept / future assistant project",
+    description:
+      "A practical AI helper concept meant to connect tools, workflows, and business ideas into one useful system.",
+    audience: "Small business owners, makers, and busy operators who need one organized helper.",
+    button: "Ask About This",
+  },
+  {
+    name: "StrainSpotter",
+    status: "Active app-style project",
+    description:
+      "A visual cannabis strain helper focused on scanning, likely matches, and practical strain information.",
+    audience: "Curious shoppers, growers, and app users who want quick, useful strain context.",
+    button: "Suggest / Vote",
+  },
+  {
+    name: "Deep Well Audio",
+    status: "Live creative project",
+    description:
+      "A focused audio/content experience built around saving, exploring, and organizing meaningful material.",
+    audience: "Creative listeners, audio collectors, and people who like organized content libraries.",
+    button: "Suggest / Vote",
+  },
+  {
+    name: "Website Preview Generator",
+    status: "Active MixedMakerShop tool",
+    description:
+      "A tool that helps local businesses see what a stronger website could look like before committing.",
+    audience: "Local business owners who need a clearer website direction before buying a full build.",
+    button: "Ask About This",
+  },
+  {
+    name: "Facebook Post & Ad Tracker",
+    status: "Planning / workflow tool",
+    description:
+      "A simple way to track posts, ads, replies, leads, and follow-ups so no promotion disappears into the void.",
+    audience: "Small businesses running Facebook posts, boosted promos, and local ad experiments.",
+    button: "Suggest / Vote",
+  },
+  {
+    name: "GiGi’s Seasonal Print Ideas",
+    status: "Early product ideas",
+    description:
+      "Bookmarks, Easter items, church gifts, small seasonal pieces, and useful 3D printed items from GiGi’s Print Shop.",
+    audience: "Church groups, gift buyers, families, and anyone who wants useful custom prints.",
+    button: "Ask About This",
+  },
+  {
+    name: "MixedMakerShop Business Kits",
+    status: "Future digital products",
+    description:
+      "Templates, checklists, simple tools, and business kits for local service businesses and side hustlers.",
+    audience: "Service businesses, side hustlers, and owners who need practical starter systems.",
+    button: "Suggest / Vote",
+  },
 ] as const;
 
 export default function IdeaLabPage() {
@@ -59,11 +110,35 @@ export default function IdeaLabPage() {
 
         <section className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-              {ideaBuckets.map((item) => (
-                <article key={item.title} className="public-glass-box--soft public-glass-box--pad">
-                  <h2 className="text-xl font-bold tracking-tight text-white">{item.title}</h2>
-                  <p className={cn("mt-4 text-sm leading-relaxed", mmsOnGlassSecondary)}>{item.body}</p>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Ideas on the board</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Real MixedMakerShop ideas you can react to.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Vote, suggest improvements, or ask about one of these. Feedback goes through the existing idea/contact
+                form below.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {ideaCards.map((idea) => (
+                <article key={idea.name} className="public-glass-box--soft public-glass-box--pad flex min-h-[20rem] flex-col">
+                  <p className="w-fit rounded-full border border-orange-300/25 bg-orange-300/12 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-orange-100">
+                    {idea.status}
+                  </p>
+                  <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">{idea.name}</h2>
+                  <p className={cn("mt-4 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                    {idea.description}
+                  </p>
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/8 p-4">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/65">Suggested audience</p>
+                    <p className={cn("mt-2 text-sm leading-relaxed", mmsOnGlassPrimary)}>{idea.audience}</p>
+                  </div>
+                  <Link
+                    href="#suggest-an-idea"
+                    className={cn(mmsBtnSecondaryOnGlass, "mt-auto inline-flex w-full justify-center px-5 text-sm no-underline hover:no-underline")}
+                  >
+                    {idea.button}
+                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+                  </Link>
                 </article>
               ))}
             </div>

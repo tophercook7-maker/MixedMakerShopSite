@@ -36,6 +36,7 @@ export type ExamplesConceptCard = {
   tag: string;
   primaryLine: string;
   context?: string;
+  proofLine?: string;
   previewSrc: string;
   previewAlt: string;
   href: string;
@@ -81,11 +82,13 @@ function strainspotterConcept(): ExamplesConceptCard {
     tag: "Product Build",
     primaryLine: "Product-style app concept showing a clean path from question to useful answers.",
     context: "Built to show structured UX, clarity, and scalable interface thinking.",
+    proofLine:
+      "An app-style project with interactive flow, scanning-focused UX, and practical digital-tool structure.",
     previewSrc: p.previewSrc,
     previewAlt: p.previewAlt,
     href: p.url,
     isExternal: true,
-    primaryCtaLabel: "View Demo",
+    primaryCtaLabel: "Visit StrainSpotter",
     secondaryCtaLabel: "Ask About Something Similar",
     secondaryCtaHref: publicFreeMockupFunnelHref,
     objectPosition: p.objectPosition,

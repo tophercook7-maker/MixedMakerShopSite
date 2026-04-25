@@ -2704,6 +2704,29 @@ a.sample-contact-v:hover {
   border-bottom: 1px solid rgba(63, 90, 71, 0.1);
 }
 
+.free-mockup-start-here {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(184, 92, 30, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.92), rgba(255, 255, 255, 0.86));
+}
+
+.free-mockup-start-here p {
+  margin: 0;
+  color: #1e241f;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.free-mockup-start-here span {
+  display: block;
+  margin-top: 0.35rem;
+  color: #3d4a41;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .free-mockup-form-section:last-of-type {
   border-bottom: none;
   padding-bottom: 0;
@@ -2722,7 +2745,7 @@ a.sample-contact-v:hover {
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--pub-muted);
+  color: #25332c !important;
 }
 
 .free-mockup-funnel-form label.block:last-child {
@@ -2735,9 +2758,9 @@ a.sample-contact-v:hover {
   min-height: 48px;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(63, 90, 71, 0.14);
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--pub-fg-heading);
+  border: 1.5px solid rgba(63, 90, 71, 0.34);
+  background: rgba(255, 255, 255, 0.96);
+  color: #1e241f;
   font-size: 15px;
   transition:
     border-color 0.2s ease,
@@ -2748,7 +2771,7 @@ a.sample-contact-v:hover {
 
 .free-mockup-funnel-form .form-input::placeholder,
 .free-mockup-funnel-form .form-textarea::placeholder {
-  color: rgba(71, 85, 105, 0.55);
+  color: rgba(45, 58, 51, 0.62);
 }
 
 .free-mockup-funnel-form .form-textarea {
@@ -2759,22 +2782,49 @@ a.sample-contact-v:hover {
 
 .free-mockup-funnel-form .form-input:hover,
 .free-mockup-funnel-form .form-textarea:hover {
-  border-color: rgba(63, 90, 71, 0.22);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(63, 90, 71, 0.48);
+  background: #ffffff;
 }
 
 .free-mockup-funnel-form .form-input:focus,
 .free-mockup-funnel-form .form-textarea:focus,
 .free-mockup-funnel-form .form-select:focus {
   outline: none;
-  border-color: rgba(63, 90, 71, 0.38);
-  box-shadow: 0 0 0 3px rgba(63, 90, 71, 0.11);
+  border-color: rgba(184, 92, 30, 0.72);
+  box-shadow: 0 0 0 3px rgba(184, 92, 30, 0.14);
 }
 
 .free-mockup-funnel-form fieldset label.flex {
   align-items: center;
   gap: 0.65rem;
-  padding: 0.35rem 0;
+  padding: 0.55rem 0.65rem;
+}
+
+.free-mockup-funnel-form fieldset legend {
+  color: #25332c !important;
+  font-weight: 800;
+}
+
+.free-mockup-choice {
+  border: 1px solid rgba(63, 90, 71, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #1e241f !important;
+}
+
+.free-mockup-choice span {
+  color: #1e241f;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.free-mockup-choice input[type="checkbox"],
+.free-mockup-choice input[type="radio"],
+.free-mockup-direction-option input[type="radio"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  accent-color: #b85c1e;
 }
 
 .free-mockup-direction-option {
@@ -4442,38 +4492,42 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
 /* -------------------------------------------------------------------------- */
 
 .nav.nav--premium {
-  background: rgba(8, 10, 11, 0.38);
-  backdrop-filter: blur(20px) saturate(1.12);
+  background: rgba(7, 11, 10, 0.88);
   -webkit-backdrop-filter: blur(20px) saturate(1.12);
-  border-bottom: 1px solid rgba(248, 220, 198, 0.12);
-  box-shadow: 0 1px 0 rgba(201, 97, 44, 0.06);
+  backdrop-filter: blur(20px) saturate(1.12);
+  border-bottom: 1px solid rgba(248, 220, 198, 0.18);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(201, 97, 44, 0.08);
 }
 
 /* Home gateway (/) — glass stays readable without competing with the hero */
 .nav.nav--premium.nav--gateway {
-  background: linear-gradient(180deg, rgba(8, 10, 11, 0.4) 0%, rgba(8, 10, 11, 0.12) 100%);
-  border-bottom: 1px solid rgba(248, 220, 198, 0.12);
-  backdrop-filter: blur(18px) saturate(1.08);
+  background: linear-gradient(180deg, rgba(7, 11, 10, 0.92) 0%, rgba(7, 11, 10, 0.78) 100%);
+  border-bottom: 1px solid rgba(248, 220, 198, 0.2);
   -webkit-backdrop-filter: blur(18px) saturate(1.08);
-  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.14), 0 1px 0 rgba(201, 97, 44, 0.05);
+  backdrop-filter: blur(18px) saturate(1.08);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26), 0 1px 0 rgba(201, 97, 44, 0.08);
 }
 
 .nav.nav--premium .brand-title .name {
-  color: #e8fdf5;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .nav.nav--premium .brand-title .sub {
-  color: #9fb5ad;
+  color: #d8ebe4;
+  font-size: 12.5px;
 }
 
 .nav.nav--premium .brand-title .sub strong {
-  color: #c5ddd4;
-  font-weight: 600;
+  color: #f2fff9;
+  font-weight: 700;
 }
 
 .nav.nav--premium .nav-brand-meta {
   font-size: 12px;
-  color: rgba(159, 181, 173, 0.85);
+  color: rgba(221, 237, 230, 0.92);
+  font-weight: 600;
 }
 
 .nav.nav--premium .nav-brand-logo {
@@ -4493,12 +4547,20 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
 }
 
 .nav.nav--premium .pill {
-  color: #9fb5ad;
+  color: #e0f0ea;
+  font-weight: 700;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.32);
 }
 
 .nav.nav--premium .pill:hover {
   background: rgba(232, 149, 92, 0.1);
   color: #f4fbf8;
+}
+
+.nav.nav--premium .pill.pill--active {
+  background: rgba(232, 149, 92, 0.16);
+  color: #fff8f1;
+  box-shadow: inset 0 0 0 1px rgba(232, 149, 92, 0.18);
 }
 
 .nav.nav--premium .pill.pill--muted {
@@ -4528,6 +4590,22 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
 @media (max-width: 768px) {
   .nav.nav--premium .menu-toggle {
     color: #e8fdf5;
+    border: 1px solid rgba(248, 220, 198, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .nav.nav--premium .main-nav {
+    padding: 0.85rem;
+    border: 1px solid rgba(248, 220, 198, 0.12);
+    border-radius: 16px;
+    background: rgba(7, 11, 10, 0.94);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  }
+
+  .nav.nav--premium .pill {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -4606,6 +4684,7 @@ main .offer-page .offer-card:not(.motion-reveal-target):hover {
 
 .footer.footer--premium .footer-sitemap__sep {
   color: rgba(159, 181, 173, 0.35);
+  -webkit-user-select: none;
   user-select: none;
 }
 

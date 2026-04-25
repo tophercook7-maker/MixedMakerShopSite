@@ -71,7 +71,12 @@ export function PublicNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="pill"
+              className={cn(
+                "pill",
+                pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`))
+                  ? "pill--active"
+                  : null,
+              )}
               onClick={() => {
                 if (item.event) trackPublicEvent(item.event.name, item.event.props);
               }}

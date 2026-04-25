@@ -311,6 +311,10 @@ export function FreeMockupFunnelClient({
           <div className="free-mockup-intake-head">
             <p className="free-mockup-intake-eyebrow">Live preview · Guided intake</p>
             <h2 className="free-mockup-intake-title">Your free preview</h2>
+            <div className="free-mockup-start-here">
+              <p>Start here</p>
+              <span>Fill in the basics first. The rest is just context so I can shape a better preview.</span>
+            </div>
             {isFreshCutFunnel ? (
               <p
                 className="small"
@@ -417,7 +421,7 @@ export function FreeMockupFunnelClient({
               Current website
             </legend>
             <div className="flex flex-wrap gap-4 text-sm" style={{ color: "var(--text)" }}>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="free-mockup-choice flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="has-website"
@@ -426,7 +430,7 @@ export function FreeMockupFunnelClient({
                 />
                 Yes
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="free-mockup-choice flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="has-website"
@@ -471,7 +475,7 @@ export function FreeMockupFunnelClient({
             </legend>
             <div className="grid gap-2 text-sm" style={{ color: "var(--text)" }}>
               {FUNNEL_DESIRED_OUTCOME_IDS.map((id) => (
-                <label key={id} className="flex items-start gap-2 cursor-pointer">
+                <label key={id} className="free-mockup-choice flex items-start gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={desiredOutcomes.has(id)}

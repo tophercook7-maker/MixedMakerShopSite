@@ -4,7 +4,12 @@ import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-c
 import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupOnPageHash, publicShellClass } from "@/lib/public-brand";
-import { mmsBulletOnGlass, mmsOnGlassSecondary, mmsSectionY, mmsUmbrellaSectionBackdropImmersive } from "@/lib/mms-umbrella-ui";
+import {
+  mmsBulletOnGlass,
+  mmsOnGlassSecondary,
+  mmsSectionY,
+  mmsUmbrellaSectionBackdropImmersive,
+} from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
 const canonical = "https://mixedmakershop.com/free-mockup";
@@ -33,6 +38,12 @@ const trustBullets = [
   "Straight talk: if I’m not the right fit, I’ll say so.",
 ] as const;
 
+const previewSteps = [
+  "Tell me about your business.",
+  "Tell me what you want the website to help with.",
+  "Send the request and I’ll review it.",
+] as const;
+
 function normalizeQueryParam(raw: string | string[] | undefined): string | undefined {
   const v = Array.isArray(raw) ? raw[0] : raw;
   const t = String(v || "").trim().toLowerCase();
@@ -59,17 +70,17 @@ export default async function FreeMockupPage({
       <div className="relative z-[5] w-full">
         {/* Hero — high-confidence offer, readable above the fold */}
         <section className={mmsUmbrellaSectionBackdropImmersive}>
-          <div className={cn(shell, "py-12 md:py-16 lg:py-20")}>
+          <div className={cn(shell, "grid gap-6 py-10 md:grid-cols-[1.05fr_0.95fr] md:items-end md:py-12 lg:py-14")}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <p className="text-white/70 text-sm uppercase tracking-[0.18em]">Free website preview</p>
-              <h1 className="mt-4 text-white text-4xl font-bold tracking-tight md:text-5xl">
-                Get a free website preview before you commit.
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">Free website preview</p>
+              <h1 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
+                Get a Free Website Preview
               </h1>
-              <p className="mt-4 text-white/80 text-base md:text-lg leading-relaxed">
-                See what your business could look like online with a cleaner, more trustworthy layout built to help bring
-                in more calls, leads, and customers.
+              <p className="mt-4 text-base leading-relaxed text-white/85 md:text-lg">
+                Tell me what you do, what is not working, and what kind of customers you want more of. I’ll use that to
+                create a practical preview for your business website.
               </p>
-              <p className="mt-4 text-sm text-white/65 leading-relaxed">Takes about 2 minutes. No pressure. No commitment.</p>
+              <p className="mt-4 text-sm leading-relaxed text-white/75">Takes a few minutes. No pressure. No commitment.</p>
               <TrackedPublicLink
                 href={publicFreeMockupOnPageHash}
                 eventName="public_free_mockup_funnel_cta"
@@ -79,52 +90,21 @@ export default async function FreeMockupPage({
                 Start my free preview
               </TrackedPublicLink>
             </div>
-          </div>
-        </section>
-
-        {/* Form intro — directly above intake */}
-        <section className={mmsUmbrellaSectionBackdropImmersive}>
-          <div className={cn(shell, "flex flex-col gap-4 pb-10 pt-2 md:gap-5 md:pb-12 md:pt-0")}>
-            <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
-              <h2 className="text-white text-xl font-semibold">Before you start</h2>
-              <p className="mt-4 text-base leading-relaxed text-white/80">
-                You do not need to know exactly what you want yet.
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-white/80">
-                A business name, Facebook page, or rough idea is enough to start.
-              </p>
-              <p className="mt-3 leading-relaxed text-white/65">
-                Best for local services, small businesses, and anyone who depends on trust, calls, or inbound leads.
-              </p>
-            </div>
-            <div className="public-glass-box--soft public-glass-box--pad max-w-3xl">
-              <h2 className="text-white text-xl font-semibold">What you’ll get</h2>
-              <ul className="mt-4 space-y-2.5 text-base leading-relaxed text-white/80 md:text-[17px]">
-                <li className="flex gap-2">
-                  <span className="text-white/55" aria-hidden>
-                    ·
-                  </span>
-                  <span>A clearer website direction for your business</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-white/55" aria-hidden>
-                    ·
-                  </span>
-                  <span>A more trustworthy first impression</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-white/55" aria-hidden>
-                    ·
-                  </span>
-                  <span>A preview built around calls, leads, or bookings</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-white/55" aria-hidden>
-                    ·
-                  </span>
-                  <span>A real example you can look at before deciding anything else</span>
-                </li>
+            <div className="public-glass-box--soft public-glass-box--pad">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/75">How to start</p>
+              <ul className="mt-5 space-y-3 text-base leading-relaxed text-white/85">
+                {previewSteps.map((step, index) => (
+                  <li key={step} className="flex gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-orange-300/35 bg-orange-300/14 text-sm font-bold text-orange-100">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
               </ul>
+              <p className="mt-5 text-sm leading-relaxed text-white/70">
+                The form starts right below. Honest basics are enough; you do not need polished copy.
+              </p>
             </div>
           </div>
         </section>

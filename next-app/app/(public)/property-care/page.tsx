@@ -91,20 +91,20 @@ export default function PropertyCarePage() {
               </PublicCtaRow>
             </div>
 
-            <div className="public-glass-box--soft overflow-hidden rounded-[2rem] border-emerald-300/15 bg-white/8 shadow-2xl shadow-black/35">
-              <div className="relative aspect-[4/3]">
+            <div className="public-glass-box--soft overflow-hidden rounded-[2rem] border-emerald-300/15 bg-[#07110c]/85 shadow-2xl shadow-black/35">
+              <div className="relative aspect-[16/10] bg-[#07110c]">
                 <Image
-                  src="/images/showcase/freshcut-property-care.jpg"
-                  alt="Fresh Cut Property Care example work"
+                  src="/images/freshcut-new.png"
+                  alt="Fresh Cut Property Care homepage screenshot"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="(max-width: 1024px) 100vw, 560px"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-transparent to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5">
                   <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-100/90">Fresh Cut</p>
-                  <p className="mt-2 text-xl font-bold text-white">Dedicated property-care brand</p>
+                  <p className="mt-2 text-xl font-bold text-white">Real dedicated property-care website</p>
                 </div>
               </div>
             </div>
