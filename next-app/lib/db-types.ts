@@ -99,7 +99,16 @@ export type Client = {
   owner_id: string;
 };
 
-export type ProjectStatus = "planning" | "design" | "development" | "testing" | "complete" | "maintenance";
+export type ProjectStatus =
+  | "draft"
+  | "estimate_sent"
+  | "deposit_requested"
+  | "deposit_received"
+  | "scheduled"
+  | "in_progress"
+  | "waiting_on_customer"
+  | "completed"
+  | "archived";
 export type Project = {
   id: string;
   client_id: string;
@@ -108,6 +117,17 @@ export type Project = {
   deadline: string | null;
   price: number | null;
   notes: string | null;
+  estimated_price?: number | null;
+  deposit_amount?: number | null;
+  amount_paid?: number | null;
+  payment_status?: string | null;
+  amount_paid_updated_at?: string | null;
+  payment_method?: string | null;
+  scheduled_start_date?: string | null;
+  due_date?: string | null;
+  completed_at?: string | null;
+  internal_notes?: string | null;
+  action_checklist?: Record<string, boolean> | null;
   created_at: string;
   owner_id: string;
 };

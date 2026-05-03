@@ -27,10 +27,12 @@ export function HomeProjectForm() {
     ].join("\n");
 
     try {
-      const res = await fetch("/api/forms/quote", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "quote_request",
           name: fd.get("name"),
           business_name: fd.get("business"),
           email: fd.get("email"),

@@ -17,16 +17,18 @@ export default function FreeWebsiteCheckPage() {
     let website = String(fd.get("website") || "").trim();
     if (website && !website.startsWith("http")) website = "https://" + website;
     try {
-      const res = await fetch("/api/forms/website-check", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "website_check",
           name: fd.get("name") || undefined,
           business_name: fd.get("business_name") || undefined,
           email: fd.get("email"),
           phone: fd.get("phone") || undefined,
           website: website || undefined,
-          message: fd.get("message") || undefined,
+          message: fd.get("message") || (website ? `Website URL: ${website}` : "Website check requested."),
         }),
       });
       if (!res.ok) {

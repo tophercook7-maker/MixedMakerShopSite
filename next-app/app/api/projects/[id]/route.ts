@@ -29,13 +29,37 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const supabase = await createClient();
+  const patch = { ...parsed.data } as Record<string, unknown>;
+  const { data: before } = await supabase
+    .from("projects")
+    .select("amount_paid,status")
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  const now = new Date().toISOString();
+  if (Object.prototype.hasOwnProperty.call(patch, "amount_paid")) {
+    const prev = Number((before as { amount_paid?: unknown } | null)?.amount_paid ?? 0);
+    const next = Number(patch.amount_paid ?? 0);
+    if (Number.isFinite(next) && next !== prev && !Object.prototype.hasOwnProperty.call(patch, "amount_paid_updated_at")) {
+      patch.amount_paid_updated_at = now;
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "status")) {
+    const prevStatus = String((before as { status?: unknown } | null)?.status || "");
+    const nextStatus = String(patch.status || "");
+    if (nextStatus === "completed" && prevStatus !== "completed" && !Object.prototype.hasOwnProperty.call(patch, "completed_at")) {
+      patch.completed_at = now;
+    }
+  }
   const { data, error } = await supabase
     .from("projects")
-    .update(parsed.data)
+    .update(patch)
     .eq("id", id)
+    .eq("owner_id", user.id)
     .select()
-    .single();
+    .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(data);
 }
 

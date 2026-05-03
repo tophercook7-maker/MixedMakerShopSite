@@ -93,6 +93,7 @@ type LeadRow = {
   source?: string | null;
   lead_source?: string | null;
   conversion_score?: number | null;
+  score_breakdown?: Record<string, unknown> | null;
   why_this_lead_is_here?: string | null;
   has_website?: boolean | null;
   lead_tags?: string[] | null;
@@ -194,6 +195,7 @@ const LEAD_DETAIL_SELECT_VARIANTS = [
     "source",
     "lead_source",
     "conversion_score",
+    "score_breakdown",
     "why_this_lead_is_here",
     "google_business_url",
     "advertising_page_url",
@@ -1653,6 +1655,7 @@ Want me to show you a quick idea?`;
           printTags={lead.print_tags ?? null}
           estimateRange={lead.print_estimate_summary ?? null}
           notes={lead.notes ?? null}
+          scoreBreakdown={lead.score_breakdown ?? null}
           printRequestSummary={lead.print_request_summary ?? null}
           attachmentUrl={lead.print_attachment_url ?? null}
           printDimensions={lead.print_dimensions ?? null}

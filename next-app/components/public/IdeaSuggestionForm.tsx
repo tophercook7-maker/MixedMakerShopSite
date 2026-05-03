@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { mmsBtnPrimary, mmsOnGlassSecondary } from "@/lib/mms-umbrella-ui";
+import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-black/35 px-4 py-3 text-white placeholder:text-white/35 outline-none transition focus:border-orange-300/45 focus:ring-2 focus:ring-orange-300/15";
@@ -24,11 +25,14 @@ export function IdeaSuggestionForm() {
     const notes = String(fd.get("notes") || "").trim();
 
     try {
-      const res = await fetch("/api/forms/contact", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "idea_lab",
           name,
+          business_name: "Idea Lab Suggestion",
           email,
           message: [
             "Business: Idea Lab Suggestion",
@@ -98,7 +102,7 @@ export function IdeaSuggestionForm() {
       </div>
       {status === "success" ? (
         <p className="rounded-xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-          Got it. Thanks for sending the idea.
+          {LEAD_CONFIRMATION_MESSAGE}
         </p>
       ) : null}
       {status === "error" ? <p className={cn("text-sm", mmsOnGlassSecondary)}>{message}</p> : null}

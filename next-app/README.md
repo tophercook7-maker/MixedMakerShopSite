@@ -38,11 +38,11 @@ npm run dev
 - `app/(public)` — Public pages: /, /services, /portfolio, /contact, /free-website-check, /connect
 - `app/admin` — Protected admin: dashboard, leads, clients, projects, tasks, payments, settings
 - `app/auth` — Login at /auth/login
-- `app/api/forms` — POST handlers for contact, website-check, connect, quote (write to form_submissions + leads)
+- `app/api/leads` — Shared lead endpoint for public forms, Captain Maker leads, and admin-created leads
 - `components/admin` — Sidebar, tables, pipeline, modals
 - `lib/supabase` — Server/client/middleware Supabase helpers
 - `supabase/migrations` — SQL schema and RLS
 
 ## Forms
 
-Contact, Free Website Check, and Connect forms POST to `/api/forms/contact`, `/api/forms/website-check`, and `/api/forms/connect`. Each handler inserts a row into `form_submissions` and creates a corresponding `leads` record, then the front end redirects to a success page.
+Contact, Free Website Check, Idea Lab, and quote forms POST to `/api/leads`. Public submissions save to `leads` and `form_submissions`, then the front end shows the shared on-screen confirmation message.

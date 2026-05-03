@@ -34,6 +34,12 @@ export function WebLeadCard({ vm }: { vm: WebLeadViewModel }) {
           {laneLabel(vm.lane)}
         </span>
       </div>
+      <div className="flex flex-wrap gap-2">
+        <span className={`admin-priority-badge ${vm.priority.className}`}>
+          {vm.priority.label}
+          {vm.priority.isManual ? " (manual)" : ""}
+        </span>
+      </div>
 
       <div className="grid gap-2 text-xs md:grid-cols-2">
         <p style={{ color: "var(--admin-muted)" }}>

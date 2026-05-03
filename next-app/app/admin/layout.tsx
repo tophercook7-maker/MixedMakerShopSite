@@ -5,6 +5,8 @@ import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
 import { HeaderActions } from "@/components/admin/HeaderActions";
 import { GlobalScoutJobProvider } from "@/components/admin/scout-job-provider";
+import { getNewLeadCount } from "@/lib/crm/new-lead-count";
+import { createClient } from "@/lib/supabase/server";
 import { ArrowRight, Plus } from "lucide-react";
 import "./admin.css";
 
@@ -19,16 +21,21 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
   console.info("[Admin Bootstrap] admin shell render started");
   const scoutBaseUrl = process.env.SCOUT_BRAIN_API_BASE_URL?.trim();
   const isScoutConfigured = Boolean(scoutBaseUrl);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const newLeadCount = await getNewLeadCount(supabase, String(user?.id || ""));
 
   return (
     <GlobalScoutJobProvider>
       <div className="admin-root min-h-screen md:grid md:grid-cols-[280px_1fr]">
         <aside className="admin-sidebar shrink-0">
-          <Sidebar />
+          <Sidebar newLeadCount={newLeadCount} />
         </aside>
         <div className="min-w-0 flex flex-col">
           <header className="admin-header">

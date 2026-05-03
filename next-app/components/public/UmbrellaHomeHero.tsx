@@ -14,7 +14,7 @@ import {
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
-import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -59,36 +59,35 @@ export function UmbrellaHomeHero() {
           )}
         >
           <motion.p className={mmsSectionEyebrowOnGlass} {...fadeUp(0)}>
-            MixedMakerShop
+            Mixed Maker Shop
           </motion.p>
 
           <motion.h1
             className={cn(mmsHeroTitleOnGlass, "mt-5 md:mt-6")}
             {...fadeUp(stagger)}
           >
-            MixedMakerShop
+            Got something you need built? Start here.
           </motion.h1>
 
           <motion.p
             className={cn("mt-4 text-xl font-semibold leading-snug text-white md:text-2xl", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2)}
           >
-            Useful things built online, outside, and in the workshop.
+            Websites, AI Bots, Flyers, Ads, 3D Prints &amp; Custom Builds
           </motion.p>
           <motion.p
             className={cn("mt-6 text-base leading-relaxed md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2.5)}
           >
-            I&apos;m Topher — the idea engine behind MixedMakerShop. I build websites, digital tools, local service pages,
-            and practical online systems for small businesses. MixedMakerShop is the home for everything we&apos;re
-            building: websites, tools, property help, GiGi&apos;s 3D printed items, and new ideas we&apos;re testing.
+            Mixed Maker Shop helps small businesses, side hustles, creators, and everyday makers turn ideas into
+            websites, digital tools, promo materials, 3D prints, and custom builds.
           </motion.p>
 
           <motion.div className={cn("mt-8 md:mt-9")} {...fadeUp(stagger * 3)}>
             <div className={mmsOnGlassCtaSeparator}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href="#choose"
+                  href="#captain-maker"
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_hero_umbrella", target: "chooser" }}
                   className={cn(
@@ -96,11 +95,11 @@ export function UmbrellaHomeHero() {
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Choose What You Need
+                  Start My Free Estimate
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
-                  href={publicFreeMockupFunnelHref}
+                  href="#captain-maker"
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_hero_umbrella", target: "free_mockup_secondary" }}
                   className={cn(
@@ -108,7 +107,7 @@ export function UmbrellaHomeHero() {
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Get a Free Website Preview
+                  Tell Us What You Need Built, Maker
                 </TrackedPublicLink>
               </PublicCtaRow>
             </div>
@@ -119,7 +118,7 @@ export function UmbrellaHomeHero() {
                 "max-w-[42ch]",
               )}
             >
-              MixedMakerShop is organized like departments under one roof, so you can pick the path that fits.
+              Free estimates. Clear starting prices. Custom work scheduled after approval and deposit when required.
             </p>
           </motion.div>
         </div>

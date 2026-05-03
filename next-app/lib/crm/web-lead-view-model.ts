@@ -2,6 +2,7 @@
  * Normalized view model for web CRM UI — single mapping from raw `leads` rows.
  */
 import { canonicalizeLeadStatus } from "@/lib/crm-lead-schema";
+import { deriveLeadPriority, type LeadPriorityDisplay } from "@/lib/crm/lead-display";
 import { leadHasContactPath } from "@/lib/crm/lead-lane";
 import { resolveServiceMode, type WebServiceMode } from "@/lib/crm/web-service-mode";
 import { normalizeSourcePlatform, sourcePlatformLabel, type WebSourcePlatform } from "@/lib/crm/web-source-normalize";
@@ -70,6 +71,7 @@ export type WebLeadViewModel = {
   serviceMode: WebServiceMode;
   status: string;
   notes: string;
+  priority: LeadPriorityDisplay;
   createdAt: string | null;
   closedAt: string | null;
   crmLaneWebStored: string | null;
@@ -249,6 +251,7 @@ export function toWebLeadViewModel(row: Record<string, unknown>): WebLeadViewMod
     previewSent: row.preview_sent === true,
     status: trim(row.status) || "new",
     notes: trim(row.notes),
+    priority: deriveLeadPriority(row),
     createdAt: trim(row.created_at) || null,
     closedAt: trim(row.closed_at) || null,
     crmLaneWebStored: trim(row.crm_lane_web) || null,

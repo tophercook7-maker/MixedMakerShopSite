@@ -34,7 +34,11 @@ function linkActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function Sidebar() {
+function CountBadge({ count }: { count: number }) {
+  return <span className="admin-count-badge ml-auto">{count > 99 ? "99+" : Math.max(0, count)}</span>;
+}
+
+export default function Sidebar({ newLeadCount = 0 }: { newLeadCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -63,7 +67,8 @@ export default function Sidebar() {
             data-active={linkActive(pathname, href)}
           >
             <Icon className="admin-nav-icon h-4 w-4 shrink-0" />
-            {label}
+            <span>{label}</span>
+            {href === "/admin/crm/web" ? <CountBadge count={newLeadCount} /> : null}
           </a>
         ))}
       </nav>
@@ -88,11 +93,18 @@ export default function Sidebar() {
         <a href="/admin/crm/print" className="block py-1 hover:text-[var(--admin-gold)]">
           3D print CRM
         </a>
+        <a href="/admin/crm/new-leads" className="flex items-center gap-2 py-1 hover:text-[var(--admin-gold)]">
+          <span>New lead inbox</span>
+          <CountBadge count={newLeadCount} />
+        </a>
         <a href="/admin/crm/web?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
           Top Picks
         </a>
         <a href="/admin/crm/hub" className="block py-1 hover:text-[var(--admin-gold)]">
           CRM hub
+        </a>
+        <a href="/admin/crm/projects" className="block py-1 hover:text-[var(--admin-gold)]">
+          CRM projects
         </a>
         <a href="/admin/scout/review" className="block py-1 hover:text-[var(--admin-gold)]">
           Scout review queue

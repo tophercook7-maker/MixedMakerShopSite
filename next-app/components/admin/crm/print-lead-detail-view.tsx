@@ -50,6 +50,8 @@ import {
 } from "@/lib/crm/three-d-print-lead";
 import { QuotedPaymentRequestModal } from "@/components/admin/crm/quoted-payment-request-modal";
 import { LeadActivityTimeline } from "@/components/admin/lead-activity-timeline";
+import { ConvertLeadToProject } from "@/components/admin/crm/convert-lead-to-project";
+import { LeadFollowUpChecklist } from "@/components/admin/crm/lead-follow-up-checklist";
 
 function fmtTs(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -104,6 +106,7 @@ export function PrintLeadDetailView({
   printTags,
   estimateRange,
   notes,
+  scoreBreakdown,
   printRequestSummary,
   attachmentUrl,
   printDimensions,
@@ -151,6 +154,7 @@ export function PrintLeadDetailView({
   printTags: string[] | null;
   estimateRange: string | null;
   notes: string | null;
+  scoreBreakdown: Record<string, unknown> | null;
   printRequestSummary: string | null;
   attachmentUrl: string | null;
   printDimensions: string | null;
@@ -884,6 +888,13 @@ export function PrintLeadDetailView({
           </div>
         </div>
       </section>
+
+      <LeadFollowUpChecklist leadId={leadId} scoreBreakdown={scoreBreakdown} />
+
+      <ConvertLeadToProject
+        leadId={leadId}
+        initialProjectId={String(scoreBreakdown?.converted_project_id || "").trim() || null}
+      />
 
       {/* Pipeline stepper */}
       <section className="admin-card space-y-3 border-violet-500/25">

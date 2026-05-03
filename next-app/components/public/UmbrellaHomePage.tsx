@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
@@ -58,6 +59,34 @@ const chooserCards = [
     body: "Vote on ideas, suggest something, or see what we’re building next.",
     href: "/idea-lab",
     cta: "Visit the Idea Lab",
+  },
+] as const;
+
+const serviceCards = [
+  {
+    title: "Landing Pages",
+    price: "Starting at $100",
+    body: "One focused page for a service, event, offer, product, or fast online presence.",
+  },
+  {
+    title: "Websites",
+    price: "Starting at $400",
+    body: "Multi-page business sites with room for services, galleries, menus, booking, payments, and more.",
+  },
+  {
+    title: "AI Bots",
+    price: "$200 during first website build / $500 later",
+    body: "Customer helpers that answer questions, collect leads, and guide visitors to the next step.",
+  },
+  {
+    title: "Flyers & Ads",
+    price: "Starting at $50",
+    body: "Promo graphics for events, offers, local services, social posts, and quick attention.",
+  },
+  {
+    title: "3D Prints & Custom Work",
+    price: "Estimate required",
+    body: "Custom physical builds, prints, gifts, parts, signs, and ideas that need a closer look.",
   },
 ] as const;
 
@@ -131,6 +160,52 @@ export function UmbrellaHomePage() {
 
       <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
+
+        <section className={cn(homeBackdrop)} id="services">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Clear Starting Points</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Pick the build that sounds closest.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Start with the closest service, then Captain Maker can help sort the details before your free estimate.
+              </p>
+            </div>
+            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
+              {serviceCards.map((service) => (
+                <article
+                  key={service.title}
+                  className="public-glass-box--soft public-glass-box--pad flex min-h-[14rem] flex-col"
+                >
+                  <h3 className={mmsH3OnGlass}>{service.title}</h3>
+                  <p className={cn("mt-3 text-sm font-bold uppercase tracking-[0.16em]", mmsOnGlassPrimary)}>
+                    {service.price}
+                  </p>
+                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                    {service.body}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <div className={cn("public-glass-box public-glass-box--pad mt-8 max-w-3xl")}>
+              <p className={mmsSectionEyebrowOnGlass}>Not sure what you need?</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>Not sure what you need?</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                That’s exactly why Captain Maker is here. Tell him what you’re trying to do, and he’ll help point you
+                toward the right service before you start your estimate.
+              </p>
+              <Link href="#captain-maker" className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
+                Tell Captain Maker What You Need
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className={cn(homeBackdrop)} id="captain-maker">
+          <div className={cn(shell, mmsSectionY)}>
+            <CaptainMakerGuide />
+          </div>
+        </section>
 
         <section className={cn(homeBackdrop)} id="choose">
           <div className={cn(shell, mmsSectionY)}>

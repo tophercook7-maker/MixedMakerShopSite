@@ -81,6 +81,7 @@ export default async function AdminCrmPrintLeadPage({
         printTags={(row.print_tags as string[]) ?? null}
         estimateRange={(row.print_estimate_summary as string) ?? null}
         notes={(row.notes as string) ?? null}
+        scoreBreakdown={(row.score_breakdown as Record<string, unknown>) ?? null}
         printRequestSummary={(row.print_request_summary as string) ?? null}
         attachmentUrl={(row.print_attachment_url as string) ?? null}
         printDimensions={(row.print_dimensions as string) ?? null}

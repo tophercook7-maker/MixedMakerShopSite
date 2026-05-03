@@ -21,6 +21,7 @@ import { saveLeadsListReturnContext } from "@/components/admin/crm/leads-list-re
 import type { WebCrmDashboardPreset } from "@/lib/crm/web-crm-dashboard-presets";
 import { webCrmEmptyHint } from "@/lib/crm/web-crm-empty-hint";
 import { webCrmWebHref, webCrmWebHrefPreset } from "@/lib/crm/web-crm-url";
+import type { LeadPriority } from "@/lib/crm/lead-display";
 
 const WEB_CRM_LANE_SET = new Set<string>(WEB_CRM_LANES);
 
@@ -98,7 +99,19 @@ export function WebCrmDashboard({
     initialPreset.needsReplyOnly,
   ]);
 
-  const filtered = useMemo(() => webVms.filter((vm) => passesFilters(vm, filters)), [webVms, filters]);
+  const priorityParamRaw = String(searchParams.get("priority") || "").trim().toLowerCase();
+  const priorityFilter: LeadPriority | "all" =
+    priorityParamRaw === "hot" || priorityParamRaw === "warm" || priorityParamRaw === "browsing"
+      ? priorityParamRaw
+      : "all";
+
+  const filtered = useMemo(
+    () =>
+      webVms
+        .filter((vm) => passesFilters(vm, filters))
+        .filter((vm) => priorityFilter === "all" || vm.priority.key === priorityFilter),
+    [webVms, filters, priorityFilter],
+  );
 
   const tabbed = useMemo(() => {
     const base = lane === "all" ? filtered : filtered.filter((vm) => vm.lane === lane);
@@ -225,6 +238,25 @@ export function WebCrmDashboard({
 
       <section className="admin-card p-4 space-y-4">
         <WebLaneTabs active={lane} onChange={setLane} counts={counts} />
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: "All", value: "all" },
+            { label: "Hot", value: "hot" },
+            { label: "Warm", value: "warm" },
+            { label: "Browsing", value: "browsing" },
+          ].map((option) => {
+            const active = priorityFilter === option.value;
+            return (
+              <Link
+                key={option.value}
+                href={option.value === "all" ? "/admin/crm/web" : `/admin/crm/web?priority=${option.value}`}
+                className={active ? "admin-btn-primary text-xs" : "admin-btn-ghost text-xs"}
+              >
+                {option.label}
+              </Link>
+            );
+          })}
+        </div>
         <WebCrmFilters value={filters} onChange={setFilters} />
       </section>
 

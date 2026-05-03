@@ -30,10 +30,30 @@ export type Project = {
   id: string;
   client_id?: string | null;
   name: string;
-  status: "planning" | "design" | "development" | "testing" | "complete" | "maintenance";
+  status:
+    | "draft"
+    | "estimate_sent"
+    | "deposit_requested"
+    | "deposit_received"
+    | "scheduled"
+    | "in_progress"
+    | "waiting_on_customer"
+    | "completed"
+    | "archived";
   price_cents?: number | null;
   deadline?: string | null;
   notes?: string | null;
+  estimated_price?: number | null;
+  deposit_amount?: number | null;
+  amount_paid?: number | null;
+  payment_status?: string | null;
+  amount_paid_updated_at?: string | null;
+  payment_method?: string | null;
+  scheduled_start_date?: string | null;
+  due_date?: string | null;
+  completed_at?: string | null;
+  internal_notes?: string | null;
+  action_checklist?: Record<string, boolean> | null;
   created_at?: string;
   updated_at?: string;
 };

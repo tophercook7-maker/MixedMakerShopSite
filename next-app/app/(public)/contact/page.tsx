@@ -47,12 +47,16 @@ export default function ContactPage() {
     }
     const message = parts.join("\n");
     try {
-      const res = await fetch("/api/forms/contact", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "contact_form",
           name: fd.get("name"),
+          business_name: business,
           email: fd.get("email"),
+          website: website || undefined,
           message,
         }),
       });

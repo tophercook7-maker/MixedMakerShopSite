@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { CANONICAL_LEAD_STATUSES, canonicalizeLeadStatus } from "@/lib/crm-lead-schema";
+import { PROJECT_PAYMENT_STATUSES } from "@/lib/crm/project-money";
+import { CRM_PROJECT_STATUSES } from "@/lib/crm/project-status";
 
 const canonicalLeadStatusEnum = CANONICAL_LEAD_STATUSES as unknown as [
   (typeof CANONICAL_LEAD_STATUSES)[number],
@@ -10,7 +12,7 @@ const leadStatusSchema = z.preprocess(
   (v) => canonicalizeLeadStatus(v === undefined || v === null ? "new" : v),
   z.enum(canonicalLeadStatusEnum),
 );
-const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost"] as const;
+const dealStatuses = ["none", "interested", "proposal_sent", "won", "lost", "converted"] as const;
 const dealStages = ["new", "interested", "pricing", "closing", "won"] as const;
 const doorStatuses = ["not_visited", "planned", "visited", "follow_up", "closed_won", "closed_lost"] as const;
 const mockupDealStatuses = [
@@ -31,7 +33,8 @@ const printPipelineStatuses = [
   "delivered",
   "closed",
 ] as const;
-const projectStatuses = ["planning", "design", "development", "testing", "complete", "maintenance"] as const;
+const projectStatuses = CRM_PROJECT_STATUSES;
+const projectPaymentStatuses = PROJECT_PAYMENT_STATUSES;
 const taskStatuses = ["todo", "in_progress", "done"] as const;
 const taskPriorities = ["low", "medium", "high", "critical"] as const;
 const paymentStatuses = ["pending", "paid", "overdue"] as const;
@@ -205,9 +208,20 @@ export const projectSchema = z.object({
   client_id: z.string().uuid(),
   name: z.string().min(1, "Project name required").max(200),
   status: z.enum(projectStatuses),
-  deadline: z.string().optional(),
-  price: z.number().min(0).optional(),
-  notes: z.string().max(5000).optional(),
+  deadline: z.string().optional().nullable(),
+  price: z.number().min(0).optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
+  estimated_price: z.number().min(0).optional().nullable(),
+  deposit_amount: z.number().min(0).optional().nullable(),
+  amount_paid: z.number().min(0).optional().nullable(),
+  payment_status: z.enum(projectPaymentStatuses).optional(),
+  amount_paid_updated_at: optionalTimestamp,
+  payment_method: z.string().max(120).optional().nullable(),
+  scheduled_start_date: z.string().optional().nullable(),
+  due_date: z.string().optional().nullable(),
+  completed_at: optionalTimestamp,
+  internal_notes: z.string().max(5000).optional().nullable(),
+  action_checklist: z.record(z.boolean()).optional(),
 });
 
 export const taskSchema = z.object({

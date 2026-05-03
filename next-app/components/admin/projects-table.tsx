@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Project } from "@/lib/db-types";
 import type { Client } from "@/lib/db-types";
+import { CRM_PROJECT_STATUSES, projectStatusClass, projectStatusLabel } from "@/lib/crm/project-status";
 import { ProjectForm } from "./project-form";
 
 type ProjectRow = Project & { clients?: { business_name: string } | null };
@@ -51,27 +52,22 @@ export function ProjectsTable({ projects, clients }: Props) {
   }
 
   const clientName = (p: ProjectRow) => (p.clients && typeof p.clients === "object" && "business_name" in p.clients ? (p.clients as { business_name: string }).business_name : "—");
-  const statusClass = (s: string) => {
-    if (["complete", "maintenance"].includes(s)) return "admin-badge admin-badge-complete";
-    if (["development", "testing"].includes(s)) return "admin-badge admin-badge-progress";
-    return "admin-badge admin-badge-new";
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         <select
+          aria-label="Filter projects by status"
+          title="Filter projects by status"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="admin-select h-9"
         >
           <option value="">All statuses</option>
-          <option value="planning">Planning</option>
-          <option value="design">Design</option>
-          <option value="development">Development</option>
-          <option value="testing">Testing</option>
-          <option value="complete">Complete</option>
-          <option value="maintenance">Maintenance</option>
+          {CRM_PROJECT_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {projectStatusLabel(status)}
+            </option>
+          ))}
         </select>
         <button
           type="button"
@@ -97,12 +93,12 @@ export function ProjectsTable({ projects, clients }: Props) {
             {filtered.map((p) => (
               <tr
                 key={p.id}
-                className={`border-b last:border-0 ${p.deadline && p.deadline < today && p.status !== "complete" ? "bg-destructive/5" : ""}`}
+                className={`border-b last:border-0 ${p.deadline && p.deadline < today && p.status !== "completed" ? "bg-destructive/5" : ""}`}
               >
                 <td className="p-3">{p.name}</td>
                 <td className="p-3">{clientName(p)}</td>
-                <td className="p-3"><span className={statusClass(p.status)}>{p.status.replace("_", " ")}</span></td>
-                <td className="p-3" style={{ color: "var(--admin-muted)" }}>{p.deadline ?? "—"}</td>
+                <td className="p-3"><span className={projectStatusClass(p.status)}>{projectStatusLabel(p.status)}</span></td>
+                <td className="admin-text-muted p-3">{p.deadline ?? "—"}</td>
                 <td className="p-3">{p.price != null ? `$${Number(p.price).toLocaleString()}` : "—"}</td>
                 <td className="p-3">
                   <button

@@ -5,6 +5,11 @@ import { leadSchema } from "@/lib/validations";
 import { refreshDueFollowUps } from "@/lib/leads-workflow";
 import { isManualOnlyMode } from "@/lib/manual-mode";
 import {
+  handleInboundLeadSubmission,
+  isInboundLeadSubmission,
+} from "@/lib/crm/inbound-lead-submission";
+import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
+import {
   canonicalizeLeadStatus,
   leadHasStandaloneWebsite,
   LEAD_FINGERPRINT_OPTIONAL_COLUMNS,
@@ -30,9 +35,38 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
+  const body = await request.json();
+  if (isInboundLeadSubmission(body)) {
+    console.info("[Leads API] inbound create request", { request_id: requestId, payload: body });
+    const inbound = await handleInboundLeadSubmission(body);
+    if (!inbound.ok) {
+      console.error("[Leads API] inbound create failed", {
+        request_id: requestId,
+        error: inbound.error,
+        details: inbound.details,
+      });
+      return NextResponse.json(
+        { error: inbound.error, details: inbound.details },
+        { status: inbound.status }
+      );
+    }
+    console.info("[Leads API] inbound create succeeded", {
+      request_id: requestId,
+      lead_id: inbound.lead_id,
+      duplicate_skipped: inbound.duplicate_skipped,
+    });
+    return NextResponse.json({
+      ok: true,
+      id: inbound.lead_id,
+      source: "server",
+      isLocalOnly: false,
+      duplicate_skipped: inbound.duplicate_skipped,
+      message: LEAD_CONFIRMATION_MESSAGE,
+    });
+  }
+
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await request.json();
   console.info("[Leads API] create request", { request_id: requestId, payload: body });
   const parsed = leadSchema.safeParse(body);
   if (!parsed.success) {

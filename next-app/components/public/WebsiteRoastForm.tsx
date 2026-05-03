@@ -17,12 +17,16 @@ export function WebsiteRoastForm() {
     let website = String(fd.get("website_url") || "").trim();
     if (website && !website.startsWith("http")) website = "https://" + website;
     try {
-      const res = await fetch("/api/forms/website-check", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "website_check",
+          business_name: website ? `Website roast - ${website}` : undefined,
           email: fd.get("email"),
           website: website || undefined,
+          message: website ? `Website URL: ${website}` : "Website roast requested.",
         }),
       });
       if (!res.ok) {

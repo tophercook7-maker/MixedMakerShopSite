@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { laneLabel } from "@/lib/crm/web-lead-lane";
+import { buildLeadSummary, deriveLeadPriority, displayLeadSourceLabel } from "@/lib/crm/lead-display";
 import { toWebLeadViewModel } from "@/lib/crm/web-lead-view-model";
 import { buildLeadPath } from "@/lib/lead-route";
 import { getLeadPriorityBadges, leadStatusClass, prettyLeadStatus } from "@/components/admin/lead-visuals";
@@ -15,8 +16,11 @@ import { LeadFollowUpPanel } from "@/components/admin/lead-follow-up-panel";
 import { LeadMockupSharePanel } from "@/components/admin/lead-mockup-share-panel";
 import { LeadPitchPanel } from "@/components/admin/lead-pitch-panel";
 import { LeadPrimaryActions } from "@/components/admin/lead-primary-actions";
+import { ConvertLeadToProject } from "@/components/admin/crm/convert-lead-to-project";
+import { LeadPriorityEditor } from "@/components/admin/crm/lead-priority-editor";
 import { LeadSuggestedResponse } from "@/components/admin/lead-suggested-response";
 import { LeadContactNow } from "@/components/admin/lead-contact-now";
+import { LeadFollowUpChecklist } from "@/components/admin/crm/lead-follow-up-checklist";
 import { WebLeadContactPaths } from "@/components/admin/crm/web-lead-contact-paths";
 import { WebLeadDealPanel } from "@/components/admin/crm/web-lead-deal-panel";
 import { WebLeadNextActionCard } from "@/components/admin/crm/web-lead-next-action-card";
@@ -108,6 +112,14 @@ export function WebLeadWorkspace({
   const resolvedBest = resolveBestContact(lead);
   const advertising = resolvedAdvertising(lead);
   const leadPath = buildLeadPath(leadId, displayBusinessName);
+  const sourceLabel = displayLeadSourceLabel(lead);
+  const leadSummary = buildLeadSummary(lead);
+  const priority = deriveLeadPriority(lead);
+  const scoreBreakdown =
+    lead.score_breakdown && typeof lead.score_breakdown === "object" && !Array.isArray(lead.score_breakdown)
+      ? (lead.score_breakdown as Record<string, unknown>)
+      : null;
+  const convertedProjectId = String(scoreBreakdown?.converted_project_id || "").trim() || null;
 
   const shortEmailPitch = `Hey — I took a quick look at your online presence and see a few easy wins.
 I help local businesses get more calls with simple, cleaner sites.
@@ -145,6 +157,11 @@ Want me to show you a quick idea?`;
             <div className="flex flex-wrap gap-2 text-xs items-center">
               <span className={`admin-badge ${leadStatusClass(status)}`}>{prettyLeadStatus(status)}</span>
               <span className="admin-badge border border-[var(--admin-border)]">{laneLabel(vm.lane)}</span>
+              <span className="admin-badge border border-[var(--admin-border)]">{sourceLabel}</span>
+              <span className={`admin-priority-badge ${priority.className}`}>
+                {priority.label}
+                {priority.isManual ? " (manual)" : ""}
+              </span>
               {displayScore != null ? (
                 <span style={{ color: "var(--admin-muted)" }}>
                   Score <strong style={{ color: "var(--admin-fg)" }}>{displayScore}</strong>
@@ -164,6 +181,34 @@ Want me to show you a quick idea?`;
               {vm.city ? ` · ${vm.city}` : ""}
               {vm.state ? `, ${vm.state}` : ""}
             </p>
+            <div className="admin-border-soft rounded-xl border p-3">
+              <h2 className="admin-text-fg text-sm font-semibold">Lead summary</h2>
+              <dl className="admin-text-muted mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="admin-text-fg font-semibold">Project type</dt>
+                  <dd>{leadSummary.projectType}</dd>
+                </div>
+                <div>
+                  <dt className="admin-text-fg font-semibold">Budget range</dt>
+                  <dd>{leadSummary.budgetRange}</dd>
+                </div>
+                <div>
+                  <dt className="admin-text-fg font-semibold">Timeline</dt>
+                  <dd>{leadSummary.timeline}</dd>
+                </div>
+                <div>
+                  <dt className="admin-text-fg font-semibold">Source</dt>
+                  <dd>{leadSummary.source}</dd>
+                </div>
+                <div>
+                  <dt className="admin-text-fg font-semibold">Submitted date</dt>
+                  <dd>{String(lead.created_at || "—")}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="admin-border-soft rounded-xl border p-3">
+              <LeadPriorityEditor leadId={leadId} initialPriority={priority.key} />
+            </div>
             <div className="flex flex-wrap gap-1">
               {getLeadPriorityBadges({
                 isHotLead: Boolean(lead.is_hot_lead),
@@ -257,6 +302,13 @@ Want me to show you a quick idea?`;
           />
         </div>
       </section>
+
+      <LeadFollowUpChecklist
+        leadId={leadId}
+        scoreBreakdown={scoreBreakdown}
+      />
+
+      <ConvertLeadToProject leadId={leadId} initialProjectId={convertedProjectId} />
 
       <section className="admin-card p-4 space-y-3">
         <h2 className="text-sm font-semibold" style={{ color: "var(--admin-fg)" }}>

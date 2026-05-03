@@ -20,12 +20,16 @@ export function HomeWebsiteScoreForm() {
       websiteUrl = "https://" + websiteUrl;
     }
     try {
-      const res = await fetch("/api/forms/website-check", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submission_type: "public_lead",
+          source: "website_check",
+          business_name: websiteUrl ? `Website check - ${websiteUrl}` : undefined,
           email: fd.get("email"),
           website: websiteUrl || undefined,
+          message: websiteUrl ? `Website URL: ${websiteUrl}` : "Website check requested.",
         }),
       });
       if (!res.ok) {
