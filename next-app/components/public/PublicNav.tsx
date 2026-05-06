@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
+const TOPHER_TEXT_HREF = "sms:+15015758017";
+
 const navItems: {
   href: string;
   label: string;
@@ -85,6 +87,15 @@ export function PublicNav() {
             </Link>
           ))}
           <span className="nav-cta-divider" aria-hidden="true" />
+          <a
+            href={TOPHER_TEXT_HREF}
+            className="pill cta"
+            onClick={() =>
+              trackPublicEvent("public_contact_cta_click", { location: "nav", target: "text_topher" })
+            }
+          >
+            Text Topher
+          </a>
           <Link
             href={publicFreeMockupFunnelHref}
             className="pill cta"
