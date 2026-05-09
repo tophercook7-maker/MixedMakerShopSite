@@ -153,7 +153,7 @@ export default function TapPage() {
               <article className={cardClass}>
                 <h3 className="text-lg font-bold text-white">Full Websites</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  5+ page websites for businesses, organizations, creators, and informational projects.
+                  3–5 page websites for businesses, organizations, creators, and informational projects.
                 </p>
               </article>
               <article className={cardClass}>
