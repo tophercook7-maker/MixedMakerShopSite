@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Mail, Globe, ExternalLink } from "lucide-react";
-import { publicShellClass } from "@/lib/public-brand";
+import { TopherWebDesignSampleSitesGrid } from "@/components/public/TopherWebDesignSampleSitesGrid";
+import { publicShellClass, publicTopherEmail } from "@/lib/public-brand";
 import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
+import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import { cn } from "@/lib/utils";
 
 const canonical = "https://mixedmakershop.com/tap";
@@ -9,7 +11,7 @@ const canonical = "https://mixedmakershop.com/tap";
 export const metadata: Metadata = {
   title: "Mixed Maker Shop | Tap Card",
   description:
-    "Websites, business systems, and 3D printing built under one roof. Contact Mixed Maker Shop in Hot Springs, AR.",
+    "Mixed Maker Shop umbrella studio — Topher's Web Design for websites & web systems, GiGi's Print Shop for 3D printing. Contact Mixed Maker Shop in Hot Springs, AR.",
   alternates: { canonical },
 };
 
@@ -19,7 +21,6 @@ export const viewport = {
 
 const phoneDisplay = "501-575-8017";
 const phoneTel = "5015758017";
-const emailAddress = "topher@mixedmakershop.com";
 
 const primaryBtn =
   "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-gradient-to-br from-emerald-600/90 to-teal-800/95 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-black/25 transition hover:brightness-110 active:scale-[0.99]";
@@ -66,10 +67,10 @@ export default function TapPage() {
           <header className={cn(cardClass, "text-center")}>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/90">Mixed Maker Shop</p>
             <h1 className="mt-4 text-2xl font-bold leading-snug tracking-tight text-white sm:text-[1.65rem]">
-              Websites, business systems, and 3D printing built under one roof.
+              Creative studio under one umbrella — web design, web systems, and custom 3D printing.
             </h1>
             <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/80">
-              Local builder · Hot Springs area · Practical help without the fluff
+              Local builder · Hot Springs area · Topher&apos;s Web Design + GiGi&apos;s Print Shop
             </p>
           </header>
 
@@ -94,6 +95,45 @@ export default function TapPage() {
             </div>
           </section>
 
+          <section aria-labelledby="tap-twd-heading">
+            <h2 id="tap-twd-heading" className="sr-only">
+              Topher&apos;s Web Design
+            </h2>
+            <article
+              className={cn(cardClass, "border-teal-400/35 bg-teal-950/30")}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-200/90">Topher&apos;s Web Design</p>
+              <h3 className="mt-3 text-xl font-bold text-white">The web design &amp; web systems branch</h3>
+              <p className="mt-4 text-sm leading-relaxed text-white/85">
+                Mixed Maker Shop is the umbrella studio. Topher&apos;s Web Design is the dedicated web-design side
+                — focused on 3–5 page websites, informational sites, web systems, and helpful online tools.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-white/80">
+                Topher&apos;s Web Design handles informational sites, forms, dashboards, CRM-style tools, and useful
+                online workflows — all as part of the same builder you reach through Mixed Maker Shop.
+              </p>
+              <a
+                href={TOPHER_WEB_DESIGN_URL}
+                className={cn(primaryBtn, "mt-5 justify-center")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Visit topherswebdesign.com
+                <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+              </a>
+
+              <div className="mt-8 border-t border-white/10 pt-6">
+                <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-white/90">Sample Sites / Examples</h3>
+                <p className="mt-2 text-xs leading-relaxed text-white/70">
+                  Shapes of projects — no client names, no portfolio screenshots. Tap a line to ask by email.
+                </p>
+                <div className="mt-4">
+                  <TopherWebDesignSampleSitesGrid contactEmail={publicTopherEmail} variant="tap" />
+                </div>
+              </div>
+            </article>
+          </section>
+
           <section aria-label="Website, email, and social">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-white/70 drop-shadow-sm">
               Links
@@ -109,9 +149,9 @@ export default function TapPage() {
                 Visit mixedmakershop.com
                 <ExternalLink className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
               </a>
-              <a href={`mailto:${emailAddress}`} className={cn(ghostBtn, "justify-center")}>
+              <a href={`mailto:${publicTopherEmail}`} className={cn(ghostBtn, "justify-center")}>
                 <Mail className="h-5 w-5 shrink-0 text-teal-200/90" aria-hidden />
-                Email {emailAddress}
+                Email {publicTopherEmail}
               </a>
               <div className="flex flex-wrap gap-2">
                 <a
@@ -151,22 +191,33 @@ export default function TapPage() {
             </h2>
             <div className="flex flex-col gap-4">
               <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">Full Websites</h3>
+                <h3 className="text-lg font-bold text-white">Mixed Maker Shop · Umbrella</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  3–5 page websites for businesses, organizations, creators, and informational projects.
+                  The studio that brings web design, web systems, and custom 3D printing together — one contact, clear
+                  paths, practical help without the fluff.
                 </p>
               </article>
               <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">Web Systems</h3>
+                <h3 className="text-lg font-bold text-white">Topher&apos;s Web Design</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  Forms, dashboards, customer flows, booking/contact paths, CRM-style organization, and useful backend tools.
+                  The dedicated web branch: 3–5 page websites, informational sites, web systems, forms, dashboards,
+                  CRM-style tools, and workflows. Visit{" "}
+                  <a
+                    href={TOPHER_WEB_DESIGN_URL}
+                    className="font-semibold text-teal-200 underline decoration-teal-500/40 underline-offset-4 hover:text-white"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    topherswebdesign.com
+                  </a>{" "}
+                  for the web-focused site, or see Sample Sites above.
                 </p>
               </article>
               <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">3D Printing</h3>
+                <h3 className="text-lg font-bold text-white">3D Printing · GiGi&apos;s side</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  Useful and fun 3D prints — from keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style
-                  swords, and custom everyday items.
+                  Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords,
+                  and everyday custom items.
                 </p>
               </article>
             </div>

@@ -8,6 +8,9 @@ export const publicGatewayPageBgClass =
 export const publicShellClass =
   "mx-auto w-full max-w-[min(100%,87.5rem)] px-5 sm:px-8 md:px-10 lg:px-12";
 
+/** Public contact email for tap page, sample inquiries, and marketing CTAs. */
+export const publicTopherEmail = "topher@mixedmakershop.com";
+
 /**
  * Free mockup funnel anchor — use for CTAs already on `/free-mockup` (same-page scroll to intake).
  * For links from any other route, footer, or shareable URLs, use `publicFreeMockupFunnelHref` instead.

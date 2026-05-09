@@ -3,9 +3,11 @@ import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
+import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesignHomeSpotlight";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -31,9 +33,10 @@ const homeBackdrop = mmsUmbrellaSectionBackdrop;
 const chooserCards = [
   {
     title: "I need a better website",
-    body: "Websites for local businesses that need more calls, bookings, and leads.",
-    href: "/websites-tools",
-    cta: "Explore Websites & Tools",
+    body: "Topher's Web Design is the dedicated web branch under Mixed Maker Shop — 3–5 page sites, informational projects, web systems, and online workflows.",
+    href: TOPHER_WEB_DESIGN_URL,
+    cta: "Visit Topher's Web Design",
+    external: true,
   },
   {
     title: "I need a digital tool or template",
@@ -43,7 +46,7 @@ const chooserCards = [
   },
   {
     title: "I need something 3D printed",
-    body: "Useful prints, bookmarks, gifts, replacement pieces, and custom requests from GiGi’s Print Shop.",
+    body: "Useful and fun custom prints from GiGi’s Print Shop — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday items.",
     href: "/3d-printing",
     cta: "Visit GiGi’s Print Shop",
     accent: "pink",
@@ -71,7 +74,7 @@ const serviceCards = [
   {
     title: "Websites",
     price: "Starting at $400",
-    body: "Multi-page business sites with room for services, galleries, menus, booking, payments, and more.",
+    body: "Multi-page sites (often 3–5 pages) for services, contact, photos, trust-building, and informational content — see Topher's Web Design for the dedicated web branch.",
   },
   {
     title: "AI Bots",
@@ -86,7 +89,7 @@ const serviceCards = [
   {
     title: "3D Prints & Custom Work",
     price: "Estimate required",
-    body: "Custom physical builds, prints, gifts, parts, signs, and ideas that need a closer look.",
+    body: "Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday custom items.",
   },
 ] as const;
 
@@ -123,16 +126,17 @@ const featuredWork = [
 
 const departmentFeatures = [
   {
-    eyebrow: "Websites & Tools",
-    title: "Websites, landing pages, and small systems for local businesses.",
-    body: "Topher builds practical online systems that help small businesses look better, explain what they do, and get more calls, bookings, and leads.",
-    href: "/websites-tools",
-    cta: "Explore Websites & Tools",
+    eyebrow: "Topher's Web Design",
+    title: "The web design and web systems branch under the Mixed Maker Shop umbrella.",
+    body: "3–5 page websites, informational sites, web systems, forms, dashboards, CRM-style tools, and helpful online workflows — with Mixed Maker Shop as the studio home base.",
+    href: TOPHER_WEB_DESIGN_URL,
+    cta: "Visit topherswebdesign.com",
+    external: true,
   },
   {
     eyebrow: "GiGi’s Print Shop",
-    title: "Useful 3D printed items with a practical handmade feel.",
-    body: "GiGi handles most of the 3D printing side: bookmarks, gifts, holders, replacement pieces, church items, seasonal prints, and custom requests.",
+    title: "The maker and custom 3D printing side.",
+    body: "Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday custom items.",
     href: "/3d-printing",
     cta: "Start a Print Request",
     className: "border-pink-300/30 bg-gradient-to-br from-pink-500/12 via-white/8 to-orange-400/8",
@@ -161,13 +165,16 @@ export function UmbrellaHomePage() {
       <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
 
+        <TopherWebDesignHomeSpotlight />
+
         <section className={cn(homeBackdrop)} id="services">
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Clear Starting Points</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Pick the build that sounds closest.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Start with the closest service, then Captain Maker can help sort the details before your free estimate.
+                Mixed Maker Shop brings the creative services together under one umbrella — start with the closest fit,
+                then Captain Maker can help sort the details before your free estimate.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
@@ -213,30 +220,52 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Start Here</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>What do you need help with today?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Pick the department that fits. MixedMakerShop stays broad, but each path is organized around one clear
-                need.
+                Pick the path that matches today. Topher&apos;s Web Design is the web branch; GiGi&apos;s Print Shop is
+                the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
-              {chooserCards.map((card) => (
-                <Link
-                  key={card.title}
-                  href={card.href}
-                  className={cn(
-                    "group public-glass-box--soft public-glass-box--pad flex min-h-[15rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline",
-                    "accent" in card && card.accent === "pink" && "border-pink-300/25 bg-pink-400/10",
-                  )}
-                >
-                  <h3 className={mmsH3OnGlass}>{card.title}</h3>
-                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                    {card.body}
-                  </p>
-                  <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
-                    {card.cta}
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
-                  </span>
-                </Link>
-              ))}
+              {chooserCards.map((card) =>
+                "external" in card && card.external ? (
+                  <a
+                    key={card.title}
+                    href={card.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "group public-glass-box--soft public-glass-box--pad flex min-h-[15rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline",
+                      "accent" in card && card.accent === "pink" && "border-pink-300/25 bg-pink-400/10",
+                    )}
+                  >
+                    <h3 className={mmsH3OnGlass}>{card.title}</h3>
+                    <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                      {card.body}
+                    </p>
+                    <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                      {card.cta}
+                      <ExternalLink className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                    </span>
+                  </a>
+                ) : (
+                  <Link
+                    key={card.title}
+                    href={card.href}
+                    className={cn(
+                      "group public-glass-box--soft public-glass-box--pad flex min-h-[15rem] flex-col no-underline transition duration-300 hover:-translate-y-1 hover:bg-white/12 hover:no-underline",
+                      "accent" in card && card.accent === "pink" && "border-pink-300/25 bg-pink-400/10",
+                    )}
+                  >
+                    <h3 className={mmsH3OnGlass}>{card.title}</h3>
+                    <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                      {card.body}
+                    </p>
+                    <span className={cn("mt-6 inline-flex items-center gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                      {card.cta}
+                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden />
+                    </span>
+                  </Link>
+                ),
+              )}
             </div>
           </div>
         </section>
@@ -248,7 +277,7 @@ export function UmbrellaHomePage() {
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Proof that the paths under MixedMakerShop are real.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 A quick proof wall before the departments: local service sites, creative platforms, app-style tools, and
-                the free preview flow.
+                the free preview flow — alongside Topher&apos;s Web Design for the dedicated web branch.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-4", mmsHomeGlassStackGap)}>
@@ -307,10 +336,22 @@ export function UmbrellaHomePage() {
                   <p className={cn("mt-5 text-base leading-relaxed md:text-[17px]", mmsOnGlassSecondary)}>
                     {feature.body}
                   </p>
-                  <Link href={feature.href} className={cn(mmsTextLinkOnGlass, "mt-7 inline-flex items-center gap-2")}>
-                    {feature.cta}
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Link>
+                  {"external" in feature && feature.external ? (
+                    <a
+                      href={feature.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(mmsTextLinkOnGlass, "mt-7 inline-flex items-center gap-2 no-underline hover:no-underline")}
+                    >
+                      {feature.cta}
+                      <ExternalLink className="h-4 w-4" aria-hidden />
+                    </a>
+                  ) : (
+                    <Link href={feature.href} className={cn(mmsTextLinkOnGlass, "mt-7 inline-flex items-center gap-2")}>
+                      {feature.cta}
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
+                  )}
                 </article>
               ))}
             </div>
@@ -340,13 +381,17 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>About Topher &amp; GiGi</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>About Topher</h2>
               <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                I&apos;m Topher, the idea engine behind MixedMakerShop.
+                I&apos;m Topher, the idea engine behind Mixed Maker Shop.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                I build websites, digital tools, local service pages, and practical online systems for small businesses.
-                I&apos;ve always had more ideas than one simple website could hold, so MixedMakerShop became the home base —
-                a place where web design, digital tools, property services, 3D printing, and new experiments can all live
-                under one organized roof.
+                Mixed Maker Shop is the umbrella studio — Topher&apos;s Web Design is the web design and web systems
+                branch; GiGi&apos;s Print Shop covers the maker and custom 3D printing side. I build websites, digital
+                tools, local service pages, and practical online workflows for small businesses.
+              </p>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                I&apos;ve always had more ideas than one simple website could hold, so Mixed Maker Shop became the home
+                base — a place where web design, digital tools, property services, 3D printing, and new experiments can
+                all live under one organized roof.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 The goal is simple: build useful things that help real people.
@@ -361,9 +406,9 @@ export function UmbrellaHomePage() {
             </div>
             <div className={cn("grid gap-6 md:grid-cols-3", mmsHomeGlassStackGap)}>
               {[
-                "Topher builds websites, tools, funnels, and idea-driven projects.",
-                "GiGi handles most of the 3D printing side through GiGi’s Print Shop.",
-                "MixedMakerShop keeps the departments organized under one practical creative studio.",
+                "Mixed Maker Shop is the umbrella studio for web design, 3D printing, and practical tools.",
+                "Topher's Web Design is the dedicated branch for sites, informational pages, and web systems.",
+                "GiGi handles most of the 3D printing side through GiGi's Print Shop.",
               ].map((line, i) => (
                 <div key={line} className="public-glass-box--soft public-glass-box--pad">
                   <span className={mmsStepCircleOnGlass} aria-hidden>{i + 1}</span>

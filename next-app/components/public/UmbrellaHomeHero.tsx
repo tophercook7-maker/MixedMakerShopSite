@@ -73,14 +73,16 @@ export function UmbrellaHomeHero() {
             className={cn("mt-4 text-xl font-semibold leading-snug text-white md:text-2xl", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2)}
           >
-            Websites, AI Bots, Flyers, Ads, 3D Prints &amp; Custom Builds
+            One umbrella studio — web design, web systems &amp; custom 3D printing
           </motion.p>
           <motion.p
             className={cn("mt-6 text-base leading-relaxed md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2.5)}
           >
-            Mixed Maker Shop helps small businesses, side hustles, creators, and everyday makers turn ideas into
-            websites, digital tools, promo materials, 3D prints, and custom builds.
+            Mixed Maker Shop brings the creative services together. Topher&apos;s Web Design handles 3–5 page websites,
+            informational sites, web systems, forms, dashboards, CRM-style tools, and useful online workflows.
+            GiGi&apos;s Print Shop covers useful and fun custom prints — keychains, bookmarks, shelf pieces, tools, fidget
+            toys, cosplay-style swords, and everyday items.
           </motion.p>
 
           <motion.div className={cn("mt-8 md:mt-9")} {...fadeUp(stagger * 3)}>
