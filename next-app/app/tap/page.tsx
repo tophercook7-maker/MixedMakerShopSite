@@ -73,14 +73,23 @@ export default function TapPage() {
             </p>
           </header>
 
-          <section aria-label="Call and text">
-            <h2 className="sr-only">Call or text</h2>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
-              <a href={`tel:${phoneTel}`} className={primaryBtn}>
-                Call {phoneDisplay}
-              </a>
-              <a href={`sms:${phoneTel}`} className={ghostBtn}>
-                Text {phoneDisplay}
+          <section aria-label="Call, text, and save contact">
+            <h2 className="sr-only">Call, text, or save contact</h2>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
+                <a href={`tel:${phoneTel}`} className={primaryBtn}>
+                  Call {phoneDisplay}
+                </a>
+                <a href={`sms:${phoneTel}`} className={ghostBtn}>
+                  Text {phoneDisplay}
+                </a>
+              </div>
+              <a
+                href="/topher-mixed-maker-shop.vcf"
+                download="topher-mixed-maker-shop.vcf"
+                className={ghostBtn}
+              >
+                Save Contact
               </a>
             </div>
           </section>

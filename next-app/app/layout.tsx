@@ -17,7 +17,6 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  themeColor: "#0b0f0e",
   openGraph: {
     title: "MixedMakerShop",
     description:
@@ -42,6 +41,10 @@ export const metadata: Metadata = {
     "Web design, SEO, and digital growth support for small businesses — by Topher at MixedMakerShop.",
     images: ["/og-image"],
   },
+};
+
+export const viewport = {
+  themeColor: "#0b0f0e",
 };
 
 export default function RootLayout({
