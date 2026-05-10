@@ -27,35 +27,59 @@ export function TopherWebDesignHomeSpotlight() {
             "public-glass-box public-glass-box--pad max-w-3xl border border-emerald-700/25 bg-emerald-950/10",
           )}
         >
-          <p className={mmsSectionEyebrowOnGlass}>Topher&apos;s Web Design</p>
-          <h2 className={cn(mmsH2OnGlass, "mt-4")}>The web design &amp; web systems branch</h2>
+          <p className={mmsSectionEyebrowOnGlass}>Websites &amp; tools · Topher&apos;s Web Design</p>
+          <h2 className={cn(mmsH2OnGlass, "mt-4")}>
+            Need a website for your business?
+          </h2>
           <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-            Mixed Maker Shop is the umbrella studio. Topher&apos;s Web Design is the dedicated web-design side
-            — focused on 3–5 page websites, informational sites, web systems, and helpful online tools.
+            Topher&apos;s Web Design builds clean, mobile-friendly websites, redesigns, landing pages, and local SEO
+            foundations for small businesses.
           </p>
           <p className={cn("mt-4 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-            Templates, kits, and other Mixed Maker Shop tools still live here too — this site is the home base for
-            everything under the umbrella.
+            MixedMakerShop is the umbrella studio — when you are ready to focus on web work, the dedicated service brand
+            is{" "}
+            <a
+              href={TOPHER_WEB_DESIGN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={mmsTextLinkOnGlass}
+            >
+              Topher&apos;s Web Design small business website services
+            </a>
+            .
           </p>
-          <a
-            href={TOPHER_WEB_DESIGN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              mmsBtnPrimary,
-              "mt-7 inline-flex w-full items-center justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
-            )}
-          >
-            Visit topherswebdesign.com
-            <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
-          </a>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <a
+              href={TOPHER_WEB_DESIGN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                mmsBtnPrimary,
+                "inline-flex w-full items-center justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
+              )}
+            >
+              Get a free website demo
+              <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+            </a>
+            <a
+              href={TOPHER_WEB_DESIGN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(mmsTextLinkOnGlass, "inline-flex justify-center text-sm sm:justify-start")}
+            >
+              Visit topherswebdesign.com for demos &amp; local web design details
+            </a>
+          </div>
         </div>
 
         <div className={cn("max-w-3xl", mmsHomeGlassStackGap)}>
           <h3 className={cn(mmsH3OnGlass, "!text-xl md:!text-2xl")}>Sample Sites / Examples</h3>
           <p className={cn("mt-3 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
-            Starting points for the kind of builds Topher&apos;s Web Design handles — no client names, just clear
-            shapes of projects.
+            Starting points for the kind of builds{" "}
+            <a href={TOPHER_WEB_DESIGN_URL} target="_blank" rel="noopener noreferrer" className={mmsTextLinkOnGlass}>
+              Topher&apos;s Web Design
+            </a>{" "}
+            handles — no client names, just clear shapes of projects.
           </p>
         </div>
         <div className={cn("max-w-5xl", mmsHomeGlassStackGap)}>

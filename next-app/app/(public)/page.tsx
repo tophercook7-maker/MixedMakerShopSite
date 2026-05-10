@@ -1,25 +1,38 @@
 import type { Metadata } from "next";
 import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
+import { SITE_URL } from "@/lib/site";
 
-const canonical = "https://mixedmakershop.com";
+const canonical = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Mixed Maker Shop | Umbrella Studio · Web Design & 3D Printing in Hot Springs, AR",
+  title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
   description:
-    "Mixed Maker Shop is the umbrella studio in Hot Springs, AR — Topher's Web Design for websites and web systems, GiGi's Print Shop for custom 3D printing, plus tools and property care paths.",
+    "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+  keywords: [
+    "MixedMakerShop",
+    "Topher and GiGi",
+    "creative studio",
+    "practical projects",
+    "websites and tools",
+    "3D printing",
+    "property care",
+    "handmade projects",
+    "small business tools",
+    "local services",
+  ],
   alternates: { canonical },
   openGraph: {
-    title: "Mixed Maker Shop | Umbrella Studio for Web Design & 3D Printing in Hot Springs, AR",
+    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
     description:
-      "One studio: Topher's Web Design for sites and systems, GiGi's Print Shop for useful 3D prints, organized under Mixed Maker Shop.",
+      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
     url: canonical,
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mixed Maker Shop | Umbrella Studio for Web Design & 3D Printing in Hot Springs, AR",
+    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
     description:
-      "One studio: Topher's Web Design for sites and systems, GiGi's Print Shop for useful 3D prints, organized under Mixed Maker Shop.",
+      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
     images: ["/og-image"],
   },
 };

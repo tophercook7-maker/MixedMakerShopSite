@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
+import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 
 export function PublicFooter() {
   const linkGroups = [
@@ -16,9 +17,14 @@ export function PublicFooter() {
     {
       title: "Websites & Tools",
       links: [
-        { href: "/websites-tools", label: "Websites & Tools" },
+        {
+          href: TOPHER_WEB_DESIGN_URL,
+          label: "Topher's Web Design (dedicated web services)",
+          external: true,
+        },
+        { href: "/websites-tools", label: "Websites & Tools hub" },
         { href: publicFreeMockupFunnelHref, label: "Free Website Preview" },
-        { href: "/web-design", label: "Web Design" },
+        { href: "/web-design", label: "Web Design on MixedMakerShop" },
         { href: "/tools", label: "Digital Tools" },
       ],
     },

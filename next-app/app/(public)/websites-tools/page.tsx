@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -17,10 +18,26 @@ import {
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
+const canonical = "https://mixedmakershop.com/websites-tools";
+
 export const metadata: Metadata = {
   title: "Websites & Tools | MixedMakerShop",
   description:
-    "Web design, free website previews, landing pages, templates, digital tools, and simple business systems for local businesses.",
+    "Topher's Web Design builds clean small-business websites — and MixedMakerShop hosts tools, previews, and digital helpers under one umbrella studio.",
+  keywords: [
+    "MixedMakerShop websites and tools",
+    "Topher's Web Design",
+    "small business website",
+    "website preview",
+    "local business tools",
+  ],
+  alternates: { canonical },
+  openGraph: {
+    title: "Websites & Tools | MixedMakerShop",
+    description:
+      "Web design through Topher's Web Design, plus MixedMakerShop tools, previews, landing pages, and simple business systems.",
+    url: canonical,
+  },
 };
 
 const shell = publicShellClass;
@@ -80,13 +97,30 @@ export default function WebsitesToolsPage() {
                 get more calls, bookings, and leads.
               </p>
               <PublicCtaRow className="mt-9">
-                <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnPrimary, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
-                  Get a Free Website Preview
-                </Link>
-                <Link href="/examples" className={cn(mmsBtnSecondaryOnGlass, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
-                  See Examples
+                <a
+                  href={TOPHER_WEB_DESIGN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    mmsBtnPrimary,
+                    "inline-flex w-full items-center justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
+                  )}
+                >
+                  Get a free website demo
+                  <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+                </a>
+                <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnSecondaryOnGlass, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
+                  Free preview on MixedMakerShop
                 </Link>
               </PublicCtaRow>
+              <p className={cn("mt-6 max-w-2xl text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                Need a website for your business?{" "}
+                <a href={TOPHER_WEB_DESIGN_URL} target="_blank" rel="noopener noreferrer" className={mmsTextLinkOnGlass}>
+                  Topher&apos;s Web Design small business website services
+                </a>{" "}
+                live at topherswebdesign.com — clean, mobile-friendly websites, redesigns, landing pages, and local SEO
+                foundations for small businesses.
+              </p>
             </div>
           </div>
         </section>
@@ -95,7 +129,11 @@ export default function WebsitesToolsPage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {sections.map((item) => (
-                <Link key={item.title} href={item.href} className="group public-glass-box--soft public-glass-box--pad flex min-h-[13rem] flex-col no-underline transition hover:-translate-y-1 hover:bg-white/12 hover:no-underline">
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  className="group public-glass-box--soft public-glass-box--pad flex min-h-[13rem] flex-col no-underline transition hover:-translate-y-1 hover:bg-white/12 hover:no-underline"
+                >
                   <h2 className="text-xl font-bold tracking-tight text-white">{item.title}</h2>
                   <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
                     {item.body}

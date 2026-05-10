@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
+import { MixedMakerBrandFaq } from "@/components/public/MixedMakerBrandFaq";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesignHomeSpotlight";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
@@ -418,6 +419,8 @@ export function UmbrellaHomePage() {
             </div>
           </div>
         </section>
+
+        <MixedMakerBrandFaq />
 
         <section
           className={cn(
