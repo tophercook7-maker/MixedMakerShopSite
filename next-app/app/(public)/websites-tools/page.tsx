@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from "@/lib/public-brand";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
@@ -64,8 +64,13 @@ const sections = [
     href: "/free-mockup",
   },
   {
-    title: "Templates & Kits",
-    body: "Practical starter pages, content kits, and digital downloads as they are released.",
+    title: "AI & Automation",
+    body: "Simple AI-assisted workflows for leads, replies, content drafts, and light automation — explained in plain language.",
+    href: "#ai-automation",
+  },
+  {
+    title: "Starter Resources",
+    body: "Checklists and prep sheets you can request by email — built around real small-business and maker workflows.",
     href: "#templates-kits",
   },
   {
@@ -79,6 +84,35 @@ const sections = [
     href: "/ad-lab",
   },
 ] as const;
+
+const starterResources = [
+  {
+    title: "Website Starter Checklist",
+    body: "A practical list for owners who want to ship a clearer site: pages to plan, photos to gather, trust signals, and what to decide before you write copy.",
+  },
+  {
+    title: "Local Business Website Audit Sheet",
+    body: "A structured pass over your current site or placeholder page — messaging, mobile basics, contact paths, and quick fixes that often matter most locally.",
+  },
+  {
+    title: "3D Print Request Prep Sheet",
+    body: "Helps you describe size, use case, photos, and constraints so a print quote isn&apos;t a guessing game.",
+  },
+  {
+    title: "AI Workflow Starter Pack",
+    body: "Guidance notes on where simple AI helpers tend to help without guesswork: drafts with review steps, lead sorting, and reminders — not autopilot.",
+  },
+  {
+    title: "Project Idea Capture Sheet",
+    body: "Capture the problem, audience, constraints, and success criteria in one place before you invest time or budget.",
+  },
+] as const;
+
+const mailtoBase = `mailto:${publicTopherEmail}`;
+
+function mailtoSubject(subject: string) {
+  return `${mailtoBase}?subject=${encodeURIComponent(subject)}`;
+}
 
 export default function WebsitesToolsPage() {
   return (
@@ -147,15 +181,133 @@ export default function WebsitesToolsPage() {
           </div>
         </section>
 
+        <section id="ai-automation" className={mmsUmbrellaSectionBackdropImmersive}>
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>AI &amp; Automation</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Simple AI workflows for real small-business days.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                Mixed Maker Shop treats AI as a set of tools with guardrails — drafts you review, sorting that saves
+                clicks, and reminders that reduce dropped balls. Nothing replaces judgment; it reduces repetition.
+              </p>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Typical fits include lead follow-up helpers, customer reply drafts (you send the final message), website
+                content outlines, light business organization (tasks, labels, simple CRM hygiene), and local automation
+                ideas tied to phone, email, and forms.
+              </p>
+            </div>
+            <div className="mx-auto mt-10 grid w-full max-w-6xl gap-6 lg:grid-cols-2">
+              <div className="public-glass-box--soft public-glass-box--pad">
+                <h3 className="text-lg font-bold text-white">What &quot;simple&quot; usually means here</h3>
+                <ul className={cn("mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                  <li>One workflow at a time — not a dozen bots overnight.</li>
+                  <li>Human review before anything customer-facing ships.</li>
+                  <li>Clear limits on what gets automated vs. what gets drafted.</li>
+                  <li>Fits alongside your website, forms, and tools already on Mixed Maker Shop.</li>
+                </ul>
+              </div>
+              <div className="public-glass-box--soft public-glass-box--pad">
+                <h3 className="text-lg font-bold text-white">Examples people ask about</h3>
+                <ul className={cn("mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                  <li>
+                    <strong className="font-semibold text-white/95">Missed-call follow-up idea</strong> — draft a short SMS or
+                    email template after a voicemail so replies stay consistent.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-white/95">Website inquiry sorter</strong> — tag or summarize form
+                    submissions so you triage faster.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-white/95">Review request helper</strong> — polite ask scripts and a
+                    simple sequence that respects timing.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-white/95">Content idea generator</strong> — headline and outline
+                    prompts grounded in your services page.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-white/95">Quote request organizer</strong> — checklist of info to
+                    collect before you price a job.
+                  </li>
+                  <li>
+                    <strong className="font-semibold text-white/95">Daily business checklist assistant</strong> — a compact
+                    routine for openings, follow-ups, and end-of-day hygiene.
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="public-glass-box public-glass-box--pad mx-auto mt-10 max-w-3xl text-center">
+              <a
+                href={mailtoSubject("Talk to Topher about AI automation")}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex w-full items-center justify-center px-8 no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Talk to Topher about AI automation
+              </a>
+              <p className={cn("mt-4 text-sm", mmsOnGlassSecondary)}>
+                Email{" "}
+                <a href={mailtoBase} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                  {publicTopherEmail}
+                </a>{" "}
+                — describe your workflow and what eats time today.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section id="templates-kits" className={mmsUmbrellaSectionBackdropImmersive}>
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <p className={mmsSectionEyebrowOnGlass}>Tools &amp; Kits</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Digital products and simple business helpers will live here.</h2>
-              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Website kits, business templates, digital downloads, and simple tools will be organized here as they are
-                tested and released.
+              <p className={mmsSectionEyebrowOnGlass}>Starter resources</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Checklists and prep sheets you can request.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+                These are simple documents Topher sends by email — built from real projects (websites, prints, and small
+                business operations). No storefront checkout yet; you request what fits and get the resource directly.
               </p>
+              <p className={cn("mt-4 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Prefer something tailored? Say what you&apos;re working on and Topher will point you to the closest sheet or
+                suggest a different path.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {starterResources.map((item) => (
+                <article key={item.title} className="public-glass-box--soft public-glass-box--pad flex flex-col">
+                  <h3 className="text-lg font-bold tracking-tight text-white">{item.title}</h3>
+                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                    {item.body}
+                  </p>
+                  <div className={cn("mt-6 flex flex-col gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
+                    <a href={mailtoSubject(`Resource request: ${item.title}`)} className="inline-flex items-center gap-2">
+                      Request this resource <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="public-glass-box public-glass-box--pad mx-auto mt-10 max-w-3xl">
+              <p className={cn("text-sm font-semibold uppercase tracking-[0.14em]", mmsSectionEyebrowOnGlass)}>Next steps</p>
+              <div className={cn("mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4")}>
+                <a
+                  href={mailtoSubject("Request a resource")}
+                  className={cn(mmsBtnSecondaryOnGlass, "inline-flex justify-center px-6 py-3 text-center no-underline hover:no-underline")}
+                >
+                  Request a resource
+                </a>
+                <a
+                  href={mailtoSubject("Ask Topher what fits my project")}
+                  className={cn(mmsBtnSecondaryOnGlass, "inline-flex justify-center px-6 py-3 text-center no-underline hover:no-underline")}
+                >
+                  Ask Topher what fits my project
+                </a>
+                <a
+                  href={mailtoSubject("Get the Website Starter Checklist")}
+                  className={cn(mmsBtnPrimary, "inline-flex justify-center px-6 py-3 text-center no-underline hover:no-underline")}
+                >
+                  Get the website checklist
+                </a>
+              </div>
             </div>
           </div>
         </section>

@@ -158,7 +158,7 @@ const studioDivisions = [
     title: "AI & Automation",
     subtitle: "Systems Division",
     body: "Practical AI workflows, bots with guardrails, and automation that reduces repetitive work without mystery jargon.",
-    href: "/websites-tools",
+    href: "/websites-tools#ai-automation",
     external: false,
     Icon: Sparkles,
   },
@@ -182,7 +182,7 @@ const studioDivisions = [
     title: "Story & Legacy",
     subtitle: "Personal / Creative Archive",
     body: "The lived story behind the studio — context, lessons, and creative archive work.",
-    href: "/about",
+    href: "/about#story-legacy",
     external: false,
     Icon: BookOpen,
     subtitleNormalCase: true as const,
@@ -193,27 +193,28 @@ const homeVentures = [
   {
     name: "Henry AI",
     description:
-      "Workspace-style AI experiment for clearer workflows and fewer scattered tabs.",
+      "Henry AI is a workspace-style build under Mixed Maker Shop for organizing drafts, tasks, and guarded AI workflows in fewer tabs. The builds spotlight walks through what it is, how it looks, and why it exists in the studio lineup.",
     href: "/builds#build-spotlight-henry",
     external: false as const,
   },
   {
     name: "StrainSpotter.app",
     description:
-      "App-style build focused on fast scanning, useful results, and practical tools.",
+      "StrainSpotter is an app-style product for fast scanning, structured results, and practical next steps without cluttered screens. It lives on its own domain while reflecting how Mixed Maker Shop ships interactive tools.",
     href: "https://strainspotter.app/",
     external: true as const,
   },
   {
     name: "GoneFishin Keychains",
     description:
-      "Vintage and 3D-printed lure keychains — a physical venture under the umbrella.",
+      "GoneFishin Keychains sells vintage and 3D-printed fishing-lure keychains—small, gift-ready pieces from the maker side of the umbrella. The shop site hosts the catalog and checkout.",
     href: "https://gonefishinkeychains.com/",
     external: true as const,
   },
   {
     name: "Kelsey's Kustom Kreations",
-    description: "Custom creations brand site built for clarity and trust.",
+    description:
+      "Kelsey's Kustom Kreations is a custom creations brand with a website built for clear services, proof, and contact — typical of the web branch's work for owner-led creative businesses.",
     href: "https://kelseyskustomkreations.com/",
     external: true as const,
   },

@@ -117,6 +117,28 @@ export default function ThreeDPrintingPage() {
                 actually use — bookmarks, gifts, holders, replacement pieces, seasonal prints, church items, and custom
                 requests.
               </p>
+              <ul className={cn("mt-6 list-disc space-y-2 pl-5 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                <li>
+                  <strong className="font-semibold text-white/95">Custom quote</strong> — every job starts with a simple
+                  estimate after we understand the part.
+                </li>
+                <li>
+                  <strong className="font-semibold text-white/95">Small-batch prints</strong> — good fit when you need a
+                  handful of the same piece, not factory volume.
+                </li>
+                <li>
+                  <strong className="font-semibold text-white/95">Prototype help</strong> — useful when you are testing fit,
+                  feel, or a physical idea before committing.
+                </li>
+                <li>
+                  <strong className="font-semibold text-white/95">Replacement-style parts</strong> — worth asking about for
+                  small plastic pieces when a practical print makes sense.
+                </li>
+                <li>
+                  <strong className="font-semibold text-white/95">Turnaround</strong> — depends on size, material, detail,
+                  and queue; the estimate pass sets expectations.
+                </li>
+              </ul>
               <PublicCtaRow className="mt-9">
                 <Link href={printingQuoteHref()} className={cn(mmsBtnPrimary, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
                   Start a Print Request
@@ -201,7 +223,7 @@ export default function ThreeDPrintingPage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Gallery</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Examples & placeholders to fill as GiGi builds more.</h2>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Photo examples from recent prints.</h2>
             </div>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
               {gallery.map((item) => (

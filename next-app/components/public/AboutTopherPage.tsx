@@ -76,6 +76,34 @@ export function AboutTopherPage() {
         </div>
       </section>
 
+      <section id="story-legacy" className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
+        <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
+          <h2 className={mmsH2}>Story &amp; legacy</h2>
+          <div className="mt-8 space-y-6 text-base leading-relaxed text-[#354239] md:text-lg">
+            <p>
+              Mixed Maker Shop exists because useful work rarely fits one narrow label. Small businesses need credible
+              websites; makers need prints that actually work; experiments need an honest place to live before they become
+              products. The umbrella keeps those threads organized instead of scattering them across disconnected sites.
+            </p>
+            <p>
+              The studio grew out of real-life problem solving — picking up messy requests, tightening unclear messaging,
+              and shipping practical fixes instead of selling buzzwords. Creativity here means craftsmanship and clarity:
+              fewer layers between you and the person building the thing.
+            </p>
+            <p>
+              Resilience is part of that picture too — pacing work sustainably, staying direct when projects get hard, and
+              keeping faith and life experience in the background as motivation rather than theater. The goal stays simple:
+              build something that helps someone move forward.
+            </p>
+            <p>
+              Think of Mixed Maker Shop as a living archive: shipped projects, printable goods, digital tools, Idea Lab
+              experiments, and lessons learned along the way — each entry reflecting what actually worked (or what did
+              not) so the next build starts smarter.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
           <h2 className={mmsH2}>How Topher works</h2>
