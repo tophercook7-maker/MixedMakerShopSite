@@ -36,7 +36,7 @@ const chooserCards = [
     title: "I need a better website",
     body: "Topher's Web Design is the dedicated web branch under Mixed Maker Shop — 3–5 page sites, informational projects, web systems, and online workflows.",
     href: TOPHER_WEB_DESIGN_URL,
-    cta: "Visit Topher's Web Design",
+    cta: "Get a free website demo",
     external: true,
   },
   {
