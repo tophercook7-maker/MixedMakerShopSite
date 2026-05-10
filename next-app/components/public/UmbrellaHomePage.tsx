@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  ExternalLink,
+  FlaskConical,
+  Globe,
+  Layers,
+  Printer,
+  Sparkles,
+} from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
 import { MixedMakerBrandFaq } from "@/components/public/MixedMakerBrandFaq";
@@ -7,7 +16,7 @@ import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesignHomeSpotlight";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from "@/lib/public-brand";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
@@ -125,18 +134,95 @@ const featuredWork = [
   },
 ] as const;
 
-const departmentFeatures = [
+const umbrellaStudioTagline =
+  "One umbrella. Multiple branches. Everything points back to Mixed Maker Shop.";
+
+const studioDivisions = [
   {
-    eyebrow: "Topher's Web Design",
-    title: "The web design and web systems branch under the Mixed Maker Shop umbrella.",
-    body: "3–5 page websites, informational sites, web systems, forms, dashboards, CRM-style tools, and helpful online workflows — with Mixed Maker Shop as the studio home base.",
+    title: "Topher's Web Design",
+    subtitle: "Website Division",
+    body: "Modern websites, landing pages, redesigns, and web systems for businesses — the dedicated web branch under Mixed Maker Shop.",
     href: TOPHER_WEB_DESIGN_URL,
-    cta: "Visit topherswebdesign.com",
     external: true,
+    Icon: Globe,
   },
   {
-    eyebrow: "GiGi’s Print Shop",
-    title: "The maker and custom 3D printing side.",
+    title: "3D Printing & Maker Builds",
+    subtitle: "Maker Division",
+    body: "Custom prints, prototypes, practical parts, and maker-built solutions — including GiGi's Print Shop paths on this site.",
+    href: "/3d-printing",
+    external: false,
+    Icon: Printer,
+  },
+  {
+    title: "AI & Automation",
+    subtitle: "Systems Division",
+    body: "Practical AI workflows, bots with guardrails, and automation that reduces repetitive work without mystery jargon.",
+    href: "/websites-tools",
+    external: false,
+    Icon: Sparkles,
+  },
+  {
+    title: "Digital Products",
+    subtitle: "Product Division",
+    body: "Templates, kits, downloads, and lightweight tools shaped around real shop problems.",
+    href: "/websites-tools#templates-kits",
+    external: false,
+    Icon: Layers,
+  },
+  {
+    title: "Mixed Maker Labs",
+    subtitle: "Experiment Division",
+    body: "Ideas before they become full services — vote, suggest, or see what's being tested next.",
+    href: "/idea-lab",
+    external: false,
+    Icon: FlaskConical,
+  },
+  {
+    title: "Story & Legacy",
+    subtitle: "Personal / Creative Archive",
+    body: "The lived story behind the studio — context, lessons, and creative archive work.",
+    href: "/about",
+    external: false,
+    Icon: BookOpen,
+    subtitleNormalCase: true as const,
+  },
+] as const;
+
+const homeVentures = [
+  {
+    name: "Henry AI",
+    description:
+      "Workspace-style AI experiment for clearer workflows and fewer scattered tabs.",
+    href: "/builds#build-spotlight-henry",
+    external: false as const,
+  },
+  {
+    name: "StrainSpotter.app",
+    description:
+      "App-style build focused on fast scanning, useful results, and practical tools.",
+    href: "https://strainspotter.app/",
+    external: true as const,
+  },
+  {
+    name: "GoneFishin Keychains",
+    description:
+      "Vintage and 3D-printed lure keychains — a physical venture under the umbrella.",
+    href: "https://gonefishinkeychains.com/",
+    external: true as const,
+  },
+  {
+    name: "Kelsey's Kustom Kreations",
+    description: "Custom creations brand site built for clarity and trust.",
+    href: "https://kelseyskustomkreations.com/",
+    external: true as const,
+  },
+] as const;
+
+const departmentBridges = [
+  {
+    eyebrow: "GiGi's Print Shop",
+    title: "Custom 3D prints from the maker bench.",
     body: "Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday custom items.",
     href: "/3d-printing",
     cta: "Start a Print Request",
@@ -145,16 +231,23 @@ const departmentFeatures = [
   {
     eyebrow: "Property Care",
     title: "Fresh Cut is the focused property-care path.",
-    body: "MixedMakerShop points property-care visitors to Fresh Cut Property Care for lawn care, yard cleanup, brush clearing, and estimate requests.",
+    body: "Mixed Maker Shop routes lawn care, cleanup, and estimate requests through Fresh Cut Property Care.",
     href: "/property-care",
     cta: "View Fresh Cut Bridge",
   },
   {
     eyebrow: "Idea Lab",
-    title: "New ideas before they become full services or tools.",
-    body: "Vote on what sounds useful, suggest something, or see what Topher is testing next.",
+    title: "Vote, suggest, or watch experiments evolve.",
+    body: "New ideas before they become full services or tools.",
     href: "/idea-lab",
-    cta: "Suggest an Idea",
+    cta: "Visit the Idea Lab",
+  },
+  {
+    eyebrow: "Builds",
+    title: "Shipped experiments, launches, and project notes.",
+    body: "Browse write-ups for launches and experiments — including deep dives like Henry AI when you want technical context.",
+    href: "/builds",
+    cta: "Browse Builds",
   },
 ] as const;
 
@@ -167,6 +260,84 @@ export function UmbrellaHomePage() {
         <UmbrellaHomeHero />
 
         <TopherWebDesignHomeSpotlight />
+
+        <section className={cn(homeBackdrop)} id="studio-divisions">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Studio map</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Divisions under the Mixed Maker Shop umbrella</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Mixed Maker Shop is the studio HQ — web design, maker builds, AI &amp; automation, digital products,
+                experiments, and story work roll up here.
+              </p>
+              <p
+                className={cn(
+                  "mt-6 rounded-2xl border border-[rgba(232,149,92,0.28)] bg-[rgba(17,26,23,0.35)] px-4 py-3 text-center text-sm font-bold leading-snug text-white md:text-base",
+                )}
+              >
+                {umbrellaStudioTagline}
+              </p>
+            </div>
+            <div className={cn("grid gap-5 sm:grid-cols-2 lg:grid-cols-3", mmsHomeGlassStackGap)}>
+              {studioDivisions.map((d) => {
+                const Icon = d.Icon;
+                const subtitleClass =
+                  "subtitleNormalCase" in d && d.subtitleNormalCase
+                    ? "mt-1 text-xs font-medium tracking-wide text-[rgba(232,149,92,0.92)]"
+                    : "mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(232,149,92,0.92)]";
+                const cardInner = (
+                  <>
+                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[rgba(232,149,92,0.95)]">
+                      <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                    </div>
+                    <h3 className={mmsH3OnGlass}>{d.title}</h3>
+                    <p className={subtitleClass}>{d.subtitle}</p>
+                    <p className={cn("mt-3 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                      {d.body}
+                    </p>
+                    <span
+                      className={cn(
+                        "mt-5 inline-flex items-center gap-2 text-sm font-semibold",
+                        mmsTextLinkOnGlass,
+                      )}
+                    >
+                      Open division
+                      {d.external ? (
+                        <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+                      ) : (
+                        <ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-1" aria-hidden />
+                      )}
+                    </span>
+                  </>
+                );
+                return (
+                  <article
+                    key={d.title}
+                    className="public-glass-box--soft public-glass-box--pad flex min-h-[15rem] flex-col"
+                  >
+                    {d.external ? (
+                      <a
+                        href={d.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex h-full flex-col no-underline transition duration-300 hover:-translate-y-0.5 hover:no-underline"
+                      >
+                        {cardInner}
+                      </a>
+                    ) : (
+                      <Link
+                        href={d.href}
+                        className="group flex h-full flex-col no-underline transition duration-300 hover:-translate-y-0.5 hover:no-underline"
+                      >
+                        {cardInner}
+                      </Link>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
         <section className={cn(homeBackdrop)} id="services">
           <div className={cn(shell, mmsSectionY)}>
@@ -321,12 +492,59 @@ export function UmbrellaHomePage() {
           </div>
         </section>
 
+        <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="ventures">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Ventures</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Flagship builds under the umbrella</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Brands and launches that still roll up to Mixed Maker Shop — same hub as web, maker work, and labs.
+              </p>
+              <p className={cn("mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[rgba(232,149,92,0.95)]")}>
+                {umbrellaStudioTagline}
+              </p>
+            </div>
+            <div className={cn("grid gap-5 md:grid-cols-2", mmsHomeGlassStackGap)}>
+              {homeVentures.map((v) => (
+                <article key={v.name} className="public-glass-box--soft public-glass-box--pad flex min-h-[12rem] flex-col">
+                  <h3 className={mmsH3OnGlass}>{v.name}</h3>
+                  <p className={cn("mt-3 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
+                    {v.description}
+                  </p>
+                  {v.external ? (
+                    <a
+                      href={v.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        mmsTextLinkOnGlass,
+                        "mt-5 inline-flex items-center gap-2 font-semibold no-underline hover:no-underline",
+                      )}
+                    >
+                      Visit venture
+                      <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
+                    </a>
+                  ) : (
+                    <Link
+                      href={v.href}
+                      className={cn(mmsTextLinkOnGlass, "mt-5 inline-flex items-center gap-2 font-semibold")}
+                    >
+                      View on Mixed Maker Shop builds
+                      <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                    </Link>
+                  )}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="departments">
           <div className={cn(shell, mmsSectionY)}>
             <div className="grid gap-6 lg:grid-cols-2">
-              {departmentFeatures.map((feature) => (
+              {departmentBridges.map((feature) => (
                 <article
-                  key={feature.title}
+                  key={feature.eyebrow}
                   className={cn(
                     "public-glass-box--soft public-glass-box--pad",
                     "className" in feature && feature.className,
@@ -407,7 +625,7 @@ export function UmbrellaHomePage() {
             </div>
             <div className={cn("grid gap-6 md:grid-cols-3", mmsHomeGlassStackGap)}>
               {[
-                "Mixed Maker Shop is the umbrella studio for web design, 3D printing, and practical tools.",
+                "Mixed Maker Shop is the umbrella HQ for web design, maker builds, AI & automation, digital products, labs, and story.",
                 "Topher's Web Design is the dedicated branch for sites, informational pages, and web systems.",
                 "GiGi handles most of the 3D printing side through GiGi's Print Shop.",
               ].map((line, i) => (
@@ -436,8 +654,8 @@ export function UmbrellaHomePage() {
                 Ready to choose a path?
               </h2>
               <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsOnGlassPrimary)}>
-                Start with a free website preview, send GiGi a print idea, ask about property help, or suggest something
-                new for the Idea Lab.
+                Start with a free homepage preview, run a free website check, send GiGi a print idea, ask about property
+                help, or suggest something new for the Idea Lab.
               </p>
               <PublicCtaRow align="center" className={cn(mmsOnGlassCtaRowWrap, "w-full justify-center")}>
                 <TrackedPublicLink
@@ -453,6 +671,18 @@ export function UmbrellaHomePage() {
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
+                  href="/free-website-check"
+                  eventName="public_contact_cta_click"
+                  eventProps={{ location: "home_cta", target: "website_check" }}
+                  className={cn(
+                    mmsBtnSecondaryOnGlass,
+                    "inline-flex w-full min-w-[12rem] items-center justify-center gap-2 px-8 sm:w-auto no-underline hover:no-underline",
+                  )}
+                >
+                  Free Website Check
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+                <TrackedPublicLink
                   href="/contact"
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_cta", target: "contact" }}
@@ -464,6 +694,12 @@ export function UmbrellaHomePage() {
                   Contact Topher
                 </TrackedPublicLink>
               </PublicCtaRow>
+              <p className={cn("mx-auto mt-4 max-w-lg text-sm font-medium sm:text-[15px]", mmsOnGlassSecondary)}>
+                Email the studio directly:{" "}
+                <a href={`mailto:${publicTopherEmail}`} className={cn(mmsTextLinkOnGlass, "font-semibold underline-offset-2")}>
+                  {publicTopherEmail}
+                </a>
+              </p>
               <p className={cn("mx-auto mt-4 max-w-lg text-sm font-medium sm:text-[15px]", mmsOnGlassSecondary)}>
                 Useful things built online, outside, and in the workshop.
               </p>

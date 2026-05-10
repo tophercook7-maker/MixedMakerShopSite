@@ -5,34 +5,34 @@ import { SITE_URL } from "@/lib/site";
 const canonical = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
+  title: "Mixed Maker Shop | Umbrella Studio HQ — Web Design, Maker Builds & Digital Tools",
   description:
-    "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+    "Mixed Maker Shop is the umbrella studio headquarters: Topher's Web Design (websites), 3D printing & maker builds, AI & automation, digital products, Mixed Maker Labs, and story — one umbrella, multiple branches.",
   keywords: [
-    "MixedMakerShop",
-    "Topher and GiGi",
-    "creative studio",
-    "practical projects",
-    "websites and tools",
+    "Mixed Maker Shop",
+    "umbrella studio",
+    "Topher's Web Design",
     "3D printing",
-    "property care",
-    "handmade projects",
-    "small business tools",
-    "local services",
+    "maker builds",
+    "AI automation",
+    "digital products",
+    "Mixed Maker Labs",
+    "Hot Springs Arkansas",
+    "small business websites",
   ],
   alternates: { canonical },
   openGraph: {
-    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
+    title: "Mixed Maker Shop | Umbrella Studio HQ",
     description:
-      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+      "Studio headquarters for websites, maker work, AI & automation, digital products, and experiments — organized under one umbrella.",
     url: canonical,
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
+    title: "Mixed Maker Shop | Umbrella Studio HQ",
     description:
-      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+      "Websites, 3D printing, AI tools, digital products, and labs — one umbrella studio.",
     images: ["/og-image"],
   },
 };

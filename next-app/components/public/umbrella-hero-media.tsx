@@ -32,7 +32,7 @@ export function UmbrellaHeroMedia({
           alt="MixedMakerShop umbrella brand — open umbrella in the rain, canopy and warm interior light."
           fill
           priority={priority}
-          quality={92}
+          quality={75}
           sizes="100vw"
           className={cn(
             "object-cover",
