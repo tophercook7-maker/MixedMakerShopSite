@@ -344,10 +344,11 @@ Want me to show you a quick idea?`;
 
       <details className="admin-card p-4">
         <summary className="text-sm font-semibold cursor-pointer" style={{ color: "var(--admin-fg)" }}>
-          Website / screenshots
+          Content review &amp; site notes
         </summary>
         <p className="text-xs mt-2" style={{ color: "var(--admin-muted)" }}>
-          When a case file is linked, homepage and mobile screenshots from audits appear in the Cases area of admin.
+          When a case file is linked, link analysis, site notes, issues and opportunities, and writing and messaging
+          context show up in the Cases area of admin.
         </p>
       </details>
     </div>

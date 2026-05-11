@@ -175,6 +175,13 @@ type ScanPreset = {
   settings: ScoutScanSettings;
 };
 
+/** Strip legacy fields so older saved presets never send removed keys to Scout Brain. */
+function scanSettingsForApi(settings: ScoutScanSettings): ScoutScanSettings {
+  const next = { ...settings };
+  delete (next as Record<string, unknown>).capture_screenshots;
+  return next;
+}
+
 const BUILT_IN_PRESETS: ScanPreset[] = [
   {
     id: "best-web-design-targets",
@@ -424,7 +431,7 @@ export function ScoutConsole({
       method: "POST",
       payload,
     });
-    const result = await scout.startScout(integrationReady, payload);
+    const result = await scout.startScout(integrationReady, scanSettingsForApi(payload));
     if (!result.ok && result.error) {
       console.error("[Admin Click] Scout start failed", { error: result.error });
       setPageError(result.error.includes("Unauthorized") ? "Permission denied" : result.error);
@@ -603,7 +610,7 @@ export function ScoutConsole({
       return;
     }
     console.info("[Admin Click] Scout preset handler entered", { preset: preset.id });
-    const result = await scout.startScout(integrationReady, preset.settings);
+    const result = await scout.startScout(integrationReady, scanSettingsForApi(preset.settings));
     if (!result.ok && result.error) {
       console.error("[Admin Click] Scout preset start failed", { preset: preset.id, error: result.error });
       setPageError(result.error);
@@ -693,7 +700,7 @@ export function ScoutConsole({
             <Link href="/admin/leads" className="underline text-[var(--admin-gold)]">
               open Leads
             </Link>{" "}
-            to see businesses you captured.
+            to see leads you&apos;ve saved.
           </p>
         </section>
       ) : null}
@@ -707,7 +714,10 @@ export function ScoutConsole({
               </h1>
             </div>
             <p style={{ color: "var(--admin-muted)" }}>
-              Find businesses with Scout, scan the list quickly, and save the ones you want. Run a search above, then use Add lead — you don’t need to open a full profile first.
+              Scout <strong className="text-[var(--admin-fg)]">never</strong> takes website pictures. It reads links and
+              returns text: business info, page copy, contact info, services, CTAs, SEO basics, issues, recommendations,{" "}
+              outreach angles, and opportunities — plus site notes from live review. Run a search, then use Add lead;
+              you don&apos;t need to open a full profile first.
             </p>
           </div>
           <button
@@ -894,7 +904,7 @@ export function ScoutConsole({
       {integrationReady && !scout.isBusy && (
         <section className="admin-card space-y-4">
           <h2 className="text-lg font-semibold" style={{ color: "var(--admin-fg)" }}>
-            Scan Setup
+            Link analysis setup
           </h2>
           <div className="space-y-2">
             <p className="text-sm" style={{ color: "var(--admin-muted)" }}>
@@ -960,15 +970,15 @@ export function ScoutConsole({
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm mb-2" style={{ color: "var(--admin-muted)" }}>
-                Where to scan
+                Where to run link analysis
               </p>
               <select
                 className="w-full rounded-md border px-3 py-2"
                 style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                 value={scope}
                 onChange={(e) => setScope(e.target.value as ScoutScanSettings["scope"])}
-                aria-label="Where to scan"
-                title="Where to scan"
+                aria-label="Where to run link analysis"
+                title="Where to run link analysis"
               >
                 <option value="single_city">single city</option>
                 <option value="nearby_cities">nearby cities</option>
@@ -986,8 +996,8 @@ export function ScoutConsole({
                   style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                   value={singleCity}
                   onChange={(e) => setSingleCity(e.target.value)}
-                  aria-label="Scan city"
-                  title="Scan city"
+                  aria-label="Link analysis city"
+                  title="Link analysis city"
                 >
                   {SCAN_CITIES.map((city) => (
                     <option key={city} value={city}>
@@ -1007,8 +1017,8 @@ export function ScoutConsole({
                   style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
-                  aria-label="Scan region"
-                  title="Scan region"
+                  aria-label="Link analysis region"
+                  title="Link analysis region"
                 >
                   {SCAN_REGIONS.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -1020,15 +1030,15 @@ export function ScoutConsole({
             )}
             <div>
               <p className="text-sm mb-2" style={{ color: "var(--admin-muted)" }}>
-                Scan depth
+                Link analysis depth
               </p>
               <select
                 className="w-full rounded-md border px-3 py-2"
                 style={{ background: "rgba(0,0,0,0.2)", borderColor: "var(--admin-border)", color: "var(--admin-fg)" }}
                 value={depth}
                 onChange={(e) => setDepth(e.target.value as ScoutScanSettings["depth"])}
-                aria-label="Scan depth"
-                title="Scan depth"
+                aria-label="Link analysis depth"
+                title="Link analysis depth"
               >
                 <option value="quick">quick (25 businesses)</option>
                 <option value="normal">normal (100 businesses)</option>
@@ -1133,7 +1143,7 @@ export function ScoutConsole({
           {(scout.jobStatus === "queued" || scout.jobStatus === "running" || scout.jobStatus === "analyzing") &&
             activeScanSettings && (
               <div className="mt-3 text-xs space-y-1" style={{ color: "var(--admin-muted)" }}>
-                <p>Scan: {settingsLabel(activeScanSettings)}</p>
+                <p>Link analysis: {settingsLabel(activeScanSettings)}</p>
                 <p>Business types: {activeScanSettings.categories?.length ? activeScanSettings.categories.join(", ") : "all"}</p>
                 <p>Target filters: {activeScanSettings.issue_filters?.length ? activeScanSettings.issue_filters.join(", ") : "none"}</p>
                 <p>Depth: {activeScanSettings.depth || "normal"}</p>
@@ -1149,7 +1159,7 @@ export function ScoutConsole({
       {(scout.jobStatus === "finished" || scout.jobStatus === "failed") && (
         <section className="admin-card">
           <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--admin-fg)" }}>
-            This Scan Summary
+            This live website review summary
           </h2>
           <div className="text-xs mb-2" style={{ color: "var(--admin-muted)" }}>
             <p>
@@ -1350,7 +1360,7 @@ export function ScoutConsole({
             <div className="admin-stat-value">{initialSummary.followups_due}</div>
           </div>
           <div className="admin-stat-card">
-            <div className="admin-stat-label">Websites audited</div>
+            <div className="admin-stat-label">Site notes &amp; opportunities</div>
             <div className="admin-stat-value">{initialSummary.dashboard_websites_audited}</div>
           </div>
         </section>
@@ -1384,7 +1394,7 @@ export function ScoutConsole({
               Advanced table (high-score, email/phone only)
             </summary>
             <p className="text-xs mt-2 mb-3" style={{ color: "var(--admin-muted)" }}>
-              Same data as before, for power users. Day-to-day scanning uses the compact cards above.
+              Same data as before, for power users. Day-to-day link analysis uses the compact cards above.
             </p>
             {initialTopLeads.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--admin-muted)" }}>

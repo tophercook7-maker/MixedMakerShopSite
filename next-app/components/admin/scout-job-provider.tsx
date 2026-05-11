@@ -93,12 +93,12 @@ function stageLabel(stage: string | null) {
 }
 
 function friendlyStatusMessage(status: JobUiStatus, message: string | null, error: string | null) {
-  if (status === "queued") return message || "Scout job started";
-  if (status === "running") return message || "Scout running...";
-  if (status === "analyzing") return message || "Scout analyzing businesses...";
-  if (status === "finished") return message || "Scout complete";
-  if (status === "cancelled") return message || "Scout cancelled";
-  if (status === "failed") return error || "Scout failed";
+  if (status === "queued") return message || "Live website review started";
+  if (status === "running") return message || "Running link analysis...";
+  if (status === "analyzing") return message || "Content review — site notes, issues and opportunities...";
+  if (status === "finished") return message || "Live website review complete";
+  if (status === "cancelled") return message || "Live website review cancelled";
+  if (status === "failed") return error || "Live website review failed";
   return "Ready";
 }
 
@@ -287,8 +287,8 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
               const refreshedCount = leadsMatch ? Number(leadsMatch[1]) : null;
               const completionMessage =
                 refreshedCount !== null
-                  ? `Scout complete — ${refreshedCount} leads refreshed`
-                  : "Scout complete — leads refreshed";
+                  ? `Live website review complete — ${refreshedCount} leads refreshed`
+                  : "Live website review complete — leads refreshed";
               writeAndSetState({
                 jobId: id,
                 jobStatus: "finished",
@@ -397,7 +397,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
         jobId: active.id,
         jobStatus: uiStatus,
         jobProgress: nextProgress,
-        jobMessage: active.message ?? active.summary ?? "Scout running...",
+        jobMessage: active.message ?? active.summary ?? "Link analysis in progress...",
         jobError: active.error ?? null,
         stage: active.stage ?? null,
         persistenceDebug: active.persistence_debug ?? null,
@@ -452,7 +452,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       setIsStarting(true);
       writeAndSetState({
         jobError: null,
-        jobMessage: "Starting scout job...",
+        jobMessage: "Starting live website review...",
       });
 
       try {
@@ -491,7 +491,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           jobId: body.job_id,
           jobStatus: "queued",
           jobProgress: initialProgress,
-          jobMessage: body.message || "Scout job started",
+          jobMessage: body.message || "Live website review started",
           stage: "queued",
           jobError: null,
           scanSettings: selectedScanSettings || null,
@@ -521,7 +521,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
     }
     writeAndSetState({
       jobId,
-      jobMessage: "Stopping scout...",
+      jobMessage: "Stopping link analysis...",
       stage: "cancelling",
     });
     try {
@@ -543,7 +543,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
           jobId,
           jobStatus: "cancelled",
           jobProgress: 100,
-          jobMessage: body.message || "Scout cancelled",
+          jobMessage: body.message || "Live website review cancelled",
           stage: "cancelled",
           jobError: null,
         });
@@ -551,7 +551,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
       } else {
         writeAndSetState({
           jobId,
-          jobMessage: body.message || "Stopping scout...",
+          jobMessage: body.message || "Stopping link analysis...",
           stage: "cancelling",
         });
       }
@@ -632,7 +632,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
             {(jobStatus === "queued" || jobStatus === "running" || jobStatus === "analyzing" || isStarting) && (
               <RefreshCw className="h-4 w-4 animate-spin" style={{ color: "var(--admin-gold)" }} />
             )}
-            <span>Scout {jobStatus === "finished" ? "complete" : jobStatus}</span>
+            <span>Live website review {jobStatus === "finished" ? "complete" : jobStatus}</span>
             <span style={{ color: "var(--admin-muted)" }}>- {jobProgress}%</span>
           </div>
           <p className="mt-1 text-sm" style={{ color: "var(--admin-muted)" }}>
@@ -663,7 +663,7 @@ export function GlobalScoutJobProvider({ children }: { children: ReactNode }) {
                   void cancelScout();
                 }}
               >
-                Cancel Scout
+                Cancel review
               </button>
             </div>
           )}

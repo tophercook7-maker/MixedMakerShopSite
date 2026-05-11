@@ -769,7 +769,7 @@ export function LeadForm({
                 {(generatedEmail?.screenshot_url || "").trim() && (
                   <div className="space-y-1">
                     <div className="text-xs" style={{ color: "var(--admin-muted-2)" }}>
-                      Scout screenshot evidence
+                      Linked material
                     </div>
                     <a
                       href={(generatedEmail?.screenshot_url || "").trim()}
@@ -777,14 +777,8 @@ export function LeadForm({
                       rel="noreferrer"
                       className="text-xs font-semibold text-[var(--admin-gold)] hover:underline"
                     >
-                      Open screenshot
+                      Open link
                     </a>
-                    <img
-                      src={(generatedEmail?.screenshot_url || "").trim()}
-                      alt="Scout website screenshot"
-                      className="rounded-lg border w-full max-h-40 object-cover"
-                      style={{ borderColor: "var(--admin-border)" }}
-                    />
                   </div>
                 )}
                 {dossierTemplate?.metadata && (
