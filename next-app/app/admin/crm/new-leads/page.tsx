@@ -23,6 +23,8 @@ const INBOUND_SOURCES = [
   "quote_request",
   "ring_connect",
   "website_check",
+  "ai_automation_inquiry",
+  "digital_resource_request",
 ];
 
 function formatDate(value: unknown): string {

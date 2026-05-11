@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STARTER_RESOURCE_TITLES } from "@/lib/websites-tools-starter-resources";
 import { CANONICAL_LEAD_STATUSES, canonicalizeLeadStatus } from "@/lib/crm-lead-schema";
 import { PROJECT_PAYMENT_STATUSES } from "@/lib/crm/project-money";
 import { CRM_PROJECT_STATUSES } from "@/lib/crm/project-status";
@@ -66,6 +67,28 @@ export const websiteCheckFormSchema = z.object({
   phone: z.string().max(50).optional(),
   website: z.string().url().optional().or(z.literal("")),
   message: z.string().max(2000).optional(),
+});
+
+const starterResourceTitleEnum = z.enum(STARTER_RESOURCE_TITLES);
+
+export const aiAutomationInquiryFormSchema = z.object({
+  name: z.string().min(1, "Name required").max(200),
+  email: z.string().email(),
+  businessName: z.string().max(200).optional(),
+  website: z.string().url().optional().or(z.literal("")),
+  automationInterest: z.string().min(1, "Describe what you want to automate").max(4000),
+  currentProblem: z.string().min(1, "Describe the problem or workflow").max(8000),
+  urgency: z.string().max(500).optional(),
+  notes: z.string().max(4000).optional(),
+});
+
+export const digitalResourceRequestFormSchema = z.object({
+  name: z.string().min(1, "Name required").max(200),
+  email: z.string().email(),
+  selectedResource: starterResourceTitleEnum,
+  businessName: z.string().max(200).optional(),
+  website: z.string().url().optional().or(z.literal("")),
+  notes: z.string().max(4000).optional(),
 });
 
 export const quoteFormSchema = z.object({

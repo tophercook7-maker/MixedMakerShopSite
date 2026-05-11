@@ -16,6 +16,9 @@ import {
   mmsTextLinkOnGlass,
   mmsUmbrellaSectionBackdropImmersive,
 } from "@/lib/mms-umbrella-ui";
+import { AiAutomationInquiryForm } from "@/components/public/AiAutomationInquiryForm";
+import { DigitalResourceRequestCard } from "@/components/public/DigitalResourceRequestCard";
+import { STARTER_RESOURCE_ITEMS } from "@/lib/websites-tools-starter-resources";
 import { cn } from "@/lib/utils";
 
 const canonical = "https://mixedmakershop.com/websites-tools";
@@ -82,29 +85,6 @@ const sections = [
     title: "Ad/Promo Help",
     body: "Promo concepts, ad mockups, and simple campaign ideas that pair with a useful landing page.",
     href: "/ad-lab",
-  },
-] as const;
-
-const starterResources = [
-  {
-    title: "Website Starter Checklist",
-    body: "A practical list for owners who want to ship a clearer site: pages to plan, photos to gather, trust signals, and what to decide before you write copy.",
-  },
-  {
-    title: "Local Business Website Audit Sheet",
-    body: "A structured pass over your current site or placeholder page — messaging, mobile basics, contact paths, and quick fixes that often matter most locally.",
-  },
-  {
-    title: "3D Print Request Prep Sheet",
-    body: "Helps you describe size, use case, photos, and constraints so a print quote isn't a guessing game.",
-  },
-  {
-    title: "AI Workflow Starter Pack",
-    body: "Guidance notes on where simple AI helpers tend to help without guesswork: drafts with review steps, lead sorting, and reminders — not autopilot.",
-  },
-  {
-    title: "Project Idea Capture Sheet",
-    body: "Capture the problem, audience, constraints, and success criteria in one place before you invest time or budget.",
   },
 ] as const;
 
@@ -236,24 +216,7 @@ export default function WebsitesToolsPage() {
                 </ul>
               </div>
             </div>
-            <div className="public-glass-box public-glass-box--pad mx-auto mt-10 max-w-3xl text-center">
-              <a
-                href={mailtoSubject("Talk to Topher about AI automation")}
-                className={cn(
-                  mmsBtnPrimary,
-                  "inline-flex w-full items-center justify-center px-8 no-underline hover:no-underline sm:w-auto",
-                )}
-              >
-                Talk to Topher about AI automation
-              </a>
-              <p className={cn("mt-4 text-sm", mmsOnGlassSecondary)}>
-                Email{" "}
-                <a href={mailtoBase} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
-                  {publicTopherEmail}
-                </a>{" "}
-                — describe your workflow and what eats time today.
-              </p>
-            </div>
+            <AiAutomationInquiryForm />
           </div>
         </section>
 
@@ -272,18 +235,8 @@ export default function WebsitesToolsPage() {
               </p>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {starterResources.map((item) => (
-                <article key={item.title} className="public-glass-box--soft public-glass-box--pad flex flex-col">
-                  <h3 className="text-lg font-bold tracking-tight text-white">{item.title}</h3>
-                  <p className={cn("mt-4 flex-1 text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
-                    {item.body}
-                  </p>
-                  <div className={cn("mt-6 flex flex-col gap-2 text-sm font-semibold", mmsTextLinkOnGlass)}>
-                    <a href={mailtoSubject(`Resource request: ${item.title}`)} className="inline-flex items-center gap-2">
-                      Request this resource <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-                    </a>
-                  </div>
-                </article>
+              {STARTER_RESOURCE_ITEMS.map((item) => (
+                <DigitalResourceRequestCard key={item.title} title={item.title} body={item.body} />
               ))}
             </div>
             <div className="public-glass-box public-glass-box--pad mx-auto mt-10 max-w-3xl">
