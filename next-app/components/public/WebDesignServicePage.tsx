@@ -124,7 +124,7 @@ export function WebDesignServicePage() {
           </p>
           <ul className={cn("mt-10 space-y-3.5 md:text-[17px]", wdBody)}>
             {[
-              "The headline doesn&apos;t match what visitors expect",
+              "The headline doesn't match what visitors expect",
               "Contact paths are buried or unclear",
               "The site looks dated or generic — trust drops instantly",
               "Too much text, not enough clarity on what to do next",

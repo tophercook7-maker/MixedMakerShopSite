@@ -96,7 +96,7 @@ const starterResources = [
   },
   {
     title: "3D Print Request Prep Sheet",
-    body: "Helps you describe size, use case, photos, and constraints so a print quote isn&apos;t a guessing game.",
+    body: "Helps you describe size, use case, photos, and constraints so a print quote isn't a guessing game.",
   },
   {
     title: "AI Workflow Starter Pack",
