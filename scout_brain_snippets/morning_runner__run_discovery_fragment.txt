@@ -149,15 +149,6 @@ def run(
             ),
         ),
     )
-    screenshot_score_threshold = max(
-        0,
-        int(
-            os.environ.get(
-                "SCOUT_SCREENSHOT_SCORE_THRESHOLD",
-                config.get("SCOUT_SCREENSHOT_SCORE_THRESHOLD", 70),
-            )
-        ),
-    )
     deep_audit_score_threshold = max(
         0,
         int(
@@ -167,12 +158,6 @@ def run(
             )
         ),
     )
-    screenshot_max_per_run = max(
-        1, int(config.get("SCREENSHOT_MAX_PER_RUN", config.get("screenshot_max_per_run", 10)))
-    )
-    screenshot_concurrency = max(
-        1, min(5, int(config.get("SCREENSHOT_CONCURRENCY", config.get("screenshot_concurrency", 3))))
-    )
     deep_scan_concurrency = max(
         1,
         min(
@@ -180,16 +165,13 @@ def run(
             int(
                 config.get(
                     "DEEP_SCAN_CONCURRENCY",
-                    config.get("deep_scan_concurrency", screenshot_concurrency),
+                    config.get("deep_scan_concurrency", 3),
                 )
             ),
         ),
     )
     website_fetch_timeout = max(
         2, int(config.get("WEBSITE_FETCH_TIMEOUT_SECONDS", config.get("website_fetch_timeout_seconds", 6)))
-    )
-    screenshot_timeout = max(
-        5, int(config.get("SCREENSHOT_TIMEOUT_SECONDS", config.get("screenshot_timeout_seconds", 12)))
     )
     deep_analysis_timeout = max(10, int(config.get("deep_analysis_timeout_seconds", 45)))
     api_key = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
@@ -214,15 +196,11 @@ def run(
         )
     print(f"  deep_scan_max_per_run: {deep_scan_max_per_run}")
     print(f"  max_concurrency: {max_concurrency}")
-    print(f"  screenshot_max_per_run: {screenshot_max_per_run}")
-    print(f"  screenshot_score_threshold: {screenshot_score_threshold}")
     print(f"  deep_audit_score_threshold: {deep_audit_score_threshold}")
-    print(f"  screenshot_concurrency: {screenshot_concurrency}")
     print(f"  deep_scan_concurrency: {deep_scan_concurrency}")
     print(
         "  timeouts (sec): "
         f"website_fetch={website_fetch_timeout}, "
-        f"screenshot={screenshot_timeout}, "
         f"deep_analysis={deep_analysis_timeout}"
     )
     if current_lat is not None and current_lng is not None:

@@ -136,6 +136,12 @@ next-app proxies these at `/api/scout/outreach-templates` (server uses env key t
 1. **`POST /api/crm/quick-add`** — response `message` is the exact string for UI (bookmarklet + quick-add page use `data.message`).
 2. **`POST /api/crm/leads/[id]/enrich`** — manual **Enrich now**.
 
+## Scout run (`scan_settings`)
+
+The admin **Run Scout** action proxies to Brain with JSON `{ "scan_settings": { … } }` (scope, city, categories, filters, depth, discovery mode, etc.).
+
+**Scout never takes website pictures.** It reads the link against the live site and returns **useful text only**: **business info**, **page copy**, **contact info**, **services**, **CTAs**, **SEO basics**, **issues**, **recommendations**, **outreach angles**, and **opportunities** (plus the website link and related notes), for CRM and outreach. Treat the flow as **live website review**, **link analysis**, and **content review** — not visual capture. Do not add screenshot or image-capture fields to this contract or to Scout run payloads.
+
 ## When Brain is down
 
 - User-facing: **“Enrichment unavailable right now.”** (save still succeeds on quick-add).
