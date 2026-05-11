@@ -103,11 +103,10 @@ export async function POST(request: Request, { params }: Params) {
   const body = [
     `Hi ${businessName},`,
     "",
-    "I was reviewing your site and noticed something that might be affecting conversions.",
+    "I was reviewing your live website and noticed something that might be affecting conversions.",
     issueSummary ? `Issue spotted: ${issueSummary}` : "",
     "",
-    "I grabbed a quick screenshot showing it.",
-    screenshotUrl ? `Screenshot: ${screenshotUrl}` : "",
+    screenshotUrl ? `Reference: ${screenshotUrl}` : "",
     "",
     "Would you like me to send it over?",
     "",

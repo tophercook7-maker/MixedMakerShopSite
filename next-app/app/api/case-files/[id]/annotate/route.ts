@@ -47,7 +47,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Missing case id." }, { status: 400 });
   }
   if (!baseScreenshotUrl || !rect) {
-    return NextResponse.json({ error: "Missing screenshot or annotation rectangle." }, { status: 400 });
+    return NextResponse.json({ error: "Missing image URL or annotation rectangle." }, { status: 400 });
   }
 
   const supabase = await createClient();
