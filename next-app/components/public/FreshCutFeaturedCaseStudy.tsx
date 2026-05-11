@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { ExampleCardImageOverlay } from "@/components/public/ExampleCardImageOverlay";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
@@ -28,6 +29,7 @@ import {
   mmsOnGlassSecondary,
   mmsSectionBorder,
   mmsSectionY,
+  mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
@@ -172,6 +174,17 @@ function FreshCutCopyColumn({
         >
           {freshCut.title}
         </h3>
+        <p className={cn("text-sm", onGlass ? mmsOnGlassMuted : "text-[#5a6a62]")}>
+          <Link
+            href="/proof/fresh-cut-property-care"
+            className={cn(
+              "font-semibold underline-offset-2 hover:underline",
+              onGlass ? mmsTextLinkOnGlass : "text-[#b85c1e]",
+            )}
+          >
+            Read the proof breakdown →
+          </Link>
+        </p>
         <p
           className={cn(
             "text-base font-medium leading-snug md:text-[17px]",

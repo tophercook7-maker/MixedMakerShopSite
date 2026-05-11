@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
+import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -54,9 +56,22 @@ const PUBLIC_PATHS: readonly string[] = [
   "/samples/wellness",
 ];
 
+const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
+  "/resources",
+  ...RESOURCE_ENTRIES.map((r) => `/resources/${r.slug}`),
+  ...CASE_STUDY_ENTRIES.map((c) => `/proof/${c.slug}`),
+];
+
+const ALL_PUBLIC_PATHS = [...PUBLIC_PATHS, ...RESOURCE_AND_PROOF_PATHS];
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return PUBLIC_PATHS.map((path) => ({
+  const seen = new Set<string>();
+  return ALL_PUBLIC_PATHS.filter((path) => {
+    if (seen.has(path)) return false;
+    seen.add(path);
+    return true;
+  }).map((path) => ({
     url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
     lastModified: now,
     changeFrequency: "monthly" as const,

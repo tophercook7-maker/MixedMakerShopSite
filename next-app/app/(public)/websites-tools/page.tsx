@@ -233,6 +233,13 @@ export default function WebsitesToolsPage() {
                 Prefer something tailored? Say what you&apos;re working on and Topher will point you to the closest sheet or
                 suggest a different path.
               </p>
+              <p className={cn("mt-4 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Want the full list with short descriptions first?{" "}
+                <Link href="/resources" className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                  Open the resource library
+                </Link>
+                .
+              </p>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {STARTER_RESOURCE_ITEMS.map((item) => (
