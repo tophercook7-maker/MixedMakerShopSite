@@ -83,10 +83,11 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
                 </ul>
               </div>
               <div className="public-glass-box public-glass-box--pad lg:col-span-2">
-                <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#c5ddd2]/95">Request &amp; download</h2>
+                <h2 className="text-sm font-bold uppercase tracking-[0.12em] text-[#c5ddd2]/95">Download &amp; request</h2>
                 <p className={cn("mt-3 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-                  Submit a request — Topher fulfills from the same inbox flow as Websites &amp; Tools. PDF buttons activate here
-                  when each file is published to the site.
+                  Grab the PDF below anytime. If you want Topher to send it, tailor it, or pair it with another funnel, use{" "}
+                  <span className="text-white/85">Request this resource</span> from Starter resources — same inbox as Websites
+                  &amp; Tools.
                 </p>
                 <div className="mt-5 flex flex-col gap-3">
                   <TrackedDownloadLink
@@ -95,7 +96,9 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
                     surface="resource_detail"
                     href={r.filePath}
                     downloadPublished={r.downloadPublished}
-                  />
+                  >
+                    Download PDF
+                  </TrackedDownloadLink>
                   <Link
                     href="/websites-tools#templates-kits"
                     className={cn(mmsBtnPrimary, "inline-flex justify-center px-4 py-3 text-center text-sm no-underline hover:no-underline")}
@@ -106,7 +109,7 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
                     href="/websites-tools#templates-kits"
                     className={cn(mmsBtnSecondaryOnGlass, "inline-flex justify-center px-4 py-2.5 text-center text-sm no-underline hover:no-underline")}
                   >
-                    Delivered after request — open Starter resources
+                    Optional: open Starter resources form
                   </Link>
                 </div>
               </div>

@@ -23,12 +23,12 @@ const canonical = `${SITE_URL}/resources`;
 export const metadata: Metadata = {
   title: "Resource library | MixedMakerShop",
   description:
-    "Checklists and prep sheets for websites, local presence, 3D print requests, AI workflows, and project planning — request what you need from Mixed Maker Shop.",
+    "Checklists and prep sheets for websites, local presence, 3D print requests, AI workflows, and project planning — download PDFs free or request through Mixed Maker Shop.",
   alternates: { canonical },
   openGraph: {
     title: "Resource library | MixedMakerShop",
     description:
-      "Practical downloads and prep sheets for small businesses and makers — delivered after request.",
+      "Practical PDF downloads for small businesses and makers — or request through Starter resources if you want a human touch.",
     url: canonical,
   },
 };
@@ -49,8 +49,8 @@ export default function ResourcesIndexPage() {
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
                 Each resource is built from real client and shop workflows — focused checklists you can actually use, not
-                generic fluff. Request what fits; Topher sends it after your note lands (PDF links unlock here as files are
-                published).
+                generic fluff. Download the PDFs from each detail page, or send a request through Starter resources if you want
+                Topher to follow up personally.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 Prefer the in-page forms? Jump to{" "}

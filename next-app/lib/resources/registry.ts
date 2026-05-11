@@ -31,7 +31,7 @@ export const RESOURCE_ENTRIES = [
     filePath: "/downloads/website-starter-checklist.pdf",
     category: "website-planning",
     analyticsId: "website_starter_checklist",
-    downloadPublished: false,
+    downloadPublished: true,
     contentsBullets: [
       "Core pages and angles to decide before design starts",
       "Photo and proof assets that speed up build week",
@@ -48,7 +48,7 @@ export const RESOURCE_ENTRIES = [
     filePath: "/downloads/local-business-website-audit-sheet.pdf",
     category: "local-presence",
     analyticsId: "local_business_website_audit_sheet",
-    downloadPublished: false,
+    downloadPublished: true,
     contentsBullets: [
       "First-glance clarity and offer framing",
       "Mobile usability and tap-to-contact checks",
@@ -65,7 +65,7 @@ export const RESOURCE_ENTRIES = [
     filePath: "/downloads/3d-print-request-prep-sheet.pdf",
     category: "3d-printing",
     analyticsId: "print_request_prep_sheet",
-    downloadPublished: false,
+    downloadPublished: true,
     contentsBullets: [
       "Use case and environment constraints",
       "Size targets and fit expectations",
@@ -82,7 +82,7 @@ export const RESOURCE_ENTRIES = [
     filePath: "/downloads/ai-workflow-starter-pack.pdf",
     category: "ai-workflows",
     analyticsId: "ai_workflow_starter_pack",
-    downloadPublished: false,
+    downloadPublished: true,
     contentsBullets: [
       "Patterns that keep humans in the loop",
       "Where drafts beat autopilot for customer-facing work",
@@ -99,7 +99,7 @@ export const RESOURCE_ENTRIES = [
     filePath: "/downloads/project-idea-capture-sheet.pdf",
     category: "project-planning",
     analyticsId: "project_idea_capture_sheet",
-    downloadPublished: false,
+    downloadPublished: true,
     contentsBullets: [
       "Problem statement and who it’s for",
       "Must-haves vs. nice-to-haves",
