@@ -35,6 +35,11 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
+  verification: {
+    other: {
+      "msvalidate.01": "A3AAEDD4048483FDA072E42BC95CCB1F",
+    },
+  },
   openGraph: {
     title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
     description:
