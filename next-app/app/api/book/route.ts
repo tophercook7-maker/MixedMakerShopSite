@@ -216,8 +216,18 @@ export async function POST(request: Request) {
   const workspaceId = chooseWorkspaceId(leadWorkspaceId);
   if (!workspaceId) {
     return NextResponse.json(
-      { error: "Workspace not configured for calendar booking. Set SCOUT_BRAIN_WORKSPACE_ID or create a lead with workspace." },
-      { status: 500 }
+      {
+        ok: true,
+        event: null,
+        lead_id: resolvedLeadId,
+        lead_attached: Boolean(resolvedLeadId),
+        lead_duplicate_skipped: crmDuplicateSkipped,
+        booking_created: false,
+        booking_error: "Workspace not configured for calendar booking.",
+        confirmation_email_sent: false,
+        confirmation_email_reason: "calendar_workspace_missing",
+      },
+      { status: 202 }
     );
   }
 
@@ -237,7 +247,22 @@ export async function POST(request: Request) {
     })
     .select("id,start_time,end_time,lead_id")
     .single();
-  if (eventError) return NextResponse.json({ error: eventError.message }, { status: 500 });
+  if (eventError) {
+    return NextResponse.json(
+      {
+        ok: true,
+        event: null,
+        lead_id: resolvedLeadId,
+        lead_attached: Boolean(resolvedLeadId),
+        lead_duplicate_skipped: crmDuplicateSkipped,
+        booking_created: false,
+        booking_error: eventError.message,
+        confirmation_email_sent: false,
+        confirmation_email_reason: "calendar_insert_failed",
+      },
+      { status: 202 },
+    );
+  }
 
   const emailResult = await sendBookingConfirmationEmail(email, name, start.toISOString());
 
@@ -248,6 +273,7 @@ export async function POST(request: Request) {
       lead_id: resolvedLeadId,
       lead_attached: Boolean(resolvedLeadId),
       lead_duplicate_skipped: crmDuplicateSkipped,
+      booking_created: true,
       confirmation_email_sent: Boolean(emailResult.sent),
       confirmation_email_reason: emailResult.sent ? null : emailResult.reason,
     },

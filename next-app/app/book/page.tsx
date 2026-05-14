@@ -50,6 +50,8 @@ export default function BookWebsiteReviewPage() {
       });
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
+        booking_created?: boolean;
+        booking_error?: string;
         confirmation_email_sent?: boolean;
         next_available_opening?: { start_time?: string };
       };
@@ -65,7 +67,9 @@ export default function BookWebsiteReviewPage() {
         throw new Error(body.error || "Could not book review.");
       }
       setMessage(
-        body.confirmation_email_sent
+        body.booking_created === false
+          ? "Request received. Topher has your details, but the calendar booking could not be created automatically."
+          : body.confirmation_email_sent
           ? "Booked. Confirmation email sent."
           : "Booked. Confirmation email could not be sent, but your appointment is saved."
       );
@@ -100,6 +104,7 @@ export default function BookWebsiteReviewPage() {
           <input
             className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2"
             type="date"
+            aria-label="Choose review date"
             value={selectedDay}
             onChange={async (e) => {
               const day = e.target.value;
@@ -117,6 +122,7 @@ export default function BookWebsiteReviewPage() {
           />
           <select
             className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2"
+            aria-label="Select an available review time"
             value={preferredTime}
             onChange={(e) => setPreferredTime(e.target.value)}
             required
