@@ -21,6 +21,7 @@ const navItems: {
   { href: "/property-care", label: "Property Care" },
   { href: "/idea-lab", label: "Idea Lab" },
   { href: "/examples", label: "Examples" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
