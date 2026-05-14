@@ -2,7 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { sendLeadNotificationEmail } from "@/lib/crm/send-lead-notification-email";
+import {
+  sendEmergencyLeadNotificationEmail,
+  sendLeadNotificationEmail,
+} from "@/lib/crm/send-lead-notification-email";
 
 const inboundSources = new Set([
   "captain_maker",
@@ -71,12 +74,17 @@ export type InboundLeadSubmissionResult =
   | {
       ok: true;
       lead_id: string;
+      form_submission_id: string | null;
       duplicate_skipped: boolean;
       duplicate_reason?: string | null;
       notification_sent: boolean;
       notification_error?: string;
     }
   | { ok: false; status: number; error: string; details?: unknown };
+
+type InboundLeadSubmissionOptions = {
+  requestId?: string;
+};
 
 export function isInboundLeadSubmission(body: unknown): boolean {
   if (!body || typeof body !== "object") return false;
@@ -130,15 +138,79 @@ function buildLeadNotes(data: InboundLeadSubmissionInput, source: string): strin
   return lines.join("\n\n").slice(0, 12000);
 }
 
-export async function handleInboundLeadSubmission(body: unknown): Promise<InboundLeadSubmissionResult> {
+function envPresence() {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    SUPABASE_SERVICE_ROLE_KEY: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
+    RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY?.trim()),
+    RESEND_AQPI_KEY_FALLBACK: Boolean(process.env.RESEND_AQPI_KEY?.trim()),
+    RESEND_FROM_EMAIL: Boolean(process.env.RESEND_FROM_EMAIL?.trim()),
+    BOOKING_FROM_EMAIL: Boolean(process.env.BOOKING_FROM_EMAIL?.trim()),
+    LEAD_NOTIFY_EMAIL: Boolean(process.env.LEAD_NOTIFY_EMAIL?.trim()),
+  };
+}
+
+async function sendEmergencyAndLog(opts: {
+  requestId?: string;
+  error: string;
+  payload: unknown;
+  context: string;
+}) {
+  const emergency = await sendEmergencyLeadNotificationEmail({
+    requestId: opts.requestId,
+    error: opts.error,
+    payload: opts.payload,
+  });
+  if (!emergency.ok) {
+    console.error("[inbound lead] emergency notification failed", {
+      request_id: opts.requestId,
+      context: opts.context,
+      error: emergency.error,
+      env_present: envPresence(),
+    });
+    return;
+  }
+  console.info("[inbound lead] emergency notification sent", {
+    request_id: opts.requestId,
+    context: opts.context,
+  });
+}
+
+export async function handleInboundLeadSubmission(
+  body: unknown,
+  options: InboundLeadSubmissionOptions = {},
+): Promise<InboundLeadSubmissionResult> {
+  const requestId = options.requestId;
+  console.info("[inbound lead] received public payload", {
+    request_id: requestId,
+    payload: body,
+    env_present: envPresence(),
+  });
+
   const parsed = inboundLeadSubmissionSchema.safeParse(body);
   if (!parsed.success) {
+    console.error("[inbound lead] validation failed", {
+      request_id: requestId,
+      details: parsed.error.flatten(),
+    });
+    await sendEmergencyAndLog({
+      requestId,
+      error: "Invalid public lead data.",
+      payload: body,
+      context: "validation_failed",
+    });
     return { ok: false, status: 400, error: "Invalid lead data.", details: parsed.error.flatten() };
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
+    await sendEmergencyAndLog({
+      requestId,
+      error: "Server CRM configuration missing.",
+      payload: body,
+      context: "missing_supabase_env",
+    });
     return { ok: false, status: 500, error: "Server CRM configuration missing." };
   }
 
@@ -146,7 +218,18 @@ export async function handleInboundLeadSubmission(body: unknown): Promise<Inboun
   const source = normalizeInboundSource(data);
   const supabase = createClient(url, key);
   const { data: owner, error: ownerError } = await supabase.from("profiles").select("id").limit(1).maybeSingle();
+  console.info("[inbound lead] owner profile lookup result", {
+    request_id: requestId,
+    owner_resolved: Boolean(owner?.id),
+    owner_error: ownerError?.message || null,
+  });
   if (ownerError || !owner?.id) {
+    await sendEmergencyAndLog({
+      requestId,
+      error: ownerError?.message || "CRM owner could not be resolved.",
+      payload: body,
+      context: "owner_lookup_failed",
+    });
     return { ok: false, status: 500, error: "CRM owner could not be resolved." };
   }
 
@@ -173,26 +256,58 @@ export async function handleInboundLeadSubmission(body: unknown): Promise<Inboun
     last_updated_at: new Date().toISOString(),
   });
 
+  console.info("[inbound lead] lead insert result", {
+    request_id: requestId,
+    ok: crm.ok,
+    lead_id: crm.ok ? crm.lead_id : null,
+    duplicate_skipped: crm.ok ? crm.duplicate_skipped : null,
+    error: crm.ok ? null : crm.error,
+  });
+
   if (!crm.ok) {
+    await sendEmergencyAndLog({
+      requestId,
+      error: crm.error,
+      payload: body,
+      context: "lead_insert_failed",
+    });
     return { ok: false, status: 500, error: crm.error };
   }
 
-  const { error: submissionError } = await supabase.from("form_submissions").insert({
-    form_type: source,
-    name: data.name || data.contact_name || null,
-    business_name: data.business_name || null,
-    email: data.email,
-    phone: data.phone || null,
-    website,
-    message: notes,
-    owner_id: owner.id,
+  const { data: submissionRow, error: submissionError } = await supabase
+    .from("form_submissions")
+    .insert({
+      form_type: source,
+      name: data.name || data.contact_name || null,
+      business_name: data.business_name || null,
+      email: data.email,
+      phone: data.phone || null,
+      website,
+      message: notes,
+      owner_id: owner.id,
+    })
+    .select("id")
+    .single();
+  const formSubmissionId = submissionRow?.id ? String(submissionRow.id) : null;
+  console.info("[inbound lead] form_submissions insert result", {
+    request_id: requestId,
+    ok: !submissionError,
+    form_submission_id: formSubmissionId,
+    error: submissionError?.message || null,
   });
   if (submissionError) {
     console.error("[inbound lead] form_submissions insert failed", submissionError);
+    await sendEmergencyAndLog({
+      requestId,
+      error: `form_submissions insert failed: ${submissionError.message}`,
+      payload: body,
+      context: "form_submission_insert_failed_after_lead_save",
+    });
   }
 
   const notification = await sendLeadNotificationEmail({
     leadId: crm.lead_id,
+    formSubmissionId,
     duplicateSkipped: crm.duplicate_skipped,
     duplicateReason: "duplicate_reason" in crm ? crm.duplicate_reason : null,
     submission: data,
@@ -204,10 +319,17 @@ export async function handleInboundLeadSubmission(body: unknown): Promise<Inboun
       error: notification.error,
     });
   }
+  console.info("[inbound lead] final result", {
+    request_id: requestId,
+    lead_id: crm.lead_id,
+    form_submission_id: formSubmissionId,
+    notification_sent: notification.ok,
+  });
 
   return {
     ok: true,
     lead_id: crm.lead_id,
+    form_submission_id: formSubmissionId,
     duplicate_skipped: crm.duplicate_skipped,
     duplicate_reason: "duplicate_reason" in crm ? crm.duplicate_reason : null,
     notification_sent: notification.ok,

@@ -2,12 +2,19 @@ import type { InboundLeadSubmissionInput } from "@/lib/crm/inbound-lead-submissi
 
 export type LeadNotificationInput = {
   leadId?: string | null;
+  formSubmissionId?: string | null;
   duplicateSkipped?: boolean;
   duplicateReason?: string | null;
   submission: InboundLeadSubmissionInput;
 };
 
 export type LeadNotificationResult = { ok: true } | { ok: false; error: string };
+
+type EmergencyLeadNotificationInput = {
+  requestId?: string;
+  error: string;
+  payload: unknown;
+};
 
 function trim(value: unknown): string {
   return String(value || "").trim();
@@ -17,8 +24,13 @@ function notifyEmail(): string {
   return trim(process.env.LEAD_NOTIFY_EMAIL) || "Topher@mixedmakershop.com";
 }
 
+function resendApiKey(): string {
+  // RESEND_AQPI_KEY is a historical Vercel typo; keep it as a fallback so lead capture does not silently lose email.
+  return trim(process.env.RESEND_API_KEY || process.env.RESEND_AQPI_KEY);
+}
+
 function fromEmail(): string {
-  return trim(process.env.RESEND_FROM_EMAIL || process.env.BOOKING_FROM_EMAIL);
+  return trim(process.env.RESEND_FROM_EMAIL || process.env.BOOKING_FROM_EMAIL || "Topher@mixedmakershop.com");
 }
 
 function sourceLabel(submission: InboundLeadSubmissionInput): string {
@@ -43,6 +55,7 @@ function buildText(input: LeadNotificationInput): string {
     "New MixedMakerShop lead",
     "",
     `Lead ID: ${input.leadId || "(not available)"}`,
+    `Form submission ID: ${input.formSubmissionId || "(not available)"}`,
     `Duplicate skipped: ${input.duplicateSkipped ? "yes" : "no"}`,
     input.duplicateReason ? `Duplicate reason: ${input.duplicateReason}` : "",
     "",
@@ -63,6 +76,14 @@ function buildText(input: LeadNotificationInput): string {
   ].filter((line) => line !== "");
 
   return lines.join("\n");
+}
+
+function safeJson(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -86,7 +107,7 @@ export function buildLeadNotificationSubject(submission: InboundLeadSubmissionIn
 }
 
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<LeadNotificationResult> {
-  const apiKey = trim(process.env.RESEND_API_KEY);
+  const apiKey = resendApiKey();
   const from = fromEmail();
   const to = notifyEmail();
 
@@ -120,9 +141,55 @@ export async function sendLeadNotificationEmail(input: LeadNotificationInput): P
   return { ok: true };
 }
 
+export async function sendEmergencyLeadNotificationEmail(
+  input: EmergencyLeadNotificationInput,
+): Promise<LeadNotificationResult> {
+  const apiKey = resendApiKey();
+  const from = fromEmail();
+  const to = notifyEmail();
+
+  if (!apiKey) return { ok: false, error: "Missing RESEND_API_KEY." };
+  if (!from) return { ok: false, error: "Missing RESEND_FROM_EMAIL or BOOKING_FROM_EMAIL." };
+
+  const text = [
+    "EMERGENCY MixedMakerShop lead capture failure",
+    "",
+    `Request ID: ${input.requestId || "(not provided)"}`,
+    `Error: ${input.error}`,
+    "",
+    "Full public lead payload:",
+    safeJson(input.payload),
+  ].join("\n");
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "User-Agent": "mixedmakershop-lead-emergency/1.0",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: `EMERGENCY MixedMakerShop lead save failed - ${input.requestId || "public lead"}`,
+      html: buildHtml(text),
+      text,
+    }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { ok: false, error: `Resend failed: ${body || `HTTP ${res.status}`}` };
+  }
+
+  return { ok: true };
+}
+
 export async function sendTestLeadNotificationEmail(): Promise<LeadNotificationResult> {
   return sendLeadNotificationEmail({
     leadId: "test-notification",
+    formSubmissionId: "test-form-submission",
     duplicateSkipped: false,
     submission: {
       submission_type: "public_lead",

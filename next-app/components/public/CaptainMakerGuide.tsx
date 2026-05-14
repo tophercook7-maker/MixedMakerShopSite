@@ -210,8 +210,9 @@ export function CaptainMakerGuide() {
         }),
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(String(body?.error || "Captain Maker could not log that request."));
+      if (!res.ok || body?.ok !== true) {
+        const details = body?.details ? ` Details: ${JSON.stringify(body.details)}` : "";
+        throw new Error(String(body?.error || "Captain Maker could not log that request.") + details);
       }
       setStatus("success");
       form.reset();

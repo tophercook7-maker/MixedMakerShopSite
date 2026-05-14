@@ -35,15 +35,37 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
-  const body = await request.json();
+  const body = await request.json().catch((error) => {
+    console.error("[Leads API] request JSON parse failed", {
+      request_id: requestId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  });
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
   if (isInboundLeadSubmission(body)) {
-    console.info("[Leads API] inbound create request", { request_id: requestId, payload: body });
-    const inbound = await handleInboundLeadSubmission(body);
+    console.info("[Leads API] inbound create request", {
+      request_id: requestId,
+      payload: body,
+      env_present: {
+        NEXT_PUBLIC_SUPABASE_URL: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+        SUPABASE_SERVICE_ROLE_KEY: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
+        RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY?.trim()),
+        RESEND_AQPI_KEY_FALLBACK: Boolean(process.env.RESEND_AQPI_KEY?.trim()),
+        RESEND_FROM_EMAIL: Boolean(process.env.RESEND_FROM_EMAIL?.trim()),
+        BOOKING_FROM_EMAIL: Boolean(process.env.BOOKING_FROM_EMAIL?.trim()),
+        LEAD_NOTIFY_EMAIL: Boolean(process.env.LEAD_NOTIFY_EMAIL?.trim()),
+      },
+    });
+    const inbound = await handleInboundLeadSubmission(body, { requestId });
     if (!inbound.ok) {
       console.error("[Leads API] inbound create failed", {
         request_id: requestId,
         error: inbound.error,
         details: inbound.details,
+        final_response_status: inbound.status,
       });
       return NextResponse.json(
         { error: inbound.error, details: inbound.details },
@@ -53,11 +75,15 @@ export async function POST(request: Request) {
     console.info("[Leads API] inbound create succeeded", {
       request_id: requestId,
       lead_id: inbound.lead_id,
+      form_submission_id: inbound.form_submission_id,
       duplicate_skipped: inbound.duplicate_skipped,
+      notification_sent: inbound.notification_sent,
+      final_response_status: 200,
     });
     return NextResponse.json({
       ok: true,
       id: inbound.lead_id,
+      form_submission_id: inbound.form_submission_id,
       source: "server",
       isLocalOnly: false,
       duplicate_skipped: inbound.duplicate_skipped,
