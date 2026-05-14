@@ -22,7 +22,7 @@ const canonical = "https://mixedmakershop.com/pricing";
 export const metadata: Metadata = {
   title: "Web Design Pricing | MixedMakerShop",
   description:
-    "Simple pricing with no surprises — Starter SEO Site starting at $400, Google Business Profile setup $150 one-time, Growth $1k–$2.5k, and custom quotes.",
+    "Simple pricing with no surprises — Starter SEO Site starting at $400, monthly support from $45/mo, Growth $1k–$2.5k, and custom quotes.",
   alternates: { canonical },
   openGraph: {
     title: "Web design pricing | MixedMakerShop",
@@ -59,77 +59,88 @@ export default function PricingPage() {
           {/* Section 2 — Tiers */}
           <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch lg:gap-6">
             {PRICING_TIERS.map((tier) => (
-            <article
-              key={tier.id}
-              className={cn(
-                "relative flex flex-col rounded-3xl border border-white/12 bg-[#111510]/90 p-6 text-white shadow-2xl shadow-black/40 backdrop-blur-md sm:p-8",
-                tier.featured &&
-                  cn(
-                    "z-[1] border-2 border-orange-300/40 shadow-[0_24px_70px_-24px_rgba(251,146,60,0.35)]",
-                    "ring-1 ring-orange-200/25 lg:scale-[1.02]",
-                  ),
-              )}
-            >
-              {tier.badge ? (
-                <span
-                  className={cn(
-                    "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full",
-                    "border border-orange-200/35 bg-orange-300 px-3 py-1",
-                    "text-[10px] font-bold uppercase tracking-[0.16em] text-[#1d251f]",
-                  )}
-                >
-                  {tier.badge}
-                </span>
-              ) : null}
-              <h2 className={cn("text-xl font-bold tracking-tight text-white md:text-2xl", tier.badge && "mt-2")}>
-                {tier.title}
-              </h2>
-              <p className="mt-4 text-2xl font-semibold tracking-tight text-orange-200 md:text-[1.6rem]">{tier.priceLabel}</p>
-              <p className="mt-5 flex-1 text-sm leading-relaxed text-white/82 md:text-[15px]">{tier.description}</p>
-              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">Includes</p>
-              <ul className="mt-3 space-y-2.5 text-sm text-white/84 md:text-[15px]">
-                {tier.includes.map((line) => (
-                  <li key={line} className="flex gap-2.5">
-                    <span className={mmsBullet} aria-hidden>
-                      ·
-                    </span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-              {tier.strongRecommendation ? (
-                <div className="mt-6 rounded-2xl border border-orange-200/25 bg-orange-300/12 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">
-                    Strongly recommended
-                  </p>
-                  <p className="mt-2 text-sm font-bold leading-relaxed text-white md:text-[15px]">
-                    {tier.strongRecommendation.title} — {tier.strongRecommendation.price}
-                  </p>
-                </div>
-              ) : null}
-              {tier.bestNextStep ? (
-                <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Best next step</p>
-                  <p className="mt-2 text-sm leading-relaxed text-white/84 md:text-[15px]">{tier.bestNextStep}</p>
-                </div>
-              ) : null}
-              <div className="mt-8">
-                <PublicCtaRow>
-                  <TrackedPublicLink
-                    href={tier.ctaHref}
-                    eventName="public_contact_cta_click"
-                    eventProps={{ location: "pricing_page", target: "free_mockup", tier: tier.id }}
+              <article
+                key={tier.id}
+                className={cn(
+                  "relative flex h-full flex-col rounded-3xl border border-white/12 bg-[#111510]/90 p-6 text-white shadow-2xl shadow-black/40 backdrop-blur-md sm:p-8",
+                  tier.featured &&
+                    cn(
+                      "z-[1] border-2 border-orange-300/40 shadow-[0_24px_70px_-24px_rgba(251,146,60,0.35)]",
+                      "ring-1 ring-orange-200/25 lg:scale-[1.02]",
+                    ),
+                )}
+              >
+                {tier.badge ? (
+                  <span
                     className={cn(
-                      mmsBtnPrimary,
-                      "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline sm:w-auto hover:no-underline",
+                      "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full",
+                      "border border-orange-200/35 bg-orange-300 px-3 py-1",
+                      "text-[10px] font-bold uppercase tracking-[0.16em] text-[#1d251f]",
                     )}
                   >
-                    {tier.ctaLabel}
-                    <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-                  </TrackedPublicLink>
-                </PublicCtaRow>
-              </div>
-            </article>
+                    {tier.badge}
+                  </span>
+                ) : null}
+                <div>
+                  <h2 className={cn("text-xl font-bold tracking-tight text-white md:text-2xl", tier.badge && "mt-2")}>
+                    {tier.title}
+                  </h2>
+                  <p className="mt-4 text-2xl font-semibold tracking-tight text-orange-200 md:text-[1.6rem]">
+                    {tier.priceLabel}
+                  </p>
+                  <p className="mt-5 text-sm leading-relaxed text-white/82 md:text-[15px]">{tier.description}</p>
+                </div>
+
+                <div className="mt-6 flex flex-1 flex-col">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">Includes</p>
+                  <ul className="mt-3 space-y-2.5 text-sm text-white/84 md:text-[15px]">
+                    {tier.includes.map((line) => (
+                      <li key={line} className="flex gap-2.5">
+                        <span className={mmsBullet} aria-hidden>
+                          ·
+                        </span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-auto pt-6">
+                    {tier.strongRecommendation ? (
+                      <div className="rounded-2xl border border-orange-200/25 bg-orange-300/12 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">
+                          Strongly recommended
+                        </p>
+                        <p className="mt-2 text-sm font-bold leading-relaxed text-white md:text-[15px]">
+                          {tier.strongRecommendation.title} — {tier.strongRecommendation.price}
+                        </p>
+                      </div>
+                    ) : null}
+                    {tier.bestNextStep ? (
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Best next step</p>
+                        <p className="mt-2 text-sm leading-relaxed text-white/84 md:text-[15px]">{tier.bestNextStep}</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <PublicCtaRow>
+                    <TrackedPublicLink
+                      href={tier.ctaHref}
+                      eventName="public_contact_cta_click"
+                      eventProps={{ location: "pricing_page", target: "free_mockup", tier: tier.id }}
+                      className={cn(
+                        mmsBtnPrimary,
+                        "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto",
+                      )}
+                    >
+                      {tier.ctaLabel}
+                      <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                    </TrackedPublicLink>
+                  </PublicCtaRow>
+                </div>
+              </article>
             ))}
           </div>
 

@@ -21,6 +21,55 @@ const includes = [
   "Better chances of being found on Google",
 ] as const;
 
+const supportPlans = [
+  {
+    name: "Starter Visibility Support",
+    price: "$45/month",
+    badge: undefined,
+    description: "For businesses that want light ongoing help so their site does not sit untouched.",
+    includes: [
+      "Light monthly website check",
+      "Basic SEO touch-up when needed",
+      "Small text/photo updates",
+      "Google Business Profile activity reminder",
+      "Quick visibility notes",
+      "Basic uptime/lookover check",
+    ],
+  },
+  {
+    name: "Local Growth Support",
+    price: "$89/month",
+    badge: "Best Deal",
+    description: "Best for businesses that want regular activity and stronger local visibility.",
+    includes: [
+      "Everything in Starter Visibility Support",
+      "Google Business Profile updates",
+      "4 weekly ad graphics or promotional posts per month",
+      "Small website updates",
+      "Basic local SEO improvements",
+      "Review link/check-in support",
+      "Monthly visibility notes",
+      "Priority support for small edits",
+    ],
+  },
+  {
+    name: "Pro Local Support",
+    price: "$149/month",
+    badge: undefined,
+    description: "For businesses that want more hands-on help and ongoing improvement.",
+    includes: [
+      "Everything in Local Growth Support",
+      "More frequent website improvements",
+      "New section or small page additions when needed",
+      "Offer/seasonal campaign updates",
+      "Local keyword/content ideas",
+      "Google Business Profile service/product updates",
+      "Monthly strategy check-in",
+      "Stronger ongoing support",
+    ],
+  },
+] as const;
+
 const wdFg = "text-[rgba(248,242,232,0.96)]";
 const wdBody = "text-[rgba(236,224,206,0.82)]";
 
@@ -53,7 +102,7 @@ export function MonthlySeoPackSection({
     >
       <div
         className={cn(
-          pricing ? "mx-auto mt-16 w-full max-w-3xl" : cn(shell, "max-w-3xl py-16 md:py-20 lg:py-24"),
+          pricing ? "mx-auto mt-16 w-full max-w-6xl" : cn(shell, "max-w-3xl py-16 md:py-20 lg:py-24"),
         )}
       >
         <div
@@ -75,8 +124,8 @@ export function MonthlySeoPackSection({
               pricing ? "text-white/90" : warm ? wdBody : mmsBodyFrost,
             )}
           >
-            Most websites stay the same after they&apos;re built. I can keep adding new pages so your business has a better
-            chance of showing up when people search locally.
+            Most websites stay the same after they&apos;re built. Monthly support keeps the basics moving: small site
+            improvements, local visibility touch-ups, and practical updates your customers can actually see.
           </p>
           <p
             className={cn(
@@ -84,31 +133,63 @@ export function MonthlySeoPackSection({
               pricing ? "text-white/85" : warm ? wdBody : mmsBodyFrost,
             )}
           >
-            Monthly SEO Pack — simple monthly options based on how many pages you want added.
+            Monthly support starts at $45/mo. The $89/mo Local Growth Support plan is the best value for regular activity.
           </p>
-          <p
-            className={cn(
-              "mt-8 text-xs font-semibold uppercase tracking-[0.14em]",
-              pricing ? "text-white/70" : warm ? "text-[rgba(214,197,176,0.85)]" : "text-[#3f5a47]",
-            )}
-          >
-            Includes
-          </p>
-          <ul
-            className={cn(
-              "mt-4 space-y-3 text-base md:text-[17px]",
-              pricing ? "text-white/90" : warm ? wdBody : mmsBodyFrost,
-            )}
-          >
-            {includes.map((line) => (
-              <li key={line} className="flex gap-3">
-                <span className={pricing ? "font-bold text-orange-200" : warm ? "font-bold text-[#c9a078]" : mmsBullet} aria-hidden>
-                  ·
-                </span>
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
+          {pricing ? (
+            <div className="mt-8 grid gap-5 lg:grid-cols-3">
+              {supportPlans.map((plan) => (
+                <article
+                  key={plan.name}
+                  className={cn(
+                    "relative flex h-full flex-col rounded-3xl border border-white/12 bg-black/35 p-5 shadow-xl shadow-black/25",
+                    plan.badge && "border-orange-200/45 bg-orange-300/12 ring-1 ring-orange-200/25",
+                  )}
+                >
+                  {plan.badge ? (
+                    <span className="mb-4 inline-flex w-fit rounded-full bg-orange-300 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#1d251f]">
+                      {plan.badge}
+                    </span>
+                  ) : null}
+                  <h3 className="text-lg font-bold tracking-tight text-white">{plan.name}</h3>
+                  <p className="mt-3 text-2xl font-semibold tracking-tight text-orange-200">{plan.price}</p>
+                  <p className="mt-4 text-sm leading-relaxed text-white/82">{plan.description}</p>
+                  <p className="mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Includes</p>
+                  <ul className="mt-3 flex-1 space-y-2.5 text-sm leading-relaxed text-white/88">
+                    {plan.includes.map((line) => (
+                      <li key={line} className="flex gap-2.5">
+                        <span className="font-bold text-orange-200" aria-hidden>
+                          ·
+                        </span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          ) : null}
+          {!pricing ? (
+            <>
+              <p
+                className={cn(
+                  "mt-8 text-xs font-semibold uppercase tracking-[0.14em]",
+                  warm ? "text-[rgba(214,197,176,0.85)]" : "text-[#3f5a47]",
+                )}
+              >
+                Includes
+              </p>
+              <ul className={cn("mt-4 space-y-3 text-base md:text-[17px]", warm ? wdBody : mmsBodyFrost)}>
+                {includes.map((line) => (
+                  <li key={line} className="flex gap-3">
+                    <span className={warm ? "font-bold text-[#c9a078]" : mmsBullet} aria-hidden>
+                      ·
+                    </span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
           <div className="mt-10">
             <PublicCtaRow>
               <TrackedPublicLink
