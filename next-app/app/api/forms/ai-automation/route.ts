@@ -1,7 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { aiAutomationInquiryFormSchema } from "@/lib/validations";
 
 function trimOpt(v: string | undefined): string | undefined {
@@ -25,10 +23,7 @@ function buildAiAutomationMessage(parts: {
 }
 
 export async function POST(request: Request) {
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!baseUrl || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(baseUrl, key);
+  const requestId = crypto.randomUUID();
 
   try {
     const body = await request.json();
@@ -50,43 +45,26 @@ export async function POST(request: Request) {
       notes,
     });
 
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    const { error: subErr } = await supabase
-      .from("form_submissions")
-      .insert({
-        form_type: "ai_automation_inquiry",
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
+        source: "ai_automation_inquiry",
         name: data.name,
-        business_name: businessName ?? null,
+        business_name: businessName || data.name.trim() || "AI automation inquiry",
         email: data.email,
         website,
+        category: "AI automation inquiry",
+        service_type: "ai_automation",
         message,
-        owner_id: owner?.id ?? null,
-      })
-      .select("id")
-      .single();
-    if (subErr) throw subErr;
-
-    if (owner) {
-      const crmNotes = message;
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name: businessName || data.name.trim() || "AI automation inquiry",
-        contact_name: data.name.trim(),
-        email: data.email.trim(),
-        website,
-        notes: crmNotes,
-        why_this_lead_is_here: "Submitted AI automation inquiry from mixedmakershop.com/websites-tools#ai-automation",
-        source: "ai_automation_inquiry",
-        lead_source: "ai_automation_inquiry",
-        status: "new",
-        has_website: website ? leadHasStandaloneWebsite(website) : false,
-      });
-      if (!crm.ok) {
-        console.error("[ai-automation] CRM insert failed", crm.error);
-      }
+        request: data.automationInterest,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

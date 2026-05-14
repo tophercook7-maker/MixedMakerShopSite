@@ -1,7 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { contactFormSchema } from "@/lib/validations";
 
 function parseContactMessageFields(message: string): { website?: string } {
@@ -12,10 +10,7 @@ function parseContactMessageFields(message: string): { website?: string } {
 }
 
 export async function POST(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(url, key);
+  const requestId = crypto.randomUUID();
 
   try {
     const body = await request.json();
@@ -24,42 +19,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
     const { name, email, message } = parsed.data;
-
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    const { error: subErr } = await supabase
-      .from("form_submissions")
-      .insert({ form_type: "contact", name, email, message, owner_id: owner?.id ?? null })
-      .select("id")
-      .single();
-    if (subErr) throw subErr;
-
-    if (owner) {
-      const businessMatch = message.match(/^Business:\s*(.+)$/m);
-      const businessFromMessage = businessMatch?.[1]?.trim();
-      const business_name =
-        businessFromMessage && businessFromMessage.length > 0 ? businessFromMessage : name || "Contact form";
-      const { website: websiteFromMsg } = parseContactMessageFields(message);
-      const website = websiteFromMsg || null;
-
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name,
-        contact_name: name,
-        email,
-        website,
-        notes: message,
-        why_this_lead_is_here: "Submitted the public contact form on mixedmakershop.com",
+    const businessMatch = message.match(/^Business:\s*(.+)$/m);
+    const businessFromMessage = businessMatch?.[1]?.trim();
+    const { website: websiteFromMsg } = parseContactMessageFields(message);
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
         source: "contact_form",
-        lead_source: "contact_form",
-        status: "new",
-        has_website: website ? leadHasStandaloneWebsite(website) : false,
-      });
-      if (!crm.ok) {
-        console.error("[contact form] CRM insert failed", crm.error);
-      }
+        name,
+        business_name: businessFromMessage || name || "Contact form",
+        email,
+        website: websiteFromMsg,
+        message,
+        request: message,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -11,6 +11,10 @@ import { FUNNEL_DESIRED_OUTCOME_LABELS, normalizeDesiredOutcomeIds } from "@/lib
 import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import { normalizeFacebookUrl, normalizeWebsiteUrl as fingerprintWebsite } from "@/lib/leads-dedup";
+import {
+  sendEmergencyLeadNotificationEmail,
+  sendLeadNotificationEmail,
+} from "@/lib/crm/send-lead-notification-email";
 import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
 import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
 
@@ -177,6 +181,8 @@ const DUPLICATE_RESPONSE: Record<"email_cooldown" | "business_cooldown", string>
 };
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
+  let emergencyPayload: unknown = null;
   try {
     const supabaseUrl = String(process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
     const supabaseServiceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
@@ -202,6 +208,7 @@ export async function POST(request: Request) {
     }
 
     const raw = body as Record<string, unknown>;
+    emergencyPayload = raw;
     const email = String(raw.email || "").trim().toLowerCase();
     const notes =
       typeof raw.notes === "string" && raw.notes.trim().length > 0 ? raw.notes.trim() : null;
@@ -290,6 +297,11 @@ export async function POST(request: Request) {
         details: ownerErr?.details,
         hint: ownerErr?.hint,
       });
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: ownerErr?.message || "CRM is not configured (no owner profile).",
+        payload: raw,
+      });
       return NextResponse.json({ error: "CRM is not configured (no owner profile)." }, { status: 503 });
     }
     const ownerId = String(ownerProfile.id);
@@ -374,6 +386,11 @@ export async function POST(request: Request) {
     const inbound = await insertCanonicalInboundLead(supabase, ownerId, leadPayload);
     if (!inbound.ok) {
       console.error("[website-mockup] lead insert failed", inbound.error);
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: inbound.error,
+        payload: raw,
+      });
       return NextResponse.json(
         { error: "Could not save your request. Try again or contact us directly." },
         { status: 500 }
@@ -417,6 +434,11 @@ export async function POST(request: Request) {
         hint: mockErr.hint,
         code: mockErr.code,
       });
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: `crm_mockups insert failed: ${mockErr.message}`,
+        payload: raw,
+      });
       await supabase.from("leads").delete().eq("id", leadId);
       return NextResponse.json(
         { error: "Could not create your preview link. Please try again." },
@@ -439,7 +461,7 @@ export async function POST(request: Request) {
         template_key: mockRow.template_key,
         business_name: mockRow.business_name,
         city: mockRow.city,
-        category: mockRow.category,
+        category: mockRow.category || undefined,
         phone: mockRow.phone,
         email: mockRow.email,
         facebook_url: mockRow.facebook_url,
@@ -495,6 +517,11 @@ export async function POST(request: Request) {
         hint: submissionErr?.hint,
         code: submissionErr?.code,
       });
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: `mockup_submissions insert failed: ${submissionErr?.message || "missing submission id"}`,
+        payload: raw,
+      });
       await supabase.from("crm_mockups").delete().eq("lead_id", leadId);
       await supabase.from("leads").delete().eq("id", leadId);
       return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
@@ -512,6 +539,31 @@ export async function POST(request: Request) {
       );
     }
 
+    const notification = await sendLeadNotificationEmail({
+      leadId,
+      formSubmissionId: String(submissionRow.id),
+      duplicateSkipped: inbound.duplicate_skipped,
+      duplicateReason: "duplicate_reason" in inbound ? inbound.duplicate_reason : null,
+      submission: {
+        submission_type: "public_lead",
+        source: "mockup_request",
+        name: contactName,
+        business_name: mockRow.business_name,
+        email,
+        phone: submitPhone || undefined,
+        website: websiteFull || undefined,
+        category: mockRow.category || undefined,
+        service_type: "web_design",
+        message: leadNotes,
+        request: "Free website preview request",
+        source_url: previewUrl,
+        source_label: "Free website preview",
+      },
+    });
+    if (!notification.ok) {
+      console.error("[website-mockup] lead notification email failed", notification.error);
+    }
+
     return NextResponse.json({
       ok: true,
       id: submissionRow.id,
@@ -523,9 +575,15 @@ export async function POST(request: Request) {
       lead_id: leadId,
       submission_id: String(submissionRow.id),
       confirmation_email_sent: confirmation.ok,
+      notification_sent: notification.ok,
     });
   } catch (error) {
     console.error("Mockup submit failed:", error);
+    await sendEmergencyLeadNotificationEmail({
+      requestId,
+      error: error instanceof Error ? error.message : String(error),
+      payload: emergencyPayload,
+    });
 
     return NextResponse.json({ error: "Failed to save mockup." }, { status: 500 });
   }

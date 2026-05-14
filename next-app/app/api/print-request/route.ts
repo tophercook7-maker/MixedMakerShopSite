@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
+import { sendEmergencyLeadNotificationEmail } from "@/lib/crm/send-lead-notification-email";
 
 export const maxDuration = 60;
 
@@ -164,6 +165,7 @@ async function sendPrintRequestAutoReply(opts: {
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
@@ -181,6 +183,15 @@ export async function POST(request: Request) {
   const quantity = String(form.get("quantity") || "").trim();
   const colorPreference = String(form.get("color_preference") || "").trim();
   const file = form.get("file");
+  const emergencyPayload = {
+    source: "print_request",
+    name,
+    email,
+    description,
+    quantity,
+    color_preference: colorPreference,
+    file_name: file instanceof File ? file.name : null,
+  };
 
   if (!name || !email) {
     return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
@@ -232,6 +243,11 @@ export async function POST(request: Request) {
 
   if (upErr) {
     console.error("[print-request] storage upload failed:", upErr);
+    await sendEmergencyLeadNotificationEmail({
+      requestId,
+      error: `print request storage upload failed: ${upErr.message}`,
+      payload: emergencyPayload,
+    });
     return NextResponse.json(
       { error: "Could not store your file. Please try again or email us directly." },
       { status: 500 }
@@ -257,53 +273,15 @@ export async function POST(request: Request) {
 
   if (insErr) {
     console.error("[print-request] db insert failed:", insErr);
+    await sendEmergencyLeadNotificationEmail({
+      requestId,
+      error: `print_requests insert failed: ${insErr.message}`,
+      payload: { ...emergencyPayload, file_url: fileUrl },
+    });
     return NextResponse.json({ error: "Could not save your request." }, { status: 500 });
   }
 
-  const { data: ownerProfile } = await supabase.from("profiles").select("id").limit(1).maybeSingle();
-  const ownerId = ownerProfile?.id;
-  if (ownerId) {
-    const inboundScore = 70;
-    const crm = await insertCanonicalInboundLead(supabase, ownerId, {
-      business_name: `3D Print Request - ${name}`,
-      contact_name: name,
-      email,
-      notes: buildPrintRequestLeadNotes({
-        description,
-        quantity,
-        colorPreference,
-        fileUrl,
-        fileName: originalName,
-        fileKind,
-      }),
-      source: "print_request",
-      lead_source: "print_request",
-      lead_tags: ["inbound", "print_request"],
-      conversion_score: inboundScore,
-      opportunity_score: inboundScore,
-      status: "new",
-      why_this_lead_is_here: "Inbound print request from website upload",
-      service_type: "3d_printing",
-      category: "print_request",
-      last_updated_at: new Date().toISOString(),
-      has_website: false,
-    });
-    if (!crm.ok) {
-      console.error("[print-request] CRM lead insert failed (upload still ok):", crm.error);
-    }
-  } else {
-    console.warn("[print-request] No profiles row; skipping CRM lead insert.");
-  }
-
-  const autoReply = await sendPrintRequestAutoReply({ toEmail: email, name });
-  if (!autoReply.ok) {
-    console.error("[print-request] customer auto-reply failed (request still ok):", autoReply.error);
-  }
-
-  const emailed = await sendNotifyEmail({
-    to: notifyEmail(),
-    customerName: name,
-    customerEmail: email,
+  const leadNotes = buildPrintRequestLeadNotes({
     description,
     quantity,
     colorPreference,
@@ -311,14 +289,36 @@ export async function POST(request: Request) {
     fileName: originalName,
     fileKind,
   });
+  const inbound = await handleInboundLeadSubmission(
+    {
+      submission_type: "public_lead",
+      source: "print_request",
+      name,
+      business_name: `3D Print Request - ${name}`,
+      email,
+      category: "print_request",
+      service_type: "3d_printing",
+      message: leadNotes,
+      request: description || `Uploaded ${originalName}`,
+      source_url: fileUrl,
+      source_label: originalName,
+    },
+    { requestId },
+  );
+  if (!inbound.ok) {
+    return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
+  }
 
-  if (!emailed.ok) {
-    console.error("[print-request] notify email failed:", emailed.error);
+  const autoReply = await sendPrintRequestAutoReply({ toEmail: email, name });
+  if (!autoReply.ok) {
+    console.error("[print-request] customer auto-reply failed (request still ok):", autoReply.error);
   }
 
   return NextResponse.json({
     ok: true,
-    emailed: emailed.ok,
+    id: inbound.lead_id,
+    form_submission_id: inbound.form_submission_id,
+    notification_sent: inbound.notification_sent,
     auto_reply_sent: autoReply.ok,
   });
 }

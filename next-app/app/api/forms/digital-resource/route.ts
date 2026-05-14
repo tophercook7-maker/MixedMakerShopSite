@@ -1,7 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { digitalResourceRequestFormSchema } from "@/lib/validations";
 
 function trimOpt(v: string | undefined): string | undefined {
@@ -10,10 +8,7 @@ function trimOpt(v: string | undefined): string | undefined {
 }
 
 export async function POST(request: Request) {
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!baseUrl || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(baseUrl, key);
+  const requestId = crypto.randomUUID();
 
   try {
     const body = await request.json();
@@ -36,43 +31,26 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join("\n\n");
 
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    const { error: subErr } = await supabase
-      .from("form_submissions")
-      .insert({
-        form_type: "digital_resource_request",
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
+        source: "digital_resource_request",
         name: data.name,
-        business_name: businessName ?? null,
+        business_name: businessName || `${data.name.trim()} - ${data.selectedResource}`,
         email: data.email,
         website,
+        category: "Digital resource request",
+        service_type: "digital_resource",
         message,
-        owner_id: owner?.id ?? null,
-      })
-      .select("id")
-      .single();
-    if (subErr) throw subErr;
-
-    if (owner) {
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name: businessName || `${data.name.trim()} — ${data.selectedResource}`,
-        contact_name: data.name.trim(),
-        email: data.email.trim(),
-        website,
-        notes: message,
-        why_this_lead_is_here:
-          "Requested a starter resource / checklist from mixedmakershop.com/websites-tools#templates-kits",
-        source: "digital_resource_request",
-        lead_source: "digital_resource_request",
-        status: "new",
-        has_website: website ? leadHasStandaloneWebsite(website) : false,
-      });
-      if (!crm.ok) {
-        console.error("[digital-resource] CRM insert failed", crm.error);
-      }
+        request: `Requested resource: ${data.selectedResource}`,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

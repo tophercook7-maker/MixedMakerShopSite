@@ -1,13 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { contactFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(url, key);
+  const requestId = crypto.randomUUID();
   try {
     const body = await request.json();
     const parsed = contactFormSchema.safeParse(body);
@@ -15,33 +11,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
     const { name, email, message } = parsed.data;
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    await supabase.from("form_submissions").insert({
-      form_type: "connect",
-      name,
-      email,
-      message,
-      owner_id: owner?.id ?? null,
-    });
-
-    if (owner) {
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name: name || "Connect",
-        contact_name: name,
-        email,
-        notes: message ?? null,
-        why_this_lead_is_here: "Submitted via Ring/connect capture",
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
         source: "ring_connect",
-        lead_source: "ring_connect",
-        status: "new",
-        has_website: false,
-      });
-      if (!crm.ok) {
-        console.error("[connect form] CRM insert failed", crm.error);
-      }
+        name,
+        business_name: name || "Connect",
+        email,
+        message,
+        request: message,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

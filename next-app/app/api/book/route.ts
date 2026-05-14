@@ -1,7 +1,7 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { isHardBlockEventType } from "@/lib/calendar-events";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 
 type BookingPayload = {
   name?: string;
@@ -105,6 +105,7 @@ async function sendBookingConfirmationEmail(toEmail: string, name: string, whenI
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
@@ -169,19 +170,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const crm = await insertCanonicalInboundLead(supabase, ownerId, {
-    business_name: businessName || name,
-    contact_name: name,
-    email,
-    phone: phone || null,
-    notes: bookingNotesForLead,
-    why_this_lead_is_here:
-      "Booked a 15-minute website review via the public booking page (mixedmakershop.com/book).",
-    source: "public_booking",
-    lead_source: "public_booking",
-    status: "new",
-    has_website: false,
-  });
+  const crm = await handleInboundLeadSubmission(
+    {
+      submission_type: "public_lead",
+      source: "public_booking",
+      name,
+      business_name: businessName || name,
+      email,
+      phone,
+      category: "Website review booking",
+      service_type: "web_design",
+      message: bookingNotesForLead,
+      request: `Booked website review for ${whenLabel}`,
+    },
+    { requestId },
+  );
 
   let resolvedLeadId: string | null = null;
   let crmDuplicateSkipped: boolean | undefined;
@@ -190,6 +193,7 @@ export async function POST(request: Request) {
     crmDuplicateSkipped = crm.duplicate_skipped;
   } else {
     console.error("[book] canonical inbound lead failed (calendar will still be attempted)", crm.error);
+    return NextResponse.json({ ok: false, error: crm.error, details: crm.details }, { status: crm.status });
   }
 
   let leadWorkspaceId: string | null | undefined;

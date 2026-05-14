@@ -1,14 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { quoteFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(url, key);
+  const requestId = crypto.randomUUID();
 
   try {
     const body = await request.json();
@@ -17,41 +12,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
     const data = parsed.data;
-
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    await supabase.from("form_submissions").insert({
-      form_type: "quote",
-      name: data.name ?? null,
-      business_name: data.business_name ?? null,
-      email: data.email ?? null,
-      phone: data.phone ?? null,
-      website: data.website || null,
-      message: data.message ?? null,
-      owner_id: owner?.id ?? null,
-    });
-
-    if (owner) {
-      const website = data.website?.trim() || null;
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name: data.business_name || data.name || "Quote request",
-        contact_name: data.name,
-        email: data.email,
-        phone: data.phone ?? null,
-        website,
-        notes: data.message ?? null,
-        why_this_lead_is_here: "Submitted general quote / services request form",
+    const message = data.message || "General quote request";
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
         source: "quote_request",
-        lead_source: "quote_request",
-        status: "new",
-        has_website: website ? leadHasStandaloneWebsite(website) : false,
-      });
-      if (!crm.ok) {
-        console.error("[quote form] CRM insert failed", crm.error);
-      }
+        name: data.name,
+        business_name: data.business_name || data.name || "Quote request",
+        email: data.email,
+        phone: data.phone,
+        website: data.website,
+        message,
+        request: message,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

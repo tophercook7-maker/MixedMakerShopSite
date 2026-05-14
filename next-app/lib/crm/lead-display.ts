@@ -6,6 +6,9 @@ const FORM_LEAD_SOURCES = new Set([
   "website_check",
   "ai_automation_inquiry",
   "digital_resource_request",
+  "mockup_request",
+  "print_request",
+  "public_booking",
 ]);
 
 export type LeadSourceFilter = "all" | "captain_maker_chat" | "free_estimate_form";
@@ -29,6 +32,9 @@ export function displayLeadSourceLabel(row: Record<string, unknown>): string {
   if (source === "captain_maker_chat" || source === "captain_maker") return "Captain Maker Chat";
   if (source === "ai_automation_inquiry") return "AI automation inquiry";
   if (source === "digital_resource_request") return "Digital resource request";
+  if (source === "mockup_request") return "Free website preview";
+  if (source === "print_request") return "3D print request";
+  if (source === "public_booking") return "Website review booking";
   if (FORM_LEAD_SOURCES.has(source)) return "Free Estimate Form";
   if (!source) return "Unknown source";
   return source

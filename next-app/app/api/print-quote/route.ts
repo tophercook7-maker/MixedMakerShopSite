@@ -6,6 +6,10 @@ import {
   parsePriceEstimateSnapshotJson,
 } from "@/components/printing/printing-price-estimate";
 import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import {
+  sendEmergencyLeadNotificationEmail,
+  sendLeadNotificationEmail,
+} from "@/lib/crm/send-lead-notification-email";
 import { leadHasStandaloneWebsite, pickLeadInsertFields } from "@/lib/crm-lead-schema";
 import {
   crmLeadUrl,
@@ -300,6 +304,7 @@ async function sendAutoReply(
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
@@ -444,6 +449,24 @@ export async function POST(request: Request) {
 
   if (subErr) {
     console.error("[print-quote] form_submissions insert failed:", subErr);
+    await sendEmergencyLeadNotificationEmail({
+      requestId,
+      error: `print_quote form_submissions insert failed: ${subErr.message}`,
+      payload: {
+        source: "print_quote",
+        name,
+        email: emailRaw,
+        phone,
+        projectTitle,
+        referenceUrl,
+        materialPreference,
+        description: descriptionForOutbound,
+        dimensions,
+        quantity,
+        deadline,
+        fileUrl,
+      },
+    });
     return NextResponse.json({ error: "Could not save your request. Please try again." }, { status: 500 });
   }
 
@@ -487,8 +510,49 @@ export async function POST(request: Request) {
     const crm = await insertCanonicalInboundLead(supabase, ownerId, leadPayload);
     if (!crm.ok) {
       console.error("[print-quote] CRM lead insert failed:", crm.error);
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: crm.error,
+        payload: {
+          source: "print_quote",
+          name,
+          email: emailRaw,
+          phone,
+          projectTitle,
+          referenceUrl,
+          materialPreference,
+          description: descriptionForOutbound,
+          dimensions,
+          quantity,
+          deadline,
+          fileUrl,
+        },
+      });
     } else {
       newLeadId = crm.lead_id;
+      const notification = await sendLeadNotificationEmail({
+        leadId: crm.lead_id,
+        duplicateSkipped: crm.duplicate_skipped,
+        duplicateReason: "duplicate_reason" in crm ? crm.duplicate_reason : null,
+        submission: {
+          submission_type: "public_lead",
+          source: "print_request",
+          name,
+          business_name: projectTitle ? `${projectTitle} - ${name}` : `3D Print Quote - ${name}`,
+          email: emailRaw || "Topher@mixedmakershop.com",
+          phone: phone || undefined,
+          website: referenceUrl || undefined,
+          category: "print_request",
+          service_type: "3d_printing",
+          message: messageBody,
+          request: descriptionForOutbound,
+          source_url: sourceUrl,
+          source_label: "/3d-printing",
+        },
+      });
+      if (!notification.ok) {
+        console.error("[print-quote] lead notification email failed:", notification.error);
+      }
       if (newLeadId) {
         void recordLeadActivity(supabase, {
           ownerId,

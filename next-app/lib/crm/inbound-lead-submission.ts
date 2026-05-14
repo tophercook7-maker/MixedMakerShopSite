@@ -15,6 +15,11 @@ const inboundSources = new Set([
   "quote_request",
   "ring_connect",
   "website_check",
+  "ai_automation_inquiry",
+  "digital_resource_request",
+  "mockup_request",
+  "print_request",
+  "public_booking",
 ]);
 
 const optionalText = (max: number) =>
@@ -114,6 +119,16 @@ function sourceLabel(source: string): string {
       return "Ring/connect capture";
     case "website_check":
       return "free website check form";
+    case "ai_automation_inquiry":
+      return "AI automation inquiry";
+    case "digital_resource_request":
+      return "digital resource request";
+    case "mockup_request":
+      return "free website preview request";
+    case "print_request":
+      return "3D print request";
+    case "public_booking":
+      return "public booking request";
     default:
       return "public lead submission";
   }

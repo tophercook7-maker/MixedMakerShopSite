@@ -25,6 +25,9 @@ const INBOUND_SOURCES = [
   "website_check",
   "ai_automation_inquiry",
   "digital_resource_request",
+  "mockup_request",
+  "print_request",
+  "public_booking",
 ];
 
 function formatDate(value: unknown): string {

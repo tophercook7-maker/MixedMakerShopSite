@@ -1,14 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
-import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
+import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 import { websiteCheckFormSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!baseUrl || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
-  const supabase = createClient(baseUrl, key);
+  const requestId = crypto.randomUUID();
 
   try {
     const body = await request.json();
@@ -17,46 +12,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
     const data = parsed.data;
-
-    const { data: owner } = await supabase.from("profiles").select("id").limit(1).single();
-
-    const { data: submission, error: subErr } = await supabase
-      .from("form_submissions")
-      .insert({
-        form_type: "website_check",
-        name: data.name ?? null,
-        business_name: data.business_name ?? null,
-        email: data.email ?? null,
-        phone: data.phone ?? null,
-        website: data.website || null,
-        message: data.message ?? null,
-        owner_id: owner?.id ?? null,
-      })
-      .select("id")
-      .single();
-    if (subErr) throw subErr;
-
-    if (owner) {
-      const website = data.website?.trim() || null;
-      const crm = await insertCanonicalInboundLead(supabase, owner.id, {
-        business_name: data.business_name || data.name || "Website check",
-        contact_name: data.name ?? null,
-        email: data.email,
-        phone: data.phone ?? null,
-        website,
-        notes: data.message ?? null,
-        why_this_lead_is_here: "Requested free website check / roast funnel",
+    const website = data.website?.trim() || undefined;
+    const message = data.message || (website ? `Website URL: ${website}` : "Free website check request");
+    const inbound = await handleInboundLeadSubmission(
+      {
+        submission_type: "public_lead",
         source: "website_check",
-        lead_source: "website_check",
-        status: "new",
-        has_website: website ? leadHasStandaloneWebsite(website) : false,
-      });
-      if (!crm.ok) {
-        console.error("[website-check] CRM insert failed", crm.error);
-      }
+        name: data.name,
+        business_name: data.business_name || (website ? `Website check - ${website}` : data.name || "Website check"),
+        email: data.email,
+        phone: data.phone,
+        website,
+        message,
+        request: message,
+      },
+      { requestId },
+    );
+    if (!inbound.ok) {
+      return NextResponse.json({ ok: false, error: inbound.error, details: inbound.details }, { status: inbound.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: inbound.lead_id, form_submission_id: inbound.form_submission_id, notification_sent: inbound.notification_sent });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
