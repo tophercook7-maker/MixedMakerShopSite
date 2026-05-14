@@ -17,6 +17,7 @@ import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesig
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from "@/lib/public-brand";
+import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
@@ -601,6 +602,33 @@ export function UmbrellaHomePage() {
                   Get a Free Website Preview
                 </TrackedPublicLink>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="explore-more">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Explore More</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Important pages, easy to find.</h2>
+              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Pricing, web design services, website examples, local service pages, portfolio work, builds, and print
+                requests all stay close to the homepage so you do not have to dig around.
+              </p>
+            </div>
+            <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", mmsHomeGlassStackGap)}>
+              {PUBLIC_POPULAR_PAGES.map((page) => (
+                <Link
+                  key={page.href}
+                  href={page.href}
+                  className="group public-glass-box--soft flex min-h-[4.5rem] items-center justify-between gap-4 rounded-2xl px-5 py-4 no-underline transition duration-300 hover:-translate-y-0.5 hover:bg-white/12 hover:no-underline"
+                >
+                  <span className={cn("text-sm font-semibold leading-snug md:text-base", mmsOnGlassPrimary)}>
+                    {page.label}
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[rgba(232,149,92,0.95)] transition group-hover:translate-x-1" aria-hidden />
+                </Link>
+              ))}
             </div>
           </div>
         </section>

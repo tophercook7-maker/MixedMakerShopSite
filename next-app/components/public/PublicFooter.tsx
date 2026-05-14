@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
+import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 
 export function PublicFooter() {
@@ -27,6 +28,10 @@ export function PublicFooter() {
         { href: "/web-design", label: "Web Design on MixedMakerShop" },
         { href: "/tools", label: "Digital Tools" },
       ],
+    },
+    {
+      title: "Popular Pages",
+      links: PUBLIC_POPULAR_PAGES,
     },
     {
       title: "GiGi’s Print Shop",
