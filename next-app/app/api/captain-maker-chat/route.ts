@@ -138,6 +138,20 @@ function fallbackReply(latestMessage: string): string {
   return `${recommendation.salesGuide} Best next step: tell me whether this is for a business, event, personal project, or custom build. Then Topher can review the details before any quote is finalized.`;
 }
 
+function priorityServiceReply(latestMessage: string): string | null {
+  const text = latestMessage.toLowerCase();
+  if (includesAny(text, ["landing"]) && includesAny(text, ["website", "full site", "full website", "site"])) {
+    return "Good question, Maker. A landing page is best when you need one focused offer, event, service, or quick online presence. A full website is better when you need multiple pages, service details, photos, menus, booking, payments, or a stronger local trust base. Best next step: tell me what the page needs to accomplish, then Topher can review whether a landing page or full site is the smarter build.";
+  }
+  if (includesAny(text, ["website", "site", "web design"]) && includesAny(text, ["seo", "google", "local"])) {
+    return "For a website plus local SEO help, I’d start with clear service pages, local wording, fast mobile layout, contact paths, and trust signals. I can’t promise rankings, but Topher can review what would make the site easier for local customers to understand and find.";
+  }
+  if (includesAny(text, ["free mockup", "preview", "website preview", "demo"])) {
+    return "A free website preview is the easiest first step if you want to see the direction before committing. Send the business/service details and Topher can review the fit before anything turns into a quote.";
+  }
+  return null;
+}
+
 async function openAiReply(messages: Array<{ role: ChatRole; content: string }>): Promise<string | null> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) return null;
@@ -177,7 +191,7 @@ export async function POST(request: Request) {
     const guardedReply =
       isRestrictedAdvice(latestMessage.toLowerCase()) || isMostlyUnrelated(latestMessage.toLowerCase())
         ? fallbackReply(latestMessage)
-        : await openAiReply(messages);
+        : priorityServiceReply(latestMessage) || (await openAiReply(messages));
 
     const reply = guardedReply || fallbackReply(latestMessage);
     return NextResponse.json({
