@@ -488,16 +488,19 @@ export async function POST(request: Request) {
     const desiredOutcomesJson = normalizeDesiredOutcomeIds(snapshot.desired_outcomes);
 
     const statusStamp = new Date().toISOString();
-    const { data: submissionRow, error: submissionErr } = await supabase
+    const baseSubmissionInsert = {
+      email,
+      mockup_data: mockupDataForDb,
+      notes,
+      status: "new",
+      source: "free-mockup",
+    };
+    let { data: submissionRow, error: submissionErr } = await supabase
       .from("mockup_submissions")
       .insert({
-        email,
-        mockup_data: mockupDataForDb,
-        notes,
-        status: "new",
+        ...baseSubmissionInsert,
         lead_status: "new",
         status_updated_at: statusStamp,
-        source: "free-mockup",
         funnel_source: funnelSourceAttr || null,
         selected_template_key: snapshot.selected_template_key,
         desired_outcomes: desiredOutcomesJson,
@@ -509,6 +512,15 @@ export async function POST(request: Request) {
       })
       .select("id")
       .single();
+
+    if (submissionErr?.code === "PGRST204") {
+      console.warn("[website-mockup] retrying mockup_submissions insert with legacy column set", {
+        message: submissionErr.message,
+      });
+      const retry = await supabase.from("mockup_submissions").insert(baseSubmissionInsert).select("id").single();
+      submissionRow = retry.data;
+      submissionErr = retry.error;
+    }
 
     if (submissionErr || !submissionRow?.id) {
       console.error("Mockup submit insert failed:", {
