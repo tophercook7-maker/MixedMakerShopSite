@@ -3,6 +3,7 @@ import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicShellClass } from "@/lib/public-brand";
 import {
   mmsBodyFrost,
+  mmsBtnPrimary,
   mmsBtnSecondary,
   mmsBtnSecondaryOnGlass,
   mmsBullet,
@@ -36,14 +37,15 @@ export function MonthlySeoPackSection({
   tone?: "default" | "warmSmoke";
 }) {
   const warm = tone === "warmSmoke";
+  const pricing = variant === "pricing";
 
   return (
     <section
       className={cn(
-        "border-b border-[rgba(214,154,96,0.12)]",
+        "border-b",
         mmsSectionBorder,
-        variant === "pricing"
-          ? "bg-transparent"
+        pricing
+          ? "border-white/10 bg-transparent"
           : warm
             ? "bg-transparent"
             : "bg-gradient-to-b from-[#e8efe8]/80 via-[#f4f1ea] to-[#ece7dd]",
@@ -51,12 +53,14 @@ export function MonthlySeoPackSection({
     >
       <div
         className={cn(
-          variant === "pricing" ? "mx-auto mt-16 w-full max-w-3xl" : cn(shell, "max-w-3xl py-16 md:py-20 lg:py-24"),
+          pricing ? "mx-auto mt-16 w-full max-w-3xl" : cn(shell, "max-w-3xl py-16 md:py-20 lg:py-24"),
         )}
       >
         <div
           className={cn(
-            warm
+            pricing
+              ? "rounded-3xl border border-white/12 bg-[#07100c]/95 p-8 text-white shadow-2xl shadow-black/45 backdrop-blur-md sm:p-10"
+              : warm
               ? cn("web-design-surface p-8 sm:p-10")
               : cn(
                   mmsGlassPanelDense,
@@ -64,26 +68,41 @@ export function MonthlySeoPackSection({
                 ),
           )}
         >
-          <h2 className={warm ? cn(mmsH2, wdFg) : mmsH2}>Keep your site growing</h2>
-          <p className={cn("mt-6 text-base leading-relaxed md:text-lg", warm ? wdBody : mmsBodyFrost)}>
+          <h2 className={cn(mmsH2, pricing ? "text-white" : warm ? wdFg : undefined)}>Keep your site growing</h2>
+          <p
+            className={cn(
+              "mt-6 text-base leading-relaxed md:text-lg",
+              pricing ? "text-white/90" : warm ? wdBody : mmsBodyFrost,
+            )}
+          >
             Most websites stay the same after they&apos;re built. I can keep adding new pages so your business has a better
             chance of showing up when people search locally.
           </p>
-          <p className={cn("mt-3 text-sm font-medium md:text-[15px]", warm ? wdBody : mmsBodyFrost)}>
+          <p
+            className={cn(
+              "mt-3 text-sm font-medium md:text-[15px]",
+              pricing ? "text-white/85" : warm ? wdBody : mmsBodyFrost,
+            )}
+          >
             Monthly SEO Pack — simple monthly options based on how many pages you want added.
           </p>
           <p
             className={cn(
               "mt-8 text-xs font-semibold uppercase tracking-[0.14em]",
-              warm ? "text-[rgba(214,197,176,0.85)]" : "text-[#3f5a47]",
+              pricing ? "text-white/70" : warm ? "text-[rgba(214,197,176,0.85)]" : "text-[#3f5a47]",
             )}
           >
             Includes
           </p>
-          <ul className={cn("mt-4 space-y-3 text-base md:text-[17px]", warm ? wdBody : mmsBodyFrost)}>
+          <ul
+            className={cn(
+              "mt-4 space-y-3 text-base md:text-[17px]",
+              pricing ? "text-white/90" : warm ? wdBody : mmsBodyFrost,
+            )}
+          >
             {includes.map((line) => (
               <li key={line} className="flex gap-3">
-                <span className={warm ? "font-bold text-[#c9a078]" : mmsBullet} aria-hidden>
+                <span className={pricing ? "font-bold text-orange-200" : warm ? "font-bold text-[#c9a078]" : mmsBullet} aria-hidden>
                   ·
                 </span>
                 <span>{line}</span>
@@ -97,8 +116,8 @@ export function MonthlySeoPackSection({
                 eventName="public_contact_cta_click"
                 eventProps={{ location: analyticsLocation, target: "contact", topic: "monthly_seo_pack" }}
                 className={cn(
-                  warm ? mmsBtnSecondaryOnGlass : mmsBtnSecondary,
-                  "inline-flex min-h-[3rem] px-8 no-underline hover:no-underline",
+                  pricing ? mmsBtnPrimary : warm ? mmsBtnSecondaryOnGlass : mmsBtnSecondary,
+                  "inline-flex min-h-[3rem] w-full justify-center px-8 no-underline hover:no-underline sm:w-auto",
                 )}
               >
                 Ask About Monthly SEO
