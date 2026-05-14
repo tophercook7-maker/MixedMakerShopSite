@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       source: "server",
       isLocalOnly: false,
       duplicate_skipped: inbound.duplicate_skipped,
+      notification_sent: inbound.notification_sent,
       message: LEAD_CONFIRMATION_MESSAGE,
     });
   }

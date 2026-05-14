@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { leadHasStandaloneWebsite } from "@/lib/crm-lead-schema";
 import { insertCanonicalInboundLead } from "@/lib/crm/insert-canonical-lead-service";
+import { sendLeadNotificationEmail } from "@/lib/crm/send-lead-notification-email";
 
 const inboundSources = new Set([
   "captain_maker",
@@ -72,6 +73,8 @@ export type InboundLeadSubmissionResult =
       lead_id: string;
       duplicate_skipped: boolean;
       duplicate_reason?: string | null;
+      notification_sent: boolean;
+      notification_error?: string;
     }
   | { ok: false; status: number; error: string; details?: unknown };
 
@@ -188,10 +191,26 @@ export async function handleInboundLeadSubmission(body: unknown): Promise<Inboun
     console.error("[inbound lead] form_submissions insert failed", submissionError);
   }
 
+  const notification = await sendLeadNotificationEmail({
+    leadId: crm.lead_id,
+    duplicateSkipped: crm.duplicate_skipped,
+    duplicateReason: "duplicate_reason" in crm ? crm.duplicate_reason : null,
+    submission: data,
+  });
+  if (!notification.ok) {
+    console.error("[inbound lead] notification email failed", {
+      lead_id: crm.lead_id,
+      source,
+      error: notification.error,
+    });
+  }
+
   return {
     ok: true,
     lead_id: crm.lead_id,
     duplicate_skipped: crm.duplicate_skipped,
     duplicate_reason: "duplicate_reason" in crm ? crm.duplicate_reason : null,
+    notification_sent: notification.ok,
+    notification_error: notification.ok ? undefined : notification.error,
   };
 }

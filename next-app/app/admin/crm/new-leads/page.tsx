@@ -130,8 +130,8 @@ export default async function NewLeadsDashboardPage({
                   : "New Mixed Maker Shop leads"}
             </h1>
             <p className="admin-text-muted mt-2 max-w-2xl text-sm">
-              Manual dashboard for form submissions and Captain Maker chat leads. No email, SMS, Zapier, Resend, or
-              Twilio alerts are sent from this flow.
+              Dashboard for form submissions and Captain Maker chat leads. Public /api/leads submissions also send a
+              Resend email notification when configured.
             </p>
           </div>
           <div className="admin-border-soft rounded-xl border px-4 py-3 text-sm">
