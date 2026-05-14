@@ -311,18 +311,15 @@ export function CaptainMakerGuide() {
       </div>
 
       <div className="public-glass-box--soft public-glass-box--pad">
-        <p className={mmsSectionEyebrowOnGlass}>Captain&apos;s recommendation</p>
-        <h3 className={cn(mmsH2OnGlass, "mt-4 !text-2xl")}>{recommendation.title}</h3>
-        <p className={cn("mt-3 text-lg font-bold", mmsOnGlassPrimary)}>{recommendation.price}</p>
+        <p className={mmsSectionEyebrowOnGlass}>Next step</p>
+        <h3 className={cn(mmsH2OnGlass, "mt-4 !text-2xl")}>Start a free estimate when you&apos;re ready.</h3>
         <p className={cn("mt-4 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
-          {objectionResponse || recommendation.salesGuide}
-        </p>
-        <p className={cn("mt-4 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
-          {recommendation.summary}
+          Chat with Captain Maker first, then send the details to Topher for review. The captain can point you toward a
+          likely service path, but Topher confirms scope, pricing, and timing before anything is scheduled.
         </p>
         <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-          Captain Maker can help you choose the right starting point, but he won&apos;t finalize quotes, rankings,
-          income, or timelines. Topher reviews the details before anything gets scheduled.
+          No pressure on the deck. Use the chat to ask a few questions, then start the estimate step when you have enough
+          context to share.
         </p>
 
         {wantsEstimate || status === "success" ? (
@@ -333,6 +330,10 @@ export function CaptainMakerGuide() {
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                <p className={cn("rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm", mmsOnGlassSecondary)}>
+                  Captain Maker&apos;s current direction: <strong className={mmsOnGlassPrimary}>{recommendation.title}</strong>.
+                  Topher can review the chat transcript and details before giving a real quote.
+                </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Name</span>
