@@ -88,6 +88,9 @@ export async function POST(request: Request) {
       isLocalOnly: false,
       duplicate_skipped: inbound.duplicate_skipped,
       notification_sent: inbound.notification_sent,
+      ...(body.debug_notifications === true && inbound.notification_error
+        ? { notification_error: inbound.notification_error }
+        : {}),
       message: LEAD_CONFIRMATION_MESSAGE,
     });
   }

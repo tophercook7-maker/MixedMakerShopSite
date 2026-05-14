@@ -30,7 +30,7 @@ function resendApiKey(): string {
 }
 
 function fromEmail(): string {
-  return trim(process.env.RESEND_FROM_EMAIL || process.env.BOOKING_FROM_EMAIL || "Topher@mixedmakershop.com");
+  return trim(process.env.RESEND_FROM_EMAIL || process.env.BOOKING_FROM_EMAIL || "Mixed Maker Shop <onboarding@resend.dev>");
 }
 
 function sourceLabel(submission: InboundLeadSubmissionInput): string {

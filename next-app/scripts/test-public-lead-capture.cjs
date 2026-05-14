@@ -8,6 +8,7 @@ const baseUrl = (process.env.TEST_LEAD_BASE_URL || process.env.NEXT_PUBLIC_SITE_
 const unique = new Date().toISOString();
 const payload = {
   submission_type: "public_lead",
+  debug_notifications: true,
   source: "quote_request",
   name: `Lead Capture Test ${unique}`,
   business_name: `MixedMakerShop Test Lead ${unique}`,
