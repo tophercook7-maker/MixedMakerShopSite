@@ -91,7 +91,7 @@ export default async function NewLeadsDashboardPage({
 
   let query = supabase
     .from("leads")
-    .select("id,business_name,contact_name,email,phone,website,source,lead_source,status,deal_status,service_type,category,lead_bucket,notes,created_at")
+    .select("id,business_name,contact_name,email,phone,website,source,lead_source,status,deal_status,service_type,category,notes,created_at")
     .eq("owner_id", ownerId)
     .in("lead_source", INBOUND_SOURCES)
     .order("created_at", { ascending: false })
