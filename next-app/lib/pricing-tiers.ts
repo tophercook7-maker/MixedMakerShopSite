@@ -10,6 +10,11 @@ export type PricingTier = {
   priceLabel: string;
   description: string;
   includes: readonly string[];
+  strongRecommendation?: {
+    title: string;
+    price: string;
+  };
+  bestNextStep?: string;
   ctaLabel: string;
   ctaHref: string;
   /** Middle tier — “Most Common” */
@@ -20,10 +25,23 @@ export type PricingTier = {
 export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "starter",
-    title: "Starter Site",
-    priceLabel: "$500 – $1,000",
-    description: "A clean, simple website for businesses that just need to look legit and be easy to contact.",
-    includes: ["1–3 pages", "Mobile-friendly design", "Basic SEO setup", "Contact form"],
+    title: "Starter SEO Site",
+    priceLabel: "Starting at $400",
+    description:
+      "A clean 3-page basic SEO website for small businesses that need to look legitimate, explain their services, and make it easy for customers to contact them.",
+    includes: [
+      "3-page basic SEO website",
+      "Mobile-friendly design",
+      "Basic on-page SEO setup",
+      "Contact form or contact section",
+      "Clear service/contact structure",
+    ],
+    strongRecommendation: {
+      title: "Google Business Profile setup",
+      price: "$150 one-time",
+    },
+    bestNextStep:
+      "Add monthly support so the website and Google Business Profile stay active, updated, and keep improving over time.",
     ctaLabel: "Get My Free Preview",
     ctaHref: publicFreeMockupFunnelHref,
   },

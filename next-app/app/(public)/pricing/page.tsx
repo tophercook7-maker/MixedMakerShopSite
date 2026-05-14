@@ -6,10 +6,8 @@ import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand
 import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection";
 import { PRICING_TIERS } from "@/lib/pricing-tiers";
 import {
-  mmsBodyFrost,
   mmsBtnPrimary,
   mmsBullet,
-  mmsGlassPanelDense,
   mmsH1,
   mmsH2,
   mmsPageBg,
@@ -24,7 +22,7 @@ const canonical = "https://mixedmakershop.com/pricing";
 export const metadata: Metadata = {
   title: "Web Design Pricing | MixedMakerShop",
   description:
-    "Simple pricing with no surprises — Starter $500–$1k, Growth $1k–$2.5k, custom quotes. Start with a free homepage preview.",
+    "Simple pricing with no surprises — Starter SEO Site starting at $400, Google Business Profile setup $150 one-time, Growth $1k–$2.5k, and custom quotes.",
   alternates: { canonical },
   openGraph: {
     title: "Web design pricing | MixedMakerShop",
@@ -44,28 +42,31 @@ const processSteps = [
 export default function PricingPage() {
   return (
     <div className={cn(mmsPageBg, "border-b", mmsSectionBorder)}>
-      <div className={cn(shell, mmsSectionY)}>
-        {/* Section 1 — Title */}
-        <div className={cn(mmsGlassPanelDense, "max-w-3xl p-6 sm:p-8")}>
-          <h1 className={mmsH1}>Simple pricing. No surprises.</h1>
-          <p className={cn("mt-6 max-w-2xl text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-            Every business is different, but most projects fall into a simple range depending on what you need. You&apos;re
-            investing in a site that can help you get found locally — not just a pretty page.
-          </p>
-        </div>
+      <div className="bg-[#070907]/80 backdrop-blur-[2px]">
+        <div className={cn(shell, mmsSectionY)}>
+          {/* Section 1 — Title */}
+          <div className="max-w-3xl rounded-3xl border border-white/10 bg-[#111510]/90 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8">
+            <h1 className={cn(mmsH1, "text-white")}>Simple pricing. No surprises.</h1>
+            <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/82 md:text-lg">
+              Every business is different, but most projects fall into a simple range depending on what you need. You&apos;re
+              investing in a site that can help you get found locally — not just a pretty page.
+            </p>
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-orange-100 md:text-base">
+              Starter SEO Site begins at $400 for a basic 3-page SEO website. Custom builds stay custom quoted.
+            </p>
+          </div>
 
-        {/* Section 2 — Tiers */}
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-6 lg:items-stretch">
-          {PRICING_TIERS.map((tier) => (
+          {/* Section 2 — Tiers */}
+          <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:items-stretch lg:gap-6">
+            {PRICING_TIERS.map((tier) => (
             <article
               key={tier.id}
               className={cn(
-                mmsGlassPanelDense,
-                "relative flex flex-col p-6 sm:p-8",
+                "relative flex flex-col rounded-3xl border border-white/12 bg-[#111510]/90 p-6 text-white shadow-2xl shadow-black/40 backdrop-blur-md sm:p-8",
                 tier.featured &&
                   cn(
-                    "z-[1] border-2 border-[#b85c1e]/35 shadow-[0_24px_60px_-28px_rgba(184,92,30,0.35)]",
-                    "ring-1 ring-[#b85c1e]/20 lg:scale-[1.02]",
+                    "z-[1] border-2 border-orange-300/40 shadow-[0_24px_70px_-24px_rgba(251,146,60,0.35)]",
+                    "ring-1 ring-orange-200/25 lg:scale-[1.02]",
                   ),
               )}
             >
@@ -73,20 +74,20 @@ export default function PricingPage() {
                 <span
                   className={cn(
                     "absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full",
-                    "border border-[#b85c1e]/30 bg-gradient-to-r from-[#fdf6ed] to-[#f4ebe3] px-3 py-1",
-                    "text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a4b2a]",
+                    "border border-orange-200/35 bg-orange-300 px-3 py-1",
+                    "text-[10px] font-bold uppercase tracking-[0.16em] text-[#1d251f]",
                   )}
                 >
                   {tier.badge}
                 </span>
               ) : null}
-              <h2 className={cn("text-xl font-bold tracking-tight text-[#1e241f] md:text-2xl", tier.badge && "mt-2")}>
+              <h2 className={cn("text-xl font-bold tracking-tight text-white md:text-2xl", tier.badge && "mt-2")}>
                 {tier.title}
               </h2>
-              <p className="mt-4 text-2xl font-semibold tracking-tight text-[#8a4b2a] md:text-[1.6rem]">{tier.priceLabel}</p>
-              <p className={cn("mt-5 flex-1 text-sm leading-relaxed md:text-[15px]", mmsBodyFrost)}>{tier.description}</p>
-              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.12em] text-[#3f5a47]">Includes</p>
-              <ul className={cn("mt-3 space-y-2.5 text-sm md:text-[15px]", mmsBodyFrost)}>
+              <p className="mt-4 text-2xl font-semibold tracking-tight text-orange-200 md:text-[1.6rem]">{tier.priceLabel}</p>
+              <p className="mt-5 flex-1 text-sm leading-relaxed text-white/82 md:text-[15px]">{tier.description}</p>
+              <p className="mt-6 text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">Includes</p>
+              <ul className="mt-3 space-y-2.5 text-sm text-white/84 md:text-[15px]">
                 {tier.includes.map((line) => (
                   <li key={line} className="flex gap-2.5">
                     <span className={mmsBullet} aria-hidden>
@@ -96,6 +97,22 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
+              {tier.strongRecommendation ? (
+                <div className="mt-6 rounded-2xl border border-orange-200/25 bg-orange-300/12 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-100">
+                    Strongly recommended
+                  </p>
+                  <p className="mt-2 text-sm font-bold leading-relaxed text-white md:text-[15px]">
+                    {tier.strongRecommendation.title} — {tier.strongRecommendation.price}
+                  </p>
+                </div>
+              ) : null}
+              {tier.bestNextStep ? (
+                <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Best next step</p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/84 md:text-[15px]">{tier.bestNextStep}</p>
+                </div>
+              ) : null}
               <div className="mt-8">
                 <PublicCtaRow>
                   <TrackedPublicLink
@@ -113,56 +130,54 @@ export default function PricingPage() {
                 </PublicCtaRow>
               </div>
             </article>
-          ))}
-        </div>
-
-        <MonthlySeoPackSection analyticsLocation="pricing_monthly_seo_pack" variant="pricing" />
-
-        {/* Section 3 — Reassurance */}
-        <div className={cn(mmsGlassPanelDense, "mx-auto mt-16 max-w-3xl p-8 sm:p-10")}>
-          <h2 className={mmsH2}>No pressure, no guessing</h2>
-          <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsBodyFrost)}>
-            You&apos;ll see a preview of your site before committing to anything. If it&apos;s not a fit, no problem.
-          </p>
-        </div>
-
-        {/* Section 4 — Process */}
-        <div className="mx-auto mt-16 max-w-3xl">
-          <h2 className={mmsH2}>How it works</h2>
-          <ol className="mt-10 space-y-8">
-            {processSteps.map((step, i) => (
-              <li key={step} className="flex gap-4">
-                <span className={cn(mmsStepCircle, "mt-0.5 shrink-0")} aria-hidden>
-                  {i + 1}
-                </span>
-                <p className={cn("text-base leading-relaxed md:text-[17px]", mmsBodyFrost)}>{step}</p>
-              </li>
             ))}
-          </ol>
-        </div>
+          </div>
 
-        {/* Section 5 — Final CTA */}
-        <div
-          className={cn(
-            mmsGlassPanelDense,
-            "mx-auto mt-16 max-w-2xl border-[#3f5a47]/14 bg-gradient-to-br from-[#f7f4ee] via-white to-[#eef3ee]/90 p-8 text-center sm:p-10",
-          )}
-        >
-          <h2 className={cn(mmsH2, "!text-2xl md:!text-3xl")}>Want to see what your business could look like?</h2>
-          <PublicCtaRow align="center" className="mt-8 w-full justify-center">
-            <TrackedPublicLink
-              href={publicFreeMockupFunnelHref}
-              eventName="public_contact_cta_click"
-              eventProps={{ location: "pricing_page", target: "free_mockup", section: "final_cta" }}
-              className={cn(
-                mmsBtnPrimary,
-                "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 text-base font-semibold no-underline sm:w-auto hover:no-underline",
-              )}
-            >
-              Get My Free Preview
-              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-            </TrackedPublicLink>
-          </PublicCtaRow>
+          <MonthlySeoPackSection analyticsLocation="pricing_monthly_seo_pack" variant="pricing" />
+
+          {/* Section 3 — Reassurance */}
+          <div className="mx-auto mt-16 max-w-3xl rounded-3xl border border-white/10 bg-[#111510]/90 p-8 text-white shadow-2xl shadow-black/35 backdrop-blur-md sm:p-10">
+            <h2 className={cn(mmsH2, "text-white")}>No pressure, no guessing</h2>
+            <p className="mt-6 text-base leading-relaxed text-white/82 md:text-lg">
+              You&apos;ll see a preview of your site before committing to anything. If it&apos;s not a fit, no problem.
+            </p>
+          </div>
+
+          {/* Section 4 — Process */}
+          <div className="mx-auto mt-16 max-w-3xl">
+            <h2 className={cn(mmsH2, "text-white")}>How it works</h2>
+            <ol className="mt-10 space-y-8">
+              {processSteps.map((step, i) => (
+                <li key={step} className="flex gap-4">
+                  <span className={cn(mmsStepCircle, "mt-0.5 shrink-0")} aria-hidden>
+                    {i + 1}
+                  </span>
+                  <p className="text-base leading-relaxed text-white/84 md:text-[17px]">{step}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* Section 5 — Final CTA */}
+          <div className="mx-auto mt-16 max-w-2xl rounded-3xl border border-white/10 bg-[#111510]/90 p-8 text-center text-white shadow-2xl shadow-black/35 backdrop-blur-md sm:p-10">
+            <h2 className={cn(mmsH2, "!text-2xl text-white md:!text-3xl")}>
+              Want to see what your business could look like?
+            </h2>
+            <PublicCtaRow align="center" className="mt-8 w-full justify-center">
+              <TrackedPublicLink
+                href={publicFreeMockupFunnelHref}
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "pricing_page", target: "free_mockup", section: "final_cta" }}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 text-base font-semibold no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Get My Free Preview
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </TrackedPublicLink>
+            </PublicCtaRow>
+          </div>
         </div>
       </div>
     </div>
