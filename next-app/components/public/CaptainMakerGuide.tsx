@@ -32,7 +32,7 @@ const budgetOptions = [
 ] as const;
 
 const captainOpening =
-  "Ahoy, Maker. I’m Captain Maker — your guide through Mixed Maker Shop. Tell me what you’re trying to build, print, promote, or automate, and I’ll help you find the right starting point.";
+  "Ahoy, Maker — I’m Captain Maker. Tell me what you’re trying to build, fix, promote, or grow, and I’ll point you to the right starting place.";
 
 type CaptainMakerLink = {
   label: string;
@@ -59,7 +59,7 @@ export function CaptainMakerGuide() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     newMessage("assistant", captainOpening, [
       { label: "See starting pricing", href: "/pricing" },
-      { label: "Contact Topher", href: "/contact" },
+      { label: "Contact page", href: "/contact" },
     ]),
   ]);
   const [chatInput, setChatInput] = useState("");
@@ -73,7 +73,7 @@ export function CaptainMakerGuide() {
   const transcript = useMemo(
     () =>
       messages
-        .map((message) => `${message.role === "assistant" ? "Captain Maker" : "Visitor"}: ${message.content}`)
+        .map((message) => `${message.role === "assistant" ? "Captain Maker" : "Maker"}: ${message.content}`)
         .join("\n\n"),
     [messages],
   );
@@ -144,8 +144,8 @@ export function CaptainMakerGuide() {
         ...current,
         newMessage(
           "assistant",
-          "The signal got choppy for a second, Maker. Try asking again, or start a free estimate and Topher can review the details.",
-          [{ label: "Contact Topher", href: "/contact" }],
+          "The signal got choppy for a second, Maker. Try asking again, or start a free estimate and Mixed Maker Shop can review the details.",
+          [{ label: "Contact page", href: "/contact" }],
         ),
       ]);
     } finally {
@@ -178,7 +178,7 @@ export function CaptainMakerGuide() {
       `Recommendation details: ${recommendation.summary}`,
       `Captain Maker guidance: ${objectionResponse || recommendation.salesGuide}`,
       "",
-      `Latest visitor question: ${latestVisitorMessage || "(not provided)"}`,
+      `Latest Maker question: ${latestVisitorMessage || "(not provided)"}`,
       `Project type: ${projectType || "(not provided)"}`,
       `Timeline: ${timeline || "(not provided)"}`,
       `Budget range: ${budget || "(not provided)"}`,
@@ -228,8 +228,8 @@ export function CaptainMakerGuide() {
         <p className={mmsSectionEyebrowOnGlass}>Captain Maker</p>
         <h2 className={cn(mmsH2OnGlass, "mt-4")}>Chat with the captain.</h2>
         <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-          Ask about websites, landing pages, local SEO, free previews, AI helpers, flyers, 3D printing, property care,
-          pricing ranges, or how to contact Topher.
+          Ask about website help, Google Business Profile setup, monthly support, free previews, AI helpers, flyers,
+          3D printing, property care, pricing ranges, free estimates, or the contact page.
         </p>
         <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
           <div className="max-h-[32rem] min-h-[24rem] space-y-4 overflow-y-auto px-4 py-5 sm:px-5" aria-live="polite">
@@ -315,8 +315,8 @@ export function CaptainMakerGuide() {
         <p className={mmsSectionEyebrowOnGlass}>Next step</p>
         <h3 className={cn(mmsH2OnGlass, "mt-4 !text-2xl")}>Start a free estimate when you&apos;re ready.</h3>
         <p className={cn("mt-4 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
-          Chat with Captain Maker first, then send the details to Topher for review. The captain can point you toward a
-          likely service path, but Topher confirms scope, pricing, and timing before anything is scheduled.
+          Chat with Captain Maker first, then send the details for review. The captain can point you toward a likely
+          service path, but Mixed Maker Shop confirms scope, pricing, and timing before anything is scheduled.
         </p>
         <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
           No pressure on the deck. Use the chat to ask a few questions, then start the estimate step when you have enough
@@ -333,7 +333,7 @@ export function CaptainMakerGuide() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <p className={cn("rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm", mmsOnGlassSecondary)}>
                   Captain Maker&apos;s current direction: <strong className={mmsOnGlassPrimary}>{recommendation.title}</strong>.
-                  Topher can review the chat transcript and details before giving a real quote.
+                  Mixed Maker Shop can review the chat transcript and details before giving a real quote.
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">

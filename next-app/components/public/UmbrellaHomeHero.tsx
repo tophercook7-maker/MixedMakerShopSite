@@ -127,7 +127,7 @@ export function UmbrellaHomeHero() {
             <div className={cn("mt-4", mmsOnGlassCtaSeparator)}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href="#captain-maker"
+                  href="/#captain-maker"
                   eventName="public_contact_cta_click"
                   eventProps={{ location: "home_hero_umbrella", target: "chooser" }}
                   className={cn(
@@ -162,7 +162,7 @@ export function UmbrellaHomeHero() {
               and deposit when required.
             </p>
             <p className={cn("mt-2 max-w-[48ch] text-sm leading-relaxed", mmsOnGlassSecondary)}>
-              Not sure what you need? Captain Maker will point you to the right starting point.
+              Not sure what you need? Captain Maker will point you to the right starting place.
             </p>
           </motion.div>
         </div>

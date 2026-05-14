@@ -371,11 +371,11 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Not sure what you need?</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>Not sure what you need?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                That’s exactly why Captain Maker is here. Tell him what you’re trying to do, and he’ll help point you
+                That’s exactly why Captain Maker is here. Tell Captain Maker what you’re trying to do, and he’ll point you
                 toward the right service before you start your estimate.
               </p>
-              <Link href="#captain-maker" className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
-                Tell Captain Maker What You Need
+              <Link href="/#captain-maker" className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
+                Ask Captain Maker what to do next.
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
@@ -398,7 +398,7 @@ export function UmbrellaHomePage() {
                 the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
               </p>
               <Link
-                href="#captain-maker"
+                href="/#captain-maker"
                 className={cn(
                   mmsBtnPrimary,
                   "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto",

@@ -28,9 +28,9 @@ const recommendations: Record<CaptainMakerServiceKey, CaptainMakerRecommendation
     title: "Website",
     price: "Starts at $400",
     summary:
-      "Best fit for a full business site with multiple pages, services, gallery, contact form, booking, menu, payments, or a more complete online home. Added features increase the price.",
+      "Best fit for website help, a full business site, Google Business Profile setup, monthly support, service pages, contact forms, booking, menus, payments, or a more complete online home. Added features increase the price.",
     salesGuide:
-      "Sounds like a website build may be the right ship to board. Websites start at $400, and extras like booking, menus, payments, galleries, or AI can be added.",
+      "Sounds like a website path may be the right ship to board, Maker. Websites start at $400, Google Business Profile setup is a strong add-on, and monthly support can keep updates from sitting untouched.",
   },
   ai_bot: {
     key: "ai_bot",
@@ -39,7 +39,7 @@ const recommendations: Record<CaptainMakerServiceKey, CaptainMakerRecommendation
     summary:
       "Best fit for a chatbot, customer helper, lead capture assistant, or AI support tool that helps visitors get answers and move toward the next step.",
     salesGuide:
-      "AI can help answer customer questions, collect leads, explain services, and guide visitors toward the right next step. It’s $200 when added during a new website build or $500 if added later.",
+      "AI can help answer customer questions, Maker, collect leads, explain services, and guide visitors toward the right next step. It’s $200 when added during a new website build or $500 if added later.",
   },
   flyers_ads: {
     key: "flyers_ads",
@@ -48,16 +48,16 @@ const recommendations: Record<CaptainMakerServiceKey, CaptainMakerRecommendation
     summary:
       "Best fit for flyers, ads, promo graphics, event graphics, or social media promo pieces that need to look clear and ready to share.",
     salesGuide:
-      "Flyers and ads start at $50. Good for events, promos, local services, product drops, and getting attention fast.",
+      "Flyers and ads start at $50, Maker. They’re good for events, promos, local services, product drops, and getting attention fast.",
   },
   custom_3d_print: {
     key: "custom_3d_print",
     title: "Custom / 3D Print Estimate",
     price: "Custom estimate required",
     summary:
-      "Best fit for 3D prints, ribbons, custom objects, parts, gifts, signs, or physical items. The Maker path here starts with details so Topher and GiGi can estimate it properly.",
+      "Best fit for 3D prints, ribbons, custom objects, parts, gifts, signs, or physical items. The Maker path here starts with details so Mixed Maker Shop can estimate it properly.",
     salesGuide:
-      "3D prints are custom estimates because size, material, detail, design time, and deadline all matter.",
+      "3D prints are custom estimates, Maker, because size, material, detail, design time, and deadline all matter.",
   },
 };
 
@@ -76,7 +76,21 @@ const keywordRules: Array<{ key: CaptainMakerServiceKey; words: string[] }> = [
   },
   {
     key: "website",
-    words: ["full site", "business site", "multiple pages", "services", "gallery", "booking", "menu", "payments", "store"],
+    words: [
+      "full site",
+      "business site",
+      "multiple pages",
+      "services",
+      "gallery",
+      "booking",
+      "menu",
+      "payments",
+      "store",
+      "google business profile",
+      "gbp",
+      "monthly support",
+      "support plan",
+    ],
   },
   {
     key: "landing_page",
@@ -100,10 +114,10 @@ export function getCaptainMakerObjectionResponse(input: string, selectedNeed = "
     return "That’s normal, Maker. You don’t need the full plan yet. Tell me what you’re trying to accomplish, and I’ll help sort the build path.";
   }
   if (/\b(price|cost|how much|budget|rates?|charge)\b/.test(haystack)) {
-    return "Fair question. Landing pages start at $100, websites start at $400, flyers and ads start at $50, AI bots are $200 when added during the first website build or $500 later. 3D prints and custom work need an estimate.";
+    return "Fair question, Maker. Landing pages start at $100, websites start at $400, Google Business Profile setup is $150 one-time, monthly support starts at $45/mo, flyers and ads start at $50, and 3D prints/custom work need an estimate.";
   }
   if (/\b(just looking|browsing|looking around|checking|curious)\b/.test(haystack)) {
-    return "No problem. I can still help you figure out the best starting point so you don’t waste time or money.";
+    return "No problem, Maker. I can still help you figure out the best starting place so you don’t waste time or money.";
   }
   return "";
 }
