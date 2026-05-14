@@ -135,7 +135,7 @@ export function UmbrellaHomeHero() {
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Start my free estimate
+                  Ask Captain Maker
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
@@ -160,6 +160,9 @@ export function UmbrellaHomeHero() {
             >
               Free estimates through Captain Maker. Clear starting prices on common paths. Custom work scheduled after approval
               and deposit when required.
+            </p>
+            <p className={cn("mt-2 max-w-[48ch] text-sm leading-relaxed", mmsOnGlassSecondary)}>
+              Not sure what you need? Captain Maker will point you to the right starting point.
             </p>
           </motion.div>
         </div>

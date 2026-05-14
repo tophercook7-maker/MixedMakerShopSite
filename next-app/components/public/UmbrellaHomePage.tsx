@@ -396,6 +396,16 @@ export function UmbrellaHomePage() {
                 Pick the path that matches today. Topher&apos;s Web Design is the web branch; GiGi&apos;s Print Shop is
                 the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
               </p>
+              <Link
+                href="#captain-maker"
+                className={cn(
+                  mmsBtnPrimary,
+                  "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Ask Captain Maker
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
               {chooserCards.map((card) =>

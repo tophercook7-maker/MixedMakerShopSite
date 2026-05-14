@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, Send } from "lucide-react";
 import {
   getCaptainMakerObjectionResponse,
   getCaptainMakerRecommendation,
+  type CaptainMakerRecommendation,
 } from "@/lib/captain-maker-recommendation";
 import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 import { cn } from "@/lib/utils";
@@ -21,16 +23,6 @@ import {
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-black/35 px-4 py-3 text-white placeholder:text-white/35 outline-none transition focus:border-orange-300/45 focus:ring-2 focus:ring-orange-300/15";
 
-const needOptions = [
-  "Website",
-  "AI helper",
-  "Flyer / ad",
-  "3D print",
-  "Something custom",
-] as const;
-
-const audienceOptions = ["Business", "Personal project", "Event", "Gift", "Side hustle"] as const;
-
 const budgetOptions = [
   "Under $100",
   "$100-$400",
@@ -42,22 +34,124 @@ const budgetOptions = [
 const captainOpening =
   "Ahoy, Maker. I’m Captain Maker — your guide through Mixed Maker Shop. Tell me what you’re trying to build, print, promote, or automate, and I’ll help you find the right starting point.";
 
+type CaptainMakerLink = {
+  label: string;
+  href: string;
+};
+
+type ChatMessage = {
+  id: string;
+  role: "assistant" | "user";
+  content: string;
+  links?: CaptainMakerLink[];
+};
+
+function newMessage(role: ChatMessage["role"], content: string, links?: CaptainMakerLink[]): ChatMessage {
+  return {
+    id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    role,
+    content,
+    links,
+  };
+}
+
 export function CaptainMakerGuide() {
-  const [projectNeed, setProjectNeed] = useState("");
-  const [audience, setAudience] = useState("");
-  const [serviceHint, setServiceHint] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    newMessage("assistant", captainOpening, [
+      { label: "See starting pricing", href: "/pricing" },
+      { label: "Contact Topher", href: "/contact" },
+    ]),
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatStatus, setChatStatus] = useState<"idle" | "loading">("idle");
+  const [chatError, setChatError] = useState("");
   const [wantsEstimate, setWantsEstimate] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const transcript = useMemo(
+    () =>
+      messages
+        .map((message) => `${message.role === "assistant" ? "Captain Maker" : "Visitor"}: ${message.content}`)
+        .join("\n\n"),
+    [messages],
+  );
+
+  const latestVisitorMessage = useMemo(
+    () => [...messages].reverse().find((message) => message.role === "user")?.content || "",
+    [messages],
+  );
 
   const recommendation = useMemo(
-    () => getCaptainMakerRecommendation(projectNeed, serviceHint),
-    [projectNeed, serviceHint],
+    () => getCaptainMakerRecommendation(transcript || latestVisitorMessage),
+    [latestVisitorMessage, transcript],
   );
   const objectionResponse = useMemo(
-    () => getCaptainMakerObjectionResponse(projectNeed, serviceHint),
-    [projectNeed, serviceHint],
+    () => getCaptainMakerObjectionResponse(transcript || latestVisitorMessage),
+    [latestVisitorMessage, transcript],
   );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, chatStatus]);
+
+  async function handleChatSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const content = chatInput.trim();
+    if (!content || chatStatus === "loading") return;
+
+    const userMessage = newMessage("user", content);
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    setChatInput("");
+    setChatError("");
+    setChatStatus("loading");
+
+    try {
+      const res = await fetch("/api/captain-maker-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        reply?: string;
+        links?: CaptainMakerLink[];
+        recommendation?: CaptainMakerRecommendation;
+        error?: string;
+      };
+      if (!res.ok) {
+        throw new Error(body.error || "Captain Maker could not answer that yet.");
+      }
+      setMessages((current) => [
+        ...current,
+        newMessage(
+          "assistant",
+          body.reply ||
+            "I can help with websites, landing pages, local SEO, AI helpers, flyers, 3D printing, property care, and custom projects. What are you trying to get done?",
+          body.links,
+        ),
+      ]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Captain Maker could not answer that yet.";
+      setChatError(message);
+      setMessages((current) => [
+        ...current,
+        newMessage(
+          "assistant",
+          "The signal got choppy for a second, Maker. Try asking again, or start a free estimate and Topher can review the details.",
+          [{ label: "Contact Topher", href: "/contact" }],
+        ),
+      ]);
+    } finally {
+      setChatStatus("idle");
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,6 +168,7 @@ export function CaptainMakerGuide() {
     const budget = String(fd.get("budget") || "").trim();
     const details = String(fd.get("project_details") || "").trim();
     const marketingPermission = fd.get("marketing_permission") === "yes";
+    const projectNeed = latestVisitorMessage || details;
 
     const message = [
       "Captain Maker free estimate request",
@@ -83,13 +178,14 @@ export function CaptainMakerGuide() {
       `Recommendation details: ${recommendation.summary}`,
       `Captain Maker guidance: ${objectionResponse || recommendation.salesGuide}`,
       "",
-      `What they are trying to build: ${projectNeed || "(not provided)"}`,
-      `Project context: ${audience || "(not provided)"}`,
-      `Service hint: ${serviceHint || "(not provided)"}`,
+      `Latest visitor question: ${latestVisitorMessage || "(not provided)"}`,
       `Project type: ${projectType || "(not provided)"}`,
       `Timeline: ${timeline || "(not provided)"}`,
       `Budget range: ${budget || "(not provided)"}`,
       `Marketing permission: ${marketingPermission ? "yes" : "no"}`,
+      "",
+      "Captain Maker chat transcript:",
+      transcript || "(not provided)",
       "",
       "Project details:",
       details || "(not provided)",
@@ -110,15 +206,7 @@ export function CaptainMakerGuide() {
           service_type: recommendation.key,
           request: projectNeed || details,
           message,
-          transcript: [
-            `Captain Maker opening: ${captainOpening}`,
-            `Visitor need: ${projectNeed || "(not provided)"}`,
-            `Visitor context: ${audience || "(not provided)"}`,
-            `Visitor service hint: ${serviceHint || "(not provided)"}`,
-            objectionResponse ? `Captain Maker objection response: ${objectionResponse}` : "",
-            `Captain Maker recommendation: ${recommendation.title} (${recommendation.price})`,
-            `Captain Maker CTA: Want me to help start your free estimate?`,
-          ].join("\n"),
+          transcript,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -137,58 +225,89 @@ export function CaptainMakerGuide() {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
       <div className="public-glass-box public-glass-box--pad">
         <p className={mmsSectionEyebrowOnGlass}>Captain Maker</p>
-        <h2 className={cn(mmsH2OnGlass, "mt-4")}>Let the captain point the ship.</h2>
+        <h2 className={cn(mmsH2OnGlass, "mt-4")}>Chat with the captain.</h2>
         <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-          {captainOpening}
+          Ask about websites, landing pages, local SEO, free previews, AI helpers, flyers, 3D printing, property care,
+          pricing ranges, or how to contact Topher.
         </p>
-        <div className="mt-6 space-y-4">
-          <label className="block">
-            <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>What are you trying to build?</span>
-            <textarea
-              className={inputClass}
-              rows={5}
-              value={projectNeed}
-              onChange={(event) => setProjectNeed(event.currentTarget.value)}
-              placeholder="Example: I need a quick page for an event, a full site for my business, a flyer, a bot, or a custom printed item."
-            />
-          </label>
-          <label className="block">
-            <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>
-              Is it for a business, personal project, event, gift, or side hustle?
-            </span>
-            <select className={inputClass} value={audience} onChange={(event) => setAudience(event.currentTarget.value)}>
-              <option value="">Pick one</option>
-              {audienceOptions.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-          </label>
-          <fieldset>
-            <legend className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>
-              Do you need a website, AI helper, flyer/ad, 3D print, or something custom?
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {needOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+          <div className="max-h-[32rem] min-h-[24rem] space-y-4 overflow-y-auto px-4 py-5 sm:px-5" aria-live="polite">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+              >
+                <div
                   className={cn(
-                    mmsBtnSecondaryOnGlass,
-                    "px-4 py-2 text-xs",
-                    serviceHint === option && "border-orange-200/70 bg-orange-300/20 text-white",
+                    "max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm md:text-base",
+                    message.role === "user"
+                      ? "bg-orange-300 text-[#1d251f]"
+                      : "border border-white/10 bg-white/10 text-white",
                   )}
-                  onClick={() => setServiceHint(option)}
                 >
-                  {option}
-                </button>
-              ))}
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.links && message.links.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {message.links.map((link) => (
+                        <Link
+                          key={`${message.id}-${link.href}`}
+                          href={link.href}
+                          className={cn(
+                            "rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs font-semibold text-white no-underline hover:no-underline",
+                            message.role === "user" && "border-black/15 bg-black/10 text-[#1d251f]",
+                          )}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+            {chatStatus === "loading" ? (
+              <div className="flex justify-start">
+                <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white">
+                  Captain Maker is checking the chart...
+                </div>
+              </div>
+            ) : null}
+            <div ref={messagesEndRef} />
+          </div>
+          <form onSubmit={handleChatSubmit} className="border-t border-white/10 p-4 sm:p-5">
+            <label className="sr-only" htmlFor="captain-maker-message">
+              Ask Captain Maker a question
+            </label>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <textarea
+                id="captain-maker-message"
+                className={cn(inputClass, "min-h-[3.35rem] resize-none sm:min-h-0")}
+                rows={2}
+                value={chatInput}
+                onChange={(event) => setChatInput(event.currentTarget.value)}
+                placeholder="Ask Captain Maker what you need, what it might cost, or where to start..."
+                disabled={chatStatus === "loading"}
+              />
+              <button
+                type="submit"
+                disabled={chatStatus === "loading" || !chatInput.trim()}
+                className={cn(mmsBtnPrimary, "min-h-[3.35rem] justify-center px-6 sm:self-end")}
+              >
+                {chatStatus === "loading" ? "Sending..." : "Send"}
+                <Send className="h-4 w-4" aria-hidden />
+              </button>
             </div>
-          </fieldset>
-          <button type="button" className={cn(mmsBtnPrimary, "w-full justify-center sm:w-auto")} onClick={() => setWantsEstimate(true)}>
-            Want me to help start your free estimate?
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </button>
+            {chatError ? <p className={cn("mt-3 text-sm", mmsOnGlassSecondary)}>{chatError}</p> : null}
+          </form>
         </div>
+        <button
+          type="button"
+          className={cn(mmsBtnSecondaryOnGlass, "mt-5 w-full justify-center sm:w-auto")}
+          onClick={() => setWantsEstimate(true)}
+        >
+          Start free estimate
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
       </div>
 
       <div className="public-glass-box--soft public-glass-box--pad">
@@ -202,8 +321,8 @@ export function CaptainMakerGuide() {
           {recommendation.summary}
         </p>
         <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-          No pressure on the deck. Captain Maker can help you choose the right starting point now, then Topher can review
-          the details before anything gets scheduled.
+          Captain Maker can help you choose the right starting point, but he won&apos;t finalize quotes, rankings,
+          income, or timelines. Topher reviews the details before anything gets scheduled.
         </p>
 
         {wantsEstimate || status === "success" ? (
@@ -251,7 +370,13 @@ export function CaptainMakerGuide() {
                 </div>
                 <label className="block">
                   <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Project details</span>
-                  <textarea name="project_details" required rows={4} className={inputClass} />
+                  <textarea
+                    name="project_details"
+                    required
+                    rows={4}
+                    className={inputClass}
+                    defaultValue={latestVisitorMessage}
+                  />
                 </label>
                 <label className={cn("flex items-start gap-3 text-sm leading-relaxed", mmsOnGlassSecondary)}>
                   <input name="marketing_permission" value="yes" type="checkbox" className="mt-1" />
@@ -266,7 +391,7 @@ export function CaptainMakerGuide() {
           </div>
         ) : (
           <button type="button" className={cn(mmsTextLinkOnGlass, "mt-6 inline-flex items-center gap-2")} onClick={() => setWantsEstimate(true)}>
-            Want me to help start your free estimate?
+            Start free estimate after the chat
             <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
         )}
