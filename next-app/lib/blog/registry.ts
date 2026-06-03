@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "cleaning-service-website-essentials",
+    title: "Quick Refresh: What Every Modern Cleaning Service Website Needs",
+    category: "Quick Refresh",
+    excerpt:
+      "Booking, trust, real before-and-after photos, and local SEO for Arkansas cleaning businesses — without agency fluff.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-05",
+    href: "/blog/cleaning-service-website-essentials",
+  },
+  {
     slug: "website-preview-generator",
     title: "See Before You Spend: The Power of Our Website Preview Generator",
     category: "Web Design",
