@@ -45,7 +45,7 @@ export default function BlogPage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>MixedMakerShop Blog</p>
-              <h1 className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl">
+              <h1 className="mt-5 break-words text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
                 Helpful Website Tips for Small Businesses
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
@@ -54,11 +54,17 @@ export default function BlogPage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/free-mockup"
+                  href="#browse-articles"
                   className={cn(mmsBtnPrimary, "inline-flex items-center gap-2 px-6 py-3 no-underline hover:no-underline")}
                 >
-                  Get a free website mockup
+                  Browse &amp; filter articles
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </Link>
+                <Link
+                  href="/free-mockup"
+                  className={cn(mmsBtnSecondaryOnGlass, "inline-flex items-center gap-2 px-6 py-3 no-underline hover:no-underline")}
+                >
+                  Free website mockup
                 </Link>
                 <Link
                   href="/"
@@ -67,6 +73,9 @@ export default function BlogPage() {
                   Explore services
                 </Link>
               </div>
+              <p className={cn("mt-4 text-sm", mmsOnGlassMuted)}>
+                Search by topic, sort by date, or show only articles ready to read — controls are just below.
+              </p>
             </div>
 
             <BlogIndexBrowser />
