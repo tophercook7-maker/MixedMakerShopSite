@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "website-preview-generator",
+    title: "See Before You Spend: The Power of Our Website Preview Generator",
+    category: "Web Design",
+    excerpt:
+      "Stop buying web design blind. Our free preview generator shows your homepage direction in about two minutes — no credit card, no contract.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-04",
+    href: "/blog/website-preview-generator",
+  },
+  {
     slug: "custom-3d-printing-branding",
     title: "Beyond Plastic: How Custom 3D Printing Services Can Level Up Your Branding",
     category: "3D Printing",
