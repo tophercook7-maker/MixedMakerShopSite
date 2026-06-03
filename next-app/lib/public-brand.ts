@@ -11,6 +11,13 @@ export const publicShellClass =
 /** Public contact email for tap page, sample inquiries, and marketing CTAs. */
 export const publicTopherEmail = "Topher@mixedmakershop.com";
 
+/** Studio phone — display, dial, and text (E.164: +15014881253). */
+export const publicTopherPhoneDisplay = "501-488-1253";
+export const publicTopherPhoneDigits = "5014881253";
+export const publicTopherPhoneE164 = "+15014881253";
+export const publicTopherPhoneTel = `tel:${publicTopherPhoneE164}`;
+export const publicTopherTextHref = `sms:${publicTopherPhoneE164}`;
+
 /**
  * Free mockup funnel anchor — use for CTAs already on `/free-mockup` (same-page scroll to intake).
  * For links from any other route, footer, or shareable URLs, use `publicFreeMockupFunnelHref` instead.

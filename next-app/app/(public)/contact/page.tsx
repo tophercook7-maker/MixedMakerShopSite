@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
+import { PaymentLegalConsent } from "@/components/public/LegalConsent";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 export default function ContactPage() {
@@ -284,6 +286,7 @@ export default function ContactPage() {
                     {error}
                   </p>
                 )}
+                <FormLegalConsent className="mb-4 text-[var(--pub-muted)]" />
                 <button
                   type="submit"
                   className="btn gold"
@@ -401,6 +404,7 @@ export default function ContactPage() {
                   (often Cash App) to start
                 </li>
               </ol>
+              <PaymentLegalConsent className="mt-4 text-[var(--pub-muted)]" />
             </div>
           </div>
         </div>

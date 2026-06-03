@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { mmsBtnPrimary, mmsOnGlassSecondary } from "@/lib/mms-umbrella-ui";
@@ -106,6 +107,7 @@ export function IdeaSuggestionForm() {
         </p>
       ) : null}
       {status === "error" ? <p className={cn("text-sm", mmsOnGlassSecondary)}>{message}</p> : null}
+      <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
       <button type="submit" disabled={status === "loading"} className={cn(mmsBtnPrimary, "w-full px-8 sm:w-auto")}>
         {status === "loading" ? "Sending..." : "Suggest an Idea"}
       </button>

@@ -13,6 +13,7 @@ import { PRINTING_QUOTE_FORM_ID } from "@/components/printing/printing-quote-anc
 import { PrintingPriceEstimator } from "@/components/printing/PrintingPriceEstimator";
 import { type PriceEstimateSnapshot, estimateSummaryRows } from "@/components/printing/printing-price-estimate";
 import { buildPrintQuoteSmsHref, PRINTING_QUOTE_PHONE_DISPLAY } from "@/components/printing/printing-sms";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const QUOTE_REQUEST_FIELDS_ID = "printing-quote-request-fields";
@@ -558,6 +559,8 @@ export function PrintingQuoteForm() {
                   <p className="text-center text-[0.8125rem] leading-relaxed text-white/48">
                     You don&apos;t need perfect measurements — just send what you have.
                   </p>
+
+                  <FormLegalConsent variant="glass" className="text-center text-white/55" />
 
                   <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch">
                     <button

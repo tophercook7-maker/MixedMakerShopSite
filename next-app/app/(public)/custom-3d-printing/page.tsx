@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { publicTopherPhoneDisplay, publicTopherPhoneTel } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
   title: "Request Custom 3D Printing | MixedMakerShop",
   description:
     "Submit a request for custom PLA parts, mounts, or fixes. Photos and measurements welcome — no STL required to start.",
 };
-
-const PHONE = "501-575-8017";
-const PHONE_TEL = "tel:+15015758017";
 
 export default function Custom3DPrintingPage() {
   return (
@@ -27,8 +25,8 @@ export default function Custom3DPrintingPage() {
           </p>
           <p className="small" style={{ marginBottom: 24, color: "var(--muted)" }}>
             Prefer to talk it through?{" "}
-            <a href={PHONE_TEL} style={{ color: "var(--gold)", fontWeight: 600 }}>
-              {PHONE}
+            <a href={publicTopherPhoneTel} style={{ color: "var(--gold)", fontWeight: 600 }}>
+              {publicTopherPhoneDisplay}
             </a>
           </p>
           <Link href="/contact" className="btn gold" style={{ marginBottom: 16 }}>

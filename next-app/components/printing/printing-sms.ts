@@ -1,8 +1,13 @@
 import { type PriceEstimateSnapshot, estimateSummaryRows } from "@/components/printing/printing-price-estimate";
+import {
+  publicTopherPhoneDisplay,
+  publicTopherPhoneE164,
+  publicTopherPhoneTel,
+} from "@/lib/public-brand";
 
-export const PRINTING_QUOTE_PHONE_DISPLAY = "501-575-8017";
-export const PRINTING_QUOTE_PHONE_E164 = "+15015758017";
-export const PRINTING_QUOTE_PHONE_TEL = "tel:+15015758017";
+export const PRINTING_QUOTE_PHONE_DISPLAY = publicTopherPhoneDisplay;
+export const PRINTING_QUOTE_PHONE_E164 = publicTopherPhoneE164;
+export const PRINTING_QUOTE_PHONE_TEL = publicTopherPhoneTel;
 
 const SMS_ESTIMATE_ORDER = [
   "Type",
@@ -16,13 +21,7 @@ const SMS_ESTIMATE_ORDER = [
 export function buildPrintQuoteSmsBody(snapshot: PriceEstimateSnapshot | null): string {
   const intro = "Hi, I need help with a 3D printed part.";
   if (!snapshot) {
-    return [
-      intro,
-      "Problem:",
-      "Size:",
-      "Quantity:",
-      "Photo attached separately.",
-    ].join("\n");
+    return [intro, "Problem:", "Size:", "Quantity:", "Photo attached separately."].join("\n");
   }
 
   const byLabel = Object.fromEntries(estimateSummaryRows(snapshot).map((r) => [r.label, r.value]));

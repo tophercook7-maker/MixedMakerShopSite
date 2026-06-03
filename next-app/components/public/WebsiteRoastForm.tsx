@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 
 export function WebsiteRoastForm() {
   const router = useRouter();
@@ -77,6 +78,7 @@ export function WebsiteRoastForm() {
           {error}
         </p>
       )}
+      <FormLegalConsent className="mb-4 text-[var(--muted)]" />
       <button type="submit" className="btn gold" disabled={loading}>
         {loading ? "Sending…" : "Get My Free Roast"}
       </button>

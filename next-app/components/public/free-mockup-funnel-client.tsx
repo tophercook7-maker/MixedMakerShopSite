@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
 import { buildFunnelPreviewFromSnapshot, type FunnelFormSnapshot } from "@/lib/crm-mockup";
@@ -657,6 +658,7 @@ export function FreeMockupFunnelClient({
               {error}
             </p>
           ) : null}
+          <FormLegalConsent className="mb-4 text-[var(--muted)]" />
           <div className="free-mockup-cta-row">
             <button
               type="button"

@@ -6,6 +6,7 @@ import {
 } from "@/components/printing/printing-section";
 import { printingContentClass, printingSectionSurfaceClass } from "@/components/printing/printing-layout";
 import { printingQuoteHref } from "@/components/printing/printing-quote-anchor";
+import { PRINTING_QUOTE_PHONE_DISPLAY } from "@/components/printing/printing-sms";
 import { RevealOnScroll } from "@/components/printing/RevealOnScroll";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,7 @@ const FAQ = [
   },
   {
     q: "How do I get started?",
-    a: "The quickest way is the print request form on this page — share what you have and I'll follow up. If you'd rather talk it through first, call 501-575-8017 and we'll sort out the next step.",
+    a: `The quickest way is the print request form on this page — share what you have and I'll follow up. If you'd rather talk it through first, call ${PRINTING_QUOTE_PHONE_DISPLAY} and we'll sort out the next step.`,
   },
 ] as const;
 

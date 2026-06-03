@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 
 const ACCEPT =
   ".stl,.3mf,.png,.jpg,.jpeg,.webp,model/stl,model/3mf,image/png,image/jpeg,image/webp";
@@ -194,6 +195,7 @@ export default function UploadPrintPage() {
                 {error}
               </p>
             )}
+            <FormLegalConsent className="mb-4 text-[var(--muted)]" />
             <button type="submit" className="btn gold" disabled={loading}>
               {loading ? "Sending…" : "Submit"}
             </button>

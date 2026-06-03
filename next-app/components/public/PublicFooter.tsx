@@ -91,6 +91,13 @@ export function PublicFooter() {
                 Open in Google Maps
               </a>
             </p>
+            <p className="small mt-3 m-0 leading-[1.55]">
+              <Link href="/privacy">Privacy Policy</Link>
+              <span className="mx-1.5 opacity-60" aria-hidden>
+                ·
+              </span>
+              <Link href="/terms">Terms of Service</Link>
+            </p>
             <ul className="footer-links mt-4 list-none p-0">
               {linkGroups[0].links.map((link) => (
                 <li key={`MixedMakerShop-${link.href}`}>{renderFooterLink(link)}</li>

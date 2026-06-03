@@ -8,6 +8,7 @@ import {
   mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicTopherEmail } from "@/lib/public-brand";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -139,6 +140,8 @@ export function AiAutomationInquiryForm() {
         {error ? (
           <p className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">{error}</p>
         ) : null}
+
+        <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
 
         <button type="submit" disabled={loading} className={cn(mmsBtnPrimary, "mt-2 w-full px-8 py-3.5 disabled:opacity-60")}>
           {loading ? "Sending…" : "Talk to Topher about AI automation"}

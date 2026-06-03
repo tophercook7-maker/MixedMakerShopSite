@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { PaymentLegalConsent } from "@/components/public/LegalConsent";
 import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection";
 import { PRICING_TIERS } from "@/lib/pricing-tiers";
 import {
@@ -152,6 +153,7 @@ export default function PricingPage() {
             <p className="mt-6 text-base leading-relaxed text-white/82 md:text-lg">
               You&apos;ll see a preview of your site before committing to anything. If it&apos;s not a fit, no problem.
             </p>
+            <PaymentLegalConsent variant="glass" className="mt-6 text-left text-white/65" />
           </div>
 
           {/* Section 4 — Process */}

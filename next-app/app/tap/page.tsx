@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { Mail, Globe, ExternalLink } from "lucide-react";
 import { TopherWebDesignSampleSitesGrid } from "@/components/public/TopherWebDesignSampleSitesGrid";
-import { publicShellClass, publicTopherEmail } from "@/lib/public-brand";
+import {
+  publicShellClass,
+  publicTopherEmail,
+  publicTopherPhoneDisplay,
+  publicTopherPhoneTel,
+  publicTopherTextHref,
+} from "@/lib/public-brand";
 import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import { cn } from "@/lib/utils";
@@ -18,9 +24,6 @@ export const metadata: Metadata = {
 export const viewport = {
   themeColor: "#0f1115",
 };
-
-const phoneDisplay = "501-575-8017";
-const phoneTel = "5015758017";
 
 const primaryBtn =
   "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-gradient-to-br from-emerald-600/90 to-teal-800/95 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-black/25 transition hover:brightness-110 active:scale-[0.99]";
@@ -78,11 +81,11 @@ export default function TapPage() {
             <h2 className="sr-only">Call, text, or save contact</h2>
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
-                <a href={`tel:${phoneTel}`} className={primaryBtn}>
-                  Call {phoneDisplay}
+                <a href={publicTopherPhoneTel} className={primaryBtn}>
+                  Call {publicTopherPhoneDisplay}
                 </a>
-                <a href={`sms:${phoneTel}`} className={ghostBtn}>
-                  Text {phoneDisplay}
+                <a href={publicTopherTextHref} className={ghostBtn}>
+                  Text {publicTopherPhoneDisplay}
                 </a>
               </div>
               <a
@@ -248,10 +251,10 @@ export default function TapPage() {
               Tap call or text and we&apos;ll line up next steps together.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <a href={`tel:${phoneTel}`} className={cn(primaryBtn, "sm:w-auto sm:min-w-[11rem]", "sm:flex-initial")}>
+              <a href={publicTopherPhoneTel} className={cn(primaryBtn, "sm:w-auto sm:min-w-[11rem]", "sm:flex-initial")}>
                 Call now
               </a>
-              <a href={`sms:${phoneTel}`} className={cn(ghostBtn, "sm:w-auto sm:min-w-[11rem]", "sm:flex-initial")}>
+              <a href={publicTopherTextHref} className={cn(ghostBtn, "sm:w-auto sm:min-w-[11rem]", "sm:flex-initial")}>
                 Text now
               </a>
             </div>

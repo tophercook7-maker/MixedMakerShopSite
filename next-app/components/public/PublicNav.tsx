@@ -5,10 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicTopherTextHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
-
-const TOPHER_TEXT_HREF = "sms:+15015758017";
 
 const navItems: {
   href: string;
@@ -90,7 +88,7 @@ export function PublicNav() {
           ))}
           <span className="nav-cta-divider" aria-hidden="true" />
           <a
-            href={TOPHER_TEXT_HREF}
+            href={publicTopherTextHref}
             className="pill cta"
             onClick={() =>
               trackPublicEvent("public_contact_cta_click", { location: "nav", target: "text_topher" })

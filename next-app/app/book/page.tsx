@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 
 export default function BookWebsiteReviewPage() {
   const [name, setName] = useState("");
@@ -135,6 +136,7 @@ export default function BookWebsiteReviewPage() {
             ))}
           </select>
           <textarea className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 min-h-[110px]" placeholder="Anything we should prepare?" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <FormLegalConsent className="text-slate-400" />
           <button className="rounded-md bg-amber-400 text-slate-950 px-4 py-2 font-semibold" type="submit" disabled={loading}>
             {loading ? "Booking..." : "Book Website Review"}
           </button>

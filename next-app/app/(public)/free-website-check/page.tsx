@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 
 export default function FreeWebsiteCheckPage() {
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function FreeWebsiteCheckPage() {
                 {error}
               </p>
             )}
+            <FormLegalConsent className="mb-4 text-[var(--muted)]" />
             <button type="submit" className="btn gold" disabled={loading}>
               {loading ? "Submitting…" : "Get My Free Website Check"}
             </button>

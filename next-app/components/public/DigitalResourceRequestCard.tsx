@@ -9,6 +9,7 @@ import {
   mmsTextLinkOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { publicTopherEmail } from "@/lib/public-brand";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 
 const inputClass =
@@ -100,6 +101,7 @@ export function DigitalResourceRequestCard(props: { title: StarterResourceTitle;
           <textarea className={cn(textareaClass, "mt-1.5")} name="notes" placeholder="Where to send it, format prefs, etc." />
         </label>
         {error ? <p className="text-xs text-red-200">{error}</p> : null}
+        <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
         <button type="submit" disabled={loading} className={cn(mmsBtnPrimary, "inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm disabled:opacity-60")}>
           Request this resource
           <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />

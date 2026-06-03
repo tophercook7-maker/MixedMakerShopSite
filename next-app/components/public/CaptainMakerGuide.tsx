@@ -8,6 +8,7 @@ import {
   getCaptainMakerRecommendation,
   type CaptainMakerRecommendation,
 } from "@/lib/captain-maker-recommendation";
+import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 import { cn } from "@/lib/utils";
 import {
@@ -382,8 +383,9 @@ export function CaptainMakerGuide() {
                 </label>
                 <label className={cn("flex items-start gap-3 text-sm leading-relaxed", mmsOnGlassSecondary)}>
                   <input name="marketing_permission" value="yes" type="checkbox" className="mt-1" />
-                  <span>Captain Maker can log that you&apos;re okay with Mixed Maker Shop following up about this request.</span>
+                  <span>Captain Maker can log that you&apos;re okay with MixedMakerShop following up about this request.</span>
                 </label>
+                <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
                 {status === "error" ? <p className={cn("text-sm", mmsOnGlassSecondary)}>{error}</p> : null}
                 <button type="submit" disabled={status === "loading"} className={cn(mmsBtnPrimary, "w-full justify-center sm:w-auto")}>
                   {status === "loading" ? "Logging request..." : "Send free estimate request"}
