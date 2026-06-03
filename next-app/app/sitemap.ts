@@ -12,6 +12,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/about",
   "/ad-lab",
   "/blog",
+  "/blog/custom-3d-printing-branding",
   "/blog/mobile-friendly-website-design",
   "/builds",
   "/church-websites-hot-springs",

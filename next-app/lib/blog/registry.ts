@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "custom-3d-printing-branding",
+    title: "Beyond Plastic: How Custom 3D Printing Services Can Level Up Your Branding",
+    category: "3D Printing",
+    excerpt:
+      "Ditch catalog swag that ends up in the junk drawer. Custom 3D printed keychains, bookmarks, and branded gear that customers actually keep — in small batches from Hot Springs.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-03",
+    href: "/blog/custom-3d-printing-branding",
+  },
+  {
     slug: "mobile-friendly-website-design",
     title: "7 Mistakes You’re Making with Your Mobile Friendly Website Design",
     category: "Mobile Website Design",
