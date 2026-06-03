@@ -32,6 +32,7 @@ const posts: BlogIndexPost[] = [
     readTime: "8 min read",
     readMinutes: 8,
     publishedAt: "2026-06-03",
+    featured: true,
     href: "/blog/custom-3d-printing-branding",
   },
   {
@@ -43,7 +44,6 @@ const posts: BlogIndexPost[] = [
     readTime: "7 min read",
     readMinutes: 7,
     publishedAt: "2026-05-28",
-    featured: true,
     href: "/blog/mobile-friendly-website-design",
   },
   {
