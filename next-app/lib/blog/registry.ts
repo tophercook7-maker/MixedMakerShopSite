@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "off-grid-lora-weather-station",
+    title: "The Off-Grid Brain: Why We’re Building a Solar-Powered LoRa Weather Station",
+    category: "Maker Builds",
+    excerpt:
+      "Solar power, LoRa radio, 3D-printed Stevenson screens, and edge AI — a weather station build with no cloud rent and data you actually own.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-06",
+    href: "/blog/off-grid-lora-weather-station",
+  },
+  {
     slug: "cleaning-service-website-essentials",
     title: "Quick Refresh: What Every Modern Cleaning Service Website Needs",
     category: "Quick Refresh",
