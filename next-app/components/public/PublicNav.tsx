@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { publicFreeMockupFunnelHref, publicTopherTextHref } from "@/lib/public-brand";
+import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicTopherTextHref } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const navItems: {
@@ -14,6 +14,7 @@ const navItems: {
   event?: { name: string; props?: Record<string, string | number | boolean | undefined> };
 }[] = [
   { href: "/start-here", label: "Start Here" },
+  { href: publicCaptainMakerHref, label: "Captain Maker" },
   { href: "/websites-tools", label: "Websites & Tools" },
   { href: "/3d-printing", label: "GiGi’s Print Shop" },
   { href: "/property-care", label: "Property Care" },

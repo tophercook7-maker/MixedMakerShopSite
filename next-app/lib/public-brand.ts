@@ -32,6 +32,9 @@ export const publicFreeMockupFunnelHref = "/free-mockup#free-mockup-start";
 /** Fresh Cut example funnel — query preserved; hash lands on intake. */
 export const publicFreeMockupFunnelHrefFreshCut = "/free-mockup?example=freshcut#free-mockup-start";
 
+/** Captain Maker — AI helper for estimates and picking the right service path. */
+export const publicCaptainMakerHref = "/captain-maker";
+
 /** Stable Maps search for the studio (avoids brittle share.google short links). */
 export const publicGoogleMapsSearchHref =
   "https://www.google.com/maps/search/?api=1&query=MixedMakerShop+Hot+Springs+AR";

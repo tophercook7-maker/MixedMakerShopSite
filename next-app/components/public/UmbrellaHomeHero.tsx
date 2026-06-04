@@ -14,7 +14,7 @@ import {
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
-import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -127,15 +127,15 @@ export function UmbrellaHomeHero() {
             <div className={cn("mt-4", mmsOnGlassCtaSeparator)}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href="/#captain-maker"
+                  href={publicCaptainMakerHref}
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "chooser" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "captain_maker" }}
                   className={cn(
                     mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Ask Captain Maker
+                  Start with Captain Maker
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink

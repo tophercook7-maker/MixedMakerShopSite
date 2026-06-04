@@ -237,7 +237,7 @@ export default function WebsitePreviewGeneratorPostPage() {
         </li>
         <li>
           <strong>Captain Maker:</strong> Not sure where to start?{" "}
-          <Link href="/#captain-maker">Chat with the Captain</Link>.
+          <Link href="/captain-maker">Chat with the Captain</Link>.
         </li>
       </ul>
     </BlogPostLayout>

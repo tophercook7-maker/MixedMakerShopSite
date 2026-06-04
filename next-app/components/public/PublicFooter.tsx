@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
-import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
+import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
 import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 
@@ -10,6 +10,7 @@ export function PublicFooter() {
       title: "MixedMakerShop",
       links: [
         { href: "/start-here", label: "Start Here" },
+        { href: publicCaptainMakerHref, label: "Captain Maker" },
         { href: "/examples", label: "Examples" },
         { href: "/idea-lab", label: "Idea Lab" },
         { href: "/contact", label: "Contact" },

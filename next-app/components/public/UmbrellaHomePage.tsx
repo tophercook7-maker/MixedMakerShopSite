@@ -16,7 +16,12 @@ import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesignHomeSpotlight";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from "@/lib/public-brand";
+import {
+  publicCaptainMakerHref,
+  publicFreeMockupFunnelHref,
+  publicShellClass,
+  publicTopherEmail,
+} from "@/lib/public-brand";
 import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
@@ -261,6 +266,37 @@ export function UmbrellaHomePage() {
       <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
 
+        <section className={cn(homeBackdrop)} aria-labelledby="captain-maker-cta-heading">
+          <div className={cn(shell, "py-14 md:py-20")}>
+            <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl text-center md:text-left">
+              <p className={mmsSectionEyebrowOnGlass}>Not sure where to start?</p>
+              <h2 id="captain-maker-cta-heading" className={cn(mmsH2OnGlass, "mt-4")}>
+                Meet Captain Maker
+              </h2>
+              <p className={cn("mx-auto mt-5 max-w-2xl text-base leading-relaxed md:mx-0 md:text-lg", mmsOnGlassSecondary)}>
+                Get a quick project estimate from our friendly AI helper.
+              </p>
+              <Link
+                href={publicCaptainMakerHref}
+                className={cn(
+                  mmsBtnPrimary,
+                  "mt-8 inline-flex w-full items-center justify-center gap-2 px-8 py-3.5 no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Start with Captain Maker
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </Link>
+              <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
+                Need a website first?{" "}
+                <Link href={publicFreeMockupFunnelHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                  Get a free homepage mockup
+                </Link>{" "}
+                — Captain Maker helps when you are still figuring out the fit.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <TopherWebDesignHomeSpotlight />
 
         <section className={cn(homeBackdrop)} id="studio-divisions">
@@ -374,7 +410,7 @@ export function UmbrellaHomePage() {
                 That’s exactly why Captain Maker is here. Tell Captain Maker what you’re trying to do, and he’ll point you
                 toward the right service before you start your estimate.
               </p>
-              <Link href="/#captain-maker" className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
+              <Link href={publicCaptainMakerHref} className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
                 Ask Captain Maker what to do next.
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
@@ -384,6 +420,12 @@ export function UmbrellaHomePage() {
 
         <section className={cn(homeBackdrop)} id="captain-maker">
           <div className={cn(shell, mmsSectionY)}>
+            <p className={cn("mb-6 text-center text-sm md:text-base", mmsOnGlassSecondary)}>
+              <Link href={publicCaptainMakerHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                Open the full Captain Maker page
+              </Link>{" "}
+              for the best chat experience — or continue below.
+            </p>
             <CaptainMakerGuide />
           </div>
         </section>
@@ -398,13 +440,13 @@ export function UmbrellaHomePage() {
                 the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
               </p>
               <Link
-                href="/#captain-maker"
+                href={publicCaptainMakerHref}
                 className={cn(
-                  mmsBtnPrimary,
-                  "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto",
+                  mmsBtnSecondaryOnGlass,
+                  "mt-7 inline-flex w-full justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Ask Captain Maker
+                Start with Captain Maker
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
