@@ -87,17 +87,17 @@ export default function CaptainMakerPage() {
                 Not sure what you need? Ask Captain Maker.
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Tell Captain Maker what you&apos;re trying to build, fix, promote, print, or organize. He&apos;ll point
-                you toward the right MixedMakerShop path before you start a free estimate.
+                Use the guided project assistant to sort what you need, collect useful details, and land on the right
+                next step — free preview, 3D print path, AI consult, or contact with Topher.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <TrackedPublicLink
-                  href="#captain-maker-chat"
+                  href="#captain-maker-guided"
                   eventName="public_captain_maker_cta"
-                  eventProps={{ location: "captain_maker_hero", target: "chat" }}
+                  eventProps={{ location: "captain_maker_hero", target: "guided" }}
                   className={cn(mmsBtnPrimary, "inline-flex w-full justify-center gap-2 no-underline hover:no-underline sm:w-auto")}
                 >
-                  Start asking Captain Maker
+                  Start the guided assistant
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
@@ -111,7 +111,7 @@ export default function CaptainMakerPage() {
               </div>
             </div>
 
-            <div id="captain-maker-chat" className="scroll-mt-28 mt-10 md:mt-14">
+            <div id="captain-maker-guided" className="scroll-mt-28 mt-10 md:mt-14">
               <CaptainMakerPanel variant="page" />
             </div>
 

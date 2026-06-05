@@ -271,10 +271,11 @@ export function UmbrellaHomePage() {
             <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl text-center md:text-left">
               <p className={mmsSectionEyebrowOnGlass}>Not sure where to start?</p>
               <h2 id="captain-maker-cta-heading" className={cn(mmsH2OnGlass, "mt-4")}>
-                Meet Captain Maker
+                Captain Maker — guided project assistant
               </h2>
               <p className={cn("mx-auto mt-5 max-w-2xl text-base leading-relaxed md:mx-0 md:text-lg", mmsOnGlassSecondary)}>
-                Get a quick project estimate from our friendly AI helper.
+                Answer a few plain questions, get a recommended path, and copy a project summary before you start a free
+                preview or contact Topher.
               </p>
               <Link
                 href={publicCaptainMakerHref}
@@ -283,7 +284,7 @@ export function UmbrellaHomePage() {
                   "mt-8 inline-flex w-full items-center justify-center gap-2 px-8 py-3.5 no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Start asking Captain Maker
+                Ask Captain Maker what I need
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </Link>
               <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
@@ -407,11 +408,11 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Not sure what you need?</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>Not sure what you need?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                That’s exactly why Captain Maker is here. Tell Captain Maker what you’re trying to do, and he’ll point you
-                toward the right service before you start your estimate.
+                That’s exactly why Captain Maker is here. Use the guided helper to sort your project type, goals, and the
+                right next step before you commit to anything.
               </p>
               <Link href={publicCaptainMakerHref} className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
-                Ask Captain Maker what to do next.
+                Ask Captain Maker what I need
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
@@ -422,9 +423,9 @@ export function UmbrellaHomePage() {
           <div className={cn(shell, mmsSectionY)}>
             <p className={cn("mb-6 text-center text-sm md:text-base", mmsOnGlassSecondary)}>
               <Link href={publicCaptainMakerHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
-                Open the full Captain Maker page
+                Open the full guided Captain Maker page
               </Link>{" "}
-              for the best chat experience — or continue below.
+              for the full project assistant — or continue with quick chat below.
             </p>
             <CaptainMakerGuide />
           </div>

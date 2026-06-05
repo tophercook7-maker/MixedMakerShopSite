@@ -11,7 +11,7 @@ export function CaptainMakerFreeMockupHelper() {
         <div className="max-w-2xl">
           <p className={cn("text-base font-semibold", mmsOnGlassPrimary)}>Not sure what to write?</p>
           <p className={cn("mt-1 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
-            Ask Captain Maker first, then come back to start your free preview.
+            Ask Captain Maker first and bring your summary back here.
           </p>
         </div>
         <Link

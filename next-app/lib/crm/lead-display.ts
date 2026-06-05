@@ -29,7 +29,8 @@ export function rawLeadSource(row: Record<string, unknown>): string {
 
 export function displayLeadSourceLabel(row: Record<string, unknown>): string {
   const source = rawLeadSource(row);
-  if (source === "captain_maker_chat" || source === "captain_maker") return "Captain Maker Chat";
+  if (source === "captain_maker_chat" || source === "captain_maker" || source === "captain_maker_guided")
+    return "Captain Maker";
   if (source === "ai_automation_inquiry") return "AI automation inquiry";
   if (source === "digital_resource_request") return "Digital resource request";
   if (source === "mockup_request") return "Free website preview";

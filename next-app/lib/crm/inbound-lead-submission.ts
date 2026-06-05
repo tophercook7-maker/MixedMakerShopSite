@@ -10,6 +10,7 @@ import {
 const inboundSources = new Set([
   "captain_maker",
   "captain_maker_chat",
+  "captain_maker_guided",
   "contact_form",
   "idea_lab",
   "quote_request",
@@ -108,6 +109,7 @@ function sourceLabel(source: string): string {
   switch (source) {
     case "captain_maker":
     case "captain_maker_chat":
+    case "captain_maker_guided":
       return "Captain Maker chat";
     case "contact_form":
       return "public contact form";
@@ -138,7 +140,8 @@ function defaultBusinessName(data: InboundLeadSubmissionInput, source: string): 
   const explicit = data.business_name || data.name;
   if (explicit) return explicit;
   if (source === "website_check" && data.website) return `Website check - ${data.website}`;
-  if (source === "captain_maker" || source === "captain_maker_chat") return "Captain Maker lead";
+  if (source === "captain_maker" || source === "captain_maker_chat" || source === "captain_maker_guided")
+    return "Captain Maker lead";
   return "Mixed Maker Shop lead";
 }
 

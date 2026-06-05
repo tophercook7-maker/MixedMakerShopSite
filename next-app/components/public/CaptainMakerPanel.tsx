@@ -8,7 +8,9 @@ import {
   getCaptainMakerRecommendation,
   type CaptainMakerRecommendation,
 } from "@/lib/captain-maker-recommendation";
+import { CaptainMakerGuidedAssistant } from "@/components/public/CaptainMakerGuidedAssistant";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
+import { CAPTAIN_MAKER_DISCLAIMER } from "@/lib/captain-maker-guided";
 import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 import { cn } from "@/lib/utils";
 import {
@@ -237,32 +239,114 @@ export function CaptainMakerPanel({ variant = "embedded" }: CaptainMakerPanelPro
     }
   }
 
+  if (isPage) {
+    return (
+      <div className="mx-auto w-full max-w-5xl space-y-10">
+        <CaptainMakerGuidedAssistant showIntro />
+
+        <div className="public-glass-box public-glass-box--pad border border-white/10">
+          <p className={mmsSectionEyebrowOnGlass}>Still have a specific question?</p>
+          <h3 className={cn(mmsH2OnGlass, "mt-3 !text-xl md:!text-2xl")}>Ask Captain Maker in chat</h3>
+          <p className={cn("mt-3 text-sm leading-relaxed md:text-base", mmsOnGlassSecondary)}>
+            Use the chat below for follow-up questions after the guided path — or skip straight to a quick answer.
+          </p>
+        </div>
+
+        <div className="grid gap-6">
+          <div className="public-glass-box public-glass-box--pad border border-orange-300/25 shadow-[0_0_40px_rgba(251,146,60,0.08)]">
+            <p className={mmsSectionEyebrowOnGlass}>Captain Maker chat</p>
+            <div className="mt-5 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
+              <div className="max-h-[28rem] min-h-[18rem] space-y-4 overflow-y-auto px-4 py-5 sm:px-5" aria-live="polite">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm md:text-base",
+                        message.role === "user"
+                          ? "bg-orange-300 text-[#1d251f]"
+                          : "border border-white/10 bg-white/10 text-white",
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.links && message.links.length > 0 ? (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {message.links.map((link) => (
+                            <Link
+                              key={`${message.id}-${link.href}`}
+                              href={link.href}
+                              className={cn(
+                                "rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs font-semibold text-white no-underline hover:no-underline",
+                                message.role === "user" && "border-black/15 bg-black/10 text-[#1d251f]",
+                              )}
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+                {chatStatus === "loading" ? (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white">
+                      Captain Maker is checking the chart...
+                    </div>
+                  </div>
+                ) : null}
+                <div ref={messagesEndRef} />
+              </div>
+              <form onSubmit={handleChatSubmit} className="border-t border-white/10 p-4 sm:p-5">
+                <label className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)} htmlFor="captain-maker-message">
+                  {inputLabel}
+                </label>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <textarea
+                    id="captain-maker-message"
+                    className={cn(inputClass, "min-h-[5.5rem] resize-y")}
+                    rows={4}
+                    value={chatInput}
+                    onChange={(event) => setChatInput(event.currentTarget.value)}
+                    placeholder={inputPlaceholder}
+                    disabled={chatStatus === "loading"}
+                  />
+                  <button
+                    type="submit"
+                    disabled={chatStatus === "loading" || !chatInput.trim()}
+                    className={cn(mmsBtnPrimary, "min-h-[3.35rem] justify-center px-6 sm:self-end")}
+                  >
+                    {chatStatus === "loading" ? "Sending..." : submitLabel}
+                    <Send className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
+                {chatError ? <p className={cn("mt-3 text-sm", mmsOnGlassSecondary)}>{chatError}</p> : null}
+              </form>
+            </div>
+            <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>{CAPTAIN_MAKER_DISCLAIMER}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
         "grid gap-6",
-        isPage ? "mx-auto w-full max-w-4xl" : "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+        "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
       )}
     >
-      <div
-        className={cn(
-          "public-glass-box public-glass-box--pad",
-          isPage && "border border-orange-300/25 shadow-[0_0_40px_rgba(251,146,60,0.08)]",
-        )}
-      >
-        {!isPage ? (
-          <>
-            <p className={mmsSectionEyebrowOnGlass}>Captain Maker</p>
-            <h2 className={cn(mmsH2OnGlass, "mt-4")}>Chat with the captain.</h2>
-            <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-              Ask about website help, Google Business Profile setup, monthly support, free previews, AI helpers, flyers,
-              3D printing, property care, pricing ranges, free estimates, or the contact page.
-            </p>
-          </>
-        ) : (
-          <p className={mmsSectionEyebrowOnGlass}>Captain Maker chat</p>
-        )}
-        <div className={cn("overflow-hidden rounded-3xl border border-white/10 bg-black/20", isPage ? "mt-5" : "mt-6")}>
+      <div className="public-glass-box public-glass-box--pad">
+        <p className={mmsSectionEyebrowOnGlass}>Captain Maker</p>
+        <h2 className={cn(mmsH2OnGlass, "mt-4")}>Chat with the captain.</h2>
+        <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
+          Ask about website help, Google Business Profile setup, monthly support, free previews, AI helpers, flyers, 3D
+          printing, property care, pricing ranges, free estimates, or the contact page.
+        </p>
+        <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-black/20">
           <div className="max-h-[32rem] min-h-[24rem] space-y-4 overflow-y-auto px-4 py-5 sm:px-5" aria-live="polite">
             {messages.map((message) => (
               <div
@@ -307,17 +391,14 @@ export function CaptainMakerPanel({ variant = "embedded" }: CaptainMakerPanelPro
             <div ref={messagesEndRef} />
           </div>
           <form onSubmit={handleChatSubmit} className="border-t border-white/10 p-4 sm:p-5">
-            <label
-              className={isPage ? cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary) : "sr-only"}
-              htmlFor="captain-maker-message"
-            >
+            <label className="sr-only" htmlFor="captain-maker-message">
               {inputLabel}
             </label>
             <div className="flex flex-col gap-3 sm:flex-row">
               <textarea
                 id="captain-maker-message"
-                className={cn(inputClass, isPage ? "min-h-[5.5rem] resize-y" : "min-h-[3.35rem] resize-none sm:min-h-0")}
-                rows={isPage ? 4 : 2}
+                className={cn(inputClass, "min-h-[3.35rem] resize-none sm:min-h-0")}
+                rows={2}
                 value={chatInput}
                 onChange={(event) => setChatInput(event.currentTarget.value)}
                 placeholder={inputPlaceholder}
@@ -335,24 +416,16 @@ export function CaptainMakerPanel({ variant = "embedded" }: CaptainMakerPanelPro
             {chatError ? <p className={cn("mt-3 text-sm", mmsOnGlassSecondary)}>{chatError}</p> : null}
           </form>
         </div>
-        {!isPage ? (
-          <button
-            type="button"
-            className={cn(mmsBtnSecondaryOnGlass, "mt-5 w-full justify-center sm:w-auto")}
-            onClick={() => setWantsEstimate(true)}
-          >
-            Start free estimate
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </button>
-        ) : (
-          <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-            Captain Maker can help you choose a starting path, but final scope, pricing, timing, and availability are
-            confirmed by Topher before work begins.
-          </p>
-        )}
+        <button
+          type="button"
+          className={cn(mmsBtnSecondaryOnGlass, "mt-5 w-full justify-center sm:w-auto")}
+          onClick={() => setWantsEstimate(true)}
+        >
+          Start free estimate
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
       </div>
 
-      {!isPage ? (
       <div className="public-glass-box--soft public-glass-box--pad">
         <p className={mmsSectionEyebrowOnGlass}>Next step</p>
         <h3 className={cn(mmsH2OnGlass, "mt-4 !text-2xl")}>Start a free estimate when you&apos;re ready.</h3>
@@ -441,7 +514,6 @@ export function CaptainMakerPanel({ variant = "embedded" }: CaptainMakerPanelPro
           </button>
         )}
       </div>
-      ) : null}
     </div>
   );
 }
