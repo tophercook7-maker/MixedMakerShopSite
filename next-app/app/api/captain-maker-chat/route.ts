@@ -31,6 +31,7 @@ Useful Mixed Maker Shop paths:
 - 3D printing: /3d-printing
 - Property care: /property-care
 - Pricing: /pricing
+- Idea Lab experiments: /idea-lab
 - Contact page: /contact`;
 
 const serviceLinks = {
@@ -43,6 +44,7 @@ const serviceLinks = {
   propertyCare: { label: "View property care", href: "/property-care" },
   pricing: { label: "See starting pricing", href: "/pricing" },
   contact: { label: "Open the contact page", href: "/contact" },
+  ideaLab: { label: "Explore Idea Lab", href: "/idea-lab" },
 } satisfies Record<string, CaptainMakerLink>;
 
 function cleanMessages(input: unknown): Array<{ role: ChatRole; content: string }> {
@@ -97,6 +99,9 @@ function isMostlyUnrelated(text: string): boolean {
     "design",
     "quote",
     "estimate",
+    "idea",
+    "experiment",
+    "suggest",
   ];
   return text.length > 18 && !includesAny(text, serviceWords);
 }
@@ -111,6 +116,7 @@ function linksFor(text: string): CaptainMakerLink[] {
   if (includesAny(text, ["3d", "print", "printed", "part", "gift", "keychain"])) links.push(serviceLinks.printing);
   if (includesAny(text, ["property", "lawn", "yard", "cleanup", "pressure washing"])) links.push(serviceLinks.propertyCare);
   if (includesAny(text, ["price", "pricing", "cost", "budget", "how much"])) links.push(serviceLinks.pricing);
+  if (includesAny(text, ["idea", "experiment", "suggest", "brainstorm", "what if"])) links.push(serviceLinks.ideaLab);
   links.push(serviceLinks.contact);
   return Array.from(new Map(links.map((link) => [link.href, link])).values()).slice(0, 4);
 }

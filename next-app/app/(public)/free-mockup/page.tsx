@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CaptainMakerFreeMockupHelper } from "@/components/public/CaptainMakerFreeMockupHelper";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-client";
 import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
@@ -108,6 +109,8 @@ export default async function FreeMockupPage({
             </div>
           </div>
         </section>
+
+        <CaptainMakerFreeMockupHelper />
 
         {isFreshCutFunnel ? <FreeMockupSourceBannerFreshCut /> : null}
         <FreeMockupFunnelClient funnelSource={funnelSource} />

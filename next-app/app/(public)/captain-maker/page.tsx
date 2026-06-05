@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
+import { CaptainMakerPanel } from "@/components/public/CaptainMakerPanel";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { SITE_URL } from "@/lib/site";
 import {
+  mmsBtnPrimary,
+  mmsBtnSecondaryOnGlass,
   mmsH2OnGlass,
+  mmsH3OnGlass,
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
   mmsSectionY,
@@ -20,37 +24,54 @@ const canonical = `${SITE_URL}/captain-maker`;
 export const metadata: Metadata = {
   title: "Captain Maker | MixedMakerShop",
   description:
-    "Meet Captain Maker — MixedMakerShop's friendly AI helper for quick project estimates. Get pointed toward a free website mockup, web estimate, 3D print request, or your next idea.",
+    "Ask Captain Maker for help choosing the right MixedMakerShop service, including websites, free homepage previews, 3D printing, AI helpers, property care, pricing, and project next steps.",
   alternates: { canonical },
   openGraph: {
     title: "Captain Maker | MixedMakerShop",
     description:
-      "Not sure what you need? Captain Maker helps you pick the right path — website mockup, estimate, 3D printing, or a general project idea.",
+      "Not sure what you need? Captain Maker points you toward websites, free previews, 3D printing, property care, pricing, and the right next step.",
     url: canonical,
   },
 };
 
-const startingPaths = [
+const helpTopics = [
+  { title: "Website help", body: "Landing pages, full sites, local SEO foundations, and clearer service pages." },
+  { title: "Free homepage previews", body: "See a homepage direction before you commit to a full build." },
+  { title: "Google Business Profile cleanup", body: "Setup, consistency checks, and monthly support starting points." },
+  { title: "AI helpers and automations", body: "Bots, intake flows, and practical automations tied to your site." },
+  { title: "3D print requests", body: "Custom prints, promo gear, and GiGi's Print Shop routing." },
+  { title: "Property care routing", body: "Outdoor cleanup, lawn care, and property-help next steps." },
+  { title: "Pricing questions", body: "Starting prices and what usually affects scope — not final quotes." },
+  { title: "General project ideas", body: "Flyers, tools, experiments, and projects still taking shape." },
+] as const;
+
+const recommendedSteps = [
   {
-    title: "Free website mockup",
-    body: "See a homepage direction before you spend — no contract required.",
+    need: "Need a better business website?",
+    action: "Start with a free homepage preview",
     href: publicFreeMockupFunnelHref,
   },
   {
-    title: "Website estimate",
-    body: "Landing pages, full sites, local SEO, and add-ons like AI helpers.",
+    need: "Need something printed?",
+    action: "Open the 3D printing path",
+    href: "/3d-printing",
+  },
+  {
+    need: "Need pricing first?",
+    action: "See starting prices",
     href: "/pricing",
   },
   {
-    title: "3D print request",
-    body: "Custom prints, keychains, bookmarks, and promo gear from GiGi's Print Shop.",
-    href: "/custom-3d-printing",
-  },
-  {
-    title: "General project idea",
-    body: "Flyers, tools, automation, or something you are still figuring out.",
+    need: "Need to talk to Topher?",
+    action: "Open the contact page",
     href: "/contact",
   },
+] as const;
+
+const extraPaths = [
+  { label: "Web design services", href: "/web-design" },
+  { label: "Idea Lab experiments", href: "/idea-lab" },
+  { label: "Property care", href: "/property-care" },
 ] as const;
 
 export default function CaptainMakerPage() {
@@ -59,45 +80,86 @@ export default function CaptainMakerPage() {
       <FixedHeroMedia />
       <div className="relative z-[5] w-full">
         <section className={mmsUmbrellaSectionBackdropImmersive}>
-          <div className={cn(publicShellClass, mmsSectionY, "pb-16 md:pb-24")}>
+          <div className={cn(publicShellClass, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl">
-              <p className={mmsSectionEyebrowOnGlass}>MixedMakerShop</p>
+              <p className={mmsSectionEyebrowOnGlass}>Captain Maker</p>
               <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-                Meet Captain Maker
+                Not sure what you need? Ask Captain Maker.
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Get a quick project estimate from our friendly AI helper. Tell the Captain what you are trying to build,
-                fix, or promote — and he will point you to the right next step.
+                Tell Captain Maker what you&apos;re trying to build, fix, promote, print, or organize. He&apos;ll point
+                you toward the right MixedMakerShop path before you start a free estimate.
               </p>
-              <p className={cn("mt-4 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-                Prefer the main web design path first?{" "}
-                <Link href={publicFreeMockupFunnelHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
-                  Start with a free homepage mockup
-                </Link>{" "}
-                — Captain Maker is here when you are not sure which service fits.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <h2 className={cn(mmsH2OnGlass, "sm:col-span-2 text-2xl md:text-3xl")}>Common starting paths</h2>
-              {startingPaths.map((path) => (
-                <Link
-                  key={path.href}
-                  href={path.href}
-                  className="public-glass-box--soft public-glass-box--pad flex h-full flex-col border border-white/10 no-underline transition hover:border-white/20 hover:no-underline"
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <TrackedPublicLink
+                  href="#captain-maker-chat"
+                  eventName="public_captain_maker_cta"
+                  eventProps={{ location: "captain_maker_hero", target: "chat" }}
+                  className={cn(mmsBtnPrimary, "inline-flex w-full justify-center gap-2 no-underline hover:no-underline sm:w-auto")}
                 >
-                  <h3 className="text-lg font-bold text-white">{path.title}</h3>
-                  <p className={cn("mt-3 flex-1 text-sm leading-relaxed", mmsOnGlassSecondary)}>{path.body}</p>
-                  <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#f0c49a]">
-                    Open path
-                    <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-                  </p>
-                </Link>
-              ))}
+                  Start asking Captain Maker
+                  <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+                </TrackedPublicLink>
+                <TrackedPublicLink
+                  href={publicFreeMockupFunnelHref}
+                  eventName="public_captain_maker_cta"
+                  eventProps={{ location: "captain_maker_hero", target: "free_mockup" }}
+                  className={cn(mmsBtnSecondaryOnGlass, "inline-flex w-full justify-center no-underline hover:no-underline sm:w-auto")}
+                >
+                  Get a Free Website Preview
+                </TrackedPublicLink>
+              </div>
             </div>
 
-            <div id="captain-maker" className="scroll-mt-28 mt-12 md:mt-16">
-              <CaptainMakerGuide />
+            <div id="captain-maker-chat" className="scroll-mt-28 mt-10 md:mt-14">
+              <CaptainMakerPanel variant="page" />
+            </div>
+
+            <div className="mt-12 md:mt-16">
+              <h2 className={cn(mmsH2OnGlass, "text-2xl md:text-3xl")}>What Captain Maker can help with</h2>
+              <p className={cn("mt-4 max-w-3xl text-base leading-relaxed", mmsOnGlassSecondary)}>
+                Captain Maker is here to sort the starting path — not to lock in final scope, pricing, or timelines.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {helpTopics.map((topic) => (
+                  <article key={topic.title} className="public-glass-box--soft public-glass-box--pad flex h-full flex-col">
+                    <h3 className={mmsH3OnGlass}>{topic.title}</h3>
+                    <p className={cn("mt-3 flex-1 text-sm leading-relaxed", mmsOnGlassSecondary)}>{topic.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-12 md:mt-16">
+              <h2 className={cn(mmsH2OnGlass, "text-2xl md:text-3xl")}>Recommended next steps</h2>
+              <div className="mt-8 grid gap-4 md:grid-cols-2">
+                {recommendedSteps.map((step) => (
+                  <Link
+                    key={step.href}
+                    href={step.href}
+                    className="public-glass-box public-glass-box--pad flex h-full flex-col border border-white/10 no-underline transition hover:border-white/20 hover:no-underline"
+                  >
+                    <p className={cn("text-sm font-semibold uppercase tracking-[0.14em]", mmsOnGlassSecondary)}>
+                      {step.need}
+                    </p>
+                    <p className="mt-3 flex items-center gap-2 text-base font-bold text-white">
+                      {step.action}
+                      <ArrowRight className="h-4 w-4 shrink-0 text-[#f0c49a]" aria-hidden />
+                    </p>
+                  </Link>
+                ))}
+              </div>
+              <p className={cn("mt-6 text-sm leading-relaxed", mmsOnGlassSecondary)}>
+                More paths:{" "}
+                {extraPaths.map((path, index) => (
+                  <span key={path.href}>
+                    <Link href={path.href} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                      {path.label}
+                    </Link>
+                    {index < extraPaths.length - 1 ? " · " : null}
+                  </span>
+                ))}
+              </p>
             </div>
           </div>
         </section>

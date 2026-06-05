@@ -283,7 +283,7 @@ export function UmbrellaHomePage() {
                   "mt-8 inline-flex w-full items-center justify-center gap-2 px-8 py-3.5 no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Start with Captain Maker
+                Start asking Captain Maker
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </Link>
               <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
