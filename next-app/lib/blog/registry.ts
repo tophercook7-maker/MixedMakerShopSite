@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "weekend-reclaimer-ai-automation",
+    title: "The Weekend Reclaimer: How AI Automation Stops Your Inbox from Running Your Life",
+    category: "AI & Automation",
+    excerpt:
+      "Small business workflow automation for owners tired of inbox interruptions — filter noise, qualify leads, and reclaim your weekends without enterprise fluff.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-08",
+    href: "/blog/weekend-reclaimer-ai-automation",
+  },
+  {
     slug: "local-seo-home-services-mistakes",
     title: "7 Mistakes You’re Making with Local SEO (and Why They’re Killing Your “Near Me” Traffic)",
     category: "Local SEO",
