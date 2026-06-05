@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-home-services-mistakes",
+    title: "7 Mistakes You’re Making with Local SEO (and Why They’re Killing Your “Near Me” Traffic)",
+    category: "Local SEO",
+    excerpt:
+      "One-page services, stale Google profiles, review silence, and mobile speed — seven local SEO mistakes home service businesses make and how to fix them.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-07",
+    href: "/blog/local-seo-home-services-mistakes",
+  },
+  {
     slug: "off-grid-lora-weather-station",
     title: "The Off-Grid Brain: Why We’re Building a Solar-Powered LoRa Weather Station",
     category: "Maker Builds",
