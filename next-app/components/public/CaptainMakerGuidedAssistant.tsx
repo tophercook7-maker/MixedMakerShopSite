@@ -30,6 +30,11 @@ import {
   type GuidedAnswers,
   type GuidedStep,
 } from "@/lib/captain-maker-guided";
+import {
+  buildCaptainMakerProjectSummaryStorage,
+  isFreeMockupHref,
+  saveAndNavigateToFreeMockup,
+} from "@/lib/captain-maker-project-summary";
 import { cn } from "@/lib/utils";
 import {
   mmsBtnPrimary,
@@ -105,6 +110,15 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
 
   function goalComplete(): boolean {
     return GUIDED_GOAL_QUESTIONS.every((question) => answers[question.key].trim().length > 0);
+  }
+
+  function handleRecommendationNavigation(href: string) {
+    if (isFreeMockupHref(href)) {
+      const payload = buildCaptainMakerProjectSummaryStorage(answers, recommendation, quickStart);
+      saveAndNavigateToFreeMockup(payload);
+      return;
+    }
+    window.location.assign(href);
   }
 
   async function handleCopySummary() {
@@ -393,13 +407,24 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
                 </p>
               </div>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link
-                  href={recommendation.ctaHref}
-                  className={cn(mmsBtnPrimary, "inline-flex justify-center gap-2 no-underline hover:no-underline")}
-                >
-                  {recommendation.ctaLabel}
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
+                {isFreeMockupHref(recommendation.ctaHref) ? (
+                  <button
+                    type="button"
+                    className={cn(mmsBtnPrimary, "inline-flex justify-center gap-2")}
+                    onClick={() => handleRecommendationNavigation(recommendation.ctaHref)}
+                  >
+                    {recommendation.ctaLabel}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </button>
+                ) : (
+                  <Link
+                    href={recommendation.ctaHref}
+                    className={cn(mmsBtnPrimary, "inline-flex justify-center gap-2 no-underline hover:no-underline")}
+                  >
+                    {recommendation.ctaLabel}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                )}
                 {recommendation.preferMockupCta ? (
                   <button
                     type="button"
@@ -407,6 +432,14 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
                     onClick={() => setShowSendForm(true)}
                   >
                     Send this to Topher
+                  </button>
+                ) : isFreeMockupHref(recommendation.secondaryCtaHref) ? (
+                  <button
+                    type="button"
+                    className={cn(mmsBtnSecondaryOnGlass, "justify-center")}
+                    onClick={() => handleRecommendationNavigation(recommendation.secondaryCtaHref)}
+                  >
+                    {recommendation.secondaryCtaLabel}
                   </button>
                 ) : (
                   <Link
