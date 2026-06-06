@@ -24,6 +24,18 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "mixed-maker-shop-comeback",
+    title: "The Comeback: From Cook's Computer Service to the Mixed Maker Shop Revolution",
+    category: "Our Story",
+    excerpt:
+      "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom 3D printing across Hot Springs and surrounding communities.",
+    readTime: "9 min read",
+    readMinutes: 9,
+    publishedAt: "2026-06-09",
+    featured: true,
+    href: "/blog/mixed-maker-shop-comeback",
+  },
+  {
     slug: "weekend-reclaimer-ai-automation",
     title: "The Weekend Reclaimer: How AI Automation Stops Your Inbox from Running Your Life",
     category: "AI & Automation",
@@ -87,7 +99,6 @@ const posts: BlogIndexPost[] = [
     readTime: "8 min read",
     readMinutes: 8,
     publishedAt: "2026-06-03",
-    featured: true,
     href: "/blog/custom-3d-printing-branding",
   },
   {
