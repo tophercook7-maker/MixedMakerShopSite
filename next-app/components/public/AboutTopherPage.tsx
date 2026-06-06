@@ -1,5 +1,10 @@
+import {
+  MMS_LOCAL_TECH_POSITIONING,
+  MmsComebackStorySection,
+} from "@/components/public/MmsComebackStorySection";
 import { TopherAvatarFigure } from "@/components/public/TopherAvatarFigure";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { publicShellClass } from "@/lib/public-brand";
 import {
   mmsBullet,
@@ -37,10 +42,11 @@ export function AboutTopherPage() {
               <p className={mmsEyebrow}>About Topher</p>
               <h1 className={cn(mmsH1, "mt-6")}>I build things that are actually useful.</h1>
               <p className={cn(mmsLead, "mt-7 max-w-2xl")}>
-                Websites, custom prints, and digital builds — all under MixedMakerShop.
+                {MMS_LOCAL_TECH_POSITIONING}
               </p>
               <p className="mt-5 max-w-2xl text-sm font-medium text-[#4a5750] md:text-[0.9375rem]">
-                You&apos;re working directly with Topher — the person building everything.
+                You&apos;re working directly with Topher — local tech help since 2000, formerly Cook&apos;s Computer
+                Service, now rebuilding through MixedMakerShop.
               </p>
             </div>
           </div>
@@ -57,15 +63,17 @@ export function AboutTopherPage() {
           >
             <div className="space-y-6 text-base leading-relaxed text-[#354239] md:text-lg">
               <p>
-                I&apos;m Topher. MixedMakerShop is where I combine web design, 3D printing, and digital builds into one place.
+                I&apos;m Topher. MixedMakerShop is where I combine in-home computer repair, web design, AI help, local
+                business support, 3D printing, and digital builds into one place.
               </p>
               <p>
-                Some people come to me because they need a website that helps their business look professional and get customers.
-                Others need a physical solution made. Others have an idea they want help turning into something real.
+                Some people come to me because a computer is slow, the Wi-Fi won&apos;t cooperate, or they need someone
+                who will actually show up and fix it. Others need a website that brings in calls. Others want help
+                understanding AI without the jargon. Others need a physical solution made.
               </p>
               <p>
-                I&apos;m not interested in bloated process, fake agency polish, or overcomplicating things. I like building things
-                that are useful, clear, and actually help people move forward.
+                I&apos;m not interested in bloated process, fake agency polish, or overcomplicating things. I like building
+                things that are useful, clear, and actually help people move forward.
               </p>
               <p>
                 When you work with me, you work directly with the person doing the building. That means faster communication,
@@ -76,29 +84,23 @@ export function AboutTopherPage() {
         </div>
       </section>
 
-      <section id="story-legacy" className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}>
+      <section
+        id="story-legacy"
+        className={cn("border-b bg-white/92 shadow-[inset_0_1px_0_rgba(63,90,71,0.05)]", mmsSectionBorder)}
+      >
         <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
-          <h2 className={mmsH2}>Story &amp; legacy</h2>
-          <div className="mt-8 space-y-6 text-base leading-relaxed text-[#354239] md:text-lg">
+          <MmsComebackStorySection variant="about" />
+          <div className="mt-10 space-y-6 border-t border-[#3f5a47]/12 pt-10 text-base leading-relaxed text-[#354239] md:text-lg">
+            <h3 className="text-xl font-bold tracking-tight text-[#1e2822]">Why the umbrella exists</h3>
             <p>
-              Mixed Maker Shop exists because useful work rarely fits one narrow label. Small businesses need credible
-              websites; makers need prints that actually work; experiments need an honest place to live before they become
-              products. The umbrella keeps those threads organized instead of scattering them across disconnected sites.
+              Mixed Maker Shop exists because useful work rarely fits one narrow label. The comeback through
+              MixedMakerShop let me bring computer repair, websites, AI help, prints, and experiments under one honest
+              roof instead of scattering them across disconnected sites.
             </p>
             <p>
-              The studio grew out of real-life problem solving — picking up messy requests, tightening unclear messaging,
-              and shipping practical fixes instead of selling buzzwords. Creativity here means craftsmanship and clarity:
-              fewer layers between you and the person building the thing.
-            </p>
-            <p>
-              Resilience is part of that picture too — pacing work sustainably, staying direct when projects get hard, and
-              keeping faith and life experience in the background as motivation rather than theater. The goal stays simple:
-              build something that helps someone move forward.
-            </p>
-            <p>
-              Think of Mixed Maker Shop as a living archive: shipped projects, printable goods, digital tools, Idea Lab
-              experiments, and lessons learned along the way — each entry reflecting what actually worked (or what did
-              not) so the next build starts smarter.
+              Think of it as a living archive: shipped projects, printable goods, digital tools, Idea Lab experiments,
+              and lessons learned along the way — each entry reflecting what actually worked so the next build starts
+              smarter.
             </p>
           </div>
         </div>
@@ -149,28 +151,39 @@ export function AboutTopherPage() {
               Explore web design services, grab a free homepage preview, or send a note about what you&apos;re trying to
               build.
             </p>
-            <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:justify-center">
+            <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:justify-center sm:flex-wrap">
               <TrackedPublicLink
-                href="/web-design"
+                href="/contact"
                 eventName="public_contact_cta_click"
-                eventProps={{ location: "about_cta", target: "web_design" }}
+                eventProps={{ location: "about_cta", target: "tech_help" }}
                 className={cn(
                   mmsBtnPrimary,
                   "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                 )}
               >
-                Get a Website
+                Get Tech Help
               </TrackedPublicLink>
               <TrackedPublicLink
-                href="/contact"
+                href={publicFreeMockupFunnelHref}
                 eventName="public_contact_cta_click"
-                eventProps={{ location: "about_cta", target: "contact_topher" }}
+                eventProps={{ location: "about_cta", target: "free_mockup" }}
                 className={cn(
                   mmsBtnSecondary,
                   "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
                 )}
               >
-                Contact
+                Free Website Mockup
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href="/builds"
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "about_cta", target: "builds" }}
+                className={cn(
+                  mmsBtnSecondary,
+                  "w-full justify-center px-8 sm:w-auto sm:min-w-[12rem] no-underline hover:no-underline",
+                )}
+              >
+                See What We Build
               </TrackedPublicLink>
             </div>
             <p className="mx-auto mt-4 max-w-lg text-xs font-medium text-[#5a6a62] sm:text-sm">

@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
+import {
+  MMS_LOCAL_TECH_POSITIONING,
+  MmsComebackStorySection,
+} from "@/components/public/MmsComebackStorySection";
 import { MixedMakerBrandFaq } from "@/components/public/MixedMakerBrandFaq";
 import { UmbrellaHomeHero } from "@/components/public/UmbrellaHomeHero";
 import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesignHomeSpotlight";
@@ -48,6 +52,12 @@ const homeBackdrop = mmsUmbrellaSectionBackdrop;
 
 const chooserCards = [
   {
+    title: "I need computer or tech help",
+    body: "In-home repair, setup, troubleshooting, Wi-Fi issues, and everyday tech problems — local help since 2000, with remote options when it fits.",
+    href: "/contact",
+    cta: "Get Tech Help",
+  },
+  {
     title: "I need a better website",
     body: "Topher's Web Design is the dedicated web branch under Mixed Maker Shop — 3–5 page sites, informational projects, web systems, and online workflows.",
     href: TOPHER_WEB_DESIGN_URL,
@@ -82,6 +92,11 @@ const chooserCards = [
 ] as const;
 
 const serviceCards = [
+  {
+    title: "In-Home Computer Repair",
+    price: "Estimate required",
+    body: "House-call diagnostics, performance triage, Wi-Fi stability, upgrades, and everyday tech fixes in Hot Springs and nearby areas.",
+  },
   {
     title: "Landing Pages",
     price: "Starting at $100",
@@ -187,7 +202,7 @@ const studioDivisions = [
   {
     title: "Story & Legacy",
     subtitle: "Personal / Creative Archive",
-    body: "The lived story behind the studio — context, lessons, and creative archive work.",
+    body: "From Cook's Computer Service since 2000 to MixedMakerShop — the comeback story, lessons, and creative archive work.",
     href: "/about#story-legacy",
     external: false,
     Icon: BookOpen,
@@ -300,13 +315,19 @@ export function UmbrellaHomePage() {
 
         <TopherWebDesignHomeSpotlight />
 
+        <section className={cn(homeBackdrop)} id="comeback-story">
+          <div className={cn(shell, mmsSectionY)}>
+            <MmsComebackStorySection variant="glass" id="comeback-story" />
+          </div>
+        </section>
+
         <section className={cn(homeBackdrop)} id="studio-divisions">
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Studio map</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Divisions under the Mixed Maker Shop umbrella</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Mixed Maker Shop is the studio HQ — web design, maker builds, AI &amp; automation, digital products,
+                {MMS_LOCAL_TECH_POSITIONING} Web design, maker builds, AI &amp; automation, digital products,
                 experiments, and story work roll up here.
               </p>
               <p
@@ -384,11 +405,12 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Clear Starting Points</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Pick the build that sounds closest.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Mixed Maker Shop brings the creative services together under one umbrella — start with the closest fit,
-                then Captain Maker can help sort the details before your free estimate.
+                Mixed Maker Shop brings computer repair, web design, AI help, prints, and custom work together under one
+                umbrella — start with the closest fit, then Captain Maker can help sort the details before your free
+                estimate.
               </p>
             </div>
-            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
+            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6", mmsHomeGlassStackGap)}>
               {serviceCards.map((service) => (
                 <article
                   key={service.title}
@@ -451,7 +473,7 @@ export function UmbrellaHomePage() {
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
-            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-5", mmsHomeGlassStackGap)}>
+            <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-3", mmsHomeGlassStackGap)}>
               {chooserCards.map((card) =>
                 "external" in card && card.external ? (
                   <a
@@ -682,24 +704,22 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>About Topher &amp; GiGi</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>About Topher</h2>
               <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                I&apos;m Topher, the idea engine behind Mixed Maker Shop.
+                I&apos;m Topher — local tech help since 2000, formerly Cook&apos;s Computer Service, now rebuilding
+                through Mixed Maker Shop.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Mixed Maker Shop is the umbrella studio — Topher&apos;s Web Design is the web design and web systems
-                branch; GiGi&apos;s Print Shop covers the maker and custom 3D printing side. I build websites, digital
-                tools, local service pages, and practical online workflows for small businesses.
+                {MMS_LOCAL_TECH_POSITIONING} Topher&apos;s Web Design is the web branch; GiGi&apos;s Print Shop covers
+                custom 3D printing — all organized under one studio instead of scattered sites.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                I&apos;ve always had more ideas than one simple website could hold, so Mixed Maker Shop became the home
-                base — a place where web design, digital tools, property services, 3D printing, and new experiments can
-                all live under one organized roof.
+                The goal is simple: build useful things that help real people — whether that is a house call for a slow
+                PC, a website that actually brings in calls, or a custom print that solves a physical problem.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                The goal is simple: build useful things that help real people.
-              </p>
-              <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Some projects are for local businesses. Some are for homeowners. Some are digital. Some are printed. Some
-                are still being tested in the Idea Lab. But everything here starts with the same question:
+                <Link href="/about#story-legacy" className={cn(mmsTextLinkOnGlass, "font-semibold")}>
+                  Read the full comeback story
+                </Link>{" "}
+                from Cook&apos;s Computer Service to MixedMakerShop.
               </p>
               <p className="mt-7 rounded-2xl border border-white/12 bg-white/10 px-5 py-4 text-lg font-semibold text-white">
                 “What would actually help someone?”
@@ -707,8 +727,8 @@ export function UmbrellaHomePage() {
             </div>
             <div className={cn("grid gap-6 md:grid-cols-3", mmsHomeGlassStackGap)}>
               {[
-                "Mixed Maker Shop is the umbrella HQ for web design, maker builds, AI & automation, digital products, labs, and story.",
-                "Topher's Web Design is the dedicated branch for sites, informational pages, and web systems.",
+                "In-home computer repair and tech help for Hot Springs, Benton, Hot Springs Village, Lake Hamilton, Fountain Lake, and nearby areas.",
+                "Topher's Web Design is the dedicated branch for sites, local SEO, informational pages, and web systems.",
                 "GiGi handles most of the 3D printing side through GiGi's Print Shop.",
               ].map((line, i) => (
                 <div key={line} className="public-glass-box--soft public-glass-box--pad">

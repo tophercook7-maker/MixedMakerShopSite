@@ -4,7 +4,7 @@ import { AboutTopherPage } from "@/components/public/AboutTopherPage";
 export const metadata: Metadata = {
   title: "About Topher | MixedMakerShop",
   description:
-    "Topher builds useful websites, custom 3D prints, and practical digital tools — directly, from Hot Springs, Arkansas.",
+    "Topher has provided local tech help since 2000 — formerly Cook's Computer Service, now MixedMakerShop with in-home computer repair, web design, AI help, and custom 3D printing in Hot Springs, Arkansas.",
   openGraph: {
     title: "About Topher | MixedMakerShop",
     url: "https://mixedmakershop.com/about",

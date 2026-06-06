@@ -14,6 +14,7 @@ import {
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
+import { MMS_LOCAL_TECH_POSITIONING } from "@/components/public/MmsComebackStorySection";
 import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
@@ -76,14 +77,14 @@ export function UmbrellaHomeHero() {
             className={cn("mt-4 text-xl font-semibold leading-snug text-white md:text-2xl", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2)}
           >
-            Websites, 3D printing &amp; maker builds, AI tools, digital products, and experiments — organized under one studio.
+            {MMS_LOCAL_TECH_POSITIONING}
           </motion.p>
           <motion.p
             className={cn("mt-6 text-base leading-relaxed md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
             {...fadeUp(stagger * 2.5)}
           >
-            Mixed Maker Shop is the studio HQ. Topher&apos;s Web Design is the dedicated web branch; GiGi&apos;s Print Shop
-            carries custom 3D printing — alongside AI &amp; automation, digital products, Mixed Maker Labs, and story work.
+            Formerly Cook&apos;s Computer Service (2000–2014). After MS forced a pause, Mixed Maker Shop is the comeback —
+            in-home repair, websites, AI help, local business support, and custom 3D printing under one studio roof.
           </motion.p>
 
           <motion.div
