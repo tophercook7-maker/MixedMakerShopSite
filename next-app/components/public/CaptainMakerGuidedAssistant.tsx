@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Anchor,
   ArrowRight,
@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
-import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
+import { CAPTAIN_MAKER_SUMMARY_SENT_MESSAGE } from "@/lib/lead-confirmation-message";
 import {
   buildGuidedRecommendation,
   buildProjectSummary,
@@ -50,6 +50,9 @@ import {
 const inputClass =
   "w-full rounded-xl border border-white/15 bg-black/35 px-4 py-3 text-white placeholder:text-white/35 outline-none transition focus:border-orange-300/45 focus:ring-2 focus:ring-orange-300/15";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SUBMIT_COOLDOWN_MS = 8000;
+
 const quickStartIcons: Record<CaptainMakerQuickStartKey, typeof Globe> = {
   website: Globe,
   landing_page: Sparkles,
@@ -81,7 +84,7 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
   const [sendStatus, setSendStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [sendError, setSendError] = useState("");
-  const [showSendForm, setShowSendForm] = useState(false);
+  const lastSubmitAtRef = useRef(0);
 
   const recommendation = useMemo(
     () => buildGuidedRecommendation(answers, quickStart),
@@ -134,14 +137,56 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
 
   async function handleSendToTopher(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (sendStatus === "loading" || sendStatus === "success") return;
+
+    const now = Date.now();
+    if (now - lastSubmitAtRef.current < SUBMIT_COOLDOWN_MS) {
+      setSendError("Please wait a moment before sending again.");
+      setSendStatus("error");
+      return;
+    }
+
     setSendStatus("loading");
     setSendError("");
 
     const form = event.currentTarget;
     const fd = new FormData(form);
     const name = String(fd.get("name") || "").trim();
-    const email = String(fd.get("email") || "").trim();
+    const email = String(fd.get("email") || "").trim().toLowerCase();
     const phone = String(fd.get("phone") || "").trim();
+    const bestTimeMessage = String(fd.get("best_time_message") || "").trim();
+
+    if (!name) {
+      setSendStatus("error");
+      setSendError("Please enter your name.");
+      return;
+    }
+    if (!email || !EMAIL_PATTERN.test(email)) {
+      setSendStatus("error");
+      setSendError("Please enter a valid email.");
+      return;
+    }
+
+    const storage = buildCaptainMakerProjectSummaryStorage(answers, recommendation, quickStart);
+    const message = [
+      "Captain Maker recommendation summary",
+      "Source: Captain Maker",
+      "Page: /captain-maker",
+      "",
+      `Project type: ${storage.projectType || "(not provided)"}`,
+      `Business name: ${storage.businessName || "(not provided)"}`,
+      `Goal: ${storage.goal || "(not provided)"}`,
+      `Desired action: ${storage.desiredAction || "(not provided)"}`,
+      `Timeline: ${storage.timeline || "(not provided)"}`,
+      `Budget comfort: ${storage.budgetComfort || "(not provided)"}`,
+      `Recommendation: ${storage.recommendationTitle || "(not provided)"}`,
+      bestTimeMessage ? `Best time / message: ${bestTimeMessage}` : null,
+      "",
+      "Generated summary:",
+      storage.generatedSummary,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     try {
       const res = await fetch("/api/leads", {
@@ -151,20 +196,23 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
           submission_type: "public_lead",
           source: "captain_maker_guided",
           name,
-          business_name: answers.businessOrIdea || recommendation.service,
+          business_name: storage.businessName || storage.recommendationTitle,
           email,
           phone: phone || undefined,
-          category: recommendation.service,
+          category: storage.recommendationTitle,
           service_type: quickStart || "guided_assistant",
-          request: answers.projectType || recommendation.service,
-          message: summary,
-          transcript: summary,
+          request: storage.projectType || storage.recommendationTitle,
+          message,
+          notes: bestTimeMessage || undefined,
+          transcript: storage.generatedSummary,
+          source_url: "/captain-maker",
         }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || body?.ok !== true) {
         throw new Error(String(body?.error || "Could not send your summary right now."));
       }
+      lastSubmitAtRef.current = now;
       setSendStatus("success");
       form.reset();
     } catch (err) {
@@ -177,9 +225,9 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
     setStep("project_type");
     setQuickStart(null);
     setAnswers(EMPTY_GUIDED_ANSWERS);
-    setShowSendForm(false);
     setSendStatus("idle");
     setSendError("");
+    lastSubmitAtRef.current = 0;
   }
 
   return (
@@ -425,15 +473,7 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
                     <ArrowRight className="h-4 w-4" aria-hidden />
                   </Link>
                 )}
-                {recommendation.preferMockupCta ? (
-                  <button
-                    type="button"
-                    className={cn(mmsBtnSecondaryOnGlass, "justify-center")}
-                    onClick={() => setShowSendForm(true)}
-                  >
-                    Send this to Topher
-                  </button>
-                ) : isFreeMockupHref(recommendation.secondaryCtaHref) ? (
+                {isFreeMockupHref(recommendation.secondaryCtaHref) ? (
                   <button
                     type="button"
                     className={cn(mmsBtnSecondaryOnGlass, "justify-center")}
@@ -472,41 +512,57 @@ export function CaptainMakerGuidedAssistant({ showIntro = true }: CaptainMakerGu
               ) : null}
             </div>
 
-            {showSendForm || !recommendation.preferMockupCta ? (
-              <div className="mt-6 border-t border-white/10 pt-6">
-                {sendStatus === "success" ? (
-                  <p className="rounded-xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
-                    {LEAD_CONFIRMATION_MESSAGE}
-                  </p>
-                ) : (
-                  <form onSubmit={handleSendToTopher} className="space-y-4">
-                    <p className={cn("text-sm leading-relaxed", mmsOnGlassSecondary)}>
-                      Send your Captain Maker summary to Topher for human review. No automated quote — he confirms scope,
-                      pricing, and timing before work begins.
-                    </p>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <label className="block">
-                        <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Name</span>
-                        <input name="name" required className={inputClass} autoComplete="name" />
-                      </label>
-                      <label className="block">
-                        <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Email</span>
-                        <input name="email" required type="email" className={inputClass} autoComplete="email" />
-                      </label>
-                    </div>
-                    <label className="block sm:max-w-xs">
-                      <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Phone (optional)</span>
-                      <input name="phone" type="tel" className={inputClass} autoComplete="tel" />
+            <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5 md:p-6">
+              <h4 className={cn(mmsH3OnGlass, "!text-lg md:!text-xl")}>Want Topher to look this over?</h4>
+              <p className={cn("mt-2 text-sm leading-relaxed", mmsOnGlassSecondary)}>
+                Optional — send your Captain Maker summary for human review. No final quote here; Topher confirms scope,
+                pricing, and timing before anything is scheduled.
+              </p>
+              {sendStatus === "success" ? (
+                <p className="mt-4 rounded-xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100">
+                  {CAPTAIN_MAKER_SUMMARY_SENT_MESSAGE}
+                </p>
+              ) : (
+                <form onSubmit={handleSendToTopher} className="mt-5 space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Name</span>
+                      <input name="name" required className={inputClass} autoComplete="name" />
                     </label>
-                    <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
-                    {sendStatus === "error" ? <p className={cn("text-sm", mmsOnGlassSecondary)}>{sendError}</p> : null}
-                    <button type="submit" disabled={sendStatus === "loading"} className={cn(mmsBtnPrimary, "justify-center")}>
-                      {sendStatus === "loading" ? "Sending..." : "Send this to Topher"}
-                    </button>
-                  </form>
-                )}
-              </div>
-            ) : null}
+                    <label className="block">
+                      <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Email</span>
+                      <input name="email" required type="email" className={inputClass} autoComplete="email" />
+                    </label>
+                  </div>
+                  <label className="block sm:max-w-md">
+                    <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>Phone (optional)</span>
+                    <input name="phone" type="tel" className={inputClass} autoComplete="tel" />
+                  </label>
+                  <label className="block">
+                    <span className={cn("mb-2 block text-sm font-semibold", mmsOnGlassPrimary)}>
+                      Best time / message (optional)
+                    </span>
+                    <textarea
+                      name="best_time_message"
+                      rows={2}
+                      className={inputClass}
+                      placeholder="Example: weekday afternoons, or a quick note about timing…"
+                    />
+                  </label>
+                  <FormLegalConsent variant="glass" className={mmsOnGlassSecondary} />
+                  {sendStatus === "error" && sendError ? (
+                    <p className={cn("text-sm", mmsOnGlassSecondary)}>{sendError}</p>
+                  ) : null}
+                  <button
+                    type="submit"
+                    disabled={sendStatus === "loading"}
+                    className={cn(mmsBtnPrimary, "w-full justify-center sm:w-auto")}
+                  >
+                    {sendStatus === "loading" ? "Sending..." : "Send Summary to Topher"}
+                  </button>
+                </form>
+              )}
+            </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button type="button" className={cn(mmsBtnSecondaryOnGlass, "justify-center")} onClick={() => setStep("goal")}>

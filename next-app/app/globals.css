@@ -6313,3 +6313,31 @@ details.printing-faq-details[open] {
   color: var(--sd-muted);
   opacity: 0.72;
 }
+
+/* Captain Maker — site-wide floating helper (mobile bar + desktop card) */
+@keyframes captain-maker-float-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(251, 146, 60, 0.12),
+      0 10px 32px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(251, 146, 60, 0.22),
+      0 12px 36px rgba(0, 0, 0, 0.38),
+      0 0 22px -4px rgba(251, 146, 60, 0.18);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .captain-maker-float__glow {
+    animation: captain-maker-float-glow 4.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .captain-maker-float__glow {
+    animation: none;
+  }
+}

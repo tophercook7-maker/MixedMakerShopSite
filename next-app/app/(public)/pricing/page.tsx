@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { PaymentLegalConsent } from "@/components/public/LegalConsent";
 import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection";
 import { PRICING_TIERS } from "@/lib/pricing-tiers";
 import {
   mmsBtnPrimary,
+  mmsBtnSecondaryOnGlass,
   mmsBullet,
   mmsH1,
   mmsH2,
@@ -55,6 +56,41 @@ export default function PricingPage() {
             <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-orange-100 md:text-base">
               Starter SEO Site begins at $400 for a basic 3-page SEO website. Custom builds stay custom quoted.
             </p>
+          </div>
+
+          {/* Captain Maker — unsure about pricing */}
+          <div className="mt-10 rounded-3xl border border-orange-300/20 bg-[#111510]/90 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8">
+            <h2 className={cn(mmsH2, "!text-xl text-white md:!text-2xl")}>Not sure which option fits?</h2>
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/82 md:text-lg">
+              Captain Maker can help you figure out whether you need a free homepage preview, a landing page, a local web
+              presence fix, a 3D print request, or something custom.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <TrackedPublicLink
+                href={publicCaptainMakerHref}
+                eventName="public_captain_maker_cta"
+                eventProps={{ location: "pricing_page", target: "captain_maker" }}
+                className={cn(
+                  mmsBtnPrimary,
+                  "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Ask Captain Maker
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </TrackedPublicLink>
+              <TrackedPublicLink
+                href={publicFreeMockupFunnelHref}
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "pricing_page", target: "free_mockup", section: "captain_maker_helper" }}
+                className={cn(
+                  mmsBtnSecondaryOnGlass,
+                  "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto",
+                )}
+              >
+                Start Free Preview
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+              </TrackedPublicLink>
+            </div>
           </div>
 
           {/* Section 2 — Tiers */}
