@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "business-card-3d-printed-keychain",
+    title: "Why Your Business Card Should Be a 3D Printed Keychain (and Why Bulk Matters)",
+    category: "3D Printing",
+    excerpt:
+      "Pocket-sized billboards on keys — why bulk 3D printed keychains beat paper business cards for daily impressions, durability, and local brand saturation.",
+    readTime: "9 min read",
+    readMinutes: 9,
+    publishedAt: "2026-06-13",
+    href: "/blog/business-card-3d-printed-keychain",
+  },
+  {
     slug: "custom-3d-printed-bookmarks",
     title: "Why Custom 3D Printed Bookmarks Stand Out",
     category: "3D Printing",
