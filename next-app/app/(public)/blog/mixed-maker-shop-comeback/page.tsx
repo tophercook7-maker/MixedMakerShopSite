@@ -101,13 +101,29 @@ export default function MixedMakerShopComebackPostPage() {
         </li>
       </ul>
       <p>
+        And because I&apos;m not interested in vague pricing or gotcha fees, we keep our <strong>starting rates</strong>{" "}
+        plain and easy to understand:
+      </p>
+      <ul>
+        <li>
+          <strong>Service Call / First Hour:</strong> $85
+        </li>
+        <li>
+          <strong>Additional Labor:</strong> $65/hr
+        </li>
+      </ul>
+      <p>
+        That&apos;s part of our no-nonsense, plain-language pricing approach. You should know what the starting cost
+        looks like before anybody touches your machine.
+      </p>
+      <p>
         If you&apos;re in{" "}
         <strong>Hot Springs, Hot Springs Village, Benton, Lake Hamilton, or Fountain Lake</strong>, you don&apos;t have
         to drive. I come to you. It&apos;s straight talk, no jargon, and real solutions.
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/in-home-tech-support.webp"
-        alt="A friendly technician sitting at a kitchen table, helping an older adult with a laptop, with warm natural lighting"
+        alt="A friendly technician sitting at a kitchen table, helping an older adult with a laptop. The lighting is warm and natural, emphasizing a personal, helpful connection"
       />
 
       <h2>AI Tutoring: Not Just for Silicon Valley</h2>
