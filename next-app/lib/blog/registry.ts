@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "3d-printed-keychains-bulk-marketing",
+    title: "Why 3D Printed Keychains in Bulk Will Change the Way You Market Your Local Business",
+    category: "3D Printing",
+    excerpt:
+      "Ditch catalog swag — how bulk 3D printed keychains, QR lead magnets, lumpy mail, and loyalty tokens help local businesses market smarter with small MOQs from GiGi's Print Shop.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-12",
+    href: "/blog/3d-printed-keychains-bulk-marketing",
+  },
+  {
     slug: "mixed-maker-shop-made-simple",
     title: "The Mixed Maker Shop Guide: Web Design, 3D Printing, and AI Automation Made Simple",
     category: "MixedMakerShop Guide",
