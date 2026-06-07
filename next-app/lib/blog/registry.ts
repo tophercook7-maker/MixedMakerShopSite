@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "mixed-maker-shop-guide",
+    title: "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions",
+    category: "MixedMakerShop Guide",
+    excerpt:
+      "Captain Maker, Topher's Web Design, GiGi's Print Shop, AI automation, and straight-talk pricing — a glass-box guide to how MixedMakerShop works without agency fluff.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-10",
+    href: "/blog/mixed-maker-shop-guide",
+  },
+  {
     slug: "mixed-maker-shop-comeback",
     title: "The Comeback: From Cook's Computer Service to the Mixed Maker Shop Revolution",
     category: "Our Story",
