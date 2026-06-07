@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "custom-3d-printed-bookmarks",
+    title: "Why Custom 3D Printed Bookmarks Stand Out",
+    category: "3D Printing",
+    excerpt:
+      "25+ creative custom 3D printed bookmark ideas for schools, libraries, businesses, and book lovers — durable, tactile keepsakes from GiGi's Print Shop.",
+    readTime: "10 min read",
+    readMinutes: 10,
+    publishedAt: "2026-06-07",
+    href: "/blog/custom-3d-printed-bookmarks",
+  },
+  {
     slug: "3d-printed-keychains-bulk-marketing",
     title: "Why 3D Printed Keychains in Bulk Will Change the Way You Market Your Local Business",
     category: "3D Printing",
