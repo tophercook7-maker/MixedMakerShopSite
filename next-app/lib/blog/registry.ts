@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "mixed-maker-shop-made-simple",
+    title: "The Mixed Maker Shop Guide: Web Design, 3D Printing, and AI Automation Made Simple",
+    category: "MixedMakerShop Guide",
+    excerpt:
+      "One umbrella for mobile friendly website design, bulk 3D printed keychains, local SEO, AI automation for small business, and Captain Maker — without drowning in tabs.",
+    readTime: "9 min read",
+    readMinutes: 9,
+    publishedAt: "2026-06-11",
+    href: "/blog/mixed-maker-shop-made-simple",
+  },
+  {
     slug: "mixed-maker-shop-guide",
     title: "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions",
     category: "MixedMakerShop Guide",
