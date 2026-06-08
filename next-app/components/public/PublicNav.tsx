@@ -15,6 +15,7 @@ const navItems: {
 }[] = [
   { href: "/start-here", label: "Start Here" },
   { href: publicCaptainMakerHref, label: "Captain Maker" },
+  { href: "/hollow-gate", label: "The Hollow Gate", event: { name: "public_hollow_gate_cta_click", props: { location: "nav" } } },
   { href: "/websites-tools", label: "Websites & Tools" },
   { href: "/3d-printing", label: "GiGi’s Print Shop" },
   { href: "/property-care", label: "Property Care" },
