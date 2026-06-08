@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "hollow-gate",
+    title: "Step Beyond the Threshold: Unlocking The Hollow Gate",
+    category: "Idea Lab",
+    excerpt:
+      "A sensory storytelling experiment from Mixed Maker Shop — digital atmosphere, curated sound, and a threshold you step into, not scroll past.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-14",
+    href: "/blog/hollow-gate",
+  },
+  {
     slug: "business-card-3d-printed-keychain",
     title: "Why Your Business Card Should Be a 3D Printed Keychain (and Why Bulk Matters)",
     category: "3D Printing",
