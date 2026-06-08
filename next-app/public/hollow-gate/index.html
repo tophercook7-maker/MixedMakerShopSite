@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Hollow Gate | Mixed Maker Shop</title>
+<style>
+  :root{--bg:#0e0c0b;--panel:#1a1613;--ink:#e9e3d6;--muted:#8c8576;--accent:#e6b334;--danger:#c64e4e;--ok:#6da87e}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 30% 10%,#241e18,var(--bg) 60%)}
+  body{color:var(--ink);font-family:Georgia,Times,serif}
+  #app{max-width:960px;margin:0 auto;padding:1.25rem}
+  header{text-align:center;padding:1rem 0 .5rem}
+  h1{letter-spacing:.25em;font-size:clamp(1.2rem,2.6vw,2rem);margin:.2rem 0}
+  .tagline{color:var(--muted);font-size:.9rem}
+  .frame-wrap{position:relative;margin-top:.5rem;border:1px solid #2f2720;border-radius:18px;overflow:hidden;background:#111}
+  .frame-wrap iframe{display:block;width:100%;height:min(68vh,720px);border:0}
+  .paywall{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:1.25rem;background:rgba(0,0,0,.55)}
+  .paywall.open{display:flex}
+  .card{max-width:420px;width:100%;background:linear-gradient(180deg,#1f1a15,#16120f);border:1px solid #2f2720;border-radius:18px;padding:1.25rem;color:var(--ink)}
+  .card h2{margin:.1rem 0 .4rem;font-size:1.15rem;color:#ffe08a}
+  .card p{color:var(--muted);font-size:.92rem;line-height:1.5}
+  .cta{display:block;width:100%;margin-top:.9rem;padding:.85rem;border-radius:12px;background:#2a2214;border:1px solid #6d5620;color:#ffe08a;text-align:center;font-weight:700;letter-spacing:.06em;text-decoration:none}
+  .cta-secondary{background:#201a14;border-color:#3a3128;color:var(--ink)}
+  .hint{margin-top:1rem;font-size:.78rem;color:#5c564a;text-align:center}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="tagline">A dark text adventure from Mixed Maker Shop</div>
+    <h1>THE HOLLOW GATE</h1>
+  </header>
+
+  <div class="frame-wrap">
+    <iframe id="game" src="https://tophercook7-maker.github.io/TheHollowGate/" allow="clipboard-write" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+  </div>
+
+  <div class="row">
+    <span class="hint">Use headphones. Desktop or tablet recommended.</span>
+    <span class="hint">Demo — unlock full story for $1.99.</span>
+  </div>
+</div>
+
+<div id="paywall" class="paywall">
+  <div class="card">
+    <h2>Continue for $1.99</h2>
+    <p>Preview finished. Unlock the rest of the story.</p>
+    <a id="stripeBtn" class="cta" href="https://buy.stripe.com/5kQ4gs7DAeizgkl6d83cc0c" target="_blank" rel="noreferrer">Buy full access — $1.99</a>
+    <button id="restoreBtn" class="cta cta-secondary">I paid — unlock now</button>
+    <p class="hint">Payments are securely processed by Stripe.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STRIPE_URL = "https://buy.stripe.com/5kQ4gs7DAeizgkl6d83cc0c";
+  var GAME_ORIGIN = "https://tophercook7-maker.github.io";
+  var PAYWALL_AFTER_SCENES = 3;
+  var state = { scenes: 0, ended: false, unlocked: false };
+  var $ = function(id){ return document.getElementById(id); };
+
+  try { state.unlocked = localStorage.getItem("thg_unlocked") === "1"; } catch(e){}
+
+  $("restoreBtn").addEventListener("click", function(){
+    state.unlocked = true;
+    try { localStorage.setItem("thg_unlocked", "1"); } catch(e){}
+    $("paywall").classList.remove("open");
+  });
+
+  function maybeShowPaywall(){
+    if (!state.unlocked && !state.ended && state.scenes >= PAYWALL_AFTER_SCENES) {
+      $("paywall").classList.add("open");
+    }
+  }
+
+  window.addEventListener("message", function(ev){
+    try {
+      var o = typeof ev.origin === "string" ? ev.origin : "";
+      if (o !== GAME_ORIGIN) return;
+      var data = ev.data;
+      if (!data || typeof data !== "object") return;
+      var type = data.type;
+      if (!type) return;
+
+      if (type === "scene" || type === "ending") {
+        state.scenes += 1;
+        if (type === "ending") state.ended = true;
+      }
+      maybeShowPaywall();
+    } catch(e){}
+  });
+
+  if (state.unlocked) {
+    $("paywall").classList.remove("open");
+  }
+})();
+</script>
+</body>
+</html>
