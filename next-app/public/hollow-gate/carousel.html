@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Hollow Gate — Marketing Carousel</title>
+<style>
+  :root{
+    --bg:#0e0c0b;--panel:#16120f;--ink:#e9e3d6;--muted:#8c8576;--accent:#e6b334;--danger:#c64e4e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 30% 10%,#241e18,var(--bg) 60%);color:var(--ink);font-family:Georgia,Times,serif}
+  .wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:1rem}
+  .stage{position:relative;width:min(900px,94vw);aspect-ratio:16/9;border:1px solid #2f2720;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#1f1a15,#16120f);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+  .deck{position:absolute;inset:0;perspective:1200px}
+  .slide{position:absolute;inset:0;display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:auto 1fr auto;gap:.6rem;padding:clamp(.8rem,1.4vw,1.4rem);opacity:0;transform:translateX(60px);transition:opacity .5s ease,transform .55s ease;pointer-events:none;will-change:transform,opacity}
+  .slide.active{opacity:1;transform:translateX(0);pointer-events:auto}
+  .slide.prev{opacity:0;transform:translateX(-60px)}
+  .slide h2{grid-column:1/-1;margin:.2rem 0 .4rem;font-size:clamp(1.1rem,2vw,1.5rem);color:#ffe08a;letter-spacing:.15em}
+  .panel{background:#110f0d;border:1px solid #2f2720;border-radius:14px;padding:.9rem;display:flex;flex-direction:column;justify-content:space-between}
+  .panel.quote{font-style:italic;line-height:1.55;color:#ddd5c4}
+  .panel .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.25em;color:var(--accent);margin-bottom:.4rem}
+  .panel .action{display:inline-block;margin-top:.6rem;padding:.55rem .9rem;border-radius:999px;background:#2a2214;border:1px solid #6d5620;color:#ffe08a;text-decoration:none;font-weight:700;letter-spacing:.08em;font-size:.9rem;text-align:center}
+  .panel .price{font-size:clamp(1.6rem,2.4vw,2.2rem);color:#ffe08a;letter-spacing:.08em}
+  .foot{margin-top:.2rem;font-size:.8rem;color:var(--muted);letter-spacing:.08em}
+  .controls{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+  .btn{appearance:none;border:1px solid #2f2720;background:#1a1613;color:#ffe4b8;border-radius:12px;padding:.55rem .9rem;font-weight:700;letter-spacing:.08em;cursor:pointer}
+  .btn:hover{border-color:#6d5620;background:#241e18}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2f2720;display:inline-block}
+  .dot.on{background:var(--accent)}
+  .hidden-share{position:fixed;left:-9999px;top:-9999px}
+  @media (max-width: 720px){
+    .slide{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage" role="region" aria-label="Marketing carousel">
+    <div class="deck" id="deck">
+      <!-- Slide 1 -->
+      <section class="slide active" data-i="0">
+        <h2>THE HOLLOW GATE</h2>
+        <div class="panel"><div class="label">Genre</div><div class="quote">Dark narrative adventure where every choice reshapes the story.</div></div>
+        <div class="panel"><div class="label">Hook</div><div class="quote">Step through the gate. Betray, bargain, or become something new.</div></div>
+      </section>
+      <!-- Slide 2 -->
+      <section class="slide" data-i="1">
+        <h2>THE GATE OPENS</h2>
+        <div class="panel"><div class="label">The choice</div><div class="quote">“I drew my blade and stepped forward.” — or — “I spoke the old word, and the door yielded.”</div></div>
+        <div class="panel"><div class="label">Tone</div><div class="quote">Atmospheric. Tense. Beautiful. Not for the faint of heart.</div></div>
+      </section>
+      <!-- Slide 3 -->
+      <section class="slide" data-i="2">
+        <h2>COMPANIONS & STAKES</h2>
+        <div class="panel"><div class="label">Bonds</div><div class="quote">Ash. Vale. Moth. Rook. The Hedge Witch. Trust is rare; survival is rarer.</div></div>
+        <div class="panel"><div class="label">Consequences</div><div class="quote">Your trust, fear, gold, and pack loyalty change how the story ends.</div></div>
+      </section>
+      <!-- Slide 4 -->
+      <section class="slide" data-i="3">
+        <h2>BRANCHING ENDINGS</h2>
+        <div class="panel"><div class="label">Endings</div><div class="quote">Fight. Talk. Outwit. Sacrifice. Multiple finales dictated by your choices.</div></div>
+        <div class="panel"><div class="label">Replay value</div><div class="quote">Different routes unlock companions, secrets, and entirely new scenes.</div></div>
+      </section>
+      <!-- Slide 5 -->
+      <section class="slide" data-i="4">
+        <h2>TRY IT FREE</h2>
+        <div class="panel"><div class="label">Demo</div><div class="quote">Play the opening chapter. No account. No signup.</div></div>
+        <div class="panel"><div class="label">Where</div><a class="action" href="https://tophercook7-maker.github.io/TheHollowGate/" target="_blank" rel="noreferrer">Open the demo</a></div>
+      </section>
+      <!-- Slide 6 -->
+      <section class="slide" data-i="5">
+        <h2>UNLOCK THE FULL STORY</h2>
+        <div class="panel"><div class="label">Price</div><div class="price">$1.99</div></div>
+        <div class="panel"><div class="label">Get it</div><a class="action" href="https://buy.stripe.com/5kQ4gs7DAeizgkl6d83cc0c" target="_blank" rel="noreferrer">Buy full access</a><div class="foot" style="margin-top:.5rem">Password-protected PDF + runtime coming soon on Mac, iOS, and Android.</div></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prevBtn">Prev</button>
+    <span id="dots" style="display:inline-flex;gap:.35rem;align-items:center"></span>
+    <button class="btn" id="nextBtn">Next</button>
+  </div>
+  <div class="foot">Arrow keys, swipe, or buttons to navigate</div>
+
+  <!-- Hidden share text for easy copy/share -->
+  <div class="hidden-share" id="shareText">The Hollow Gate — a new dark text adventure. Demo free, full story $1.99. https://tophercook7-maker.github.io/TheHollowGate/</div>
+</div>
+
+<script>
+(function(){
+  const deck=document.getElementById('deck');
+  const slides=[...deck.querySelectorAll('.slide')];
+  const dotsEl=document.getElementById('dots');
+  let current=0;
+
+  slides.forEach((_,i)=>{
+    const d=document.createElement('span');
+    d.className='dot'+(i===0?' on':'');
+    dotsEl.appendChild(d);
+  });
+  const dots=[...dotsEl.querySelectorAll('.dot')];
+
+  function go(n){
+    slides[current].className='slide'+(n>current?' prev':'');
+    current=(n+slides.length)%slides.length;
+    slides.forEach((s,i)=>{
+      s.classList.remove('active','prev');
+      if(i===current) s.classList.add('active');
+    });
+    dots.forEach((d,i)=>d.classList.toggle('on',i===current));
+  }
+
+  document.getElementById('prevBtn').onclick=()=>go(current-1);
+  document.getElementById('nextBtn').onclick=()=>go(current+1);
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='ArrowRight') go(current+1);
+    if(e.key==='ArrowLeft') go(current-1);
+  });
+  let tx=0,ty=0;
+  window.addEventListener('touchstart',(e)=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+  window.addEventListener('touchend',(e)=>{
+    const dx=e.changedTouches[0].clientX-tx;
+    const dy=e.changedTouches[0].clientY-ty;
+    if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>40){ dx>0?go(current-1):go(current+1); }
+  });
+})();
+</script>
+</body>
+</html>
