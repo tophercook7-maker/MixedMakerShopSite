@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "automate-small-business-workflow",
+    title: "Stop Chasing Paperwork: 5 Practical Ways to Automate Your Small Business Workflow",
+    category: "AI & Automation",
+    excerpt:
+      "Five no-nonsense ways to use small business workflow automation — instant lead replies, auto-invoices, scheduling, smart routing, and tools that actually work.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-15",
+    href: "/blog/automate-small-business-workflow",
+  },
+  {
     slug: "hollow-gate",
     title: "Step Beyond the Threshold: Unlocking The Hollow Gate",
     category: "Idea Lab",
