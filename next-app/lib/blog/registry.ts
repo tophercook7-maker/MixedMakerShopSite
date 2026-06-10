@@ -24,6 +24,18 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-near-me-secret",
+    title:
+      'The "Near Me" Secret: How Local SEO Keeps Your Phone Ringing While Your Competitors Are Quiet',
+    category: "Local SEO",
+    excerpt:
+      "Win the Local Pack — Google Business Profile, reviews, mobile-friendly websites, and practical local SEO so neighbors find you first.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-16",
+    href: "/blog/local-seo-near-me-secret",
+  },
+  {
     slug: "automate-small-business-workflow",
     title: "Stop Chasing Paperwork: 5 Practical Ways to Automate Your Small Business Workflow",
     category: "AI & Automation",
