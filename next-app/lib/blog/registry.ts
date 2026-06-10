@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "clean-and-quick-pc-service",
+    title: "Stop Fighting Your PC: Why our $99 ‘Clean & Quick’ Service is a Game Changer",
+    category: "Tech Repair",
+    excerpt:
+      "Flat-rate $99 PC optimization and virus removal — in-home computer repair, bloatware cleanup, and honest pricing without big-box store headaches.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-17",
+    href: "/blog/clean-and-quick-pc-service",
+  },
+  {
     slug: "local-seo-near-me-secret",
     title:
       'The "Near Me" Secret: How Local SEO Keeps Your Phone Ringing While Your Competitors Are Quiet',
