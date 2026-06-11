@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-home-service-advantage",
+    title: "The Local Advantage: Why SEO for Home Service Businesses is Your Secret Weapon",
+    category: "Local SEO",
+    excerpt:
+      "Win the local 3-pack — Google Business Profile, service-area pages, reviews, and neighborhood content for landscapers, plumbers, cleaners, and contractors.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-19",
+    href: "/blog/local-seo-home-service-advantage",
+  },
+  {
     slug: "stop-dog-earing-3d-printed-bookmarks",
     title: "Stop Dog-Earing Your Books: Why Custom 3D Printed Bookmarks Are the Next Big Thing",
     category: "3D Printing",
