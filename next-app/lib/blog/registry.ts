@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "stop-dog-earing-3d-printed-bookmarks",
+    title: "Stop Dog-Earing Your Books: Why Custom 3D Printed Bookmarks Are the Next Big Thing",
+    category: "3D Printing",
+    excerpt:
+      "Quit folding page corners — durable custom 3D printed bookmarks with raised lettering, book club branding, and tactile details from GiGi's Print Shop.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-18",
+    href: "/blog/stop-dog-earing-3d-printed-bookmarks",
+  },
+  {
     slug: "clean-and-quick-pc-service",
     title: "Stop Fighting Your PC: Why our $99 ‘Clean & Quick’ Service is a Game Changer",
     category: "Tech Repair",
