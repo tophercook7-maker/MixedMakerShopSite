@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home + core pages -->
   <url><loc>https://mixedmakershop.com/</loc></url>
+  <url><loc>https://mixedmakershop.com/about.html</loc></url>
   <url><loc>https://mixedmakershop.com/contact.html</loc></url>
-  <url><loc>https://mixedmakershop.com/website-check.html</loc></url>
-  <url><loc>https://mixedmakershop.com/website-roast/</loc></url>
-  <url><loc>https://mixedmakershop.com/thank-you.html</loc></url>
+  <url><loc>https://mixedmakershop.com/pricing.html</loc></url>
   <url><loc>https://mixedmakershop.com/agreement.html</loc></url>
-  <url><loc>https://mixedmakershop.com/how-much-does-a-website-cost.html</loc></url>
+
+  <!-- Main service pages -->
+  <url><loc>https://mixedmakershop.com/web-design.html</loc></url>
+  <url><loc>https://mixedmakershop.com/small-business-website-design.html</loc></url>
   <url><loc>https://mixedmakershop.com/hot-springs-web-design.html</loc></url>
   <url><loc>https://mixedmakershop.com/local-seo-services.html</loc></url>
   <url><loc>https://mixedmakershop.com/google-business-profile-help.html</loc></url>
@@ -14,5 +17,24 @@
   <url><loc>https://mixedmakershop.com/ai-business-tools.html</loc></url>
   <url><loc>https://mixedmakershop.com/in-home-computer-repair.html</loc></url>
   <url><loc>https://mixedmakershop.com/social-media-takeover.html</loc></url>
+
+  <!-- Industry-specific web design pages -->
+  <url><loc>https://mixedmakershop.com/restaurant-websites-hot-springs.html</loc></url>
+  <url><loc>https://mixedmakershop.com/coffee-shop-websites-hot-springs.html</loc></url>
+  <url><loc>https://mixedmakershop.com/church-websites-hot-springs.html</loc></url>
+  <url><loc>https://mixedmakershop.com/small-business-websites-hot-springs.html</loc></url>
+  <url><loc>https://mixedmakershop.com/restaurant-website-redesign.html</loc></url>
+
+  <!-- 3D printing -->
+  <url><loc>https://mixedmakershop.com/3d-printing.html</loc></url>
+  <url><loc>https://mixedmakershop.com/custom-3d-printing.html</loc></url>
+  <url><loc>https://mixedmakershop.com/builds.html</loc></url>
+
+  <!-- Lead tools / resources -->
+  <url><loc>https://mixedmakershop.com/how-much-does-a-website-cost.html</loc></url>
+  <url><loc>https://mixedmakershop.com/website-check.html</loc></url>
+  <url><loc>https://mixedmakershop.com/website-roast/</loc></url>
+
+  <!-- AI / LLM access -->
   <url><loc>https://mixedmakershop.com/llms.txt</loc></url>
 </urlset>
