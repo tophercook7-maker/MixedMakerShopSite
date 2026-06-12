@@ -25,23 +25,22 @@ export type PricingTier = {
 export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "starter",
-    title: "Starter SEO Site",
+    title: "Starter Setup",
     priceLabel: "Starting at $400",
     description:
-      "A clean 3-page basic SEO website for small businesses that need to look legitimate, explain their services, and make it easy for local customers to contact them.",
+      "A clean 1-page mobile-friendly website with click-to-call, a contact form, and basic Google setup — built to bring in calls.",
     includes: [
-      "3-page basic SEO website",
+      "1-page clean website",
       "Mobile-friendly design",
-      "Basic on-page SEO setup",
-      "Contact form or contact section",
-      "Clear service/contact structure",
-      "Simple homepage, services, and contact flow",
-      "Professional launch-ready layout",
-      "Monthly support options starting at $45/mo",
+      "Click-to-call button",
+      "Contact / quote form",
+      "Basic Google setup",
+      "Live within 5 business days",
+      "Monthly Hosting & Support from $89/mo",
     ],
     strongRecommendation: {
       title: "Google Business Profile setup",
-      price: "$150 one-time",
+      price: "$250 one-time",
     },
     bestNextStep:
       "Pair it with Starter Visibility Support so the site and Google Business Profile do not sit untouched after launch.",
@@ -51,7 +50,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "growth",
     title: "Growth Site",
-    priceLabel: "$1,000 – $2,500",
+    priceLabel: "$900 – $1,800",
     description:
       "For businesses that want a stronger site plus a practical local growth foundation: clearer services, better lead paths, and more room to build trust.",
     includes: [
@@ -62,7 +61,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
       "Contact/lead path setup",
       "Google Business Profile guidance",
       "Faster performance basics",
-      "Best paired with $89/mo Local Growth Support",
+      "Best paired with $89/mo Hosting & Support",
     ],
     bestNextStep:
       "Choose this when the site needs to do more than exist: explain services clearly, support local visibility, and guide visitors toward contacting you.",
