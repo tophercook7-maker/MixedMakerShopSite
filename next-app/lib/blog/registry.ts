@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "3d-printed-keychains-ultimate-handout",
+    title: "Beyond the Business Card: Why 3D Printed Keychains are the Ultimate Handout",
+    category: "3D Printing",
+    excerpt:
+      "Skip forgettable paper cards — bulk 3D printed keychains with embossed logos, low minimums, and daily brand visibility from GiGi's Print Shop.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-20",
+    href: "/blog/3d-printed-keychains-ultimate-handout",
+  },
+  {
     slug: "local-seo-home-service-advantage",
     title: "The Local Advantage: Why SEO for Home Service Businesses is Your Secret Weapon",
     category: "Local SEO",
