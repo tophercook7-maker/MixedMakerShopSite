@@ -1,4 +1,3 @@
-import { CaptainMakerFloatingButton } from "@/components/public/CaptainMakerFloatingButton";
 import { PublicNav } from "@/components/public/PublicNav";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicMotionInit } from "@/components/public/PublicMotionInit";
@@ -24,7 +23,6 @@ export default function PublicLayout({
         <PublicFooter />
       </div>
 
-      <CaptainMakerFloatingButton />
       <PublicMotionInit />
     </div>
   );

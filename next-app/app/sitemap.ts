@@ -32,7 +32,6 @@ const PUBLIC_PATHS: readonly string[] = [
   "/blog/website-preview-generator",
   "/blog/custom-3d-printing-branding",
   "/blog/mobile-friendly-website-design",
-  "/captain-maker",
   "/builds",
   "/church-websites-hot-springs",
   "/coffee-shop-websites-hot-springs",

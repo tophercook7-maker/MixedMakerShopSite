@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
-import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 const paths = [
   {
     title: "Not sure what you need?",
-    body: "Meet Captain Maker — get a quick estimate and the right starting path.",
-    href: publicCaptainMakerHref,
-    cta: "Start with Captain Maker",
+    body: "Get a free homepage preview built for your business — the fastest way to see if we're a fit.",
+    href: publicFreeMockupFunnelHref,
+    cta: "Get a Free Website Preview",
   },
   {
     title: "Need a website or digital tool?",

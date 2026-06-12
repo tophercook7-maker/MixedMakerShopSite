@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { CaptainMakerMockupSummaryPanel } from "@/components/public/CaptainMakerMockupSummaryPanel";
-import { buildMockupAutofillPatch } from "@/lib/captain-maker-mockup-autofill";
-import {
-  clearCaptainMakerProjectSummary,
-  loadCaptainMakerProjectSummary,
-  type CaptainMakerProjectSummaryStorage,
-} from "@/lib/captain-maker-project-summary";
+import { useMemo, useState } from "react";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
@@ -39,12 +32,9 @@ function toggleOutcome(
 
 export function FreeMockupFunnelClient({
   funnelSource,
-  fromCaptainMaker,
 }: {
   /** e.g. `freshcut` from ?source=freshcut — soft defaults + contextual copy only */
   funnelSource?: string | null;
-  /** true when URL includes ?from=captain-maker */
-  fromCaptainMaker?: boolean;
 }) {
   const isFreshCutFunnel = funnelSource === "freshcut";
 
@@ -76,41 +66,6 @@ export function FreeMockupFunnelClient({
   const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [captainSummary, setCaptainSummary] = useState<CaptainMakerProjectSummaryStorage | null>(null);
-  const [showCaptainSummaryPreview, setShowCaptainSummaryPreview] = useState(false);
-
-  useEffect(() => {
-    const stored = loadCaptainMakerProjectSummary();
-    if (stored) setCaptainSummary(stored);
-  }, []);
-
-  function applyCaptainSummary() {
-    if (!captainSummary) return;
-    const patch = buildMockupAutofillPatch(captainSummary);
-
-    if (patch.businessName) setBusinessName(patch.businessName);
-    if (patch.businessType) setBusinessType(patch.businessType);
-    if (patch.topServices) setTopServices(patch.topServices);
-    if (patch.whatMakesYouDifferent) setWhatMakesYouDifferent(patch.whatMakesYouDifferent);
-    if (patch.anythingElse) setAnythingElse(patch.anythingElse);
-    setHasWebsite(patch.hasWebsite);
-    if (patch.websiteUrl) setWebsiteUrl(patch.websiteUrl);
-    if (patch.desiredOutcomes.size > 0) setDesiredOutcomes(new Set(patch.desiredOutcomes));
-    if (patch.designDirection) setDesignDirection(patch.designDirection);
-
-    setShowCaptainSummaryPreview(true);
-    setError(null);
-    trackPublicEvent("public_free_mockup_captain_summary_applied", {
-      from: fromCaptainMaker ? "captain-maker" : "stored-summary",
-    });
-  }
-
-  function clearCaptainSummary() {
-    clearCaptainMakerProjectSummary();
-    setCaptainSummary(null);
-    setShowCaptainSummaryPreview(false);
-    trackPublicEvent("public_free_mockup_captain_summary_cleared");
-  }
 
   const desiredOutcomeList = useMemo(() => Array.from(desiredOutcomes), [desiredOutcomes]);
 
@@ -407,17 +362,6 @@ export function FreeMockupFunnelClient({
               pick a design direction and fill in the basics, a fuller interactive sample appears below the live strip.
             </p>
           </div>
-
-          {captainSummary ? (
-            <div className="mb-6">
-              <CaptainMakerMockupSummaryPanel
-                summary={captainSummary}
-                showPreview={showCaptainSummaryPreview}
-                onUseSummary={applyCaptainSummary}
-                onClearSummary={clearCaptainSummary}
-              />
-            </div>
-          ) : null}
 
           <div className="free-mockup-form-section space-y-4">
             <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">1 · Business basics</h3>

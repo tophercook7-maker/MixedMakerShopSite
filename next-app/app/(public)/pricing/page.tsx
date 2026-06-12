@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
-import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { PaymentLegalConsent } from "@/components/public/LegalConsent";
 import { MonthlySeoPackSection } from "@/components/public/MonthlySeoPackSection";
 import { PRICING_TIERS } from "@/lib/pricing-tiers";
@@ -58,36 +58,37 @@ export default function PricingPage() {
             </p>
           </div>
 
-          {/* Captain Maker — unsure about pricing */}
+          {/* Not sure which option fits — free preview */}
           <div className="mt-10 rounded-3xl border border-orange-300/20 bg-[#111510]/90 p-6 shadow-2xl shadow-black/35 backdrop-blur-md sm:p-8">
             <h2 className={cn(mmsH2, "!text-xl text-white md:!text-2xl")}>Not sure which option fits?</h2>
             <p className="mt-4 max-w-3xl text-base leading-relaxed text-white/82 md:text-lg">
-              Captain Maker can help you figure out whether you need a free homepage preview, a landing page, a local web
-              presence fix, a 3D print request, or something custom.
+              Start with a free homepage preview. You&apos;ll see a clear direction for your business before any decision —
+              and from there it&apos;s easy to tell whether a landing page, a Starter SEO Site, or something custom is the
+              right call.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <TrackedPublicLink
-                href={publicCaptainMakerHref}
-                eventName="public_captain_maker_cta"
-                eventProps={{ location: "pricing_page", target: "captain_maker" }}
+                href={publicFreeMockupFunnelHref}
+                eventName="public_contact_cta_click"
+                eventProps={{ location: "pricing_page", target: "free_mockup", section: "unsure_helper" }}
                 className={cn(
                   mmsBtnPrimary,
                   "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Ask Captain Maker
+                Start Free Preview
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </TrackedPublicLink>
               <TrackedPublicLink
-                href={publicFreeMockupFunnelHref}
+                href="/contact"
                 eventName="public_contact_cta_click"
-                eventProps={{ location: "pricing_page", target: "free_mockup", section: "captain_maker_helper" }}
+                eventProps={{ location: "pricing_page", target: "contact", section: "unsure_helper" }}
                 className={cn(
                   mmsBtnSecondaryOnGlass,
                   "inline-flex min-h-[3rem] w-full items-center justify-center gap-2 px-6 text-[0.9375rem] font-semibold no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Start Free Preview
+                Talk to Topher
                 <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
               </TrackedPublicLink>
             </div>

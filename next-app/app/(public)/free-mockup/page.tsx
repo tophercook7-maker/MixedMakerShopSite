@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { CaptainMakerFreeMockupHelper } from "@/components/public/CaptainMakerFreeMockupHelper";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-client";
 import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
@@ -60,7 +59,6 @@ export default async function FreeMockupPage({
   const fromSource = normalizeQueryParam(sp.source);
   const fromExample = normalizeQueryParam(sp.example);
   /** Fresh Cut funnel: `?source=freshcut` (legacy) or `?example=freshcut` (example card). */
-  const fromCaptainMaker = normalizeQueryParam(sp.from) === "captain-maker";
   const funnelSource =
     fromSource === "freshcut" || fromExample === "freshcut" ? "freshcut" : fromSource || undefined;
   const isFreshCutFunnel = funnelSource === "freshcut";
@@ -111,10 +109,8 @@ export default async function FreeMockupPage({
           </div>
         </section>
 
-        <CaptainMakerFreeMockupHelper />
-
         {isFreshCutFunnel ? <FreeMockupSourceBannerFreshCut /> : null}
-        <FreeMockupFunnelClient funnelSource={funnelSource} fromCaptainMaker={fromCaptainMaker} />
+        <FreeMockupFunnelClient funnelSource={funnelSource} />
 
         {/* How it works — after form so the top stays hero → intro → form */}
         <section className={mmsUmbrellaSectionBackdropImmersive}>
