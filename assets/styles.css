@@ -1515,3 +1515,147 @@ select:focus {
   .help-card{ transition: none; }
   .help-card:hover{ transform: none; }
 }
+
+/* ============================================================================
+   Interactive 3D Q&A widget (#faq) — replaces the old static FAQ.
+   Tap any card to flip on the Y-axis and reveal the answer.
+   Reduced-motion users get an instant toggle (no animation).
+   ============================================================================ */
+.qa-3d__header { max-width: 70ch; }
+
+.qa-3d__grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(14px, 2vw, 22px);
+  perspective: 1500px;
+}
+@media (min-width: 1024px){
+  .qa-3d__grid{ grid-template-columns: repeat(3, 1fr); }
+}
+
+/* The card is a <button> for keyboard accessibility */
+.qa-card{
+  position: relative;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  perspective: 1500px;
+}
+.qa-card:focus-visible{ outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 18px; }
+
+.qa-card__inner{
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform .75s cubic-bezier(.4, .04, .2, 1);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.qa-card[data-flipped="true"] .qa-card__inner{
+  transform: rotateY(180deg);
+}
+
+.qa-card__face{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(18px, 2.4vw, 26px);
+  border-radius: 18px;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  overflow: hidden;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.qa-card__face--front{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.36)),
+    radial-gradient(140% 90% at 50% 0%, rgba(240,165,26,.10), transparent 60%);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.qa-card__face--back{
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(180deg, rgba(240,165,26,.10), rgba(0,0,0,.42)),
+    radial-gradient(140% 90% at 50% 0%, rgba(255,210,120,.08), transparent 60%);
+  border: 1px solid rgba(240,165,26,.30);
+}
+
+/* Card content */
+.qa-card__number,
+.qa-card__back-number{
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 900;
+  opacity: .85;
+}
+.qa-card__question{
+  display: block;
+  margin: 14px 0 0;
+  font-size: clamp(16px, 1.8vw, 19px);
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: -.2px;
+  color: rgba(255,255,255,.96);
+}
+.qa-card__answer{
+  display: block;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255,255,255,.86);
+  overflow-y: auto;
+  max-height: 100%;
+  /* tame scrollbars on Webkit/Blink */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(240,165,26,.45) transparent;
+}
+.qa-card__answer::-webkit-scrollbar{ width: 6px; }
+.qa-card__answer::-webkit-scrollbar-thumb{ background: rgba(240,165,26,.35); border-radius: 3px; }
+
+.qa-card__hint,
+.qa-card__back-hint{
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold2);
+  opacity: .85;
+}
+
+/* Hover lift + glow (desktop pointers only) */
+@media (hover: hover) and (pointer: fine){
+  .qa-card:hover .qa-card__inner{
+    transform: translateY(-4px) rotateY(0deg);
+    box-shadow: 0 28px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(240,165,26,.18);
+  }
+  .qa-card[data-flipped="true"]:hover .qa-card__inner{
+    transform: translateY(-4px) rotateY(180deg);
+  }
+  .qa-card:hover .qa-card__face--front{ border-color: rgba(240,165,26,.5); }
+}
+
+/* Reduced motion — no flip animation, just instant swap */
+@media (prefers-reduced-motion: reduce){
+  .qa-card__inner{ transition: none; }
+  .qa-card[data-flipped="true"] .qa-card__inner{ transform: none; }
+  .qa-card[data-flipped="true"] .qa-card__face--front{ display: none; }
+  .qa-card__face--back{ transform: none; }
+  .qa-card[data-flipped="false"] .qa-card__face--back{ display: none; }
+}
