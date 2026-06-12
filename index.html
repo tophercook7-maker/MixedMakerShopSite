@@ -85,16 +85,6 @@
 }
 </script>
   <link rel="stylesheet" href="/assets/styles.css" />
-  <!-- Three.js importmap — used by assets/captain/captain-3d.js -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -363,17 +353,9 @@
     </div>
 
     <script>
-      /* ====================================================================
-         Hero cinematic — interactions.
-         Behaviors:
-           (1) Subtle mouse parallax (mascot follows cursor)
-           (2) Periodic "tap" on the page surface every 7–11s
-           (3) Hover / press reactions
-           (4) Initial emerge reveal
-         All keyed off the .hero-cine container; gracefully degrades.
-         ==================================================================== */
-      /* Hero stage — ambient parallax + reveal for the tear/embers/debris.
-         Mascot lives outside the hero now (see assets/mascot/mascot.js). */
+      /* Hero stage — subtle mouse parallax + reveal animation for the
+         tear/embers/debris decoration. Keyed off .hero-cine; degrades
+         gracefully under prefers-reduced-motion. */
       (function () {
         var hero = document.querySelector('.hero-cine');
         var tear = document.querySelector('.hero-cine__tear');
@@ -403,33 +385,6 @@
       })();
     </script>
   </section>
-  <!-- Captain Maker 3D section paused. Keeping code in place for possible future use. -->
-  <!--
-  <section class="captain-desk" id="meet-captain" data-mascot-safe>
-    <div class="container">
-      <div class="captain-desk__layout">
-        <div class="captain-desk__scene" aria-label="Captain Maker at his workstation building a website">
-          <canvas class="captain-desk__canvas" id="captain-canvas"></canvas>
-          <div class="captain-desk__hint">click to clap</div>
-          <div class="captain-desk__fallback" aria-hidden="true">
-            <strong>captain-maker.glb</strong>
-            <span>Drop your model at /assets/models/</span>
-          </div>
-        </div>
-        <div class="captain-desk__copy" data-mascot-safe>
-          <span class="kicker"><span class="dot"></span> Meet your guide</span>
-          <h2 class="captain-desk__h2">Captain Maker is on duty.</h2>
-          <p class="captain-desk__sub">He's the one building websites in the back. Click the scene to replay his animation.</p>
-          <div class="btn-row">
-            <a class="btn gold" href="#free-mockup-request">Get a Free Mockup</a>
-            <a class="btn ghost" href="/web-design.html">See what we build</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  -->
-  <!-- end Captain Maker 3D (paused) -->
 
   <section class="credibility-strip">
     <div class="container">
@@ -1532,39 +1487,5 @@
 
 <script src="/assets/nav.js"></script>
 
-
-<!-- Mascot layer paused (no transparent WebM assets in /assets/mascot/ yet).
-     Re-enable by uncommenting the block below.
-==========================================================================
-<div class="mascot-layer" id="mascot" data-mascot-state="idle" aria-hidden="true"></div>
-<script>
-  window.MASCOT_CONFIG = {
-    container: '#mascot',
-    videoBasePath: 'assets/mascot/',
-    soundBasePath: 'assets/mascot/sounds/',
-    mascotSize: { w: 220, h: 300 },
-    walkSpeed: 220,
-    audioEnabled: false,
-    autoIdleBehaviors: true,
-    idleBehaviorInterval: [8000, 14000],
-    startPosition: 'bottom-right',
-    safeZoneSelectors: [
-      '[data-mascot-safe]',
-      '.hero-cine__h1', '.hero-cine__sub', '.hero-cine__cta',
-      '.kicker', '.btn',
-      'h1', 'h2',
-      'header.nav'
-    ],
-    safeZonePadding: 28,
-    debugSafeZones: false
-  };
-</script>
-<script src="assets/mascot/mascot.js" defer></script>
-========================================================================== -->
-<!-- end Mascot layer (paused) -->
-
-<!-- Captain Maker 3D paused — script disabled. Re-enable by uncommenting.
-<script type="module" src="assets/captain/captain-3d.js"></script>
--->
 </body>
 </html>
