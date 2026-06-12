@@ -22,3 +22,9 @@ Massive_Brain/scout-brain/
 
 # Local project dump / scratch (not part of this app)
 mixedmakershop/
+
+# Large 3D demo assets (kept locally, too heavy for git history without LFS)
+assets/animations/*.fbx
+assets/models/*.glb
+assets/captain-maker.glb
+assets/captain-maker.original.glb

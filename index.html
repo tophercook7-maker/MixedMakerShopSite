@@ -11,6 +11,7 @@
   <meta name="description" content="MixedMakerShop is Topher &amp; GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects." />
   <meta name="keywords" content="MixedMakerShop, Topher and GiGi, creative studio, practical projects, websites and tools, 3D printing, property care, handmade projects, small business tools, local services" />
   <link rel="canonical" href="https://mixedmakershop.com/" />
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt">
   <meta property="og:title" content="MixedMakerShop | Practical Creative Studio by Topher &amp; GiGi" />
   <meta property="og:description" content="MixedMakerShop is Topher &amp; GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects." />
   <meta property="og:url" content="https://mixedmakershop.com" />
@@ -84,6 +85,15 @@
 }
 </script>
   <link rel="stylesheet" href="/assets/styles.css" />
+  <!-- Three.js importmap — used by assets/captain/captain-3d.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -113,65 +123,174 @@
 </header>
 
 <main>
-  <section class="hero">
-    <div class="hero-media" aria-hidden="true">
-      <div class="hero-media__image">
-        <div class="hero-image-wrap">
-          <img
-            class="hero-image"
-            src="/assets/mixedmakershop-umbrella-brand-hero.png"
-            alt=""
-            width="1024"
-            height="682"
-            decoding="async"
-            fetchpriority="high"
-          />
-          <img
-            class="tablet-overlay"
-            src="/assets/hero-tablet-screen.png"
-            alt=""
-            width="1024"
-            height="682"
-            decoding="async"
-          />
-        </div>
-      </div>
-      <div class="hero-media__wash"></div>
-      <div class="hero-media__read"></div>
+    <section class="hero-cine" id="top">
+
+    <!-- LAYER 0 — cinematic background -->
+    <div class="hero-cine__bg" aria-hidden="true">
+      <div class="hero-cine__bg-aurora"></div>
+      <div class="hero-cine__bg-grain"></div>
+      <div class="hero-cine__bg-vignette"></div>
     </div>
-    <div class="container hero-grid">
-      <div class="hero-glass hero-glass--copy">
-        <div class="kicker"><span class="dot"></span> MixedMakerShop — founder-led web design • 3D printing & builds on request</div>
-        <h1 class="h1">Websites that bring you customers — not just visitors.</h1>
-        <p class="subhead">Custom web design for businesses in Hot Springs and beyond. Clear structure, fast pages, and calls-to-action that match how people actually buy locally.</p>
-        <p class="small" style="margin:8px 0 0;"><a href="https://share.google/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener">Rated 5.0 by local clients on Google</a></p>
-        <p class="hero-microproof" style="margin-top:12px;">You work directly with Topher Cook — no agency layers, no mystery handoffs.</p>
-        <div class="btn-row">
+
+    <!-- LAYER 1 — the PAGE SURFACE (copy lives here; this is what "tears") -->
+    <div class="container hero-cine__surface">
+      <div class="hero-cine__copy">
+        <span class="kicker"><span class="dot"></span> MixedMakerShop — founder-led web design &amp; builds</span>
+        <h1 class="h1 hero-cine__h1">Websites that bring you customers — <span class="gold">not just visitors</span>.</h1>
+        <p class="subhead hero-cine__sub">Custom web design for businesses in Hot Springs and beyond. Clear structure, fast pages, and calls-to-action that match how people actually buy locally.</p>
+        <p class="small hero-cine__rating"><a href="https://share.google/cJA3CmiybFK1WNE5D" target="_blank" rel="noopener">Rated 5.0 by local clients on Google</a></p>
+        <p class="hero-cine__microproof">You work directly with Topher Cook — no agency layers, no mystery handoffs.</p>
+        <div class="btn-row hero-cine__cta">
           <a class="btn gold btn-cta-primary" href="#free-mockup-request">Get a Free Website Mockup</a>
           <a class="btn ghost" href="/contact.html">Contact Topher</a>
         </div>
-        <div class="trust-line">
+        <div class="trust-line hero-cine__trust">
           <span>Free homepage mockup</span>
           <span>Delivered fast</span>
           <span>No obligation</span>
         </div>
-        <p class="small" style="margin-top:14px;">Hot Springs, AR • Fast turnaround • Remote-friendly nationwide</p>
+        <p class="small hero-cine__location">Hot Springs, AR • Fast turnaround • Remote-friendly nationwide</p>
       </div>
+    </div>
+    <!-- Light spilling onto the page surface around the tear -->
+    <div class="hero-cine__page-spill" aria-hidden="true"></div>
 
-      <aside class="hero-glass hero-glass--side">
-        <div class="small" style="font-weight:950;color:rgba(255,255,255,.88);margin-bottom:10px;">Primary focus: websites that earn trust</div>
-        <p class="small" style="margin:0 0 12px;color:var(--muted);line-height:1.5;">Browse samples, see starting pricing, or jump straight into a mockup request.</p>
-        <p class="hero-aux-links" style="margin:0;">Browse <a href="/website-samples/index.html">website samples</a> · <a href="/pricing.html">starting pricing</a> · <a href="#free-mockup-request">free mockup form</a></p>
 
-        <div class="icon-row" style="grid-template-columns:repeat(2,1fr);margin-top:16px;">
-          <div class="ic"><div><span>Web design</span><br><strong>Local &amp; remote</strong></div></div>
-          <div class="ic"><div><span>3D printing</span><br><strong>Quotes &amp; prototypes</strong></div></div>
-          <div class="ic"><div><span>Turnaround</span><br><strong>Days, not months</strong></div></div>
-          <div class="ic"><div><span>Communication</span><br><strong>Direct with Topher</strong></div></div>
+    <!-- LAYER 2 — the TEAR (a hole punched through the page surface) -->
+    <div class="hero-cine__tear" aria-hidden="true">
+      <svg class="hero-cine__tear-svg" viewBox="0 0 500 600" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="hc-void" cx="0.5" cy="0.55" r="0.6">
+            <stop offset="0%"   stop-color="#1c1208"/>
+            <stop offset="50%"  stop-color="#080502"/>
+            <stop offset="100%" stop-color="#000000"/>
+          </radialGradient>
+          <radialGradient id="hc-spill" cx="0.5" cy="0.55" r="0.55">
+            <stop offset="0%"   stop-color="rgba(255,210,120,.95)"/>
+            <stop offset="35%"  stop-color="rgba(240,165,26,.45)"/>
+            <stop offset="100%" stop-color="rgba(240,165,26,0)"/>
+          </radialGradient>
+          <filter id="hc-inner-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
+            <feOffset dx="0" dy="3" result="off"/>
+            <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="diff"/>
+            <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .88 0" result="shadow"/>
+            <feMerge>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="shadow"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- the jagged hole -->
+        <path class="hero-cine__tear-shape"
+              d="M 96 198 L 134 162 L 152 208 L 188 168 L 218 218 L 252 178 L 286 220 L 320 184 L 354 226 L 392 192 L 418 240 L 398 286 L 432 330 L 402 376 L 426 426 L 388 458 L 412 506 L 360 528 L 332 498 L 290 542 L 252 504 L 214 548 L 174 504 L 138 540 L 100 502 L 86 458 L 60 416 L 92 372 L 56 326 L 86 278 L 54 234 L 90 212 Z"
+              fill="url(#hc-void)"
+              filter="url(#hc-inner-shadow)"/>
+
+        <!-- volumetric light spilling out -->
+        <ellipse class="hero-cine__tear-spill" cx="246" cy="368" rx="200" ry="138" fill="url(#hc-spill)"/>
+
+        <!-- top-lit torn-paper edges -->
+        <path class="hero-cine__tear-edge-top"
+              d="M 96 198 L 134 162 L 152 208 L 188 168 L 218 218 L 252 178 L 286 220 L 320 184 L 354 226 L 392 192 L 418 240"
+              stroke="rgba(255,255,255,.42)" stroke-width="1.8" fill="none"/>
+        <!-- bottom-shadow edge -->
+        <path class="hero-cine__tear-edge-bottom"
+              d="M 412 506 L 360 528 L 332 498 L 290 542 L 252 504 L 214 548 L 174 504 L 138 540 L 100 502"
+              stroke="rgba(0,0,0,.55)" stroke-width="2.2" fill="none"/>
+      </svg>
+
+      <!-- volumetric god-ray beams (CSS, mix-blend-mode screen) -->
+      <div class="hero-cine__tear-rays" aria-hidden="true"></div>
+
+      <!-- atmospheric embers drifting up from inside the void -->
+      <span class="hero-cine__ember hero-cine__ember--1"></span>
+      <span class="hero-cine__ember hero-cine__ember--2"></span>
+      <span class="hero-cine__ember hero-cine__ember--3"></span>
+      <span class="hero-cine__ember hero-cine__ember--4"></span>
+      <span class="hero-cine__ember hero-cine__ember--5"></span>
+      <span class="hero-cine__ember hero-cine__ember--6"></span>
+
+      <!-- floating debris pieces -->
+      <span class="hero-cine__debris hero-cine__debris--1"></span>
+      <span class="hero-cine__debris hero-cine__debris--2"></span>
+      <span class="hero-cine__debris hero-cine__debris--3"></span>
+      <span class="hero-cine__debris hero-cine__debris--4"></span>
+      <span class="hero-cine__debris hero-cine__debris--5"></span>
+      <span class="hero-cine__debris hero-cine__debris--6"></span>
+      <span class="hero-cine__debris hero-cine__debris--7"></span>
+      <span class="hero-cine__debris hero-cine__debris--8"></span>
+    </div>
+
+    <script>
+      /* ====================================================================
+         Hero cinematic — interactions.
+         Behaviors:
+           (1) Subtle mouse parallax (mascot follows cursor)
+           (2) Periodic "tap" on the page surface every 7–11s
+           (3) Hover / press reactions
+           (4) Initial emerge reveal
+         All keyed off the .hero-cine container; gracefully degrades.
+         ==================================================================== */
+      /* Hero stage — ambient parallax + reveal for the tear/embers/debris.
+         Mascot lives outside the hero now (see assets/mascot/mascot.js). */
+      (function () {
+        var hero = document.querySelector('.hero-cine');
+        var tear = document.querySelector('.hero-cine__tear');
+        if (!hero) return;
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!reduced) {
+          var pending = false, lx = 0, ly = 0;
+          window.addEventListener('pointermove', function (e) {
+            lx = (e.clientX / window.innerWidth  - 0.5) * 2;
+            ly = (e.clientY / window.innerHeight - 0.5) * 2;
+            if (!pending) {
+              pending = true;
+              requestAnimationFrame(function () {
+                hero.style.setProperty('--hc-mouse-x', lx.toFixed(3));
+                hero.style.setProperty('--hc-mouse-y', ly.toFixed(3));
+                pending = false;
+              });
+            }
+          }, { passive: true });
+        }
+
+        requestAnimationFrame(function () {
+          hero.classList.add('is-revealed');
+          if (tear) tear.classList.add('is-revealed');
+        });
+      })();
+    </script>
+  </section>
+  <!-- Captain Maker 3D section paused. Keeping code in place for possible future use. -->
+  <!--
+  <section class="captain-desk" id="meet-captain" data-mascot-safe>
+    <div class="container">
+      <div class="captain-desk__layout">
+        <div class="captain-desk__scene" aria-label="Captain Maker at his workstation building a website">
+          <canvas class="captain-desk__canvas" id="captain-canvas"></canvas>
+          <div class="captain-desk__hint">click to clap</div>
+          <div class="captain-desk__fallback" aria-hidden="true">
+            <strong>captain-maker.glb</strong>
+            <span>Drop your model at /assets/models/</span>
+          </div>
         </div>
-      </aside>
+        <div class="captain-desk__copy" data-mascot-safe>
+          <span class="kicker"><span class="dot"></span> Meet your guide</span>
+          <h2 class="captain-desk__h2">Captain Maker is on duty.</h2>
+          <p class="captain-desk__sub">He's the one building websites in the back. Click the scene to replay his animation.</p>
+          <div class="btn-row">
+            <a class="btn gold" href="#free-mockup-request">Get a Free Mockup</a>
+            <a class="btn ghost" href="/web-design.html">See what we build</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
+  -->
+  <!-- end Captain Maker 3D (paused) -->
 
   <section class="credibility-strip">
     <div class="container">
@@ -1132,5 +1251,39 @@
 
 <script src="/assets/nav.js"></script>
 
+
+<!-- ==========================================================================
+     Mascot layer — site-wide overlay driven by assets/mascot/mascot.js.
+     Drop transparent WebM files at assets/mascot/{idle,walk,tap,scratch}.webm
+     and they will render automatically. See assets/mascot/README.md.
+     ========================================================================== -->
+<div class="mascot-layer" id="mascot" data-mascot-state="idle" aria-hidden="true"></div>
+<script>
+  window.MASCOT_CONFIG = {
+    container: '#mascot',
+    videoBasePath: 'assets/mascot/',
+    soundBasePath: 'assets/mascot/sounds/',
+    mascotSize: { w: 220, h: 300 },
+    walkSpeed: 220,
+    audioEnabled: false,
+    autoIdleBehaviors: true,
+    idleBehaviorInterval: [8000, 14000],
+    startPosition: 'bottom-right',
+    safeZoneSelectors: [
+      '[data-mascot-safe]',
+      '.hero-cine__h1', '.hero-cine__sub', '.hero-cine__cta',
+      '.kicker', '.btn',
+      'h1', 'h2',
+      'header.nav'
+    ],
+    safeZonePadding: 28,
+    debugSafeZones: false
+  };
+</script>
+<script src="assets/mascot/mascot.js" defer></script>
+
+<!-- Captain Maker 3D paused — script disabled. Re-enable by uncommenting.
+<script type="module" src="assets/captain/captain-3d.js"></script>
+-->
 </body>
 </html>
