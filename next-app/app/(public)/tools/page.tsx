@@ -47,6 +47,7 @@ const goodFor = [
 ] as const;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/tools" },
   title: "Apps & Tools | MixedMakerShop",
   description:
     "Practical apps, tools, bots, and lightweight business systems built for real businesses. Designed to save time, support leads, and improve operations.",

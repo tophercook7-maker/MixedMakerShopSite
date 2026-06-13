@@ -21,6 +21,7 @@ import {
 } from "@/lib/mms-umbrella-ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/3d-printing" },
   title: "GiGi’s Print Shop | Custom 3D Printing in Hot Springs, AR",
   description:
     "Useful 3D printed items, bookmarks, gifts, replacement pieces, seasonal prints, and custom requests from GiGi’s Print Shop at MixedMakerShop.",

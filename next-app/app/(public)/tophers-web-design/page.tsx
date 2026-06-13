@@ -3,6 +3,7 @@ import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { WEBSITE_SAMPLES } from "@/lib/website-samples";
 
 export const metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/tophers-web-design" },
   title: "Topher's Web Design",
   description:
     "Simple local-business websites built for calls and trust. Starter setups from $400, full business setups from $900, custom builds on quote.",

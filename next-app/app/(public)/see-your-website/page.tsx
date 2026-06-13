@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/see-your-website" },
   title: "See Your Website Preview | MixedMakerShop",
   description:
     "Enter your business info and get an instant sample website preview. Redirects to our free preview builder.",

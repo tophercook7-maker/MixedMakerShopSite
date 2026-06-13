@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/property-care" },
   title: "Property Care by Fresh Cut Property Care | MixedMakerShop",
   description:
     "Fresh Cut Property Care is the dedicated lawn and property-care service connected with MixedMakerShop, serving Hot Springs, Lonsdale, and surrounding Arkansas communities.",

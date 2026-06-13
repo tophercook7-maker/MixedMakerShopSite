@@ -3,6 +3,7 @@ import Link from "next/link";
 import { publicTopherPhoneDisplay, publicTopherPhoneTel } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/custom-3d-printing" },
   title: "Request Custom 3D Printing | MixedMakerShop",
   description:
     "Submit a request for custom PLA parts, mounts, or fixes. Photos and measurements welcome — no STL required to start.",

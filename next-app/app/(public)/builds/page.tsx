@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BuildsPage } from "@/components/public/BuildsPage";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/builds" },
   title: "Builds | MixedMakerShop",
   description:
     "Full library of Topher’s work: web projects, AI tools, samples, experiments, and 3D printing — browse and request a build.",

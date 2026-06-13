@@ -102,6 +102,7 @@ function ToolSection({ title, subtitle, items }: { title: string; subtitle: stri
 export const metadata = {
   title: "Topher's Recommended Tools",
   description: "Helpful tools I use to build clean, trustworthy websites for small businesses.",
+  alternates: { canonical: "https://mixedmakershop.com/tophers-recommended-tools" },
 };
 
 export default function TophersRecommendedToolsPage() {

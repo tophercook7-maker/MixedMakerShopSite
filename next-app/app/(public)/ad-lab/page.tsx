@@ -116,6 +116,7 @@ function AdShowcaseCard({ ad }: { ad: FeaturedAd }) {
 }
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/ad-lab" },
   title: "Ad Lab | MixedMakerShop",
   description:
     "Real ad examples and campaign concepts for local businesses—clear offers, strong visuals, and obvious next steps.",

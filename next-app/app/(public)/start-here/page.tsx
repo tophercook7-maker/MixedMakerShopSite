@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "https://mixedmakershop.com/start-here" },
   title: "Start Here | MixedMakerShop",
   description:
     "Choose the right MixedMakerShop path: websites and tools, GiGi’s Print Shop, property care, examples, or the Idea Lab.",
