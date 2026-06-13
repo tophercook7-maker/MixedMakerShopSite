@@ -62,7 +62,6 @@ export default function SmallBusinessWebsitesPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Related Service Pages</h2>
           <p className="small">
             If you are comparing options, see <Link href="/web-design-hot-springs-ar">web designer hot springs ar</Link>,{" "}
-            <Link href="/website-designer-hot-springs-ar">website designer hot springs ar</Link>,{" "}
             <Link href="/restaurant-websites-hot-springs">restaurant website design hot springs</Link>, and{" "}
             <Link href="/church-websites-hot-springs">church website design hot springs</Link>.
           </p>

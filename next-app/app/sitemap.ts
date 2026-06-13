@@ -74,7 +74,6 @@ const PUBLIC_PATHS: readonly string[] = [
   "/upload-print",
   "/web-design",
   "/web-design-hot-springs-ar",
-  "/website-designer-hot-springs-ar",
   "/website-roast",
   "/website-samples",
   "/websites-tools",

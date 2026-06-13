@@ -60,8 +60,7 @@ export default function ChurchWebsitesPage() {
 
           <h2 style={{ margin: "28px 0 10px" }}>Related Service Pages</h2>
           <p className="small">
-            For broader help, see <Link href="/web-design-hot-springs-ar">web designer hot springs ar</Link>,{" "}
-            <Link href="/website-designer-hot-springs-ar">website designer hot springs ar</Link>, and{" "}
+            For broader help, see <Link href="/web-design-hot-springs-ar">web designer hot springs ar</Link> and{" "}
             <Link href="/small-business-websites-hot-springs">small business web design hot springs</Link>. Food service
             pages are covered under <Link href="/restaurant-websites-hot-springs">restaurant website design hot springs</Link>.
           </p>

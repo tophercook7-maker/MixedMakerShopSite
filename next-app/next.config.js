@@ -9,6 +9,17 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        // Consolidated the near-duplicate "website designer" stub into the canonical
+        // Hot Springs web design page. Keep a 301 for any existing inbound links.
+        source: "/website-designer-hot-springs-ar",
+        destination: "/web-design-hot-springs-ar",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     /** Allow importing the Astro niche-pack source (locations, niches, services) from `fresh-cut-property-care`. */
     externalDir: true,
