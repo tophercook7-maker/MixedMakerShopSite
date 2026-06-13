@@ -49,6 +49,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/idea-lab",
   "/in-home-computer-repair",
   "/lawn-care-hot-springs-ar",
+  "/local-seo-services",
   "/offer",
   "/portfolio",
   "/privacy",
