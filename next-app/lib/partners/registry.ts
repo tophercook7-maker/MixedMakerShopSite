@@ -46,3 +46,6 @@ export function getPartnerResourceById(id: string): PartnerResourceEntry | undef
 export function partnerResourcePath(slug: string): string {
   return `/resources/${slug}`;
 }
+
+/** Primary LendTrack partner page — linked from nav as “Get a Loan”. */
+export const LENDTRACK_FUNDING_PORTAL_PATH = partnerResourcePath(PARTNER_RESOURCE_ENTRIES[0].slug);

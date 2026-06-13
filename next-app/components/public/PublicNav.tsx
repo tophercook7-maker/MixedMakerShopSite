@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { publicFreeMockupFunnelHref, publicTopherTextHref } from "@/lib/public-brand";
+import { LENDTRACK_FUNDING_PORTAL_PATH } from "@/lib/partners/registry";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const navItems: {
@@ -22,6 +23,11 @@ const navItems: {
   { href: "/examples", label: "Examples" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
+  {
+    href: LENDTRACK_FUNDING_PORTAL_PATH,
+    label: "Get a Loan",
+    event: { name: "public_partner_resource_click", props: { location: "nav", partner_id: "lendtrack-ai" } },
+  },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref } from "@/lib/public-brand";
 import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
+import { LENDTRACK_FUNDING_PORTAL_PATH } from "@/lib/partners/registry";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 
 export function PublicFooter() {
@@ -12,6 +13,7 @@ export function PublicFooter() {
         { href: "/start-here", label: "Start Here" },
         { href: "/examples", label: "Examples" },
         { href: "/idea-lab", label: "Idea Lab" },
+        { href: LENDTRACK_FUNDING_PORTAL_PATH, label: "Get a Loan" },
         { href: "/contact", label: "Contact" },
       ],
     },
