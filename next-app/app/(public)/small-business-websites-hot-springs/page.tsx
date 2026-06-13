@@ -49,8 +49,8 @@ export default function SmallBusinessWebsitesPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Pricing Direction</h2>
           <p className="small">
             A small landing page usually costs less than a full website with multiple services and custom forms. Review
-            current starting points on the <Link href="/pricing.html">pricing page</Link>, then use the{" "}
-            <Link href="/contact.html">contact page</Link> if you want Topher to look at your situation.
+            current starting points on the <Link href="/pricing">pricing page</Link>, then use the{" "}
+            <Link href="/contact">contact page</Link> if you want Topher to look at your situation.
           </p>
 
           <h2 style={{ margin: "28px 0 10px" }}>Service Area</h2>
@@ -89,10 +89,10 @@ export default function SmallBusinessWebsitesPage() {
             <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
-            <Link href="/contact.html" className="btn ghost">
+            <Link href="/contact" className="btn ghost">
               Contact Topher
             </Link>
-            <Link href="/pricing.html" className="btn ghost">
+            <Link href="/pricing" className="btn ghost">
               View Pricing
             </Link>
           </div>

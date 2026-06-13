@@ -49,8 +49,8 @@ export default function RestaurantWebsitesPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Pricing Direction</h2>
           <p className="small">
             Pricing depends on whether you need a simple landing page, full menu pages, online ordering links, catering
-            pages, or regular updates. Start with the <Link href="/pricing.html">pricing page</Link>, then use{" "}
-            <Link href="/contact.html">contact</Link> to describe your restaurant.
+            pages, or regular updates. Start with the <Link href="/pricing">pricing page</Link>, then use{" "}
+            <Link href="/contact">contact</Link> to describe your restaurant.
           </p>
 
           <h2 style={{ margin: "28px 0 10px" }}>Service Area</h2>
@@ -89,10 +89,10 @@ export default function RestaurantWebsitesPage() {
             <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
-            <Link href="/contact.html" className="btn ghost">
+            <Link href="/contact" className="btn ghost">
               Contact Topher
             </Link>
-            <Link href="/pricing.html" className="btn ghost">
+            <Link href="/pricing" className="btn ghost">
               View Pricing
             </Link>
           </div>

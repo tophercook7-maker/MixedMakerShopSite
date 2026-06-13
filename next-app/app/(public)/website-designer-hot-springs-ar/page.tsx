@@ -49,8 +49,8 @@ export default function WebsiteDesignerHotSpringsPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Pricing Direction</h2>
           <p className="small">
             Pricing depends on page count, content needs, integrations, and whether you need extras like booking, forms,
-            payments, galleries, or automation. See <Link href="/pricing.html">pricing</Link> for starting points, then
-            use <Link href="/contact.html">contact</Link> to ask about your specific project.
+            payments, galleries, or automation. See <Link href="/pricing">pricing</Link> for starting points, then
+            use <Link href="/contact">contact</Link> to ask about your specific project.
           </p>
 
           <h2 style={{ margin: "28px 0 10px" }}>Service Area</h2>
@@ -89,10 +89,10 @@ export default function WebsiteDesignerHotSpringsPage() {
             <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
-            <Link href="/contact.html" className="btn ghost">
+            <Link href="/contact" className="btn ghost">
               Contact Topher
             </Link>
-            <Link href="/pricing.html" className="btn ghost">
+            <Link href="/pricing" className="btn ghost">
               View Pricing
             </Link>
           </div>

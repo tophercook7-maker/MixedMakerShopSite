@@ -49,7 +49,7 @@ export default function WebDesignHotSpringsPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Pricing Direction</h2>
           <p className="small">
             Simple landing pages usually start lower than full multi-page builds. Most small business sites depend on
-            the number of pages, forms, galleries, booking tools, and copy needs. See the <Link href="/pricing.html">pricing page</Link>{" "}
+            the number of pages, forms, galleries, booking tools, and copy needs. See the <Link href="/pricing">pricing page</Link>{" "}
             for current starting points.
           </p>
 
@@ -82,17 +82,17 @@ export default function WebDesignHotSpringsPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Start With a Clear Next Step</h2>
           <p className="small">
             If you want a practical local website without agency runaround, send the details through the{" "}
-            <Link href="/contact.html">contact page</Link> or start with a free preview.
+            <Link href="/contact">contact page</Link> or start with a free preview.
           </p>
 
           <div className="btn-row" style={{ marginTop: 22 }}>
             <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
-            <Link href="/contact.html" className="btn ghost">
+            <Link href="/contact" className="btn ghost">
               Contact Topher
             </Link>
-            <Link href="/pricing.html" className="btn ghost">
+            <Link href="/pricing" className="btn ghost">
               View Pricing
             </Link>
           </div>

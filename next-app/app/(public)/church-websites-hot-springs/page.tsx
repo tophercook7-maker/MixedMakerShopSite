@@ -48,8 +48,8 @@ export default function ChurchWebsitesPage() {
           <h2 style={{ margin: "28px 0 10px" }}>Pricing Direction</h2>
           <p className="small">
             A simple church refresh may only need a few core pages. Larger builds can include events, sermons, ministry
-            pages, giving links, and volunteer forms. Check <Link href="/pricing.html">pricing</Link> for starting
-            points, then use <Link href="/contact.html">contact</Link> to explain what your church needs.
+            pages, giving links, and volunteer forms. Check <Link href="/pricing">pricing</Link> for starting
+            points, then use <Link href="/contact">contact</Link> to explain what your church needs.
           </p>
 
           <h2 style={{ margin: "28px 0 10px" }}>Service Area</h2>
@@ -88,10 +88,10 @@ export default function ChurchWebsitesPage() {
             <Link href={publicFreeMockupFunnelHref} className="btn gold">
               Get My Free Preview
             </Link>
-            <Link href="/contact.html" className="btn ghost">
+            <Link href="/contact" className="btn ghost">
               Contact Topher
             </Link>
-            <Link href="/pricing.html" className="btn ghost">
+            <Link href="/pricing" className="btn ghost">
               View Pricing
             </Link>
           </div>

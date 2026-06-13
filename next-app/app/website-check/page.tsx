@@ -50,7 +50,7 @@ export default function WebsiteCheckPage() {
               Get My Free Preview
             </Link>{" "}
             or{" "}
-            <Link href="/contact.html" className="font-semibold underline-offset-4 hover:underline">
+            <Link href="/contact" className="font-semibold underline-offset-4 hover:underline">
               contact me
             </Link>
             .
