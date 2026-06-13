@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 export default function LocalSeoForPlumbersPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Local SEO"
       readTime="8 min read"
       title={title}

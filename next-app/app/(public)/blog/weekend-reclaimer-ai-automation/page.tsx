@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function WeekendReclaimerAiAutomationPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="AI & Automation"
       readTime="7 min read"
       title={title}

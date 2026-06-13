@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function HollowGateBlogPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Idea Lab"
       readTime="8 min read"
       title={title}

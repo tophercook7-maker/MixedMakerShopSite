@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function AutomateSmallBusinessWorkflowPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="AI & Automation"
       readTime="8 min read"
       title={title}

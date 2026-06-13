@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function OffGridLoraWeatherStationPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Maker Builds"
       readTime="8 min read"
       title={title}

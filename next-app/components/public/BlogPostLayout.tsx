@@ -2,7 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { JsonLd } from "@/components/public/JsonLd";
+import { BLOG_POSTS } from "@/lib/blog/registry";
 import { publicShellClass } from "@/lib/public-brand";
+import { SITE_URL } from "@/lib/site";
 import {
   mmsBtnPrimary,
   mmsOnGlassMuted,
@@ -32,6 +35,8 @@ export const blogArticleProse = cn(
 );
 
 type BlogPostLayoutProps = {
+  /** Registry slug — used to emit per-article schema (headline, date, description, url). */
+  slug: string;
   category: string;
   readTime: string;
   title: string;
@@ -41,6 +46,7 @@ type BlogPostLayoutProps = {
 };
 
 export function BlogPostLayout({
+  slug,
   category,
   readTime,
   title,
@@ -50,8 +56,36 @@ export function BlogPostLayout({
 }: BlogPostLayoutProps) {
   const shell = publicShellClass;
 
+  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const absoluteUrl = `${SITE_URL}${post?.href ?? `/blog/${slug}`}`;
+  const articleImage = heroImage
+    ? heroImage.src.startsWith("http")
+      ? heroImage.src
+      : `${SITE_URL}${heroImage.src}`
+    : `${SITE_URL}/m3-brand.png`;
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl },
+    headline: title,
+    description: post?.excerpt ?? subtitle ?? title,
+    image: articleImage,
+    ...(post?.publishedAt
+      ? { datePublished: post.publishedAt, dateModified: post.publishedAt }
+      : {}),
+    author: { "@type": "Person", name: "Topher Cook", url: `${SITE_URL}/about` },
+    publisher: {
+      "@type": "Organization",
+      name: "MixedMakerShop",
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/m3-brand.png` },
+    },
+    articleSection: category,
+    url: absoluteUrl,
+  };
+
   return (
     <main className="home-umbrella-canvas relative w-full antialiased text-[#e4efe9]">
+      <JsonLd data={articleSchema} />
       <FixedHeroMedia />
       <div className="relative z-[5] w-full">
         <section className={mmsUmbrellaSectionBackdropImmersive}>

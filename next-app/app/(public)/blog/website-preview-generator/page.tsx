@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function WebsitePreviewGeneratorPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Web Design"
       readTime="7 min read"
       title={title}

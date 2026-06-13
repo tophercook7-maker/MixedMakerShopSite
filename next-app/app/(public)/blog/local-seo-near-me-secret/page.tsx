@@ -32,6 +32,7 @@ export const metadata: Metadata = {
 export default function LocalSeoNearMeSecretPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Local SEO"
       readTime="8 min read"
       title={title}

@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function CleanAndQuickPcServicePostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Tech Repair"
       readTime="8 min read"
       title={title}

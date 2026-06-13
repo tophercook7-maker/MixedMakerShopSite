@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function StopDogEaring3dPrintedBookmarksPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="3D Printing"
       readTime="8 min read"
       title={title}

@@ -30,6 +30,7 @@ export const metadata: Metadata = {
 export default function LocalSeoHomeServicesMistakesPostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="Local SEO"
       readTime="7 min read"
       title={title}

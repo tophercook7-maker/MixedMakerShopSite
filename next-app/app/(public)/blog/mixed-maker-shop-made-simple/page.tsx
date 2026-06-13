@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 export default function MixedMakerShopMadeSimplePostPage() {
   return (
     <BlogPostLayout
+      slug={slug}
       category="MixedMakerShop Guide"
       readTime="9 min read"
       title={title}
