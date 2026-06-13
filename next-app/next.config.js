@@ -37,8 +37,13 @@ const HTML_REDIRECTS = [
   ["/website-maintenance.html", "/website-maintenance"],
   ["/work-with-topher.html", "/about"],
   // Retired legacy subdirectory pages (old static duplicates) -> canonical Next routes.
+  // Bare + wildcard so the directory itself, its trailing-slash form, and any old
+  // sub-paths (e.g. /church-websites/index.html) all 301 to the canonical route.
+  ["/church-websites", "/church-websites-hot-springs"],
   ["/church-websites/:path*", "/church-websites-hot-springs"],
+  ["/restaurant-websites", "/restaurant-websites-hot-springs"],
   ["/restaurant-websites/:path*", "/restaurant-websites-hot-springs"],
+  ["/small-business-websites", "/small-business-websites-hot-springs"],
   ["/small-business-websites/:path*", "/small-business-websites-hot-springs"],
   ["/website-samples/index.html", "/website-samples"],
   ["/website-roast/index.html", "/website-roast"],
