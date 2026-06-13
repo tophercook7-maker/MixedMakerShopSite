@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
+import { listPartnerResourceSlugs } from "@/lib/partners/registry";
 import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 
@@ -91,6 +92,7 @@ const PUBLIC_PATHS: readonly string[] = [
 const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
   "/resources",
   ...RESOURCE_ENTRIES.map((r) => `/resources/${r.slug}`),
+  ...listPartnerResourceSlugs().map((slug) => `/resources/${slug}`),
   ...CASE_STUDY_ENTRIES.map((c) => `/proof/${c.slug}`),
 ];
 

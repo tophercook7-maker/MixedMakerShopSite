@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { PartnerResourceDetailView } from "@/components/public/PartnerResourceDetailView";
 import { TrackedDownloadLink } from "@/components/public/TrackedDownloadLink";
 import { publicShellClass } from "@/lib/public-brand";
+import { getPartnerResourceBySlug, listPartnerResourceSlugs } from "@/lib/partners/registry";
 import { categoryLabel, getResourceBySlug, listResourceSlugs } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 import {
@@ -23,11 +25,26 @@ import { cn } from "@/lib/utils";
 const shell = publicShellClass;
 
 export function generateStaticParams(): { slug: string }[] {
-  return listResourceSlugs().map((slug) => ({ slug }));
+  return [...listResourceSlugs(), ...listPartnerResourceSlugs()].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const partner = getPartnerResourceBySlug(slug);
+  if (partner) {
+    const canonical = `${SITE_URL}/resources/${partner.slug}`;
+    return {
+      title: `${partner.title} | MixedMakerShop`,
+      description: partner.description,
+      alternates: { canonical },
+      openGraph: {
+        title: partner.title,
+        description: partner.description,
+        url: canonical,
+      },
+    };
+  }
+
   const r = getResourceBySlug(slug);
   if (!r) return { title: "Resource | MixedMakerShop" };
   const canonical = `${SITE_URL}/resources/${r.slug}`;
@@ -45,6 +62,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ResourceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const partner = getPartnerResourceBySlug(slug);
+  if (partner) {
+    return <PartnerResourceDetailView partner={partner} />;
+  }
+
   const r = getResourceBySlug(slug);
   if (!r) notFound();
 

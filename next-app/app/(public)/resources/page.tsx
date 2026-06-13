@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { PartnerResourceCard } from "@/components/public/PartnerResourceCard";
 import { publicShellClass } from "@/lib/public-brand";
+import { PARTNER_RESOURCE_ENTRIES } from "@/lib/partners/registry";
 import { RESOURCE_ENTRIES, categoryLabel } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 import {
@@ -105,6 +107,19 @@ export default function ResourcesIndexPage() {
                     </Link>
                   </div>
                 </article>
+              ))}
+            </div>
+
+            <div className="mt-16 max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Partner resources</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4 text-2xl md:text-3xl")}>Tools from trusted partners</h2>
+              <p className={cn("mt-4 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                Occasionally we highlight a partner resource that fits real business needs — always with clear disclosure.
+              </p>
+            </div>
+            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:max-w-2xl">
+              {PARTNER_RESOURCE_ENTRIES.map((partner) => (
+                <PartnerResourceCard key={partner.id} partner={partner} />
               ))}
             </div>
           </div>
