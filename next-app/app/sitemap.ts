@@ -61,6 +61,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/see-your-website",
   "/services",
   "/small-business-websites-hot-springs",
+  "/social-media-takeover",
   "/start-here",
   "/tools",
   "/tophers-recommended-tools",
