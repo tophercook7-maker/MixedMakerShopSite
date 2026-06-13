@@ -106,15 +106,20 @@ export default function MixedMakerShopComebackPostPage() {
       </p>
       <ul>
         <li>
-          <strong>Service Call / First Hour:</strong> $85
+          <strong>Diagnostic Visit:</strong> $59 — credited toward the repair if you book it the same visit
         </li>
         <li>
-          <strong>Additional Labor:</strong> $65/hr
+          <strong>Clean &amp; Quick Tune-Up:</strong> $99 (most requested)
+        </li>
+        <li>
+          <strong>Anything else:</strong> flat-rated where possible, or $79/hr with no surprises
         </li>
       </ul>
       <p>
         That&apos;s part of our no-nonsense, plain-language pricing approach. You should know what the starting cost
-        looks like before anybody touches your machine.
+        looks like before anybody touches your machine. See the{" "}
+        <Link href="/in-home-computer-repair">full in-home computer repair &amp; tutoring page</Link> for every flat
+        rate.
       </p>
       <p>
         If you&apos;re in{" "}

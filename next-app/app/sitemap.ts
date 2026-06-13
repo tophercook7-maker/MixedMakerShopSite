@@ -46,6 +46,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/free-website-check/success",
   "/growth-offer",
   "/idea-lab",
+  "/in-home-computer-repair",
   "/lawn-care-hot-springs-ar",
   "/offer",
   "/portfolio",
