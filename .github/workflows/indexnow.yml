@@ -1,0 +1,36 @@
+name: IndexNow submit
+
+# Notify IndexNow (Bing / Yandex / etc.) after content ships to production.
+# Runs on push to main (the deploy branch). The IndexNow key file is permanent and
+# already live, so submission succeeds regardless of which host serves production.
+# Google does not use IndexNow — it auto-discovers the sitemap via robots.txt.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "next-app/app/**"
+      - "next-app/components/**"
+      - "next-app/lib/**"
+      - "next-app/public/**"
+  workflow_dispatch: {}
+
+# Avoid overlapping submissions when several pushes land close together.
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Give the production deploy time to publish before notifying crawlers.
+      - name: Wait for deploy to publish
+        run: sleep 180
+      - name: Submit sitemap URLs to IndexNow
+        working-directory: next-app
+        run: node scripts/indexnow-submit.mjs
