@@ -79,6 +79,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms.txt"
+          title="LLMs.txt — guide for AI assistants"
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VQ4K5GXVTE" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">

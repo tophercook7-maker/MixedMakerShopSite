@@ -4,6 +4,7 @@ import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
 import { listPartnerResourceSlugs } from "@/lib/partners/registry";
 import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
+import { WEBSITE_SAMPLES } from "@/lib/website-samples";
 
 /**
  * Marketing routes under app/(public)/ matching static page.tsx files (excludes dynamic [slug] routes).
@@ -11,32 +12,12 @@ import { SITE_URL } from "@/lib/site";
 const PUBLIC_PATHS: readonly string[] = [
   "/",
   "/hollow-gate",
+  "/llms.txt",
   "/3d-printing",
   "/about",
   "/ad-lab",
   "/ai-business-tools",
   "/blog",
-  "/blog/local-seo-for-plumbers",
-  "/blog/3d-printed-keychains-ultimate-handout",
-  "/blog/local-seo-home-service-advantage",
-  "/blog/stop-dog-earing-3d-printed-bookmarks",
-  "/blog/clean-and-quick-pc-service",
-  "/blog/local-seo-near-me-secret",
-  "/blog/automate-small-business-workflow",
-  "/blog/hollow-gate",
-  "/blog/business-card-3d-printed-keychain",
-  "/blog/custom-3d-printed-bookmarks",
-  "/blog/3d-printed-keychains-bulk-marketing",
-  "/blog/mixed-maker-shop-made-simple",
-  "/blog/mixed-maker-shop-guide",
-  "/blog/mixed-maker-shop-comeback",
-  "/blog/weekend-reclaimer-ai-automation",
-  "/blog/local-seo-home-services-mistakes",
-  "/blog/off-grid-lora-weather-station",
-  "/blog/cleaning-service-website-essentials",
-  "/blog/website-preview-generator",
-  "/blog/custom-3d-printing-branding",
-  "/blog/mobile-friendly-website-design",
   "/builds",
   "/church-websites-hot-springs",
   "/coffee-shop-websites-hot-springs",
@@ -91,6 +72,12 @@ const PUBLIC_PATHS: readonly string[] = [
   "/samples/wellness",
 ];
 
+const WEBSITE_SAMPLE_PATHS: readonly string[] = WEBSITE_SAMPLES.filter((sample) => !sample.externalHref).map(
+  (sample) => `/website-samples/${sample.slug}`,
+);
+
+const BLOG_ARTICLE_PATHS: readonly string[] = BLOG_POSTS.flatMap((post) => (post.href ? [post.href] : []));
+
 const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
   "/resources",
   ...RESOURCE_ENTRIES.map((r) => `/resources/${r.slug}`),
@@ -98,7 +85,12 @@ const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
   ...CASE_STUDY_ENTRIES.map((c) => `/proof/${c.slug}`),
 ];
 
-const ALL_PUBLIC_PATHS = [...PUBLIC_PATHS, ...RESOURCE_AND_PROOF_PATHS];
+const ALL_PUBLIC_PATHS = [
+  ...PUBLIC_PATHS,
+  ...BLOG_ARTICLE_PATHS,
+  ...WEBSITE_SAMPLE_PATHS,
+  ...RESOURCE_AND_PROOF_PATHS,
+];
 
 /** Real publish dates for blog posts so the sitemap reflects actual content age. */
 const blogDateByPath = new Map(

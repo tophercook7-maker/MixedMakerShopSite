@@ -99,6 +99,10 @@ export function PublicFooter() {
                 ·
               </span>
               <Link href="/terms">Terms of Service</Link>
+              <span className="mx-1.5 opacity-60" aria-hidden>
+                ·
+              </span>
+              <Link href="/llms.txt">For AI assistants</Link>
             </p>
             <ul className="footer-links mt-4 list-none p-0">
               {linkGroups[0].links.map((link) => (
