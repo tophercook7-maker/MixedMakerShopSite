@@ -9,6 +9,7 @@
     "lint": "next lint",
     "generate:client": "tsx scripts/generate-client.ts",
     "generate:resource-pdfs": "node scripts/generate-resource-pdfs.cjs",
+    "indexnow": "node scripts/indexnow-submit.mjs",
     "db:apply-sql": "bash scripts/db-apply-sql.sh",
     "db:migrate:crm-canonical": "bash scripts/db-apply-sql.sh supabase/migrations/20260321000000_leads_canonical_simple_crm.sql",
     "db:push": "supabase db push"
