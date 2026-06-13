@@ -59,6 +59,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/privacy-policy",
   "/terms",
   "/pressure-washing-hot-springs-ar",
+  "/price-sheet",
   "/pricing",
   "/property-care",
   "/restaurant-website-redesign",
