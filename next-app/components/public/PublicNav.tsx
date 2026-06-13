@@ -23,13 +23,12 @@ const navItems: {
   { href: "/examples", label: "Examples" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
-  {
-    href: LENDTRACK_FUNDING_PORTAL_PATH,
-    label: "Get a Loan",
-    event: { name: "public_partner_resource_click", props: { location: "nav", partner_id: "lendtrack-ai" } },
-  },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
+
+function isNavActive(pathname: string, href: string): boolean {
+  return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+}
 
 export function PublicNav() {
   const pathname = usePathname();
@@ -37,6 +36,7 @@ export function PublicNav() {
   const [logoFailed, setLogoFailed] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const loanActive = isNavActive(pathname, LENDTRACK_FUNDING_PORTAL_PATH);
 
   useEffect(() => {
     const toggle = toggleRef.current;
@@ -80,12 +80,7 @@ export function PublicNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "pill",
-                pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`))
-                  ? "pill--active"
-                  : null,
-              )}
+              className={cn("pill", isNavActive(pathname, item.href) ? "pill--active" : null)}
               onClick={() => {
                 if (item.event) trackPublicEvent(item.event.name, item.event.props);
               }}
@@ -94,6 +89,19 @@ export function PublicNav() {
             </Link>
           ))}
           <span className="nav-cta-divider" aria-hidden="true" />
+          <Link
+            href={LENDTRACK_FUNDING_PORTAL_PATH}
+            className={cn("pill cta nav-cta-loan", loanActive && "pill--active")}
+            onClick={() =>
+              trackPublicEvent("public_partner_resource_click", {
+                location: "nav",
+                partner_id: "lendtrack-ai",
+                target: "get_a_loan_cta",
+              })
+            }
+          >
+            Get a Loan
+          </Link>
           <a
             href={publicTopherTextHref}
             className="pill cta"
