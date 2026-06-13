@@ -148,7 +148,7 @@ export default function CleaningServiceWebsiteEssentialsPostPage() {
         </li>
       </ul>
       <p>
-        If you&apos;re worried about how to organize these photos, <Link href="/captain-maker">Captain Maker</Link>
+        If you&apos;re worried about how to organize these photos, a <Link href="/free-mockup">free homepage preview</Link>
         can help you map out a project path that highlights your best work without cluttering the site.
       </p>
 

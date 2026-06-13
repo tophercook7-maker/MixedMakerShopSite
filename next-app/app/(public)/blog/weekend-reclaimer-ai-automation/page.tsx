@@ -172,7 +172,7 @@ export default function WeekendReclaimerAiAutomationPostPage() {
         Specialist,&quot; and you shouldn&apos;t have to be.
       </p>
       <p>
-        That&apos;s why we created the <Link href="/captain-maker">Captain Maker</Link> consultation tool. It helps you
+        That&apos;s why we offer a <Link href="/free-mockup">free homepage preview</Link>. It helps you
         figure out exactly what you need — whether it&apos;s a better website, a custom 3D printed solution, or an AI
         bot — before you spend a dime.
       </p>

@@ -236,8 +236,8 @@ export default function WebsitePreviewGeneratorPostPage() {
           <strong>Real Examples:</strong> See <Link href="/examples">proof of our builds</Link> in the wild.
         </li>
         <li>
-          <strong>Captain Maker:</strong> Not sure where to start?{" "}
-          <Link href="/captain-maker">Chat with the Captain</Link>.
+          <strong>Free Website Preview:</strong> Not sure where to start?{" "}
+          <Link href="/free-mockup">Get a Free Website Preview</Link>.
         </li>
       </ul>
     </BlogPostLayout>

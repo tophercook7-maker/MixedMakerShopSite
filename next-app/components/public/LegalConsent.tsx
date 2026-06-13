@@ -4,7 +4,7 @@ import { mmsTextLinkOnGlass } from "@/lib/mms-umbrella-ui";
 
 type LegalConsentProps = {
   className?: string;
-  /** Use on dark glass panels (Captain Maker, umbrella forms). */
+  /** Use on dark glass panels (umbrella forms). */
   variant?: "default" | "glass";
 };
 

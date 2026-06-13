@@ -13,12 +13,12 @@ const canonical = `${SITE_URL}/blog/${slug}`;
 
 const title = "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions";
 const subtitle =
-  "A glass-box look at Captain Maker, web design, 3D printing, AI automation, and straight-talk pricing — without agency fluff";
+  "A glass-box look at free website previews, web design, 3D printing, AI automation, and straight-talk pricing — without agency fluff";
 
 export const metadata: Metadata = {
   title: `${title} | MixedMakerShop Blog`,
   description:
-    "How MixedMakerShop works — Captain Maker consultations, Topher's Web Design, GiGi's Print Shop, AI automation, and clear starting prices. No synergy slides, no quote-me games.",
+    "How MixedMakerShop works — free website previews, Topher's Web Design, GiGi's Print Shop, AI automation, and clear starting prices. No synergy slides, no quote-me games.",
   alternates: { canonical },
   openGraph: {
     title,
@@ -57,19 +57,19 @@ export default function MixedMakerShopGuidePostPage() {
         sitting on.
       </p>
 
-      <h2>Start Here: The Captain Maker Consultation</h2>
+      <h2>Start Here: The Free Website Preview</h2>
       <p>
         One of the biggest hurdles in any project is just knowing where to start. You might know you need
         &quot;something&quot; to help your business, but you aren&apos;t sure if it&apos;s a better website, a custom
         automation, or a physical marketing tool.
       </p>
       <p>
-        That&apos;s why we built the <strong>Captain Maker</strong> consultation tool. Think of it as your project
+        That&apos;s why we offer a <strong>free homepage preview</strong>. Think of it as your project
         compass. Instead of a high-pressure sales call, it&apos;s a direct, helpful path to finding the right solution.
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/nGMge-Xzan8.webp"
-        alt="A hand pointing to a strategic roadmap on a wooden table, representing the Captain Maker guidance process"
+        alt="A hand pointing to a strategic roadmap on a wooden table"
       />
       <p>
         We sit down: either virtually or in person: and look at your specific bottlenecks. Are you losing leads because

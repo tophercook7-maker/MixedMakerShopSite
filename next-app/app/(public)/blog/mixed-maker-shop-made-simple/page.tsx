@@ -5,7 +5,7 @@ import {
   BlogInlineCta,
   BlogPostLayout,
 } from "@/components/public/BlogPostLayout";
-import { publicCaptainMakerHref, publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { SITE_URL } from "@/lib/site";
 
 const slug = "mixed-maker-shop-made-simple";
@@ -18,7 +18,7 @@ const subtitle =
 export const metadata: Metadata = {
   title: `${title} | MixedMakerShop Blog`,
   description:
-    "MixedMakerShop explained simply — mobile friendly website design, 3D printed keychains in bulk, local SEO, AI automation for small business, and Captain Maker to pick your path.",
+    "MixedMakerShop explained simply — mobile friendly website design, 3D printed keychains in bulk, local SEO, AI automation for small business, and a free homepage preview to pick your path.",
   alternates: { canonical },
   openGraph: {
     title,
@@ -155,13 +155,13 @@ export default function MixedMakerShopMadeSimplePostPage() {
 
       <hr />
 
-      <h2>4. Not Sure Where to Start? Meet Captain Maker.</h2>
+      <h2>4. Not Sure Where to Start? Start with a Free Website Preview.</h2>
       <p>
         We realize that having a shop that does web design, 3D printing, and automation can be a little overwhelming. You
         might know you need <em>something</em> to change, but you&apos;re not sure which path to take.
       </p>
       <p>
-        That&apos;s why we created the <strong>Captain Maker</strong> consultation tool. Think of it as your project
+        That&apos;s why we offer a <strong>free homepage preview</strong>. Think of it as your project
         navigator. Instead of a sales pitch, you get a conversation. We&apos;ll look at your goals and help you decide if
         you need a better website, a physical product, or a digital tool to streamline your day.
       </p>
@@ -174,7 +174,7 @@ export default function MixedMakerShopMadeSimplePostPage() {
       </p>
       <BlogArticleImage
         src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2070&auto=format&fit=crop"
-        alt="Captain Maker consultation interface on a sleek tablet with dark mode UI and orange highlights in a blurred workshop"
+        alt="A free homepage preview interface on a sleek tablet with dark mode UI and orange highlights in a blurred workshop"
       />
 
       <hr />
@@ -203,12 +203,12 @@ export default function MixedMakerShopMadeSimplePostPage() {
       <BlogInlineCta>
         <p className="!mb-0">
           Not sure which path fits?{" "}
-          <Link href={publicCaptainMakerHref} className="font-semibold">
-            Start with Captain Maker
+          <Link href={publicFreeMockupFunnelHref} className="font-semibold">
+            Get a Free Website Preview
           </Link>{" "}
           or{" "}
-          <Link href={publicFreeMockupFunnelHref} className="font-semibold">
-            request a free homepage preview
+          <Link href="/contact" className="font-semibold">
+            contact us directly
           </Link>
           .
         </p>

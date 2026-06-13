@@ -15,7 +15,7 @@ import {
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
 import { MMS_LOCAL_TECH_POSITIONING } from "@/components/public/MmsComebackStorySection";
-import { publicCaptainMakerHref, publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -128,15 +128,15 @@ export function UmbrellaHomeHero() {
             <div className={cn("mt-4", mmsOnGlassCtaSeparator)}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href={publicCaptainMakerHref}
+                  href="/pricing"
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "captain_maker" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "pricing" }}
                   className={cn(
                     mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Start with Captain Maker
+                  See pricing
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
@@ -159,11 +159,11 @@ export function UmbrellaHomeHero() {
                 "max-w-[48ch]",
               )}
             >
-              Free estimates through Captain Maker. Clear starting prices on common paths. Custom work scheduled after approval
-              and deposit when required.
+              Free homepage mockups before you commit. Clear starting prices on common paths. Custom work scheduled after
+              approval and deposit when required.
             </p>
             <p className={cn("mt-2 max-w-[48ch] text-sm leading-relaxed", mmsOnGlassSecondary)}>
-              Not sure what you need? Captain Maker will point you to the right starting place.
+              Not sure what you need? Start with a free homepage preview — you&apos;ll see the direction before you commit.
             </p>
           </motion.div>
         </div>

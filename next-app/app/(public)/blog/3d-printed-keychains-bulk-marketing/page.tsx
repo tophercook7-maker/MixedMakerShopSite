@@ -5,7 +5,7 @@ import {
   BlogInlineCta,
   BlogPostLayout,
 } from "@/components/public/BlogPostLayout";
-import { publicCaptainMakerHref } from "@/lib/public-brand";
+import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import { SITE_URL } from "@/lib/site";
 
 const slug = "3d-printed-keychains-bulk-marketing";
@@ -151,7 +151,7 @@ export default function ThreeDPrintedKeychainsBulkMarketingPostPage() {
         and you shouldn&apos;t have to be.
       </p>
       <p>
-        That&apos;s why we created the <strong>Captain Maker</strong> consultation tool. It&apos;s a simple way to walk
+        That&apos;s why we offer a <strong>free homepage preview</strong>. It&apos;s a simple way to walk
         through your idea: whether it&apos;s <strong>3d printed keychains bulk</strong> for a local festival or a
         custom set of <Link href="/custom-3d-printing">bookmarks for a library event</Link>: and find the right path
         before you spend a dime.
@@ -193,8 +193,8 @@ export default function ThreeDPrintedKeychainsBulkMarketingPostPage() {
       <BlogInlineCta>
         <p className="!mb-0">
           Have a bulk keychain idea?{" "}
-          <Link href={publicCaptainMakerHref} className="font-semibold">
-            Start with Captain Maker
+          <Link href={publicFreeMockupFunnelHref} className="font-semibold">
+            Get a Free Website Preview
           </Link>{" "}
           or{" "}
           <Link href="/3d-printing" className="font-semibold">

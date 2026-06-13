@@ -10,7 +10,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
-import { CaptainMakerGuide } from "@/components/public/CaptainMakerGuide";
 import {
   MMS_LOCAL_TECH_POSITIONING,
   MmsComebackStorySection,
@@ -21,7 +20,6 @@ import { TopherWebDesignHomeSpotlight } from "@/components/public/TopherWebDesig
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import {
-  publicCaptainMakerHref,
   publicFreeMockupFunnelHref,
   publicShellClass,
   publicTopherEmail,
@@ -281,38 +279,6 @@ export function UmbrellaHomePage() {
       <div className="relative z-[5] w-full">
         <UmbrellaHomeHero />
 
-        <section className={cn(homeBackdrop)} aria-labelledby="captain-maker-cta-heading">
-          <div className={cn(shell, "py-14 md:py-20")}>
-            <div className="public-glass-box public-glass-box--pad mx-auto max-w-3xl text-center md:text-left">
-              <p className={mmsSectionEyebrowOnGlass}>Not sure where to start?</p>
-              <h2 id="captain-maker-cta-heading" className={cn(mmsH2OnGlass, "mt-4")}>
-                Captain Maker — guided project assistant
-              </h2>
-              <p className={cn("mx-auto mt-5 max-w-2xl text-base leading-relaxed md:mx-0 md:text-lg", mmsOnGlassSecondary)}>
-                Answer a few plain questions, get a recommended path, and copy a project summary before you start a free
-                preview or contact Topher.
-              </p>
-              <Link
-                href={publicCaptainMakerHref}
-                className={cn(
-                  mmsBtnPrimary,
-                  "mt-8 inline-flex w-full items-center justify-center gap-2 px-8 py-3.5 no-underline hover:no-underline sm:w-auto",
-                )}
-              >
-                Ask Captain Maker what I need
-                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
-              </Link>
-              <p className={cn("mt-5 text-sm leading-relaxed", mmsOnGlassSecondary)}>
-                Need a website first?{" "}
-                <Link href={publicFreeMockupFunnelHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
-                  Get a free homepage mockup
-                </Link>{" "}
-                — Captain Maker helps when you are still figuring out the fit.
-              </p>
-            </div>
-          </div>
-        </section>
-
         <TopherWebDesignHomeSpotlight />
 
         <section className={cn(homeBackdrop)} id="comeback-story">
@@ -406,8 +372,8 @@ export function UmbrellaHomePage() {
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Pick the build that sounds closest.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 Mixed Maker Shop brings computer repair, web design, AI help, prints, and custom work together under one
-                umbrella — start with the closest fit, then Captain Maker can help sort the details before your free
-                estimate.
+                umbrella — pick the closest fit, or start with a free homepage preview if you want to see the direction
+                before committing to anything.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6", mmsHomeGlassStackGap)}>
@@ -430,26 +396,14 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Not sure what you need?</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4 !text-2xl md:!text-3xl")}>Not sure what you need?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                That’s exactly why Captain Maker is here. Use the guided helper to sort your project type, goals, and the
-                right next step before you commit to anything.
+                The fastest way to see if we&apos;re a fit is to request a free homepage preview built around your business.
+                You&apos;ll get a clear direction before you commit to anything.
               </p>
-              <Link href={publicCaptainMakerHref} className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
-                Ask Captain Maker what I need
+              <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnPrimary, "mt-7 inline-flex w-full justify-center px-8 no-underline hover:no-underline sm:w-auto")}>
+                Get a Free Website Preview
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
-          </div>
-        </section>
-
-        <section className={cn(homeBackdrop)} id="captain-maker">
-          <div className={cn(shell, mmsSectionY)}>
-            <p className={cn("mb-6 text-center text-sm md:text-base", mmsOnGlassSecondary)}>
-              <Link href={publicCaptainMakerHref} className={cn(mmsTextLinkOnGlass, "font-semibold")}>
-                Open the full guided Captain Maker page
-              </Link>{" "}
-              for the full project assistant — or continue with quick chat below.
-            </p>
-            <CaptainMakerGuide />
           </div>
         </section>
 
@@ -463,13 +417,13 @@ export function UmbrellaHomePage() {
                 the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
               </p>
               <Link
-                href={publicCaptainMakerHref}
+                href={publicFreeMockupFunnelHref}
                 className={cn(
                   mmsBtnSecondaryOnGlass,
                   "mt-7 inline-flex w-full justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
                 )}
               >
-                Start with Captain Maker
+                Get a Free Website Preview
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>

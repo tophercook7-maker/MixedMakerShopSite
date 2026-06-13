@@ -221,8 +221,8 @@ export default function LocalSeoHomeServiceAdvantagePostPage() {
 
       <h2>Ready to Find the Right Path?</h2>
       <p>
-        If all of this sounds good but you aren&apos;t sure where to start, we built something specifically for you: the{" "}
-        <Link href="/captain-maker">&quot;Captain Maker&quot; consultation tool</Link>. It&apos;s a simple way to tell us
+        If all of this sounds good but you aren&apos;t sure where to start, we built something specifically for you: a{" "}
+        <Link href="/free-mockup">free homepage preview</Link>. It&apos;s a simple way to tell us
         what you&apos;re trying to build, and we&apos;ll help you figure out the best way to get there — whether
         that&apos;s a full SEO overhaul or just a few tweaks to your Google listing.
       </p>

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description:
-      "Stop chasing paperwork. Five no-nonsense small business workflow automation ideas — speed to lead, auto-invoices, scheduling, lead routing, and the Captain Maker approach.",
+      "Stop chasing paperwork. Five no-nonsense small business workflow automation ideas — speed to lead, auto-invoices, scheduling, lead routing, and a practical tools approach.",
     url: canonical,
   },
 };
@@ -163,9 +163,9 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
         alt="A digital tablet showing an Invoice Paid confirmation on a clean, professional desk"
       />
 
-      <h2>5. The Captain Maker Approach: Tools, Not Fluff</h2>
+      <h2>5. The Practical Tools Approach: Tools, Not Fluff</h2>
       <p>
-        At Mixed Maker Shop, we have something we call the <Link href="/captain-maker">Captain Maker</Link> approach. Most
+        At Mixed Maker Shop, we have a simple <Link href="/free-mockup">practical tools approach</Link>. Most
         agencies want to sell you a &quot;comprehensive digital transformation framework.&quot; We think that sounds like
         a headache.
       </p>
@@ -206,7 +206,7 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
       </ol>
       <BlogArticleImage
         src="https://cdn.marblism.com/GjTTNAKpcrM.webp"
-        alt="A cinematic shot of the Captain Maker command center, blending physical workshop tools with a digital automation builder"
+        alt="A cinematic shot of a command center, blending physical workshop tools with a digital automation builder"
       />
 
       <h2>What We Need From You to Get Started</h2>
@@ -235,8 +235,8 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
         <strong>Let&apos;s get to work.</strong>
       </p>
       <p>
-        <Link href="/captain-maker">
-          <strong>Click here to use the Captain Maker tool</strong>
+        <Link href="/free-mockup">
+          <strong>Click here to start a Free Website Preview</strong>
         </Link>{" "}
         to find the right path for your project, or{" "}
         <Link href="/contact">
@@ -248,8 +248,8 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
 
       <BlogInlineCta>
         <p className="!mb-0">
-          <Link href="/captain-maker" className="font-semibold">
-            Start with Captain Maker
+          <Link href="/free-mockup" className="font-semibold">
+            Get a Free Website Preview
           </Link>{" "}
           to map your automation path, or{" "}
           <Link href="/contact" className="font-semibold">

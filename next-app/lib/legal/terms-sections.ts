@@ -33,7 +33,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
     paragraphs: ["We provide several tools to help you understand our services before you commit:"],
     list: [
       normalizeLegalBrand(
-        "Captain Maker: Captain Maker is an AI helper. He's smart, but his answers are not a legal contract, a guarantee, or expert advice. Always verify key details (pricing, timelines, materials, specs, and scope) with Topher before you commit. Any estimates from Captain Maker are for informational purposes and do not constitute a binding contract until a formal project scope is approved by MixedMakerShop.",
+        "AI helpers and chat tools: Any AI helpers or chat tools we offer (now or in the future) are informational only. Their answers are not a legal contract, a guarantee, or expert advice. Always verify key details (pricing, timelines, materials, specs, and scope) with Topher before you commit. Any AI-generated estimate is for informational purposes and does not constitute a binding contract until a formal project scope is approved by MixedMakerShop.",
       ),
       normalizeLegalBrand(
         "Free Homepage Preview: We may offer a complimentary homepage mockup. While this preview reflects our creative direction, MixedMakerShop retains all ownership of the preview until a formal agreement is reached and payment is made.",
@@ -77,7 +77,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
     title: "6. AI and Automation Disclaimers",
     list: [
       normalizeLegalBrand(
-        "AI Guidance: Our AI tools and bots (including Captain Maker) are designed to assist and guide users. However, AI can occasionally produce inaccurate information. MixedMakerShop does not guarantee the absolute accuracy of AI-generated content and is not responsible for decisions made based on bot interactions.",
+        "AI Guidance: Our AI tools and bots are designed to assist and guide users. However, AI can occasionally produce inaccurate information. MixedMakerShop does not guarantee the absolute accuracy of AI-generated content and is not responsible for decisions made based on bot interactions.",
       ),
       "Bot Guardrails: We build AI helpers with specific guardrails, but we are not liable for unintended outputs or service interruptions caused by third-party AI platform providers (e.g., OpenAI, Anthropic).",
     ],

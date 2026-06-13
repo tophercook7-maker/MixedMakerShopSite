@@ -8,7 +8,7 @@ export const PRIVACY_INTRO: readonly string[] = [
   normalizeLegalBrand(
     'MixedMakerShop ("we," "us," or "our") operates the website mixedmakershop.com and manages several service branches, including Topher\'s Web Design and GiGi\'s Print Shop. We are committed to protecting your privacy and providing a clear, honest explanation of how we handle your personal information.',
   ),
-  'This Privacy Policy describes how we collect, use, and share your data when you visit our website, use our "Captain Maker" tool, request a free website preview, or purchase our creative and digital services.',
+  'This Privacy Policy describes how we collect, use, and share your data when you visit our website, request a free website preview, or purchase our creative and digital services.',
 ];
 
 export const PRIVACY_SECTIONS: readonly LegalSection[] = [
@@ -23,7 +23,7 @@ export const PRIVACY_SECTIONS: readonly LegalSection[] = [
       "Shipping Information (3D Prints): If you order custom 3D-printed items, we collect your shipping address so we can deliver your order.",
       "Project Details: To provide our services (such as web design or 3D printing), we collect specific project data, including website preferences, business descriptions, and digital files or specifications for 3D prints.",
       "Payment Information: Payments are processed through secure third-party payment processors (e.g., Stripe, PayPal). We do not store your full credit card details on our servers.",
-      'Communication Data: This includes records of your interactions with "Captain Maker," our AI consultation tool, as well as any emails or messages exchanged regarding your projects.',
+      "Communication Data: This includes any emails or messages exchanged regarding your projects, as well as form submissions or chat-tool interactions if we offer one in the future.",
       "Usage Data: We automatically collect information about how you interact with our website, such as your IP address, browser type, and pages visited, to help us improve our user experience.",
     ],
   },
@@ -40,7 +40,7 @@ export const PRIVACY_SECTIONS: readonly LegalSection[] = [
       "Generate free website previews and project estimates.",
       "Fulfill orders for custom 3D prints (including shipping your items).",
       "Keep you posted on your projects and orders (updates, questions, and support).",
-      'Facilitate consultation and guidance through our "Captain Maker" tool.',
+      "Provide consultation and guidance through any helper tools or chat features we offer.",
       "Process payments through secure third-party payment processors (we don't store your credit card info).",
       "Improve our service offerings and website performance.",
       "Ensure the security of our digital environment.",

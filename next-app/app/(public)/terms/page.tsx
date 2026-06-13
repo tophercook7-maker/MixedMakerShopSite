@@ -8,12 +8,12 @@ const canonical = `${SITE_URL}/terms`;
 export const metadata: Metadata = {
   title: "Terms of Service | MixedMakerShop",
   description:
-    "Review the terms for using MixedMakerShop services, including web design, Captain Maker, GiGi's Print Shop, AI tools, deposits, refunds, and project ownership.",
+    "Review the terms for using MixedMakerShop services, including web design, GiGi's Print Shop, AI tools, deposits, refunds, and project ownership.",
   alternates: { canonical },
   openGraph: {
     title: "Terms of Service | MixedMakerShop",
     description:
-      "Review the terms for using MixedMakerShop services, including web design, Captain Maker, GiGi's Print Shop, AI tools, deposits, refunds, and project ownership.",
+      "Review the terms for using MixedMakerShop services, including web design, GiGi's Print Shop, AI tools, deposits, refunds, and project ownership.",
     url: canonical,
   },
 };

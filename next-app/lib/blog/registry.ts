@@ -139,7 +139,7 @@ const posts: BlogIndexPost[] = [
     title: "The Mixed Maker Shop Guide: Web Design, 3D Printing, and AI Automation Made Simple",
     category: "MixedMakerShop Guide",
     excerpt:
-      "One umbrella for mobile friendly website design, bulk 3D printed keychains, local SEO, AI automation for small business, and Captain Maker — without drowning in tabs.",
+      "One umbrella for mobile friendly website design, bulk 3D printed keychains, local SEO, AI automation for small business, and the free homepage preview — without drowning in tabs.",
     readTime: "9 min read",
     readMinutes: 9,
     publishedAt: "2026-06-11",
@@ -150,7 +150,7 @@ const posts: BlogIndexPost[] = [
     title: "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions",
     category: "MixedMakerShop Guide",
     excerpt:
-      "Captain Maker, Topher's Web Design, GiGi's Print Shop, AI automation, and straight-talk pricing — a glass-box guide to how MixedMakerShop works without agency fluff.",
+      "Topher's Web Design, GiGi's Print Shop, AI automation, free homepage previews, and straight-talk pricing — a glass-box guide to how MixedMakerShop works without agency fluff.",
     readTime: "8 min read",
     readMinutes: 8,
     publishedAt: "2026-06-10",

@@ -8,12 +8,12 @@ const canonical = `${SITE_URL}/privacy`;
 export const metadata: Metadata = {
   title: "Privacy Policy | MixedMakerShop",
   description:
-    "Learn how MixedMakerShop collects, uses, and protects information for website previews, Captain Maker, 3D printing orders, and creative services.",
+    "Learn how MixedMakerShop collects, uses, and protects information for website previews, 3D printing orders, and creative services.",
   alternates: { canonical },
   openGraph: {
     title: "Privacy Policy | MixedMakerShop",
     description:
-      "Learn how MixedMakerShop collects, uses, and protects information for website previews, Captain Maker, 3D printing orders, and creative services.",
+      "Learn how MixedMakerShop collects, uses, and protects information for website previews, 3D printing orders, and creative services.",
     url: canonical,
   },
 };

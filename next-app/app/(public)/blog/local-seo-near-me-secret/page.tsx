@@ -198,7 +198,7 @@ export default function LocalSeoNearMeSecretPostPage() {
       <p>We&apos;re makers, not just &quot;coders.&quot; Our process is transparent:</p>
       <ol>
         <li>
-          <strong>The <Link href="/captain-maker">Captain Maker</Link> Consultation:</strong> We sit down (virtually) and
+          <strong>The <Link href="/free-mockup">Free Website Preview</Link>:</strong> We sit down (virtually) and
           look at what you&apos;ve got. We find the holes in your current setup.
         </li>
         <li>
