@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSampleBySlug } from "@/lib/website-samples";
 import type { SampleImageCategory } from "@/lib/sample-fallback-images";
+import { SITE_URL } from "@/lib/site";
 import { SampleDraftClient, type SampleDraft, type SampleDraftEmbedOptions } from "./sample-draft-client";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const sample = getSampleBySlug(slug);
+  if (!sample || sample.externalHref) return {};
+  const canonical = `${SITE_URL}/website-samples/${sample.slug}`;
+  return {
+    title: `${sample.name} — Website Sample | MixedMakerShop`,
+    description: sample.desc,
+    alternates: { canonical },
+    openGraph: {
+      title: `${sample.name} — Website Sample`,
+      description: sample.desc,
+      url: canonical,
+      ...(sample.imageUrl ? { images: [{ url: sample.imageUrl }] } : {}),
+    },
+  };
+}
 
 type ShowcaseType = "coffee" | "restaurant" | "church" | "plumbing" | "lawn";
 
