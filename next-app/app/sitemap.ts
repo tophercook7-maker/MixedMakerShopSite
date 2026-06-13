@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { BLOG_POSTS } from "@/lib/blog/registry";
 import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
 import { listPartnerResourceSlugs } from "@/lib/partners/registry";
 import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
@@ -98,6 +99,11 @@ const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
 
 const ALL_PUBLIC_PATHS = [...PUBLIC_PATHS, ...RESOURCE_AND_PROOF_PATHS];
 
+/** Real publish dates for blog posts so the sitemap reflects actual content age. */
+const blogDateByPath = new Map(
+  BLOG_POSTS.filter((p) => p.href).map((p) => [p.href as string, p.publishedAt]),
+);
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const seen = new Set<string>();
@@ -105,10 +111,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (seen.has(path)) return false;
     seen.add(path);
     return true;
-  }).map((path) => ({
-    url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
-    lastModified: now,
-    changeFrequency: "monthly" as const,
-    priority: path === "/" ? 1 : 0.75,
-  }));
+  }).map((path) => {
+    const blogDate = blogDateByPath.get(path);
+    return {
+      url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
+      lastModified: blogDate ? new Date(blogDate) : now,
+      changeFrequency: "monthly" as const,
+      priority: path === "/" ? 1 : 0.75,
+    };
+  });
 }
