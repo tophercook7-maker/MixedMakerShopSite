@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
+import { JsonLd } from "@/components/public/JsonLd";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
@@ -41,9 +42,42 @@ const processSteps = [
   "You decide if you want to move forward",
 ] as const;
 
+const pricingSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "Web Design",
+  name: "Web Design Pricing | MixedMakerShop",
+  description:
+    "Simple, transparent web design pricing — Starter Setup from $400, Growth $900–$1,800, Custom quote, plus Hosting & Support from $89/mo.",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "MixedMakerShop",
+    url: "https://mixedmakershop.com/",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Hot Springs",
+      addressRegion: "AR",
+      addressCountry: "US",
+    },
+  },
+  areaServed: ["Hot Springs AR", "Hot Springs Village AR", "Lake Hamilton AR", "Benton AR", "Malvern AR", "Arkansas"],
+  url: "https://mixedmakershop.com/pricing",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "MixedMakerShop Pricing",
+    itemListElement: [
+      { "@type": "Offer", name: "Starter Setup", price: "400", priceCurrency: "USD" },
+      { "@type": "Offer", name: "Growth Site ($900–$1,800)", price: "900", priceCurrency: "USD" },
+      { "@type": "Offer", name: "Custom Build (quoted)", priceCurrency: "USD" },
+      { "@type": "Offer", name: "Hosting & Support (monthly)", price: "89", priceCurrency: "USD" },
+    ],
+  },
+};
+
 export default function PricingPage() {
   return (
     <div className={cn(mmsPageBg, "border-b", mmsSectionBorder)}>
+      <JsonLd data={pricingSchema} />
       <div className="bg-[#070907]/80 backdrop-blur-[2px]">
         <div className={cn(shell, mmsSectionY)}>
           {/* Section 1 — Title */}

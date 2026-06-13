@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import { PrintingQuoteForm } from "@/components/printing/PrintingQuoteForm";
 import { printingQuoteHref } from "@/components/printing/printing-quote-anchor";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { JsonLd } from "@/components/public/JsonLd";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicShellClass } from "@/lib/public-brand";
+import { SITE_URL } from "@/lib/site";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -98,9 +100,42 @@ const faqs = [
   },
 ] as const;
 
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "3D Printing",
+  name: "GiGi’s Print Shop — Custom 3D Printing in Hot Springs, AR",
+  description:
+    "Custom 3D printed items, bookmarks, gifts, replacement parts, seasonal prints, and custom requests from GiGi’s Print Shop at MixedMakerShop.",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "MixedMakerShop",
+    url: `${SITE_URL}/`,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Hot Springs",
+      addressRegion: "AR",
+      addressCountry: "US",
+    },
+  },
+  areaServed: ["Hot Springs AR", "Hot Springs Village AR", "Lake Hamilton AR", "Benton AR", "Malvern AR", "Arkansas"],
+  url: `${SITE_URL}/3d-printing`,
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function ThreeDPrintingPage() {
   return (
     <article className="home-umbrella-canvas relative min-h-screen w-full overflow-x-hidden scroll-smooth antialiased text-[#e4efe9]">
+      <JsonLd data={[serviceSchema, faqSchema]} />
       <FixedHeroMedia />
       <div className="relative z-[5] w-full">
         <section className={cn(mmsUmbrellaSectionBackdropImmersive, "relative overflow-hidden")}>
