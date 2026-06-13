@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-for-plumbers",
+    title: "Flushed Away: Why Plumbers Need Local SEO to Stay Above Water",
+    category: "Local SEO",
+    excerpt:
+      "Win the map pack when homeowners search emergency plumber near me — Google Business Profile, reviews, and a mobile site that turns panic into phone calls.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-21",
+    href: "/blog/local-seo-for-plumbers",
+  },
+  {
     slug: "3d-printed-keychains-ultimate-handout",
     title: "Beyond the Business Card: Why 3D Printed Keychains are the Ultimate Handout",
     category: "3D Printing",
