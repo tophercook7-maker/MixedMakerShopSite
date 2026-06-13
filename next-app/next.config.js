@@ -67,13 +67,15 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      ...HTML_REDIRECTS.map(([source, destination]) => ({ source, destination, permanent: true })),
+      // statusCode: 301 (not `permanent: true`, which emits 308) so legacy URLs return a
+      // classic 301 Moved Permanently.
+      ...HTML_REDIRECTS.map(([source, destination]) => ({ source, destination, statusCode: 301 })),
       {
         // Consolidated the near-duplicate "website designer" stub into the canonical
         // Hot Springs web design page. Keep a 301 for any existing inbound links.
         source: "/website-designer-hot-springs-ar",
         destination: "/web-design-hot-springs-ar",
-        permanent: true,
+        statusCode: 301,
       },
     ];
   },
