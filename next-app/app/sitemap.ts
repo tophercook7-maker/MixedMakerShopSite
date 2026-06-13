@@ -10,6 +10,7 @@ import { SITE_URL } from "@/lib/site";
  */
 const PUBLIC_PATHS: readonly string[] = [
   "/",
+  "/hollow-gate",
   "/3d-printing",
   "/about",
   "/ad-lab",
