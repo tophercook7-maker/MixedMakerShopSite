@@ -71,7 +71,7 @@ function buildText(input: LeadNotificationInput): string {
     "Full message / request:",
     firstPresent(submission.message, submission.request, submission.notes),
     "",
-    submission.transcript ? "Captain Maker transcript:" : "",
+    submission.transcript ? "Chat transcript:" : "",
     submission.transcript || "",
   ].filter((line) => line !== "");
 
@@ -202,7 +202,7 @@ export async function sendTestLeadNotificationEmail(): Promise<LeadNotificationR
       category: "Notification test",
       service_type: "lead_notification",
       message: "This is a test lead notification from the MixedMakerShop admin endpoint.",
-      transcript: "Captain Maker: This is only a delivery test.",
+      transcript: "Chat: This is only a delivery test.",
     },
   });
 }

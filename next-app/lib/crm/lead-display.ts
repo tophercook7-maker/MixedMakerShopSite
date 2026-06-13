@@ -11,7 +11,7 @@ const FORM_LEAD_SOURCES = new Set([
   "public_booking",
 ]);
 
-export type LeadSourceFilter = "all" | "captain_maker_chat" | "free_estimate_form";
+export type LeadSourceFilter = "all" | "chat_lead" | "free_estimate_form";
 export type LeadPriority = "hot" | "warm" | "browsing";
 
 export type LeadPriorityDisplay = {
@@ -30,7 +30,7 @@ export function rawLeadSource(row: Record<string, unknown>): string {
 export function displayLeadSourceLabel(row: Record<string, unknown>): string {
   const source = rawLeadSource(row);
   if (source === "captain_maker_chat" || source === "captain_maker" || source === "captain_maker_guided")
-    return "Captain Maker";
+    return "AI chat lead";
   if (source === "ai_automation_inquiry") return "AI automation inquiry";
   if (source === "digital_resource_request") return "Digital resource request";
   if (source === "mockup_request") return "Free website preview";
@@ -48,7 +48,8 @@ export function displayLeadSourceLabel(row: Record<string, unknown>): string {
 export function leadMatchesSourceDisplayFilter(row: Record<string, unknown>, filter: LeadSourceFilter): boolean {
   if (filter === "all") return true;
   const source = rawLeadSource(row);
-  if (filter === "captain_maker_chat") return source === "captain_maker_chat" || source === "captain_maker";
+  if (filter === "chat_lead")
+    return source === "captain_maker_chat" || source === "captain_maker" || source === "captain_maker_guided";
   return FORM_LEAD_SOURCES.has(source);
 }
 

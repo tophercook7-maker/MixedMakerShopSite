@@ -38,7 +38,7 @@ npm run dev
 - `app/(public)` — Public pages: /, /services, /portfolio, /contact, /free-website-check, /connect
 - `app/admin` — Protected admin: dashboard, leads, clients, projects, tasks, payments, settings
 - `app/auth` — Login at /auth/login
-- `app/api/leads` — Shared lead endpoint for public forms, Captain Maker leads, and admin-created leads
+- `app/api/leads` — Shared lead endpoint for public forms, AI chat leads, and admin-created leads
 - `components/admin` — Sidebar, tables, pipeline, modals
 - `lib/supabase` — Server/client/middleware Supabase helpers
 - `supabase/migrations` — SQL schema and RLS

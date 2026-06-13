@@ -110,7 +110,7 @@ function sourceLabel(source: string): string {
     case "captain_maker":
     case "captain_maker_chat":
     case "captain_maker_guided":
-      return "Captain Maker chat";
+      return "AI chat";
     case "contact_form":
       return "public contact form";
     case "idea_lab":
@@ -141,7 +141,7 @@ function defaultBusinessName(data: InboundLeadSubmissionInput, source: string): 
   if (explicit) return explicit;
   if (source === "website_check" && data.website) return `Website check - ${data.website}`;
   if (source === "captain_maker" || source === "captain_maker_chat" || source === "captain_maker_guided")
-    return "Captain Maker lead";
+    return "AI chat lead";
   return "Mixed Maker Shop lead";
 }
 
@@ -151,7 +151,7 @@ function buildLeadNotes(data: InboundLeadSubmissionInput, source: string): strin
     data.request ? `Request:\n${data.request}` : "",
     data.message ? `Message:\n${data.message}` : "",
     data.notes ? `Notes:\n${data.notes}` : "",
-    data.transcript ? `Captain Maker transcript:\n${data.transcript}` : "",
+    data.transcript ? `Chat transcript:\n${data.transcript}` : "",
   ].filter(Boolean);
   return lines.join("\n\n").slice(0, 12000);
 }

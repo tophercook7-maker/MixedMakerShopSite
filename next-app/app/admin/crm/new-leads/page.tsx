@@ -81,7 +81,7 @@ export default async function NewLeadsDashboardPage({
   const sourceFilterRaw = firstParam(sp.source);
   const priorityFilterRaw = firstParam(sp.priority);
   const sourceFilter: LeadSourceFilter =
-    sourceFilterRaw === "captain_maker_chat" || sourceFilterRaw === "free_estimate_form" ? sourceFilterRaw : "all";
+    sourceFilterRaw === "chat_lead" || sourceFilterRaw === "free_estimate_form" ? sourceFilterRaw : "all";
   const priorityFilter: LeadPriority | "all" =
     priorityFilterRaw === "hot" || priorityFilterRaw === "warm" || priorityFilterRaw === "browsing"
       ? priorityFilterRaw
@@ -133,7 +133,7 @@ export default async function NewLeadsDashboardPage({
                   : "New Mixed Maker Shop leads"}
             </h1>
             <p className="admin-text-muted mt-2 max-w-2xl text-sm">
-              Dashboard for form submissions and Captain Maker chat leads. Public /api/leads submissions also send a
+              Dashboard for form submissions and AI chat leads. Public /api/leads submissions also send a
               Resend email notification when configured.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default async function NewLeadsDashboardPage({
         <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
           {[
             { label: "All", value: "all" },
-            { label: "Captain Maker Chat", value: "captain_maker_chat" },
+            { label: "AI chat leads", value: "chat_lead" },
             { label: "Free Estimate Form", value: "free_estimate_form" },
           ].map((option) => {
             const active = sourceFilter === option.value;
@@ -203,7 +203,7 @@ export default async function NewLeadsDashboardPage({
             No inbound leads yet
           </h2>
           <p className="admin-text-muted mt-2 text-sm">
-            New form submissions and Captain Maker chat leads will appear here after they save to the CRM.
+            New form submissions and AI chat leads will appear here after they save to the CRM.
           </p>
         </section>
       ) : null}
