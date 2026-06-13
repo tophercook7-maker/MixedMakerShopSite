@@ -45,6 +45,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/free-mockup",
   "/free-website-check",
   "/free-website-check/success",
+  "/google-business-profile-help",
   "/growth-offer",
   "/idea-lab",
   "/in-home-computer-repair",

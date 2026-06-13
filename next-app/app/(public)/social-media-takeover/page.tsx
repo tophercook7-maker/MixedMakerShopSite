@@ -359,8 +359,9 @@ export default function SocialMediaTakeoverPage() {
             </div>
             <p className="small" style={{ margin: "22px 0 0", color: "var(--muted)", lineHeight: 1.6 }}>
               Want to combine social posting with a website worth sending traffic to? See{" "}
-              <Link href="/web-design-hot-springs-ar">Hot Springs web design</Link>. Want the full price list?{" "}
-              <Link href="/pricing">See the pricing page</Link>.
+              <Link href="/web-design-hot-springs-ar">Hot Springs web design</Link>. Weekly GBP posts are part of every
+              tier — see <Link href="/google-business-profile-help">Google Business Profile help</Link>. Want the full
+              price list? <Link href="/pricing">See the pricing page</Link>.
             </p>
           </div>
         </div>

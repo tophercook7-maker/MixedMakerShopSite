@@ -236,8 +236,9 @@ export default function LocalSeoServicesPage() {
             </div>
             <p className="small" style={{ margin: "22px 0 0", color: "var(--muted)", lineHeight: 1.6 }}>
               Looking to pair this with a real foundation? See{" "}
-              <Link href="/web-design-hot-springs-ar">Hot Springs web design</Link>. Need to know what it costs?{" "}
-              <Link href="/pricing">See the pricing page</Link>.
+              <Link href="/web-design-hot-springs-ar">Hot Springs web design</Link>. The map work is detailed on the{" "}
+              <Link href="/google-business-profile-help">Google Business Profile help</Link> page. Need to know what it
+              costs? <Link href="/pricing">See the pricing page</Link>.
             </p>
           </div>
         </div>
