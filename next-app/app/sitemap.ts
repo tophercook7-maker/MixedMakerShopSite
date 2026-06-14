@@ -108,9 +108,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     return true;
   }).map((path) => {
     const blogDate = blogDateByPath.get(path);
+    // Cap lastmod at `now`: some blog posts are scheduled ahead with a future
+    // publishedAt, and a future <lastmod> is invalid per the sitemap spec (ignored
+    // by crawlers). This only affects sitemap output, not the displayed publish date.
+    const lastModified = blogDate && new Date(blogDate) < now ? new Date(blogDate) : now;
     return {
       url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
-      lastModified: blogDate ? new Date(blogDate) : now,
+      lastModified,
       changeFrequency: "monthly" as const,
       priority: path === "/" ? 1 : 0.75,
     };
