@@ -1,6 +1,8 @@
-import Image from "next/image";
 import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
+
+/** Animated hero: starts as the umbrella photo, then a real squirrel pops out. */
+const HERO_VIDEO_SRC = "/videos/umbrella-squirrel.mp4";
 
 /**
  * Umbrella photograph + readability stack.
@@ -25,32 +27,32 @@ export function UmbrellaHeroMedia({
 
   return (
     <div className={cn("relative isolate h-full min-h-0 w-full overflow-hidden", className)}>
-      {/* z-0 — source image + clarity filters */}
+      {/* z-0 — animated umbrella+squirrel video (poster = the original umbrella photo) */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src={mmsUmbrellaHeroImageSrc}
-          alt="MixedMakerShop umbrella brand — open umbrella in the rain, canopy and warm interior light."
-          fill
-          priority={priority}
-          quality={75}
-          sizes="100vw"
+        <video
+          src={HERO_VIDEO_SRC}
+          poster={mmsUmbrellaHeroImageSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload={priority ? "auto" : "metadata"}
+          aria-label="MixedMakerShop umbrella brand — a real squirrel pops out from under the umbrella."
           className={cn(
-            "object-cover",
-            /* Bias toward upper / canopy; keeps scene premium and crops desk + phone out of frame */
-            "object-[50%_min(22%,5rem)] sm:object-[50%_24%] md:object-[50%_26%] lg:object-[50%_28%]",
+            "h-full w-full object-cover",
+            "object-[50%_42%] md:object-[50%_44%]",
             "[filter:contrast(1.05)_brightness(1.03)_saturate(1.05)]",
             imageClassName,
           )}
         />
       </div>
 
-      {/* z-[1] — soft white haze (readability layer between photo and text) */}
+      {/* z-[1] — soft white haze (lightened so the squirrel reads; text sits in glass boxes) */}
       <div
         className={cn(
           "pointer-events-none absolute inset-0 z-[1]",
-          "bg-gradient-to-b from-white/[0.65] via-white/[0.4] to-white/[0.75]",
-          /* Slightly less opaque on small screens so it doesn’t feel chalky */
-          "max-md:from-white/[0.52] max-md:via-white/[0.32] max-md:to-white/[0.62]",
+          "bg-gradient-to-b from-white/[0.32] via-white/[0.16] to-white/[0.5]",
+          "max-md:from-white/[0.3] max-md:via-white/[0.16] max-md:to-white/[0.45]",
         )}
         aria-hidden
       />
