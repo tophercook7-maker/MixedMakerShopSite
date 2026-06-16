@@ -46,15 +46,17 @@ export function UmbrellaHomeHero() {
       className="relative max-md:border-b max-md:border-black/10"
       aria-label="Mixed Maker Shop umbrella studio introduction"
     >
-      {/* Mobile only: image scrolls with the page (stacking: bg z-0, content z-[2]) */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden md:hidden">
-        <UmbrellaHeroMedia className="min-h-[min(100svh,52rem)]" priority />
+      {/* Mobile: the squirrel gets its own visible band up top (cleared from the
+          fixed header) so the copy box no longer covers it. Desktop/tablet uses
+          FixedHeroMedia behind the centered copy instead. */}
+      <div className="md:hidden pt-[calc(4.5rem+env(safe-area-inset-top))]">
+        <UmbrellaHeroMedia className="aspect-[3/2] w-full" priority />
       </div>
 
       <div
         className={cn(
           shell,
-          "relative z-[2] flex min-h-[min(100svh,52rem)] flex-col justify-end pb-24 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-[max(100svh,52rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
+          "relative z-[2] flex flex-col pb-16 pt-8 md:min-h-[max(100svh,52rem)] md:justify-center md:pb-28 md:pt-28 lg:pb-32 lg:pt-32",
         )}
       >
         <div
