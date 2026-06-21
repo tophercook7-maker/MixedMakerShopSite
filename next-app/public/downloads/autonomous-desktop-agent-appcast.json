@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "url": "https://mixedmakershop.com/downloads/Autonomous-Desktop-Agent-1.0.0.dmg",
+  "notes": "Initial public release of Autonomous Desktop Agent.",
+  "min_os": "12.0",
+  "mandatory": false
+}
