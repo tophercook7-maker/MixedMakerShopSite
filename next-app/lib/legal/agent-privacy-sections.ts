@@ -32,11 +32,18 @@ export const AGENT_PRIVACY_SECTIONS: readonly LegalSection[] = [
       "Anthropic (the AI provider). Screenshots and your typed goal are sent to Anthropic's API to plan actions. Your use is governed by Anthropic's terms and privacy policy. Review Anthropic's data-retention settings for your account.",
     ],
     afterList:
-      "The App is free and uses your own Anthropic API key (BYOK). There is no license server, payment processor, or in-app purchase, so no payment or license data is collected or transmitted by us.",
+      "The App uses your own Anthropic API key (BYOK) and contains no payment processor or in-app purchase, so the App itself collects no payment data.",
+  },
+  {
+    id: "payments",
+    title: "4. Purchases and payment",
+    paragraphs: [
+      "The App is a paid download purchased on mixedmakershop.com. Payment is handled by our payment processor, Stripe, on the website — not inside the App. Stripe processes your card and billing details under its own privacy policy; we never see or store your full card number. We receive limited transaction information (such as confirmation that a purchase was completed and the email associated with it) to provide your download and support, and to honor refunds.",
+    ],
   },
   {
     id: "device-storage",
-    title: "4. Data stored on your device",
+    title: "5. Data stored on your device",
     list: [
       "API key — macOS Keychain.",
       "App preferences (e.g. terms-accepted version) — a JSON file in ~/Library/Application Support/Autonomous Desktop Agent/.",
@@ -45,26 +52,26 @@ export const AGENT_PRIVACY_SECTIONS: readonly LegalSection[] = [
   },
   {
     id: "analytics",
-    title: "5. Analytics / telemetry",
+    title: "6. Analytics / telemetry",
     paragraphs: ["The App does not collect analytics by default. We do not collect telemetry."],
   },
   {
     id: "children",
-    title: "6. Children",
+    title: "7. Children",
     paragraphs: [
       "The App is not directed to children under 13 (or the age of digital consent in your jurisdiction).",
     ],
   },
   {
     id: "your-rights",
-    title: "7. Your rights",
+    title: "8. Your rights",
     paragraphs: [
       "Because we do not hold your personal data on our servers, most data is under your direct control on your device or in your Anthropic account. For any questions, contact topher@mixedmakershop.com.",
     ],
   },
   {
     id: "changes",
-    title: "8. Changes",
+    title: "9. Changes",
     paragraphs: ["We may update this policy; the \"Last updated\" date will change accordingly."],
   },
 ];

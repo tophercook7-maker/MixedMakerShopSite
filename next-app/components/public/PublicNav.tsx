@@ -20,6 +20,7 @@ const navItems: {
   { href: "/3d-printing", label: "GiGi’s Print Shop" },
   { href: "/property-care", label: "Property Care" },
   { href: "/idea-lab", label: "Idea Lab" },
+  { href: "/autonomous-desktop-agent", label: "Desktop Agent", event: { name: "public_desktop_agent_cta_click", props: { location: "nav" } } },
   { href: "/examples", label: "Examples" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
