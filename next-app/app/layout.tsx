@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { getMixedMakerStructuredDataGraph } from "@/lib/structured-data";
@@ -100,7 +99,6 @@ export default function RootLayout({
         </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredDataJson }} />
         {children}
-        <Analytics />
       </body>
     </html>
   );
