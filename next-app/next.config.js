@@ -114,7 +114,7 @@ const nextConfig = {
           "font-src 'self' data:",
           "style-src 'self' 'unsafe-inline'",
           "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://js.stripe.com https://va.vercel-scripts.com",
-          "connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.supabase.co https://api.stripe.com https://vitals.vercel-insights.com",
+          "connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.google.com https://*.supabase.co https://api.stripe.com https://vitals.vercel-insights.com",
           "frame-src https://js.stripe.com https://checkout.stripe.com",
           "form-action 'self' https://checkout.stripe.com",
         ].join("; "),
