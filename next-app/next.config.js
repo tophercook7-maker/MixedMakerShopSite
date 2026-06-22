@@ -79,6 +79,28 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    // Security headers for app-rendered (dynamic/SSR) routes. The netlify.toml
+    // header rules only reach static files, so dynamic pages (home,
+    // /autonomous-desktop-agent, etc.) were getting no clickjacking protection.
+    // EXCLUDES /hollow-gate/game/* so its same-origin <iframe> embed keeps
+    // working (that path is intentionally SAMEORIGIN via netlify.toml).
+    const securityHeaders = [
+      // Clickjacking: block all framing of our pages (modern + legacy).
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "X-Frame-Options", value: "DENY" },
+      // Don't let browsers MIME-sniff responses.
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      // Limit referrer leakage.
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      // Drop powerful features we never use.
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+      // Force HTTPS for 2 years (Netlify is HTTPS-only). Remove includeSubDomains
+      // if any subdomain ever needs plain HTTP.
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+    ];
+    return [{ source: "/((?!hollow-gate/game/).*)", headers: securityHeaders }];
+  },
   experimental: {
     /** Allow importing the Astro niche-pack source (locations, niches, services) from `fresh-cut-property-care`. */
     externalDir: true,
