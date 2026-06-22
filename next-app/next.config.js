@@ -86,8 +86,7 @@ const nextConfig = {
     // EXCLUDES /hollow-gate/game/* so its same-origin <iframe> embed keeps
     // working (that path is intentionally SAMEORIGIN via netlify.toml).
     const securityHeaders = [
-      // Clickjacking: block all framing of our pages (modern + legacy).
-      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      // Clickjacking (legacy header; the enforced CSP below also sets frame-ancestors 'none').
       { key: "X-Frame-Options", value: "DENY" },
       // Don't let browsers MIME-sniff responses.
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -98,13 +97,12 @@ const nextConfig = {
       // Force HTTPS for 2 years (Netlify is HTTPS-only). Remove includeSubDomains
       // if any subdomain ever needs plain HTTP.
       { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
-      // Draft Content-Security-Policy in REPORT-ONLY mode: it does NOT block
-      // anything, it only logs violations to the browser console. Use the reports
-      // to tighten the allowlist (and drop 'unsafe-inline' via nonces) before
-      // switching the header name to "Content-Security-Policy" to enforce.
+      // ENFORCED Content-Security-Policy. Verified clean across 17 public pages in
+      // Report-Only mode (zero violations); no reCAPTCHA or third-party iframes in use.
       // Allowlists: Google Tag Manager/Analytics, Stripe, Supabase, Vercel Analytics.
+      // Next hardening step: replace 'unsafe-inline' with per-request nonces.
       {
-        key: "Content-Security-Policy-Report-Only",
+        key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
           "base-uri 'self'",
