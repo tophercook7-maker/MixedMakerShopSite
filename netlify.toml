@@ -12,3 +12,12 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# The Hollow Gate game is embedded as a same-origin <iframe> by /hollow-gate.
+# The global "DENY" above blocks ALL framing (even same-origin), which left the
+# game area blank. Allow same-origin framing for just the game path.
+[[headers]]
+  for = "/hollow-gate/game/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    Content-Security-Policy = "frame-ancestors 'self'"
