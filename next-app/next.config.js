@@ -98,6 +98,27 @@ const nextConfig = {
       // Force HTTPS for 2 years (Netlify is HTTPS-only). Remove includeSubDomains
       // if any subdomain ever needs plain HTTP.
       { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+      // Draft Content-Security-Policy in REPORT-ONLY mode: it does NOT block
+      // anything, it only logs violations to the browser console. Use the reports
+      // to tighten the allowlist (and drop 'unsafe-inline' via nonces) before
+      // switching the header name to "Content-Security-Policy" to enforce.
+      // Allowlists: Google Tag Manager/Analytics, Stripe, Supabase, Vercel Analytics.
+      {
+        key: "Content-Security-Policy-Report-Only",
+        value: [
+          "default-src 'self'",
+          "base-uri 'self'",
+          "object-src 'none'",
+          "frame-ancestors 'none'",
+          "img-src 'self' data: https:",
+          "font-src 'self' data:",
+          "style-src 'self' 'unsafe-inline'",
+          "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://js.stripe.com https://va.vercel-scripts.com",
+          "connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.supabase.co https://api.stripe.com https://vitals.vercel-insights.com",
+          "frame-src https://js.stripe.com https://checkout.stripe.com",
+          "form-action 'self' https://checkout.stripe.com",
+        ].join("; "),
+      },
     ];
     return [{ source: "/((?!hollow-gate/game/).*)", headers: securityHeaders }];
   },
