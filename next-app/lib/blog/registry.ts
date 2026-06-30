@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "3d-printed-replacement-parts",
+    title: "Don't Toss It, Print It: How 3D Printing Saves Your 'Obsolete' Gear",
+    category: "3D Printing",
+    excerpt:
+      "When a broken plastic clip kills a perfectly good machine and the part is 'discontinued,' don't throw it away. Custom 3D printed replacement parts from GiGi's Print Shop turn 'obsolete' into a suggestion.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-29",
+    href: "/blog/3d-printed-replacement-parts",
+  },
+  {
     slug: "local-seo-for-plumbers",
     title: "Flushed Away: Why Plumbers Need Local SEO to Stay Above Water",
     category: "Local SEO",
