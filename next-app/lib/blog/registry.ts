@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "lead-response-automation-small-business",
+    title: "While You Were Working: How to Stop Losing Leads When You Can't Pick Up the Phone",
+    category: "AI & Automation",
+    excerpt:
+      "When you can't pick up, lead response automation texts callers back in 30 seconds, qualifies the lead, and stops customers from dialing your competitors — your digital sidekick for missed calls.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-29",
+    href: "/blog/lead-response-automation-small-business",
+  },
+  {
     slug: "local-seo-for-electricians",
     title: "High Voltage Visibility: Why Local SEO is the Best Wire for Electricians",
     category: "Local SEO",
