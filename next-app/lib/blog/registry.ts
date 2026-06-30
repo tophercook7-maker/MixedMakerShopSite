@@ -42,7 +42,7 @@ const posts: BlogIndexPost[] = [
       "When you can't pick up, lead response automation texts callers back in 30 seconds, qualifies the lead, and stops customers from dialing your competitors — your digital sidekick for missed calls.",
     readTime: "8 min read",
     readMinutes: 8,
-    publishedAt: "2026-06-29",
+    publishedAt: "2026-06-28",
     href: "/blog/lead-response-automation-small-business",
   },
   {
@@ -53,7 +53,7 @@ const posts: BlogIndexPost[] = [
       "Win Google's Local Pack when homeowners search 'emergency electrician near me' — service-area pages, reviews, and a mobile-first site that turns searches into calls.",
     readTime: "8 min read",
     readMinutes: 8,
-    publishedAt: "2026-06-29",
+    publishedAt: "2026-06-27",
     href: "/blog/local-seo-for-electricians",
   },
   {
@@ -64,7 +64,7 @@ const posts: BlogIndexPost[] = [
       "When a broken plastic clip kills a perfectly good machine and the part is 'discontinued,' don't throw it away. Custom 3D printed replacement parts from GiGi's Print Shop turn 'obsolete' into a suggestion.",
     readTime: "7 min read",
     readMinutes: 7,
-    publishedAt: "2026-06-29",
+    publishedAt: "2026-06-26",
     href: "/blog/3d-printed-replacement-parts",
   },
   {
