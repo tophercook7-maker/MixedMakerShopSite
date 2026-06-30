@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-for-hvac-companies",
+    title: "Frozen Out: Why Your HVAC Business Needs a Local SEO Tune-Up",
+    category: "Local SEO",
+    excerpt:
+      "Rank in Google's Local Pack for 'AC repair near me,' win reviews, and build a mobile site that turns frozen-furnace emergencies into phone calls — the digital tune-up for HVAC pros.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-29",
+    href: "/blog/local-seo-for-hvac-companies",
+  },
+  {
     slug: "lead-response-automation-small-business",
     title: "While You Were Working: How to Stop Losing Leads When You Can't Pick Up the Phone",
     category: "AI & Automation",
