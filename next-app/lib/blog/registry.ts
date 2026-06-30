@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "local-seo-for-electricians",
+    title: "High Voltage Visibility: Why Local SEO is the Best Wire for Electricians",
+    category: "Local SEO",
+    excerpt:
+      "Win Google's Local Pack when homeowners search 'emergency electrician near me' — service-area pages, reviews, and a mobile-first site that turns searches into calls.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-06-29",
+    href: "/blog/local-seo-for-electricians",
+  },
+  {
     slug: "3d-printed-replacement-parts",
     title: "Don't Toss It, Print It: How 3D Printing Saves Your 'Obsolete' Gear",
     category: "3D Printing",
