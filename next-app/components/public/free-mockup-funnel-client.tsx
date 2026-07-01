@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
@@ -19,6 +19,7 @@ import {
 import { FreeMockupLivePreview } from "@/components/public/free-mockup-live-preview";
 import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
 import { publicShellClass } from "@/lib/public-brand";
+import { pushHashToHistory, scrollToHashTarget } from "@/lib/scroll-to-hash";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const FORM_STEPS = [
@@ -28,10 +29,12 @@ const FORM_STEPS = [
   { id: 4, label: "Contact", sectionId: "free-mockup-section-contact" },
 ] as const;
 
+const FUNNEL_ANCHOR_ID = "free-mockup-start";
+
 const shell = publicShellClass;
 
 function scrollToSection(sectionId: string) {
-  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollToHashTarget(sectionId);
 }
 
 function useMobileAccordion() {
@@ -159,7 +162,10 @@ function FormSection({
       </div>
       <div
         id={panelId}
-        className={cn("free-mockup-form-section-body space-y-4", collapsible && !open && "free-mockup-form-section-body--collapsed")}
+        className={cn(
+          "free-mockup-form-section-body space-y-4",
+          collapsible && !open && "free-mockup-form-section-body--collapsed",
+        )}
         hidden={collapsible ? !open : false}
       >
         {children}
@@ -188,6 +194,7 @@ export function FreeMockupFunnelClient({
   const isFreshCutFunnel = funnelSource === "freshcut";
   const mobileAccordion = useMobileAccordion();
   const [openSectionId, setOpenSectionId] = useState<string>(FORM_STEPS[0].sectionId);
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
   const selectSection = (sectionId: string) => {
     setOpenSectionId(sectionId);
@@ -310,6 +317,28 @@ export function FreeMockupFunnelClient({
     }
   }, [mobileAccordion, openSectionId, sectionDone, basicsDone, goalsDone, styleDone, contactDone]);
 
+  useEffect(() => {
+    const scrollFromHash = () => {
+      if (window.location.hash !== `#${FUNNEL_ANCHOR_ID}`) return;
+      window.requestAnimationFrame(() => {
+        if (scrollToHashTarget(FUNNEL_ANCHOR_ID)) {
+          pushHashToHistory(`#${FUNNEL_ANCHOR_ID}`);
+        }
+      });
+    };
+
+    scrollFromHash();
+    window.addEventListener("hashchange", scrollFromHash);
+    return () => window.removeEventListener("hashchange", scrollFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (!error) return;
+    window.requestAnimationFrame(() => {
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }, [error]);
+
   const preview = useMemo(() => {
     if (!canPreview || !snapshot) return null;
     try {
@@ -319,9 +348,17 @@ export function FreeMockupFunnelClient({
     }
   }, [snapshot, canPreview]);
 
+  function showValidationError(message: string, sectionId: string) {
+    setError(message);
+    setOpenSectionId(sectionId);
+    window.requestAnimationFrame(() => {
+      scrollToSection(sectionId);
+    });
+  }
+
   async function submit() {
     setError(null);
-    const cn = contactName.trim();
+    const trimmedContactName = contactName.trim();
     const em = submitEmail.trim().toLowerCase();
     const bn = businessName.trim();
     const bt = businessType.trim();
@@ -329,40 +366,43 @@ export function FreeMockupFunnelClient({
     const svc = topServices.trim();
     const dir = designDirection;
 
-    if (!dir) {
-      setError("Pick the design direction that feels closest to your business.");
-      return;
-    }
-    if (!cn) {
-      setError("Please enter your name.");
+    if (!trimmedContactName) {
+      showValidationError("Please enter your name.", FORM_STEPS[0].sectionId);
       return;
     }
     if (!bn) {
-      setError("Please enter your business name.");
+      showValidationError("Please enter your business name.", FORM_STEPS[0].sectionId);
       return;
     }
     if (!bt) {
-      setError("Add your business type or what you offer (e.g. HVAC, dental, landscaping).");
+      showValidationError(
+        "Add your business type or what you offer (e.g. HVAC, dental, landscaping).",
+        FORM_STEPS[0].sectionId,
+      );
       return;
     }
     if (!city) {
-      setError("Add your city or main service area.");
-      return;
-    }
-    if (!svc) {
-      setError("List a few services you want featured on the homepage.");
-      return;
-    }
-    if (!em) {
-      setError("Please add your email so I can send your mockup.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-      setError("Please enter a valid email.");
+      showValidationError("Add your city or main service area.", FORM_STEPS[0].sectionId);
       return;
     }
     if (hasWebsite === "yes" && !websiteUrl.trim()) {
-      setError("Add your website URL, or choose “No” if you don’t have one yet.");
+      showValidationError('Add your website URL, or choose "No" if you don\'t have one yet.', FORM_STEPS[0].sectionId);
+      return;
+    }
+    if (!svc) {
+      showValidationError("List a few services you want featured on the homepage.", FORM_STEPS[1].sectionId);
+      return;
+    }
+    if (!dir) {
+      showValidationError("Pick the design direction that feels closest to your business.", FORM_STEPS[2].sectionId);
+      return;
+    }
+    if (!em) {
+      showValidationError("Please add your email so I can send your mockup.", FORM_STEPS[3].sectionId);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      showValidationError("Please enter a valid email.", FORM_STEPS[3].sectionId);
       return;
     }
 
@@ -398,7 +438,7 @@ export function FreeMockupFunnelClient({
       const mockupData = {
         funnelVersion: 2,
         funnel_source: funnelSource?.trim() || undefined,
-        contactName: cn,
+        contactName: trimmedContactName,
         submitPhone: submitPhone.trim(),
         snapshot: snapshotBody,
         preview_snapshot,
@@ -407,7 +447,6 @@ export function FreeMockupFunnelClient({
               stylePreset: preview.stylePreset,
               colorPreset: preview.colorPreset,
               imageCategoryKey: preview.imageCategoryKey,
-              draft: preview.draft,
             }
           : null,
       };
@@ -430,17 +469,26 @@ export function FreeMockupFunnelClient({
       };
       if (!res.ok) {
         setError(String(data.error || "Something went wrong."));
+        setOpenSectionId(FORM_STEPS[3].sectionId);
         return;
       }
       setSavedUrl(String(data.previewUrl || ""));
       setConfirmationEmailSent(Boolean(data.confirmation_email_sent));
       trackPublicEvent("public_free_mockup_submit");
       setPhase("success");
+      window.requestAnimationFrame(() => {
+        scrollToHashTarget(FUNNEL_ANCHOR_ID, "auto");
+      });
     } catch {
       setError("Network error. Try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    void submit();
   }
 
   async function copySavedLink() {
@@ -493,11 +541,11 @@ export function FreeMockupFunnelClient({
 
   return (
     <div
-      id="free-mockup-start"
+      id={FUNNEL_ANCHOR_ID}
       className={cn("free-mockup-funnel scroll-mt-24", isFreshCutFunnel && "free-mockup-funnel--freshcut")}
     >
       <div className="free-mockup-funnel-grid">
-        <div className="free-mockup-funnel-form card">
+        <form className="free-mockup-funnel-form card" onSubmit={handleFormSubmit} noValidate>
           <div className="free-mockup-intake-head">
             <p className="free-mockup-intake-eyebrow">Live preview · Guided intake</p>
             <h2 className="free-mockup-intake-title">Build your free preview</h2>
@@ -542,6 +590,7 @@ export function FreeMockupFunnelClient({
               onChange={(e) => setContactName(e.target.value)}
               autoComplete="name"
               placeholder="Your name"
+              required
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
@@ -551,6 +600,7 @@ export function FreeMockupFunnelClient({
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               placeholder="e.g. ClearView Pressure Washing"
+              required
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
@@ -564,6 +614,7 @@ export function FreeMockupFunnelClient({
                   ? "e.g. Local lawn care & property maintenance (service business)"
                   : "e.g. Residential HVAC · Hot Springs, AR area"
               }
+              required
             />
           </label>
           {isFreshCutFunnel ? (
@@ -579,6 +630,7 @@ export function FreeMockupFunnelClient({
               value={cityOrArea}
               onChange={(e) => setCityOrArea(e.target.value)}
               placeholder="e.g. Hot Springs, AR / Garland County"
+              required
             />
           </label>
 
@@ -618,6 +670,7 @@ export function FreeMockupFunnelClient({
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 placeholder="yourbusiness.com or full https://…"
+                required
               />
             </label>
           ) : null}
@@ -638,6 +691,7 @@ export function FreeMockupFunnelClient({
                 value={topServices}
                 onChange={(e) => setTopServices(e.target.value)}
                 placeholder="One per line or comma-separated — what should visitors see first?"
+                required
               />
             </label>
 
@@ -695,6 +749,7 @@ export function FreeMockupFunnelClient({
               </p>
             }
           >
+
           <div
             className="rounded-lg p-3 mb-2"
             style={{ background: "rgba(0,255,178,0.06)", border: "1px solid rgba(0,255,178,0.2)" }}
@@ -727,6 +782,7 @@ export function FreeMockupFunnelClient({
                       checked={designDirection === opt.id}
                       onChange={() => setDesignDirection(opt.id)}
                       className="mt-1"
+                      required
                     />
                     <div>
                       <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
@@ -792,6 +848,7 @@ export function FreeMockupFunnelClient({
               onChange={(e) => setSubmitEmail(e.target.value)}
               placeholder="you@business.com"
               autoComplete="email"
+              required
             />
           </label>
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
@@ -814,14 +871,17 @@ export function FreeMockupFunnelClient({
             </p>
           </div>
 
-          {error ? <p className="free-mockup-form-error">{error}</p> : null}
+          {error ? (
+            <p id="free-mockup-submit-error" ref={errorRef} className="free-mockup-form-error" role="alert">
+              {error}
+            </p>
+          ) : null}
           <FormLegalConsent className="mb-4 text-[var(--muted)]" />
           <div className="free-mockup-cta-row">
             <button
-              type="button"
+              type="submit"
               className={cn("btn gold", "w-full min-w-0 sm:w-auto sm:min-w-[220px]")}
               disabled={loading}
-              onClick={() => void submit()}
             >
               {loading ? "Sending…" : "Get my free preview"}
             </button>
@@ -838,7 +898,7 @@ export function FreeMockupFunnelClient({
           <p className="free-mockup-submit-foot">
             No payment, no contract — just a serious preview request.
           </p>
-        </div>
+        </form>
 
         <div className="free-mockup-funnel-preview free-mockup-preview-stack flex min-h-0 flex-col">
           <div className="free-mockup-preview-star-label">
