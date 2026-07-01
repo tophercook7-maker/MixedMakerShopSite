@@ -24,6 +24,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "web-system-not-just-a-website",
+    title: "Why Your Business Needs a Web System, Not Just a Website",
+    category: "Web Design",
+    excerpt:
+      "A website just sits there. A web system works while you sleep — taking bookings, capturing leads, and automating busywork. Why your small business needs a digital employee, not a digital business card.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-06-25",
+    href: "/blog/web-system-not-just-a-website",
+  },
+  {
     slug: "local-seo-for-hvac-companies",
     title: "Frozen Out: Why Your HVAC Business Needs a Local SEO Tune-Up",
     category: "Local SEO",
