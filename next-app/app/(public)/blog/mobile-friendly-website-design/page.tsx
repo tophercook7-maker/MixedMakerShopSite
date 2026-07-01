@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -14,7 +15,7 @@ const title = "7 Mistakes You’re Making with Your Mobile Friendly Website Desi
 const subtitle = "And How to Fix Your Phone Conversions";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Just because your website fits on a phone does not mean it works on a phone. Seven mobile design mistakes that quietly kill conversions — and how to fix them.",
   alternates: { canonical },

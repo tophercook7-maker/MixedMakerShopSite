@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -14,7 +15,7 @@ const title = "While You Were Working: How to Stop Losing Leads When You Can't P
 const subtitle = "Lead response automation that texts customers back the second you miss the call";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Lead response automation for small business — when you can't pick up, an AI sidekick texts callers back in 30 seconds, qualifies the lead, and stops customers from calling your competitors.",
   alternates: { canonical },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/public/JsonLd";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const canonical = `${SITE_URL}/local-seo-services`;
@@ -16,9 +17,10 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Local SEO Services Hot Springs AR | MixedMakerShop",
-  description:
-    "Local SEO services for Hot Springs, Arkansas small businesses — Google Maps visibility, on-page optimization, schema, and ongoing work that actually moves rankings.",
+  title: "Local SEO Services Hot Springs AR",
+  description: metaDescription(
+    "Local SEO for Hot Springs small businesses — Google Maps, on-page fixes, schema, and ongoing tuning. Get found in \"near me\" searches. No long contracts."
+  ),
   alternates: { canonical },
   openGraph: {
     title: "Local SEO Services for Hot Springs Small Businesses",

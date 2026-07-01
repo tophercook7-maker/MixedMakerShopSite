@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const title = "The Off-Grid Brain: Why We’re Building a Solar-Powered LoRa Wea
 const subtitle = "Solar power, LoRa radio, 3D-printed housing, and edge AI — without cloud rent or subscriptions";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Why MixedMakerShop is building a solar-powered LoRa weather station — radical data ownership, off-grid reliability, custom 3D printing, and lessons for real-world builds.",
   alternates: { canonical },

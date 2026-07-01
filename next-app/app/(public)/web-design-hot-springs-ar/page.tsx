@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/public/JsonLd";
 import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const canonical = `${SITE_URL}/web-design-hot-springs-ar`;
@@ -17,9 +18,10 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Hot Springs Web Design | MixedMakerShop",
-  description:
-    "Affordable web design in Hot Springs, Arkansas for small businesses, service providers, side hustlers, and local brands. Starter setups from $400, full sites from $900.",
+  title: "Hot Springs Web Design for Small Business",
+  description: metaDescription(
+    "Affordable Hot Springs, AR web design for contractors, restaurants, and local brands. Starter sites $400 · full setups $900 · free preview. Founder-led, mobile-first."
+  ),
   alternates: { canonical },
   openGraph: {
     title: "Hot Springs Web Design | MixedMakerShop",

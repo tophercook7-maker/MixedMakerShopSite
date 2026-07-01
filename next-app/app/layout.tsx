@@ -20,14 +20,17 @@ const keywords = [
   "local services",
 ] as const;
 
+import { metaDescription } from "@/lib/seo/snippet-meta";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
+    default: "MixedMakerShop | Web Design & Local SEO Hot Springs AR",
     template: "%s | MixedMakerShop",
   },
-  description:
-    "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+  description: metaDescription(
+    "Hot Springs AR web design, local SEO, and 3D printing for small businesses. Sites from $400, free homepage preview, founder-led — no agency layers."
+  ),
   keywords: [...keywords],
   applicationName: "MixedMakerShop",
   icons: {
@@ -43,9 +46,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
-    description:
-      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+    title: "MixedMakerShop | Web Design & Local SEO Hot Springs AR",
+    description: metaDescription(
+      "Small business websites, local SEO, and maker services in Hot Springs, Arkansas. Free preview · sites from $400 · built by Topher."
+    ),
     url: SITE_URL,
     siteName: "MixedMakerShop",
     locale: "en_US",
@@ -61,9 +65,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MixedMakerShop | Practical Creative Studio by Topher & GiGi",
-    description:
-      "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+    title: "MixedMakerShop | Web Design Hot Springs AR",
+    description: metaDescription(
+      "Websites from $400, local SEO, free homepage preview. Hot Springs small business web design by Topher."
+    ),
     images: ["/og-image"],
   },
 };

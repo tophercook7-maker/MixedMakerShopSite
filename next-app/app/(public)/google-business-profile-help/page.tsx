@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/public/JsonLd";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const canonical = `${SITE_URL}/google-business-profile-help`;
@@ -16,9 +17,10 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Google Business Profile Setup & Help | MixedMakerShop",
-  description:
-    "Get your Google Business Profile set up, verified, and ranking in Hot Springs, AR. Categories, photos, services, posts, Q&A, suspensions — all handled.",
+  title: "Google Business Profile Setup Hot Springs",
+  description: metaDescription(
+    "Google Business Profile setup and tuning in Hot Springs, AR — categories, photos, services, posts, and suspensions handled. More map visibility, more calls."
+  ),
   alternates: { canonical },
   openGraph: {
     title: "Google Business Profile Setup & Ongoing Help",

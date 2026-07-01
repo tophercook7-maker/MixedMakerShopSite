@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const subtitle =
   "A sensory storytelling experiment from Mixed Maker Shop — digital atmosphere, curated sound, and a threshold you step into, not scroll past";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Discover The Hollow Gate — an immersive browser experience from Mixed Maker Shop's Idea Lab. Headphones recommended, distractions gone, story yours to uncover.",
   alternates: { canonical },

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const subtitle =
   "Flat-rate optimization, virus removal, and in-home computer repair — no big-box headaches, no surprise fees";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Slow PC stealing your time? Mixed Maker Shop's $99 Clean & Quick service — optimization, malware removal, bloatware cleanup, and in-home computer repair with honest flat-rate pricing.",
   alternates: { canonical },

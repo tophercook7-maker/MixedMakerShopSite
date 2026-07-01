@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -16,7 +17,7 @@ const subtitle =
   "Rebuilding after MS — from Cook's Computer Service since 2000 to a Hot Springs maker shop for web design, 3D printing, AI tutoring, and in-home diagnostics";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom 3D printing for Hot Springs, Benton, and surrounding Arkansas communities.",
   alternates: { canonical },

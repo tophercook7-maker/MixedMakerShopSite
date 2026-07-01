@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const title = "7 Mistakes You’re Making with Local SEO (and Why They’re Kill
 const subtitle = "Straight talk for landscaping, HVAC, plumbing, and home service crews who need to show up on Google";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Seven local SEO mistakes home service businesses make — one-page services, stale Google profiles, NAP inconsistency, mobile speed, and more — plus how to fix them.",
   alternates: { canonical },

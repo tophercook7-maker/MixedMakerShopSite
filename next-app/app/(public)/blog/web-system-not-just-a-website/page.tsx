@@ -5,6 +5,7 @@ import {
   BlogInlineCta,
   BlogPostLayout,
 } from "@/components/public/BlogPostLayout";
+import { blogPostTitle, metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const slug = "web-system-not-just-a-website";
@@ -14,9 +15,10 @@ const title = "Why Your Business Needs a Web System, Not Just a Website";
 const subtitle = "A website just sits there — a web system is a digital employee that works while you sleep";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
-  description:
-    "A website just sits there. A web system works while you sleep — taking bookings, capturing leads, and automating the boring stuff. Why your small business needs a digital employee, not a digital business card.",
+  title: blogPostTitle("Web System vs Website for Small Business"),
+  description: metaDescription(
+    "A website is a business card. A web system books jobs, captures leads, and follows up while you work. Why small businesses need both — and what to build first."
+  ),
   alternates: { canonical },
   openGraph: {
     title,

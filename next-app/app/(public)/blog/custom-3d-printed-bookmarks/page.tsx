@@ -5,6 +5,7 @@ import {
   BlogInlineCta,
   BlogPostLayout,
 } from "@/components/public/BlogPostLayout";
+import { blogPostTitle, metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const slug = "custom-3d-printed-bookmarks";
@@ -15,9 +16,10 @@ const subtitle =
   "Creative custom 3D printed bookmark ideas for schools, libraries, businesses, gifts, events, and book lovers";
 
 export const metadata: Metadata = {
-  title: "Custom 3D Printed Bookmarks for Schools, Libraries, and Businesses | MixedMakerShop Blog",
-  description:
-    "Explore creative custom 3D printed bookmark ideas for schools, libraries, businesses, gifts, events, and book lovers.",
+  title: blogPostTitle("Custom 3D Printed Bookmarks That Stand Out"),
+  description: metaDescription(
+    "Custom 3D printed bookmarks for schools, libraries, businesses, and events — durable, branded, and more memorable than flat paper swag."
+  ),
   alternates: { canonical },
   openGraph: {
     title: "Custom 3D Printed Bookmarks for Schools, Libraries, and Businesses",

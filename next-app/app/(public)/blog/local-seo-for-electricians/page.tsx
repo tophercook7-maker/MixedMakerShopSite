@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -14,7 +15,7 @@ const title = "High Voltage Visibility: Why Local SEO is the Best Wire for Elect
 const subtitle = "Win the Local Pack when homeowners search 'emergency electrician near me'";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Local SEO for electricians — win Google's Local Pack, service-area pages, reviews, and a mobile-first site that turns 'emergency electrician near me' searches into phone calls.",
   alternates: { canonical },

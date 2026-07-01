@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const title = "See Before You Spend: The Power of Our Website Preview Generator"
 const subtitle = "Try your site direction before you sign a contract or hand over a deposit";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "MixedMakerShop's free website preview generator shows your business direction before you spend. No credit card, no contract — just a clear mockup in about two minutes.",
   alternates: { canonical },

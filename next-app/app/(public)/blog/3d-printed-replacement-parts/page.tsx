@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -14,7 +15,7 @@ const title = "Don't Toss It, Print It: How 3D Printing Saves Your 'Obsolete' Ge
 const subtitle = "When the part is discontinued, custom 3D printed replacement parts hit the Save Game button";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "When a broken plastic clip makes a perfectly good machine useless and the part is 'discontinued,' don't throw it away. Custom 3D printed replacement parts from GiGi's Print Shop turn 'obsolete' into a suggestion, not a sentence.",
   alternates: { canonical },

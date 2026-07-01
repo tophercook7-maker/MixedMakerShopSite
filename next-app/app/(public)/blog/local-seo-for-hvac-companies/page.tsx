@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -14,7 +15,7 @@ const title = "Frozen Out: Why Your HVAC Business Needs a Local SEO Tune-Up";
 const subtitle = "Win the Local Pack so your phone rings when the furnace dies at 2 AM";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Local SEO for HVAC companies — rank in Google's Local Pack for 'AC repair near me,' win reviews, and build a mobile site that turns emergencies into phone calls instead of leaving you frozen out.",
   alternates: { canonical },

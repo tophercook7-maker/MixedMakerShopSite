@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -16,7 +17,7 @@ const subtitle =
   "Ditch catalog swag that ends up in the junk drawer — custom bulk keychains from GiGi's Print Shop that customers actually keep";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "How 3D printed keychains in bulk help local businesses market smarter — custom shapes, small MOQs, QR codes, lumpy mail, and straight-talk pricing from GiGi's Print Shop.",
   alternates: { canonical },

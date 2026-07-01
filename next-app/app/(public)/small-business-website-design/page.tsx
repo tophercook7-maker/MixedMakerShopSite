@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/public/JsonLd";
 import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const canonical = `${SITE_URL}/small-business-website-design`;
@@ -17,9 +18,10 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Small Business Website Design | MixedMakerShop",
-  description:
-    "Clean, mobile-friendly small business website design built around how customers find, trust, and contact you. Starter setups from $400, full sites from $900.",
+  title: "Small Business Website Design",
+  description: metaDescription(
+    "Mobile-friendly small business websites built for trust and contact — starter setups $400, full sites $900. Hot Springs web design, free preview available."
+  ),
   alternates: { canonical },
   openGraph: {
     title: "Small Business Website Design | MixedMakerShop",

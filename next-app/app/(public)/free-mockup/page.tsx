@@ -17,17 +17,21 @@ import {
 } from "@/lib/mms-umbrella-ui";
 import { cn } from "@/lib/utils";
 
+import { metaDescription } from "@/lib/seo/snippet-meta";
+
 const canonical = "https://mixedmakershop.com/free-mockup";
 
 export const metadata: Metadata = {
-  title: "Free Website Preview | MixedMakerShop",
-  description:
-    "Get a free website preview before you commit — see a cleaner, more trustworthy layout built for calls, leads, and customers. No pressure.",
+  title: "Free Website Preview for Your Business",
+  description: metaDescription(
+    "See your business homepage before you pay — free preview in ~2 minutes. Mobile-friendly layout built for calls and leads. Hot Springs web design by Topher. No obligation."
+  ),
   alternates: { canonical },
   openGraph: {
-    title: "Free website preview | MixedMakerShop",
-    description:
-      "A clear homepage direction for your business — low pressure, no obligation. Built and reviewed by Topher.",
+    title: "Free Website Preview | MixedMakerShop",
+    description: metaDescription(
+      "Free homepage preview for your business — see the layout, trust signals, and CTAs before you spend a dollar. ~2 minutes, no pressure."
+    ),
     url: canonical,
   },
   robots: { index: true, follow: true },

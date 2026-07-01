@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -16,7 +17,7 @@ const subtitle =
   "Win the Google Map Pack when homeowners search emergency plumber near me — GBP, reviews, and a mobile site that turns panic into phone calls";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Local SEO for plumbers — stay visible when basements flood at 2 AM. Google Business Profile, reviews, mobile-first websites, and the Captain Maker path without agency fluff.",
   alternates: { canonical },

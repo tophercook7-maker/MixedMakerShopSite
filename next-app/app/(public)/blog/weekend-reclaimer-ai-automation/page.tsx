@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const title = "The Weekend Reclaimer: How AI Automation Stops Your Inbox from Ru
 const subtitle = "Small business workflow automation for owners tired of answering the same questions on Saturdays";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Stop your inbox from eating your weekends. How small business workflow automation and AI helpers filter noise, qualify leads, and bridge the gaps — without agency fluff.",
   alternates: { canonical },

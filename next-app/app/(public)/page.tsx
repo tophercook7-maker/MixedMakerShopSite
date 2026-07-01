@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 
 const canonical = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Mixed Maker Shop | Umbrella Studio HQ — Web Design, Maker Builds & Digital Tools",
-  description:
-    "Mixed Maker Shop is the umbrella studio headquarters: Topher's Web Design (websites), 3D printing & maker builds, AI & automation, digital products, Mixed Maker Labs, and story — one umbrella, multiple branches.",
+  title: "Web Design Hot Springs AR | Small Business Websites",
+  description: metaDescription(
+    "Hot Springs web design for local businesses — mobile sites from $400, full setups $900. Free homepage preview. Founder-led, fast turnaround, built for calls and leads."
+  ),
   keywords: [
     "Mixed Maker Shop",
     "umbrella studio",
@@ -22,17 +24,19 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical },
   openGraph: {
-    title: "Mixed Maker Shop | Umbrella Studio HQ",
-    description:
-      "Studio headquarters for websites, maker work, AI & automation, digital products, and experiments — organized under one umbrella.",
+    title: "Web Design Hot Springs AR | Mixed Maker Shop",
+    description: metaDescription(
+      "Affordable small business websites in Hot Springs, AR. Free preview before you buy · starter sites $400 · built for calls and trust."
+    ),
     url: canonical,
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mixed Maker Shop | Umbrella Studio HQ",
-    description:
-      "Websites, 3D printing, AI tools, digital products, and labs — one umbrella studio.",
+    title: "Web Design Hot Springs AR | Mixed Maker Shop",
+    description: metaDescription(
+      "Small business web design in Hot Springs — free preview, sites from $400, built for leads."
+    ),
     images: ["/og-image"],
   },
 };

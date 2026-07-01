@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const title = "Quick Refresh: What Every Modern Cleaning Service Website Needs";
 const subtitle = "Booking, trust, real photos, and local SEO for Arkansas cleaning businesses";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "What modern cleaning service websites need in Arkansas — frictionless booking, trust signals, before-and-after proof, local SEO, and mobile-first design.",
   alternates: { canonical },

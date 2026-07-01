@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { blogPostTitle } from "@/lib/seo/snippet-meta";
 import Link from "next/link";
 import {
   BlogArticleImage,
@@ -15,7 +16,7 @@ const subtitle =
   "Durable, tactile page markers from GiGi's Print Shop — custom art that respects your library and shows off your personality";
 
 export const metadata: Metadata = {
-  title: `${title} | MixedMakerShop Blog`,
+  title: blogPostTitle(title),
   description:
     "Quit folding page corners — custom 3D printed bookmarks from GiGi's Print Shop are durable, personalized, and built to last for readers, book clubs, teachers, and small businesses.",
   alternates: { canonical },

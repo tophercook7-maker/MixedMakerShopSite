@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
+import { metaDescription } from "@/lib/seo/snippet-meta";
 import { WEBSITE_SAMPLES } from "@/lib/website-samples";
 
 export const metadata = {
   alternates: { canonical: "https://mixedmakershop.com/tophers-web-design" },
-  title: "Topher's Web Design",
-  description:
-    "Simple local-business websites built for calls and trust. Starter setups from $400, full business setups from $900, custom builds on quote.",
+  title: "Topher's Web Design | Hot Springs AR",
+  description: metaDescription(
+    "Simple local business websites built for calls and trust. Hot Springs AR — starter sites $400, full setups $900. Free homepage preview before you commit."
+  ),
 };
 
 const beforeAfter = [
