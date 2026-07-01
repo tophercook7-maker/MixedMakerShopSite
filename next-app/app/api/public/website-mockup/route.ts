@@ -16,6 +16,7 @@ import {
   sendLeadNotificationEmail,
 } from "@/lib/crm/send-lead-notification-email";
 import { sendMockupRequestConfirmationEmail } from "@/lib/send-mockup-request-confirmation";
+import { resendConfigStatus } from "@/lib/resend-config";
 import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
 
 export async function GET() {
@@ -545,10 +546,10 @@ export async function POST(request: Request) {
       businessName: mockRow.business_name,
     });
     if (!confirmation.ok) {
-      console.error(
-        "[website-mockup] confirmation email failed (submission was saved OK):",
-        confirmation.error,
-      );
+      console.error("[website-mockup] confirmation email failed (submission was saved OK):", {
+        error: confirmation.error,
+        resend: resendConfigStatus(),
+      });
     }
 
     const notification = await sendLeadNotificationEmail({
@@ -573,7 +574,26 @@ export async function POST(request: Request) {
       },
     });
     if (!notification.ok) {
-      console.error("[website-mockup] lead notification email failed", notification.error);
+      console.error("[website-mockup] lead notification email failed", {
+        error: notification.error,
+        resend: resendConfigStatus(),
+      });
+      await sendEmergencyLeadNotificationEmail({
+        requestId,
+        error: `Mockup lead notification failed: ${notification.error}`,
+        payload: {
+          email,
+          contactName,
+          businessName: mockRow.business_name,
+          previewUrl,
+          confirmation_email_sent: confirmation.ok,
+          confirmation_error: confirmation.ok ? null : confirmation.error,
+        },
+      });
+    }
+
+    if (!confirmation.ok && !notification.ok) {
+      console.error("[website-mockup] both mockup emails failed after successful save", resendConfigStatus());
     }
 
     return NextResponse.json({

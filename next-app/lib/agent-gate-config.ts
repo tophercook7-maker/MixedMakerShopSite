@@ -15,6 +15,7 @@ export const AGENT_COOKIE = "ada_paid";
 
 /** Path of the gated DMG (served statically, guarded by middleware). */
 export const AGENT_DMG_PATH = "/downloads/Autonomous-Desktop-Agent-1.0.0.dmg";
+export const AGENT_APPCAST_PATH = "/downloads/autonomous-desktop-agent-appcast.json";
 
 /** $19 launch price in cents. */
 export const AGENT_PRICE_CENTS = 1900;

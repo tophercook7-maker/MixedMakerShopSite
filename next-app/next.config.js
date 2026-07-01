@@ -81,6 +81,9 @@ const nextConfig = {
       { source: "/autonomous-desktop-agent", destination: "/", statusCode: 302 },
       { source: "/autonomous-desktop-agent/eula", destination: "/", statusCode: 302 },
       { source: "/autonomous-desktop-agent/privacy", destination: "/", statusCode: 302 },
+      { source: "/downloads/autonomous-desktop-agent-appcast.json", destination: "/", statusCode: 302 },
+      { source: "/api/agent/checkout", destination: "/", statusCode: 302 },
+      { source: "/api/agent/unlock", destination: "/", statusCode: 302 },
     ];
   },
   async headers() {

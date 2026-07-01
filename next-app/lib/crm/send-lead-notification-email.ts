@@ -1,4 +1,5 @@
 import type { InboundLeadSubmissionInput } from "@/lib/crm/inbound-lead-submission";
+import { leadNotifyEmail, sendResendEmail } from "@/lib/resend-config";
 
 export type LeadNotificationInput = {
   leadId?: string | null;
@@ -21,16 +22,7 @@ function trim(value: unknown): string {
 }
 
 function notifyEmail(): string {
-  return trim(process.env.LEAD_NOTIFY_EMAIL) || "Topher@mixedmakershop.com";
-}
-
-function resendApiKey(): string {
-  // RESEND_AQPI_KEY is a historical Vercel typo; keep it as a fallback so lead capture does not silently lose email.
-  return trim(process.env.RESEND_API_KEY || process.env.RESEND_AQPI_KEY);
-}
-
-function fromEmail(): string {
-  return trim(process.env.RESEND_FROM_EMAIL || process.env.BOOKING_FROM_EMAIL || "Mixed Maker Shop <onboarding@resend.dev>");
+  return leadNotifyEmail();
 }
 
 function sourceLabel(submission: InboundLeadSubmissionInput): string {
@@ -107,50 +99,24 @@ export function buildLeadNotificationSubject(submission: InboundLeadSubmissionIn
 }
 
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<LeadNotificationResult> {
-  const apiKey = resendApiKey();
-  const from = fromEmail();
   const to = notifyEmail();
-
-  if (!apiKey) return { ok: false, error: "Missing RESEND_API_KEY." };
-  if (!from) return { ok: false, error: "Missing RESEND_FROM_EMAIL or BOOKING_FROM_EMAIL." };
-
   const text = buildText(input);
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "User-Agent": "mixedmakershop-lead-notify/1.0",
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      reply_to: input.submission.email,
-      subject: buildLeadNotificationSubject(input.submission),
-      html: buildHtml(text),
-      text,
-    }),
-    cache: "no-store",
+
+  const result = await sendResendEmail({
+    to,
+    replyTo: input.submission.email,
+    subject: buildLeadNotificationSubject(input.submission),
+    text,
+    html: buildHtml(text),
+    userAgent: "mixedmakershop-lead-notify/1.0",
   });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    return { ok: false, error: `Resend failed: ${body || `HTTP ${res.status}`}` };
-  }
-
-  return { ok: true };
+  return result;
 }
 
 export async function sendEmergencyLeadNotificationEmail(
   input: EmergencyLeadNotificationInput,
 ): Promise<LeadNotificationResult> {
-  const apiKey = resendApiKey();
-  const from = fromEmail();
-  const to = notifyEmail();
-
-  if (!apiKey) return { ok: false, error: "Missing RESEND_API_KEY." };
-  if (!from) return { ok: false, error: "Missing RESEND_FROM_EMAIL or BOOKING_FROM_EMAIL." };
-
   const text = [
     "EMERGENCY MixedMakerShop lead capture failure",
     "",
@@ -161,29 +127,13 @@ export async function sendEmergencyLeadNotificationEmail(
     safeJson(input.payload),
   ].join("\n");
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "User-Agent": "mixedmakershop-lead-emergency/1.0",
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject: `EMERGENCY MixedMakerShop lead save failed - ${input.requestId || "public lead"}`,
-      html: buildHtml(text),
-      text,
-    }),
-    cache: "no-store",
+  return sendResendEmail({
+    to: notifyEmail(),
+    subject: `EMERGENCY MixedMakerShop lead save failed - ${input.requestId || "public lead"}`,
+    text,
+    html: buildHtml(text),
+    userAgent: "mixedmakershop-lead-emergency/1.0",
   });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    return { ok: false, error: `Resend failed: ${body || `HTTP ${res.status}`}` };
-  }
-
-  return { ok: true };
 }
 
 export async function sendTestLeadNotificationEmail(): Promise<LeadNotificationResult> {
