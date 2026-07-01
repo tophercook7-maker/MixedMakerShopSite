@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Crosshair,
   FileText,
+  Inbox,
   MessageSquare,
   Send,
   Settings,
@@ -16,8 +17,9 @@ import {
 } from "lucide-react";
 
 const links = [
+  { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/today", label: "Today", icon: Sun },
-  { href: "/admin/crm/web", label: "Web CRM", icon: Users, title: "Web design leads" },
+  { href: "/admin/crm/web", label: "All leads", icon: Users, title: "Web design leads" },
   { href: "/admin/conversations", label: "Conversations", icon: MessageSquare },
   { href: "/admin/scout", label: "Find businesses", icon: Crosshair, title: "Scout — discover local businesses" },
   { href: "/admin/outreach", label: "Outreach", icon: Send },
@@ -28,8 +30,11 @@ const links = [
 ];
 
 function linkActive(pathname: string, href: string): boolean {
+  if (href === "/admin/inbox") {
+    return pathname === "/admin/inbox" || pathname === "/admin";
+  }
   if (href === "/admin/today") {
-    return pathname === "/admin/today" || pathname === "/admin";
+    return pathname === "/admin/today";
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -38,7 +43,13 @@ function CountBadge({ count }: { count: number }) {
   return <span className="admin-count-badge ml-auto">{count > 99 ? "99+" : Math.max(0, count)}</span>;
 }
 
-export default function Sidebar({ newLeadCount = 0 }: { newLeadCount?: number }) {
+export default function Sidebar({
+  newLeadCount = 0,
+  inboxCount = 0,
+}: {
+  newLeadCount?: number;
+  inboxCount?: number;
+}) {
   const pathname = usePathname();
 
   return (
@@ -68,6 +79,7 @@ export default function Sidebar({ newLeadCount = 0 }: { newLeadCount?: number })
           >
             <Icon className="admin-nav-icon h-4 w-4 shrink-0" />
             <span>{label}</span>
+            {href === "/admin/inbox" ? <CountBadge count={inboxCount} /> : null}
             {href === "/admin/crm/web" ? <CountBadge count={newLeadCount} /> : null}
           </a>
         ))}

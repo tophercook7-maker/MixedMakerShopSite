@@ -25,7 +25,11 @@ export function TodayWorkspace({ workTodayLeads, children }: Props) {
             Today
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--admin-muted)" }}>
-            Start here — a simple checklist for your web design sales day.
+            Pipeline stats and focus mode. For one-tap call/text/answer, use{" "}
+            <Link href="/admin/inbox" className="text-[var(--admin-gold)] hover:underline">
+              Inbox
+            </Link>
+            .
           </p>
         </div>
         <label className="flex cursor-pointer items-center gap-2 text-sm shrink-0" style={{ color: "var(--admin-fg)" }}>
@@ -53,7 +57,7 @@ export function TodayWorkspace({ workTodayLeads, children }: Props) {
               const id = String(lead.id || "").trim();
               const name = String(lead.business_name || "").trim() || "Business";
               const openHref = buildLeadPath(id, name);
-              const contactHref = `${openHref}?focus=outreach`;
+              const isReply = lead.reasonLine.toLowerCase().includes("replied");
               return (
                 <li
                   key={id}
@@ -69,9 +73,15 @@ export function TodayWorkspace({ workTodayLeads, children }: Props) {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 shrink-0">
-                    <Link href={contactHref} className="admin-btn-primary text-xs">
-                      Contact
-                    </Link>
+                    {isReply ? (
+                      <Link href={`${openHref}?generate=1`} className="admin-btn-primary text-xs">
+                        Answer
+                      </Link>
+                    ) : (
+                      <Link href={`${openHref}?focus=outreach`} className="admin-btn-primary text-xs">
+                        Contact
+                      </Link>
+                    )}
                     <Link href={openHref} className="admin-btn-ghost text-xs">
                       Open
                     </Link>

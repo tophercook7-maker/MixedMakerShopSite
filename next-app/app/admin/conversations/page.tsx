@@ -8,7 +8,18 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function AdminConversationsPage() {
+function firstParam(v: string | string[] | undefined): string {
+  if (Array.isArray(v)) return String(v[0] ?? "").trim();
+  return String(v ?? "").trim();
+}
+
+export default async function AdminConversationsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await searchParams) || {};
+  const initialLeadId = firstParam(sp.leadId);
   const supabase = await createClient();
   const {
     data: { user },
@@ -118,7 +129,7 @@ export default async function AdminConversationsPage() {
           Your email and reply history in one place. New replies are easy to spot.
         </p>
       </section>
-      <ConversationsWorkspace leads={leads} messages={messages} />
+      <ConversationsWorkspace leads={leads} messages={messages} initialLeadId={initialLeadId || null} />
     </div>
   );
 }

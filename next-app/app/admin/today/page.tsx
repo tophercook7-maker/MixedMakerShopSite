@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { toWorkflowLead, isMissingColumnError, type LeadRowForWorkflow } from "@/lib/crm/workflow-lead-mapper";
+import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
 import { CRM_PIPELINE_STAGES, CRM_STAGE_LABELS } from "@/lib/crm/stages";
 import { prettyLeadStatus } from "@/components/admin/lead-visuals";
 import { computeWorkTodayLeads } from "@/lib/crm/work-today-leads";
 import { TodayWorkspace } from "@/components/admin/today-workspace";
-import type { WorkflowLead } from "@/components/admin/leads-workflow-view";
+import { buildLeadPath } from "@/lib/lead-route";
 import { isThreeDPrintLead, normalizePrintPipelineStatus } from "@/lib/crm/three-d-print-lead";
 import { resolvePrintUiLane } from "@/lib/crm/three-d-print-ui-lanes";
 import { isFollowUpDueTodayUtc, simpleLeadStatusLabel } from "@/lib/crm/simple-lead-status-ui";
@@ -170,17 +171,17 @@ export default async function TodayCommandPage() {
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
           {[
-            { label: "Web F/U today", value: webFuToday, href: "/admin/leads?follow_up_today=1" },
+            { label: "Web F/U today", value: webFuToday, href: "/admin/inbox" },
             {
               label: "3D F/U today",
               value: printFuToday,
-              href: "/admin/leads?crm_source=3d_printing&follow_up_today=1",
+              href: "/admin/crm/print",
             },
-            { label: "New mockup", value: newMockupLeads, href: "/admin/leads" },
-            { label: "New print", value: newPrintLeads, href: "/admin/leads?crm_source=3d_printing&print_stage=new_print" },
-            { label: "Waiting reply", value: waitingOnReply, href: "/admin/leads" },
-            { label: "Waiting customer (3D)", value: waitingOnCustomer, href: "/admin/leads?crm_source=3d_printing&print_stage=waiting_customer" },
-            { label: "Won / completed", value: wonOrCompleted, href: "/admin/leads" },
+            { label: "New mockup", value: newMockupLeads, href: "/admin/inbox" },
+            { label: "New print", value: newPrintLeads, href: "/admin/crm/print" },
+            { label: "Waiting reply", value: waitingOnReply, href: "/admin/inbox" },
+            { label: "Waiting customer (3D)", value: waitingOnCustomer, href: "/admin/crm/print" },
+            { label: "Won / completed", value: wonOrCompleted, href: "/admin/crm/web?lane=won" },
           ].map((c) => (
             <Link
               key={c.label}
@@ -201,10 +202,10 @@ export default async function TodayCommandPage() {
 
       <section className="admin-stats-grid">
         {[
-          { label: "New businesses to contact", value: newLeads, href: "/admin/leads" },
-          { label: "Replies waiting on you", value: repliesWaiting, href: "/admin/conversations" },
-          { label: "Follow-ups to send", value: followUpsDue, href: "/admin/outreach" },
-          { label: "Hot opportunities (won this month)", value: wonThisMonth, href: "/admin/leads" },
+          { label: "New businesses to contact", value: newLeads, href: "/admin/inbox" },
+          { label: "Replies waiting on you", value: repliesWaiting, href: "/admin/inbox" },
+          { label: "Follow-ups to send", value: followUpsDue, href: "/admin/inbox" },
+          { label: "Hot opportunities (won this month)", value: wonThisMonth, href: "/admin/crm/web?lane=won" },
         ].map((card) => (
           <Link key={card.label} href={card.href} className="admin-stat-card block no-underline">
             <div className="admin-stat-label">{card.label}</div>
@@ -244,7 +245,7 @@ export default async function TodayCommandPage() {
               <ul className="space-y-2">
                 {firstOutreach.slice(0, 8).map((l) => (
                   <li key={l.id} className="flex justify-between gap-2 text-sm">
-                    <Link href={`/admin/leads/${l.id}`} className="text-[var(--admin-gold)] hover:underline truncate">
+                    <Link href={buildLeadPath(l.id, l.business_name)} className="text-[var(--admin-gold)] hover:underline truncate">
                       {l.business_name}
                     </Link>
                     <span className="shrink-0 text-xs" style={{ color: "var(--admin-muted)" }}>
@@ -266,7 +267,7 @@ export default async function TodayCommandPage() {
               <ul className="space-y-2">
                 {followUpToday.slice(0, 8).map((l) => (
                   <li key={l.id} className="flex justify-between gap-2 text-sm">
-                    <Link href={`/admin/leads/${l.id}`} className="text-[var(--admin-gold)] hover:underline truncate">
+                    <Link href={buildLeadPath(l.id, l.business_name)} className="text-[var(--admin-gold)] hover:underline truncate">
                       {l.business_name}
                     </Link>
                     <span className="shrink-0 text-xs">{prettyLeadStatus(l.status)}</span>
@@ -333,7 +334,7 @@ export default async function TodayCommandPage() {
             <ul className="space-y-2 text-sm">
               {hot.map((l) => (
                 <li key={l.id}>
-                  <Link href={`/admin/leads/${l.id}`} className="text-[var(--admin-gold)] hover:underline">
+                  <Link href={buildLeadPath(l.id, l.business_name)} className="text-[var(--admin-gold)] hover:underline">
                     {l.business_name}
                   </Link>
                 </li>
