@@ -34,8 +34,8 @@ export default async function AdminInboxPage() {
 
   let rows: InboxLeadInput[] = [];
   const selectVariants = [
-    "id,business_name,status,email,phone,facebook_url,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags,service_type,lead_source,source,first_outreach_sent_at,email_sent,facebook_sent,text_sent,print_pipeline_status,print_request_type",
-    "id,business_name,status,email,phone,facebook_url,created_at,next_follow_up_at,last_reply_preview,last_reply_at,conversion_score,opportunity_score,unread_reply_count,lead_tags,service_type,lead_source",
+    "id,business_name,status,email,phone,facebook_url,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags,service_type,lead_source,source,first_outreach_sent_at,email_sent,facebook_sent,text_sent,print_pipeline_status,print_request_type,has_website,best_contact_method,suggested_response",
+    "id,business_name,status,email,phone,facebook_url,website,city,category,conversion_score,opportunity_score,created_at,next_follow_up_at,follow_up_status,last_reply_preview,last_reply_at,is_hot_lead,unread_reply_count,lead_tags,service_type,lead_source,has_website,best_contact_method,suggested_response",
     "id,business_name,status,email,phone,created_at,next_follow_up_at,last_reply_preview,last_reply_at,unread_reply_count,lead_tags",
     "id,business_name,status,created_at,next_follow_up_at,last_reply_preview,last_reply_at,unread_reply_count",
   ];

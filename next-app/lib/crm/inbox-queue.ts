@@ -29,6 +29,12 @@ export type InboxItem = {
   mockupHref: string | null;
   createdAt: string | null;
   status: string | null;
+  businessCategory?: string | null;
+  suggestedResponse?: string | null;
+  bestContactMethod?: string | null;
+  website?: string | null;
+  hasWebsite?: boolean | null;
+  leadTags?: string[] | null;
 };
 
 export type InboxLeadInput = WorkTodayLeadRow & {
@@ -43,6 +49,11 @@ export type InboxLeadInput = WorkTodayLeadRow & {
   email_sent?: boolean | null;
   facebook_sent?: boolean | null;
   text_sent?: boolean | null;
+  category?: string | null;
+  website?: string | null;
+  has_website?: boolean | null;
+  best_contact_method?: string | null;
+  suggested_response?: string | null;
 };
 
 export type InboxMockupInput = {
@@ -185,6 +196,12 @@ export function buildInboxItemFromLead(row: InboxLeadInput, now: Date = new Date
     mockupHref: isMockupLead(row) ? null : null,
     createdAt: row.created_at || null,
     status: row.status || null,
+    businessCategory: String(row.category || "").trim() || null,
+    suggestedResponse: String(row.suggested_response || "").trim() || null,
+    bestContactMethod: String(row.best_contact_method || "").trim() || null,
+    website: String(row.website || "").trim() || null,
+    hasWebsite: row.has_website == null ? null : Boolean(row.has_website),
+    leadTags: Array.isArray(row.lead_tags) ? row.lead_tags : null,
   };
 }
 
