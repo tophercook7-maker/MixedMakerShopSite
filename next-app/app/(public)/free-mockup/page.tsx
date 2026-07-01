@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Eye, ShieldCheck, Sparkles } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
+import { FreeMockupBeforeAfterStrip } from "@/components/public/free-mockup-before-after-strip";
 import { FreeMockupFunnelClient } from "@/components/public/free-mockup-funnel-client";
 import { FreeMockupSourceBannerFreshCut } from "@/components/public/free-mockup-source-banner";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
@@ -177,6 +178,7 @@ export default async function FreeMockupPage({
         </section>
 
         {isFreshCutFunnel ? <FreeMockupSourceBannerFreshCut /> : null}
+        {!isFreshCutFunnel ? <FreeMockupBeforeAfterStrip /> : null}
         <FreeMockupFunnelClient funnelSource={funnelSource} />
 
         {/* How it works */}

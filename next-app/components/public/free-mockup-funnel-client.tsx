@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
@@ -33,16 +34,32 @@ function scrollToSection(sectionId: string) {
   document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function useMobileAccordion() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return isMobile;
+}
+
 function FormProgress({
   basicsDone,
   goalsDone,
   styleDone,
   contactDone,
+  onSectionSelect,
 }: {
   basicsDone: boolean;
   goalsDone: boolean;
   styleDone: boolean;
   contactDone: boolean;
+  onSectionSelect?: (sectionId: string) => void;
 }) {
   const doneFlags = [basicsDone, goalsDone, styleDone, contactDone];
   const completedCount = doneFlags.filter(Boolean).length;
@@ -66,7 +83,10 @@ function FormProgress({
                   done && "free-mockup-progress-step--done",
                   active && "free-mockup-progress-step--active",
                 )}
-                onClick={() => scrollToSection(step.sectionId)}
+                onClick={() => {
+                  onSectionSelect?.(step.sectionId);
+                  scrollToSection(step.sectionId);
+                }}
               >
                 <span className="free-mockup-progress-step-num" aria-hidden>
                   {done ? "✓" : step.id}
@@ -91,19 +111,59 @@ function FormSection({
   title,
   hint,
   children,
+  open,
+  done,
+  collapsible,
+  onToggle,
 }: {
   id: string;
   title: string;
   hint?: ReactNode;
   children: ReactNode;
+  open: boolean;
+  done: boolean;
+  collapsible: boolean;
+  onToggle: () => void;
 }) {
+  const panelId = `${id}-panel`;
+
   return (
-    <div id={id} className="free-mockup-form-section space-y-4 scroll-mt-28">
+    <div
+      id={id}
+      className={cn(
+        "free-mockup-form-section scroll-mt-28",
+        collapsible && "free-mockup-form-section--collapsible",
+        collapsible && open && "free-mockup-form-section--open",
+        collapsible && done && "free-mockup-form-section--done",
+      )}
+    >
       <div className="free-mockup-form-section-head">
-        <h3 className="free-mockup-form-section-title">{title}</h3>
-        {hint}
+        {collapsible ? (
+          <button
+            type="button"
+            className="free-mockup-form-section-toggle"
+            aria-expanded={open}
+            aria-controls={panelId}
+            onClick={onToggle}
+          >
+            <span className="free-mockup-form-section-toggle-main">
+              <h3 className="free-mockup-form-section-title">{title}</h3>
+              {done ? <span className="free-mockup-form-section-done">Done</span> : null}
+            </span>
+            <ChevronDown className="free-mockup-form-section-chevron" aria-hidden />
+          </button>
+        ) : (
+          <h3 className="free-mockup-form-section-title">{title}</h3>
+        )}
+        {hint && (!collapsible || open) ? hint : null}
       </div>
-      {children}
+      <div
+        id={panelId}
+        className={cn("free-mockup-form-section-body space-y-4", collapsible && !open && "free-mockup-form-section-body--collapsed")}
+        hidden={collapsible ? !open : false}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -126,6 +186,16 @@ export function FreeMockupFunnelClient({
   funnelSource?: string | null;
 }) {
   const isFreshCutFunnel = funnelSource === "freshcut";
+  const mobileAccordion = useMobileAccordion();
+  const [openSectionId, setOpenSectionId] = useState<string>(FORM_STEPS[0].sectionId);
+
+  const selectSection = (sectionId: string) => {
+    setOpenSectionId(sectionId);
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setOpenSectionId(sectionId);
+  };
 
   const [contactName, setContactName] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -220,6 +290,25 @@ export function FreeMockupFunnelClient({
   const goalsDone = Boolean(topServices.trim());
   const styleDone = Boolean(designDirection);
   const contactDone = Boolean(submitEmail.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitEmail.trim()));
+
+  const sectionDone = useMemo<Record<string, boolean>>(
+    () => ({
+      [FORM_STEPS[0].sectionId]: basicsDone,
+      [FORM_STEPS[1].sectionId]: goalsDone,
+      [FORM_STEPS[2].sectionId]: styleDone,
+      [FORM_STEPS[3].sectionId]: contactDone,
+    }),
+    [basicsDone, contactDone, goalsDone, styleDone],
+  );
+
+  useEffect(() => {
+    if (!mobileAccordion || !sectionDone[openSectionId]) return;
+    const currentIndex = FORM_STEPS.findIndex((step) => step.sectionId === openSectionId);
+    const nextStep = FORM_STEPS[currentIndex + 1];
+    if (nextStep && !sectionDone[nextStep.sectionId]) {
+      setOpenSectionId(nextStep.sectionId);
+    }
+  }, [mobileAccordion, openSectionId, sectionDone, basicsDone, goalsDone, styleDone, contactDone]);
 
   const preview = useMemo(() => {
     if (!canPreview || !snapshot) return null;
@@ -429,11 +518,16 @@ export function FreeMockupFunnelClient({
             goalsDone={goalsDone}
             styleDone={styleDone}
             contactDone={contactDone}
+            onSectionSelect={selectSection}
           />
 
           <FormSection
             id="free-mockup-section-basics"
             title="1 · Business basics"
+            open={!mobileAccordion || openSectionId === "free-mockup-section-basics"}
+            done={basicsDone}
+            collapsible={mobileAccordion}
+            onToggle={() => toggleSection("free-mockup-section-basics")}
             hint={
               <p className="free-mockup-form-section-hint">
                 Fields marked <span className="font-semibold text-[var(--text)]">*</span> are required.
@@ -529,7 +623,14 @@ export function FreeMockupFunnelClient({
           ) : null}
           </FormSection>
 
-          <FormSection id="free-mockup-section-goals" title="2 · Homepage goals">
+          <FormSection
+            id="free-mockup-section-goals"
+            title="2 · Homepage goals"
+            open={!mobileAccordion || openSectionId === "free-mockup-section-goals"}
+            done={goalsDone}
+            collapsible={mobileAccordion}
+            onToggle={() => toggleSection("free-mockup-section-goals")}
+          >
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
               Top services to feature on the homepage *
               <textarea
@@ -584,6 +685,10 @@ export function FreeMockupFunnelClient({
           <FormSection
             id="free-mockup-section-style"
             title="3 · Preferences"
+            open={!mobileAccordion || openSectionId === "free-mockup-section-style"}
+            done={styleDone}
+            collapsible={mobileAccordion}
+            onToggle={() => toggleSection("free-mockup-section-style")}
             hint={
               <p className="free-mockup-form-section-hint">
                 Choose the direction that feels closest — I&apos;ll refine from there.
@@ -670,7 +775,14 @@ export function FreeMockupFunnelClient({
           </label>
           </FormSection>
 
-          <FormSection id="free-mockup-section-contact" title="4 · Contact">
+          <FormSection
+            id="free-mockup-section-contact"
+            title="4 · Contact"
+            open={!mobileAccordion || openSectionId === "free-mockup-section-contact"}
+            done={contactDone}
+            collapsible={mobileAccordion}
+            onToggle={() => toggleSection("free-mockup-section-contact")}
+          >
           <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
             Email *
             <input
