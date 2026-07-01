@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { buildLeadPath } from "@/lib/lead-route";
 import { CRM_STAGE_LABELS, type CrmPipelineStage } from "@/lib/crm/stages";
@@ -49,12 +49,24 @@ function fmtTime(iso: string): string {
 export function ConversationsWorkspace({
   leads,
   messages,
+  initialLeadId = null,
 }: {
   leads: CrmConversationLead[];
   messages: CrmMessage[];
+  initialLeadId?: string | null;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(leads[0]?.id ?? null);
+  const defaultId = useMemo(() => {
+    const wanted = String(initialLeadId || "").trim();
+    if (wanted && leads.some((l) => l.id === wanted)) return wanted;
+    return leads[0]?.id ?? null;
+  }, [initialLeadId, leads]);
+
+  const [selectedId, setSelectedId] = useState<string | null>(defaultId);
   const [unreadOnly, setUnreadOnly] = useState(false);
+
+  useEffect(() => {
+    setSelectedId(defaultId);
+  }, [defaultId]);
 
   const selected = leads.find((l) => l.id === selectedId) ?? leads[0] ?? null;
 

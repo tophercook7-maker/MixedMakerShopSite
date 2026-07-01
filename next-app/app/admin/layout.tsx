@@ -5,6 +5,7 @@ import Link from "next/link";
 import Sidebar from "@/components/admin/Sidebar";
 import { HeaderActions } from "@/components/admin/HeaderActions";
 import { GlobalScoutJobProvider } from "@/components/admin/scout-job-provider";
+import { getInboxActionCount } from "@/lib/crm/inbox-count";
 import { getNewLeadCount } from "@/lib/crm/new-lead-count";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowRight, Plus } from "lucide-react";
@@ -29,13 +30,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const newLeadCount = await getNewLeadCount(supabase, String(user?.id || ""));
+  const ownerId = String(user?.id || "");
+  const [newLeadCount, inboxCount] = await Promise.all([
+    getNewLeadCount(supabase, ownerId),
+    getInboxActionCount(supabase, ownerId),
+  ]);
 
   return (
     <GlobalScoutJobProvider>
       <div className="admin-root min-h-screen md:grid md:grid-cols-[280px_1fr]">
         <aside className="admin-sidebar shrink-0">
-          <Sidebar newLeadCount={newLeadCount} />
+          <Sidebar newLeadCount={newLeadCount} inboxCount={inboxCount} />
         </aside>
         <div className="min-w-0 flex flex-col">
           <header className="admin-header">
@@ -51,6 +56,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="admin-quick-actions">
+                <Link href="/admin/inbox">
+                  <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                  Inbox
+                </Link>
                 <Link href="/admin/crm/web?add=1">
                   <Plus className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Add business
@@ -58,10 +67,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 <Link href="/admin/scout">
                   <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
                   Find businesses
-                </Link>
-                <Link href="/admin/outreach">
-                  <ArrowRight className="inline h-4 w-4 mr-1.5 -mt-0.5" />
-                  Outreach Queue
                 </Link>
               </div>
               <HeaderActions />
