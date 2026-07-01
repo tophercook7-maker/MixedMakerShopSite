@@ -77,6 +77,10 @@ const nextConfig = {
         destination: "/web-design-hot-springs-ar",
         statusCode: 301,
       },
+      // Autonomous Desktop Agent — not public yet; unpublish marketing + legal pages.
+      { source: "/autonomous-desktop-agent", destination: "/", statusCode: 302 },
+      { source: "/autonomous-desktop-agent/eula", destination: "/", statusCode: 302 },
+      { source: "/autonomous-desktop-agent/privacy", destination: "/", statusCode: 302 },
     ];
   },
   async headers() {

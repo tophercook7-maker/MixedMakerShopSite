@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const base = baseUrl(req);
   const stripe = getStripeOrNull();
   if (!stripe) {
-    return NextResponse.redirect(`${base}/autonomous-desktop-agent?error=unconfigured`, 303);
+    return NextResponse.redirect(`${base}/`, 303);
   }
 
   try {
@@ -36,12 +36,12 @@ export async function GET(req: Request) {
       ],
       allow_promotion_codes: true,
       success_url: `${base}/api/agent/unlock?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/autonomous-desktop-agent?canceled=1`,
+      cancel_url: `${base}/`,
       metadata: { product: "autonomous_desktop_agent" },
     });
     return NextResponse.redirect(session.url as string, 303);
   } catch (e) {
     console.error("[agent checkout]", e instanceof Error ? e.message : e);
-    return NextResponse.redirect(`${base}/autonomous-desktop-agent?error=checkout`, 303);
+    return NextResponse.redirect(`${base}/`, 303);
   }
 }

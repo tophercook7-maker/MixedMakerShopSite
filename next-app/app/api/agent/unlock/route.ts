@@ -15,13 +15,13 @@ export async function GET(req: Request) {
   const sid = String(new URL(req.url).searchParams.get("session_id") || "").trim();
   const stripe = getStripeOrNull();
   if (!stripe || !sid.startsWith("cs_")) {
-    return NextResponse.redirect(`${base}/autonomous-desktop-agent?error=verify`, 303);
+    return NextResponse.redirect(`${base}/`, 303);
   }
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sid);
     if (session.payment_status === "paid") {
-      const res = NextResponse.redirect(`${base}/autonomous-desktop-agent?unlocked=1`, 303);
+      const res = NextResponse.redirect(`${base}/`, 303);
       res.cookies.set(AGENT_COOKIE, signToken(), {
         httpOnly: true,
         secure: true,
@@ -31,9 +31,9 @@ export async function GET(req: Request) {
       });
       return res;
     }
-    return NextResponse.redirect(`${base}/autonomous-desktop-agent?error=unpaid`, 303);
+    return NextResponse.redirect(`${base}/`, 303);
   } catch (e) {
     console.error("[agent unlock]", e instanceof Error ? e.message : e);
-    return NextResponse.redirect(`${base}/autonomous-desktop-agent?error=verify`, 303);
+    return NextResponse.redirect(`${base}/`, 303);
   }
 }

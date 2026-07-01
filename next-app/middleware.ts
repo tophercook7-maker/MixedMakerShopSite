@@ -13,8 +13,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
     const url = request.nextUrl.clone();
-    url.pathname = "/autonomous-desktop-agent";
-    url.search = "?need=purchase";
+    url.pathname = "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
