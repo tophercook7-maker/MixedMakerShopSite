@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { FormLegalConsent } from "@/components/public/LegalConsent";
 import { cn } from "@/lib/utils";
 import { SampleDraftClient } from "@/app/(public)/website-samples/[slug]/sample-draft-client";
@@ -17,7 +17,96 @@ import {
 } from "@/lib/funnel-desired-outcomes";
 import { FreeMockupLivePreview } from "@/components/public/free-mockup-live-preview";
 import { buildPreviewSnapshotFromFunnelSnapshot } from "@/lib/free-mockup-preview-snapshot";
+import { publicShellClass } from "@/lib/public-brand";
 import { trackPublicEvent } from "@/lib/public-analytics";
+
+const FORM_STEPS = [
+  { id: 1, label: "Basics", sectionId: "free-mockup-section-basics" },
+  { id: 2, label: "Goals", sectionId: "free-mockup-section-goals" },
+  { id: 3, label: "Style", sectionId: "free-mockup-section-style" },
+  { id: 4, label: "Contact", sectionId: "free-mockup-section-contact" },
+] as const;
+
+const shell = publicShellClass;
+
+function scrollToSection(sectionId: string) {
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function FormProgress({
+  basicsDone,
+  goalsDone,
+  styleDone,
+  contactDone,
+}: {
+  basicsDone: boolean;
+  goalsDone: boolean;
+  styleDone: boolean;
+  contactDone: boolean;
+}) {
+  const doneFlags = [basicsDone, goalsDone, styleDone, contactDone];
+  const completedCount = doneFlags.filter(Boolean).length;
+  const progressPct = Math.round((completedCount / FORM_STEPS.length) * 100);
+
+  return (
+    <div className="free-mockup-progress" aria-label="Form progress">
+      <div className="free-mockup-progress-track" aria-hidden>
+        <span className="free-mockup-progress-fill" style={{ width: `${progressPct}%` }} />
+      </div>
+      <ol className="free-mockup-progress-steps">
+        {FORM_STEPS.map((step, index) => {
+          const done = doneFlags[index];
+          const active = !done && (index === 0 || doneFlags[index - 1]);
+          return (
+            <li key={step.id}>
+              <button
+                type="button"
+                className={cn(
+                  "free-mockup-progress-step",
+                  done && "free-mockup-progress-step--done",
+                  active && "free-mockup-progress-step--active",
+                )}
+                onClick={() => scrollToSection(step.sectionId)}
+              >
+                <span className="free-mockup-progress-step-num" aria-hidden>
+                  {done ? "✓" : step.id}
+                </span>
+                <span>{step.label}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="free-mockup-progress-hint">
+        {completedCount === FORM_STEPS.length
+          ? "All set — submit when you're ready."
+          : `${completedCount} of ${FORM_STEPS.length} sections complete`}
+      </p>
+    </div>
+  );
+}
+
+function FormSection({
+  id,
+  title,
+  hint,
+  children,
+}: {
+  id: string;
+  title: string;
+  hint?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div id={id} className="free-mockup-form-section space-y-4 scroll-mt-28">
+      <div className="free-mockup-form-section-head">
+        <h3 className="free-mockup-form-section-title">{title}</h3>
+        {hint}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function toggleOutcome(
   set: Set<FunnelDesiredOutcomeId>,
@@ -120,6 +209,17 @@ export function FreeMockupFunnelClient({
       topServices.trim() &&
       designDirection
   );
+
+  const basicsDone = Boolean(
+    contactName.trim() &&
+      businessName.trim() &&
+      businessType.trim() &&
+      cityOrArea.trim() &&
+      (hasWebsite === "no" || websiteUrl.trim()),
+  );
+  const goalsDone = Boolean(topServices.trim());
+  const styleDone = Boolean(designDirection);
+  const contactDone = Boolean(submitEmail.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submitEmail.trim()));
 
   const preview = useMemo(() => {
     if (!canPreview || !snapshot) return null;
@@ -265,38 +365,38 @@ export function FreeMockupFunnelClient({
 
   if (phase === "success") {
     return (
-      <div className="container free-mockup-success" style={{ maxWidth: 640, padding: "48px 20px 80px" }}>
-        <div className="panel" style={{ padding: "28px 24px" }}>
-          <h2 className="section-heading" style={{ marginBottom: 12 }}>
-            Got it — I&apos;ll take a look
-          </h2>
-          <div className="subhead" style={{ marginBottom: 20, lineHeight: 1.6 }}>
-            <p style={{ margin: "0 0 12px" }}>
-              I&apos;ll review your info and start putting together your preview. If I need anything, I&apos;ll reach out.
+      <div className="free-mockup-success-wrap">
+        <div className={cn(shell, "free-mockup-success")}>
+          <div className="free-mockup-success-card public-glass-box--soft public-glass-box--pad">
+            <p className="free-mockup-success-eyebrow">Request received</p>
+            <h2 className="free-mockup-success-title">Got it — I&apos;ll take a look</h2>
+            <p className="free-mockup-success-lead">
+              I&apos;ll review your info and start putting together your preview. If I need anything, I&apos;ll reach
+              out.
             </p>
-            <p style={{ margin: 0, fontWeight: 600 }}>You should hear from me within a day.</p>
+            <p className="free-mockup-success-timing">You should hear from me within a day.</p>
+            <p className="free-mockup-success-note">
+              {confirmationEmailSent
+                ? "Check your inbox for a quick confirmation email. Your live preview link is below whenever you want it."
+                : "Your live preview link is below whenever you want it."}
+            </p>
+            {savedUrl ? (
+              <div className="free-mockup-success-actions">
+                <a href={savedUrl} target="_blank" rel="noreferrer" className={cn("btn gold", "no-underline hover:no-underline")}>
+                  Open your preview
+                </a>
+                <button type="button" className="btn ghost" onClick={() => void copySavedLink()}>
+                  Copy preview link
+                </button>
+              </div>
+            ) : null}
+            <p className="free-mockup-success-foot">
+              One direction, done with care — we can refine after you&apos;ve seen it.
+            </p>
+            <Link href="/web-design" className="btn ghost">
+              Web Design
+            </Link>
           </div>
-          <p className="small" style={{ color: "var(--muted)", marginBottom: 16, lineHeight: 1.55 }}>
-            {confirmationEmailSent
-              ? "Check your inbox for a quick confirmation email. Your live preview link is below whenever you want it."
-              : "Your live preview link is below whenever you want it."}
-          </p>
-          {savedUrl ? (
-            <div className="btn-row" style={{ flexWrap: "wrap", marginBottom: 16 }}>
-              <a href={savedUrl} target="_blank" rel="noreferrer" className="btn gold">
-                Open your preview
-              </a>
-              <button type="button" className="btn ghost" onClick={() => void copySavedLink()}>
-                Copy preview link
-              </button>
-            </div>
-          ) : null}
-          <p className="small" style={{ color: "var(--muted)", marginBottom: 20 }}>
-            One direction, done with care — we can refine after you&apos;ve seen it.
-          </p>
-          <Link href="/web-design" className="btn ghost">
-            Web Design
-          </Link>
         </div>
       </div>
     );
@@ -311,64 +411,35 @@ export function FreeMockupFunnelClient({
         <div className="free-mockup-funnel-form card">
           <div className="free-mockup-intake-head">
             <p className="free-mockup-intake-eyebrow">Live preview · Guided intake</p>
-            <h2 className="free-mockup-intake-title">Your free preview</h2>
-            <div className="free-mockup-start-here">
-              <p>Start here</p>
-              <span>Fill in the basics first. The rest is just context so I can shape a better preview.</span>
-            </div>
+            <h2 className="free-mockup-intake-title">Build your free preview</h2>
+            <p className="free-mockup-intake-lead">
+              Fill in the basics first — the preview on the right updates as you go. Four short sections, about two
+              minutes for the essentials.
+            </p>
             {isFreshCutFunnel ? (
-              <p
-                className="small"
-                style={{
-                  color: "var(--text)",
-                  marginTop: 12,
-                  marginBottom: 0,
-                  lineHeight: 1.55,
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid rgba(63, 90, 71, 0.16)",
-                  background: "rgba(63, 90, 71, 0.05)",
-                }}
-              >
+              <p className="free-mockup-freshcut-note">
                 You&apos;re getting a layout tuned for local trust and estimate-style requests — the same pattern family
                 as the Fresh Cut example.
               </p>
             ) : null}
-            <div
-              className="free-mockup-friction-hint"
-              style={{
-                marginTop: 14,
-                padding: "12px 14px",
-                borderRadius: 14,
-                border: "1px solid rgba(63, 90, 71, 0.14)",
-                background: "rgba(255,255,255,0.55)",
-              }}
-            >
-              <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--text)", fontWeight: 600 }}>
-                Quick &amp; low stress
-              </p>
-              <ul className="small" style={{ margin: "10px 0 0", paddingLeft: "1.1rem", lineHeight: 1.55, color: "var(--muted)" }}>
-                <li>Takes about 2 minutes to get the basics in.</li>
-                <li>You don&apos;t need to know exactly what you want yet—honest answers are enough.</li>
-                <li>A Facebook page or business name is enough to start; add more if you have it.</li>
-              </ul>
-            </div>
-            <p className="small" style={{ marginTop: 12, marginBottom: 0, lineHeight: 1.55, color: "var(--muted)" }}>
-              Best for local services, small businesses, and anyone who depends on trust and inbound leads—not a
-              one-size-fits-all template.
-            </p>
-            <p className="free-mockup-intake-lead small">
-              Four calm sections—basics, goals, preferences, contact. The preview on the right updates as you go; after you
-              pick a design direction and fill in the basics, a fuller interactive sample appears below the live strip.
-            </p>
           </div>
 
-          <div className="free-mockup-form-section space-y-4">
-            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">1 · Business basics</h3>
-            <p className="small" style={{ margin: "-4px 0 0", color: "var(--muted)", lineHeight: 1.5 }}>
-              Fields marked <span className="font-semibold text-[var(--text)]">*</span> are required.
-            </p>
+          <FormProgress
+            basicsDone={basicsDone}
+            goalsDone={goalsDone}
+            styleDone={styleDone}
+            contactDone={contactDone}
+          />
 
+          <FormSection
+            id="free-mockup-section-basics"
+            title="1 · Business basics"
+            hint={
+              <p className="free-mockup-form-section-hint">
+                Fields marked <span className="font-semibold text-[var(--text)]">*</span> are required.
+              </p>
+            }
+          >
           <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
             Your name *
             <input
@@ -456,10 +527,9 @@ export function FreeMockupFunnelClient({
               />
             </label>
           ) : null}
-          </div>
+          </FormSection>
 
-          <div className="free-mockup-form-section space-y-4">
-            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">2 · Homepage goals</h3>
+          <FormSection id="free-mockup-section-goals" title="2 · Homepage goals">
             <label className="block text-xs mb-3" style={{ color: "var(--muted)" }}>
               Top services to feature on the homepage *
               <textarea
@@ -509,14 +579,17 @@ export function FreeMockupFunnelClient({
               placeholder="e.g. Same-day estimates · 1-year workmanship warranty"
             />
           </label>
-          </div>
+          </FormSection>
 
-          <div className="free-mockup-form-section space-y-4">
-            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">3 · Preferences</h3>
-            <p className="small" style={{ margin: 0, color: "var(--muted)", lineHeight: 1.55 }}>
-              Choose the direction that feels closest — I&apos;ll refine from there.
-            </p>
-
+          <FormSection
+            id="free-mockup-section-style"
+            title="3 · Preferences"
+            hint={
+              <p className="free-mockup-form-section-hint">
+                Choose the direction that feels closest — I&apos;ll refine from there.
+              </p>
+            }
+          >
           <div
             className="rounded-lg p-3 mb-2"
             style={{ background: "rgba(0,255,178,0.06)", border: "1px solid rgba(0,255,178,0.2)" }}
@@ -595,11 +668,9 @@ export function FreeMockupFunnelClient({
               placeholder="Timing, audience, brand constraints…"
             />
           </label>
-          </div>
+          </FormSection>
 
-          <div className="free-mockup-form-section free-mockup-form-section--flush space-y-4">
-            <h3 className="text-sm font-semibold tracking-wide text-[var(--text)]">4 · Contact</h3>
-
+          <FormSection id="free-mockup-section-contact" title="4 · Contact">
           <label className="block text-xs mb-2" style={{ color: "var(--muted)" }}>
             Email *
             <input
@@ -622,42 +693,16 @@ export function FreeMockupFunnelClient({
               autoComplete="tel"
             />
           </label>
-          </div>
+          </FormSection>
 
-          <div
-            className="rounded-lg p-3 mb-3"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--pub-border, rgba(255,255,255,0.1))" }}
-          >
-            <p className="small" style={{ margin: 0, lineHeight: 1.55, color: "var(--muted)" }}>
-              Submit one serious request and I&apos;ll build the strongest version for your business. Please do not
-              submit multiple versions for the same business — if needed, I can refine the direction after reviewing your
-              request.
+          <div className="free-mockup-submit-note">
+            <p>
+              Submit one serious request and I&apos;ll build the strongest version for your business. I can refine the
+              direction after reviewing your request if needed.
             </p>
           </div>
 
-          {isFreshCutFunnel ? (
-            <div
-              className="rounded-xl p-4 mb-4"
-              style={{
-                background: "linear-gradient(135deg, rgba(63,90,71,0.08) 0%, rgba(184,92,30,0.06) 100%)",
-                border: "1px solid rgba(63, 90, 71, 0.2)",
-              }}
-            >
-              <h3 className="section-heading" style={{ marginBottom: 8, fontSize: "1.15rem" }}>
-                Let&apos;s build your version of this
-              </h3>
-              <p className="small" style={{ margin: 0, lineHeight: 1.6, color: "var(--text)" }}>
-                I&apos;ll put together a custom preview based on your business so you can see exactly how it could look
-                and work.
-              </p>
-            </div>
-          ) : null}
-
-          {error ? (
-            <p className="small" style={{ color: "#f87171", marginBottom: 10 }}>
-              {error}
-            </p>
-          ) : null}
+          {error ? <p className="free-mockup-form-error">{error}</p> : null}
           <FormLegalConsent className="mb-4 text-[var(--muted)]" />
           <div className="free-mockup-cta-row">
             <button
@@ -678,20 +723,17 @@ export function FreeMockupFunnelClient({
               {isFreshCutFunnel ? "See the Fresh Cut example" : "Browse real work"}
             </Link>
           </div>
-          <p className="small" style={{ color: "var(--muted)", marginTop: 14, marginBottom: 0, lineHeight: 1.55 }}>
-            No payment, no contract—just a serious preview request. I&apos;ll follow up with your direction so you can
-            decide what&apos;s next.
+          <p className="free-mockup-submit-foot">
+            No payment, no contract — just a serious preview request.
           </p>
         </div>
 
         <div className="free-mockup-funnel-preview free-mockup-preview-stack flex min-h-0 flex-col">
           <div className="free-mockup-preview-star-label">
-            <p className="free-mockup-preview-star-kicker">Your preview builds here</p>
-            <p className="free-mockup-preview-star-sub">
-              This is the kind of direction you&apos;ll get—clear, professional, built around calls and trust.
-            </p>
+            <p className="free-mockup-preview-star-kicker">Live preview</p>
+            <p className="free-mockup-preview-star-sub">Your homepage direction builds here as you type</p>
             <p className="free-mockup-preview-star-hint">
-              As you fill out the form, you&apos;ll see the direction start to take shape.
+              Pick a design direction and fill in the basics to unlock the full interactive sample below.
             </p>
           </div>
           <div className="free-mockup-preview-frame">

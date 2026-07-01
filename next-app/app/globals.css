@@ -3094,6 +3094,333 @@ a.sample-contact-v:hover {
   }
 }
 
+/* Free mockup page — marketing sections */
+.free-mockup-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.free-mockup-hero-badges li {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.free-mockup-step-grid {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .free-mockup-step-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+.free-mockup-step-card {
+  position: relative;
+  min-height: 100%;
+}
+
+.free-mockup-step-card-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #f0c49a;
+}
+
+.free-mockup-trust-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .free-mockup-trust-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+.free-mockup-trust-card {
+  min-height: 100%;
+}
+
+.free-mockup-faq-grid {
+  display: grid;
+  gap: 0.85rem 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .free-mockup-faq-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.free-mockup-faq-item {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.free-mockup-faq-dot {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 700;
+}
+
+/* Funnel — progress + form polish */
+.free-mockup-freshcut-note {
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(63, 90, 71, 0.16);
+  background: rgba(63, 90, 71, 0.05);
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.free-mockup-progress {
+  margin-bottom: clamp(1.25rem, 3vw, 1.75rem);
+  padding-bottom: clamp(1rem, 2.5vw, 1.35rem);
+  border-bottom: 1px solid rgba(63, 90, 71, 0.1);
+}
+
+.free-mockup-progress-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(63, 90, 71, 0.1);
+  overflow: hidden;
+}
+
+.free-mockup-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3f5a47, #b85c1e);
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.free-mockup-progress-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+}
+
+.free-mockup-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.35rem 0.15rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pub-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.free-mockup-progress-step:hover {
+  background: rgba(63, 90, 71, 0.06);
+  color: var(--pub-fg-heading);
+}
+
+.free-mockup-progress-step--active {
+  color: var(--pub-fg-heading);
+}
+
+.free-mockup-progress-step--done {
+  color: #3f5a47;
+}
+
+.free-mockup-progress-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(63, 90, 71, 0.22);
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.6875rem;
+  font-weight: 800;
+}
+
+.free-mockup-progress-step--done .free-mockup-progress-step-num {
+  border-color: rgba(63, 90, 71, 0.45);
+  background: rgba(63, 90, 71, 0.12);
+  color: #2f4a38;
+}
+
+.free-mockup-progress-step--active .free-mockup-progress-step-num {
+  border-color: rgba(184, 92, 30, 0.55);
+  box-shadow: 0 0 0 3px rgba(184, 92, 30, 0.12);
+}
+
+.free-mockup-progress-hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--pub-muted);
+  text-align: center;
+}
+
+.free-mockup-form-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+}
+
+.free-mockup-form-section-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.free-mockup-form-section-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.free-mockup-submit-note {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(63, 90, 71, 0.12);
+  background: rgba(63, 90, 71, 0.04);
+}
+
+.free-mockup-submit-note p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.free-mockup-form-error {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #dc2626;
+}
+
+.free-mockup-submit-foot {
+  margin: 0.9rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Success state */
+.free-mockup-success-wrap {
+  padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(4rem, 8vw, 5rem);
+  background: transparent;
+}
+
+.free-mockup-success {
+  max-width: 40rem;
+}
+
+.free-mockup-success-card {
+  border-radius: 22px !important;
+}
+
+.free-mockup-success-eyebrow {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.free-mockup-success-title {
+  margin: 0.75rem 0 0;
+  font-size: clamp(1.5rem, 3vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.free-mockup-success-lead {
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.free-mockup-success-timing {
+  margin: 0.75rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #f0c49a;
+}
+
+.free-mockup-success-note {
+  margin: 1rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.free-mockup-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.free-mockup-success-foot {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+}
+
 .sample-site-nav {
   position: sticky;
   top: 0;
