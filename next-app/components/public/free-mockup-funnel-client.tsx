@@ -515,7 +515,7 @@ export function FreeMockupFunnelClient({
             <p className="free-mockup-success-note">
               {confirmationEmailSent
                 ? "Check your inbox for a quick confirmation email. Your live preview link is below whenever you want it."
-                : "Your live preview link is below whenever you want it."}
+                : "Your request is saved. If you don't see a confirmation email in a few minutes, reach out at Topher@mixedmakershop.com — your preview link is below."}
             </p>
             {savedUrl ? (
               <div className="free-mockup-success-actions">

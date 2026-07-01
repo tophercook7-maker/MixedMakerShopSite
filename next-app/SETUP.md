@@ -35,21 +35,51 @@ npm run dev
 - Admin: [http://localhost:3000/admin](http://localhost:3000/admin) (redirects to login if not authenticated)
 - Login: [http://localhost:3000/auth/login](http://localhost:3000/auth/login)
 
-## Netlify deploy
+## Production deploy (Vercel)
 
-1. Connect the repo to Netlify and set the base directory to `next-app` (or the folder that contains `package.json` and `next.config.*`).
-2. Build command: `npm run build` (or `npx next build`).
-3. Publish directory: `.next` is not used as publish dir; use **Next.js** runtime so Netlify runs `next build` and serves via Netlify’s Next.js support.
-4. In Netlify → Site settings → Environment variables, add:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-5. In Supabase → Authentication → URL configuration, set Site URL to your Netlify URL and add the Netlify deploy URL (e.g. `https://your-site.netlify.app`) to Redirect URLs for auth callbacks.
+**mixedmakershop.com runs on Vercel.** Netlify Forms notifications do **not** apply — form submissions hit Next.js API routes and email goes through **Resend**.
+
+### Required Vercel environment variables
+
+In Vercel → Project → Settings → Environment Variables (Production):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Email (free preview, contact, print quotes, lead alerts)
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=MixedMakerShop <notifications@yourdomain.com>
+LEAD_NOTIFY_EMAIL=Topher@mixedmakershop.com
+```
+
+- **RESEND_API_KEY** — from [resend.com](https://resend.com). A historical typo `RESEND_AQPI_KEY` is also accepted as fallback.
+- **RESEND_FROM_EMAIL** — must use a **verified domain** in Resend (not an unverified address).
+- **LEAD_NOTIFY_EMAIL** — where you receive new lead / free-preview alerts.
+
+### How free preview submissions work
+
+| Step | What happens |
+|------|----------------|
+| User submits `/free-mockup` | `POST /api/public/website-mockup` |
+| Data saved | Supabase `mockup_submissions`, `leads`, `crm_mockups` |
+| Email to submitter | Resend confirmation (`sendMockupRequestConfirmationEmail`) |
+| Email to you | Resend lead notification (`sendLeadNotificationEmail` → `LEAD_NOTIFY_EMAIL`) |
+
+No `data-netlify` attributes — this is not Netlify Forms.
+
+### Supabase auth URLs (Vercel)
+
+In Supabase → Authentication → URL configuration, set Site URL to `https://mixedmakershop.com` and add your Vercel preview URLs to Redirect URLs if needed.
+
+## Netlify deploy (legacy)
+
+The repo still contains `netlify.toml` for an older deploy path. **Production is Vercel.** If you use Netlify for a preview branch only, copy the same environment variables there — Netlify Forms will still not power the Next.js funnel.
 
 ## Next upgrades after MVP
 
 - **Profile edit** — Allow owner to update name/email in `/admin/settings`.
-- **Email notifications** — Notify on new lead or form submission (e.g. Resend, SendGrid).
 - **Quote request form** — Public page + API route for `/api/forms/quote` (route exists; add a `/quote` or `/request-quote` page if desired).
 - **Connect success** — After “Contact Topher” or “Request a Website” from `/connect`, show a thank-you or redirect to contact success.
 - **Filter by client on projects/payments** — Use `?client=uuid` on admin projects/payments to pre-filter (links from client detail already use this; ensure query is applied in the page).
