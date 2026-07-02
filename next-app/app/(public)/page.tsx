@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/public/JsonLd";
 import { UmbrellaHomePage } from "@/components/public/UmbrellaHomePage";
 import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
+import { getHomeWebPageSchema } from "@/lib/structured-data";
 
 const canonical = SITE_URL;
 
@@ -42,5 +44,10 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <UmbrellaHomePage />;
+  return (
+    <>
+      <JsonLd data={getHomeWebPageSchema()} />
+      <UmbrellaHomePage />
+    </>
+  );
 }

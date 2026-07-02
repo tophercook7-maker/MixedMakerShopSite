@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/public/JsonLd";
 import {
   mmsH2OnGlass,
   mmsOnGlassSecondary,
@@ -6,6 +7,8 @@ import {
   mmsUmbrellaSectionBackdrop,
 } from "@/lib/mms-umbrella-ui";
 import { publicShellClass } from "@/lib/public-brand";
+import { SITE_URL } from "@/lib/site";
+import { buildFaqSchema } from "@/lib/structured-data";
 import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import { cn } from "@/lib/utils";
 
@@ -33,11 +36,37 @@ const faqs: { q: string; a: string }[] = [
     q: "Who is MixedMakerShop for?",
     a: "Local owners who want practical help, remote-friendly projects nationwide, and anyone who benefits from clear websites, simple tools, real-world builds, and honest communication with the people doing the work.",
   },
+  {
+    q: "Do you build websites for small businesses in Hot Springs, Arkansas?",
+    a: "Yes. MixedMakerShop builds practical, mobile-friendly websites for small businesses in Hot Springs and the surrounding Central Arkansas area, including service businesses, shops, churches, creators, and local contractors.",
+  },
+  {
+    q: "Can you help with Google Business Profile and local SEO?",
+    a: "Yes. MixedMakerShop helps local businesses improve their Google presence with better website structure, local service pages, Google Business Profile cleanup, review links, and search-friendly content.",
+  },
+  {
+    q: "Do you offer 3D printing services?",
+    a: "Yes. MixedMakerShop offers 3D printing for replacement parts, functional prints, prototypes, custom solutions, and small-run local projects.",
+  },
+  {
+    q: "Do you work with businesses outside Hot Springs?",
+    a: "Yes. MixedMakerShop primarily serves Hot Springs, Garland County, Benton, Malvern, Lonsdale, and Central Arkansas, but can also help remote clients when the project is a good fit.",
+  },
+  {
+    q: "How do I get started?",
+    a: "You can contact MixedMakerShop through the website, call 501-488-1253, or request a free mockup or estimate for your website, 3D printing, or local business project.",
+  },
 ];
+
+const faqSchema = buildFaqSchema(
+  faqs.map((item) => ({ question: item.q, answer: item.a })),
+  SITE_URL,
+);
 
 export function MixedMakerBrandFaq() {
   return (
     <section className={cn(backdrop, "max-md:bg-[#111510]")} id="faq">
+      <JsonLd data={faqSchema} />
       <div className={cn(shell, mmsSectionY)}>
         <div className="public-glass-box public-glass-box--pad max-w-3xl">
           <p className={mmsSectionEyebrowOnGlass}>Questions &amp; answers</p>
