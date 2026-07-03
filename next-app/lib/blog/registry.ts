@@ -1,3 +1,5 @@
+import { MD_POSTS } from "@/lib/blog/md-posts.generated";
+
 /** Published and upcoming blog posts shown on `/blog`. */
 export type BlogIndexPost = {
   slug: string;
@@ -364,9 +366,11 @@ const posts: BlogIndexPost[] = [
 ];
 
 /** All blog posts for the index (newest `publishedAt` first). */
-export const BLOG_POSTS: readonly BlogIndexPost[] = [...posts].sort(
-  (a, b) => b.publishedAt.localeCompare(a.publishedAt),
-);
+export const BLOG_POSTS: readonly BlogIndexPost[] = [
+  ...posts,
+  // Markdown posts published via BlogForge — hand-written TSX posts win on slug collision.
+  ...MD_POSTS.filter((md) => !posts.some((p) => p.slug === md.slug)),
+].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
 /** @deprecated Use `BLOG_POSTS.find((p) => p.featured)` — kept for article metadata parity. */
 export const FEATURED_BLOG_POST: BlogIndexPost =
