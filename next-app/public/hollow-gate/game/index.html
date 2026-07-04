@@ -21,11 +21,12 @@
   .hud{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;font-size:.85rem;color:var(--muted)}
   .hud b{color:var(--ink)}
   .choices{display:flex;flex-direction:column;gap:.65rem}
-  button{background:#201a14;color:#f6ead1;border:1px solid #3a3128;border-radius:10px;padding:.9rem 1.1rem;text-align:left;cursor:pointer;font:inherit;transition:transform .05s ease,background .2s ease}
-  button:hover{background:#2a221a;border-color:#4d3f33}
-  button:active{transform:translateY(1px)}
-  button.primary{background:#2a2214;border-color:#6d5620;color:#ffe08a}
-  button.primary::before{content:"▸ ";color:var(--accent)}
+  button,a.primary{background:#201a14;color:#f6ead1;border:1px solid #3a3128;border-radius:10px;padding:.9rem 1.1rem;text-align:left;cursor:pointer;font:inherit;transition:transform .05s ease,background .2s ease}
+  button:hover,a.primary:hover{background:#2a221a;border-color:#4d3f33}
+  button:active,a.primary:active{transform:translateY(1px)}
+  button.primary,a.primary{background:#2a2214;border-color:#6d5620;color:#ffe08a}
+  button.primary::before,a.primary::before{content:"▸ ";color:var(--accent)}
+  a.primary:visited{color:#ffe08a}
   .toolbar{display:flex;gap:.6rem;justify-content:flex-end}
   .toolbar button{padding:.5rem .8rem;font-size:.8rem;border-radius:8px}
   footer{text-align:center;color:#5c564a;font-size:.75rem;margin-top:.5rem}
