@@ -16,5 +16,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-07-03",
     href: "/blog/local-seo-for-roofers-hot-springs",
   },
+  {
+    slug: "local-seo-for-hot-springs-pest-control-companies",
+    title: "Local SEO for Hot Springs Pest Control Companies to Be First Call When Termites Strike",
+    category: "Local SEO",
+    excerpt: "Pest control companies in Hot Springs need local SEO to appear first when homeowners find termites at 2 AM.",
+    readTime: "4 min read",
+    readMinutes: 4,
+    publishedAt: "2026-07-03",
+    href: "/blog/local-seo-for-hot-springs-pest-control-companies",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
