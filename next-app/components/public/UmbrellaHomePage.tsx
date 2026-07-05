@@ -694,6 +694,32 @@ export function UmbrellaHomePage() {
           </div>
         </section>
 
+        <section className={cn(homeBackdrop, "max-md:bg-[#111510]")} id="pop-out-ads">
+          <div className={cn(shell, mmsSectionY)}>
+            <div className="public-glass-box public-glass-box--pad max-w-3xl">
+              <p className={mmsSectionEyebrowOnGlass}>Mixed Maker Labs &middot; pop-out video ads</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Scroll-stopping pop-out video ads</h2>
+              <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
+                We turn a flat business image into a cinematic pop-out video &mdash; watch a real squirrel tear
+                right through the page below. Perfect motion for a website hero or a scroll-stopping social post.
+              </p>
+            </div>
+            <div className="mt-8 overflow-hidden rounded-2xl border border-white/12">
+              <video
+                src="/videos/squirrel-breakout.mp4"
+                poster="/videos/squirrel-breakout-poster.jpg"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                aria-label="A real squirrel tearing through the Mixed Maker Shop homepage"
+                className="block h-auto w-full"
+              />
+            </div>
+          </div>
+        </section>
+
         <MixedMakerBrandFaq />
 
         <section
