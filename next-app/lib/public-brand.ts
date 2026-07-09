@@ -18,6 +18,13 @@ export const publicTopherPhoneE164 = "+15014881253";
 export const publicTopherPhoneTel = `tel:${publicTopherPhoneE164}`;
 export const publicTopherTextHref = `sms:${publicTopherPhoneE164}`;
 
+/** Direct cell — used on the tap card so taps reach Topher's personal line (E.164: +15015758017). */
+export const publicTopherCellDisplay = "501-575-8017";
+export const publicTopherCellDigits = "5015758017";
+export const publicTopherCellE164 = "+15015758017";
+export const publicTopherCellTel = `tel:${publicTopherCellE164}`;
+export const publicTopherCellTextHref = `sms:${publicTopherCellE164}`;
+
 /**
  * Free mockup funnel anchor — use for CTAs already on `/free-mockup` (same-page scroll to intake).
  * For links from any other route, footer, or shareable URLs, use `publicFreeMockupFunnelHref` instead.
