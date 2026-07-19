@@ -86,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <meta name="impact-site-verification" value="f5fa9ac1-2483-4f81-a0aa-be297f29cc69" />
+        <meta name="impact-site-verification" {...({ value: "f5fa9ac1-2483-4f81-a0aa-be297f29cc69" } as Record<string, string>)} />
         <link
           rel="alternate"
           type="text/plain"
