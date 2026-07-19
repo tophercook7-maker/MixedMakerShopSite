@@ -26,5 +26,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-07-03",
     href: "/blog/local-seo-for-hot-springs-pest-control-companies",
   },
+  {
+    slug: "invest-in-your-life-top-high-impact-home-hobby-upgrades",
+    title: "Invest in Your Life: Top High-Impact Home & Hobby Upgrades",
+    category: "Gear",
+    excerpt: "Every DIY project or home renovation starts with a vision\u2014and the right tools are crucial to bringing it to life. However, when upgrading your workspace\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-07-18",
+    href: "/blog/invest-in-your-life-top-high-impact-home-hobby-upgrades",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
