@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-18 20:23",
+  "generated": "2026-07-18 20:35",
   "products": [
     {
       "id": "sunhome-luminar",
@@ -503,6 +503,146 @@
         "griddle",
         "outdoor cooking",
         "backyard"
+      ]
+    },
+    {
+      "id": "polymaker-dryer",
+      "title": "Polymaker PolyDryer Filament Dry Box",
+      "niche": "Accessories",
+      "price": 60,
+      "payout": 6.0,
+      "copy": "Premium accessories that pays you back every day you own it. The Polymaker PolyDryer Filament Dry Box is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://us.polymaker.com/products/polydryer",
+      "image": "",
+      "tags": [
+        "dry box",
+        "accessory",
+        "filament care"
+      ]
+    },
+    {
+      "id": "elegoo-resin-standard",
+      "title": "ELEGOO Standard Resin 1kg (Water Washable)",
+      "niche": "Filament",
+      "price": 30,
+      "payout": 2.4,
+      "copy": "Premium filament that pays you back every day you own it. The ELEGOO Standard Resin 1kg (Water Washable) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://www.elegoo.com/products/elegoo-water-washable-resin",
+      "image": "",
+      "tags": [
+        "resin",
+        "consumable",
+        "recurring"
+      ]
+    },
+    {
+      "id": "polyterra-pla",
+      "title": "Polymaker PolyTerra PLA Filament (1kg)",
+      "niche": "Filament",
+      "price": 23,
+      "payout": 2.3,
+      "copy": "Premium filament that pays you back every day you own it. The Polymaker PolyTerra PLA Filament (1kg) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://us.polymaker.com/products/polyterra-pla",
+      "image": "",
+      "tags": [
+        "filament",
+        "pla",
+        "matte",
+        "eco"
+      ]
+    },
+    {
+      "id": "bambu-pei-plate",
+      "title": "Bambu Lab Textured PEI Build Plate",
+      "niche": "Accessories",
+      "price": 40,
+      "payout": 2.0,
+      "copy": "Premium accessories that pays you back every day you own it. The Bambu Lab Textured PEI Build Plate is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://us.store.bambulab.com/products/textured-pei-plate",
+      "image": "",
+      "tags": [
+        "build plate",
+        "accessory",
+        "upgrade"
+      ]
+    },
+    {
+      "id": "matterhackers-build-pla",
+      "title": "MatterHackers Build Series PLA (1kg)",
+      "niche": "Filament",
+      "price": 23,
+      "payout": 1.84,
+      "copy": "Premium filament that pays you back every day you own it. The MatterHackers Build Series PLA (1kg) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://www.matterhackers.com/store/l/175mm-pla-filament-white/sk/M8FKTGDR",
+      "image": "",
+      "tags": [
+        "filament",
+        "pla",
+        "value",
+        "recurring"
+      ]
+    },
+    {
+      "id": "prusament-pla",
+      "title": "Prusament PLA Filament (1kg)",
+      "niche": "Filament",
+      "price": 30,
+      "payout": 1.5,
+      "copy": "Premium filament that pays you back every day you own it. The Prusament PLA Filament (1kg) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://www.prusa3d.com/product/prusament-pla-prusa-galaxy-black-1kg/",
+      "image": "",
+      "tags": [
+        "filament",
+        "pla",
+        "premium",
+        "recurring"
+      ]
+    },
+    {
+      "id": "overture-pla",
+      "title": "OVERTURE PLA Filament 2-Pack (2kg)",
+      "niche": "Filament",
+      "price": 34,
+      "payout": 1.36,
+      "copy": "Premium filament that pays you back every day you own it. The OVERTURE PLA Filament 2-Pack (2kg) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://www.amazon.com/dp/B07PGZNM34",
+      "image": "",
+      "tags": [
+        "filament",
+        "pla",
+        "value",
+        "amazon"
+      ]
+    },
+    {
+      "id": "bambu-pla-basic",
+      "title": "Bambu Lab PLA Basic Filament (1kg)",
+      "niche": "Filament",
+      "price": 25,
+      "payout": 1.25,
+      "copy": "Premium filament that pays you back every day you own it. The Bambu Lab PLA Basic Filament (1kg) is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://us.store.bambulab.com/products/pla-basic-filament",
+      "image": "",
+      "tags": [
+        "filament",
+        "pla",
+        "consumable",
+        "recurring"
+      ]
+    },
+    {
+      "id": "gizmo-nozzle-kit",
+      "title": "Hardened Steel Nozzle Assortment Kit",
+      "niche": "Accessories",
+      "price": 28,
+      "payout": 1.12,
+      "copy": "Premium accessories that pays you back every day you own it. The Hardened Steel Nozzle Assortment Kit is the splurge people research for months \u2014 put it in front of them.",
+      "link": "https://www.amazon.com/s?k=hardened+steel+3d+printer+nozzle+kit",
+      "image": "",
+      "tags": [
+        "nozzles",
+        "accessory",
+        "upgrade"
       ]
     }
   ]
