@@ -36,5 +36,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-07-18",
     href: "/blog/invest-in-your-life-top-high-impact-home-hobby-upgrades",
   },
+  {
+    slug: "upgrade-your-life-big-ticket-home-gear-worth-the-splurge",
+    title: "Upgrade Your Life: Big-Ticket Home Gear Worth the Splurge",
+    category: "Gear",
+    excerpt: "When it comes to home projects, the right tools make all the difference between a headache and a satisfying weekend build. For those who treat their\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-07-20",
+    href: "/blog/upgrade-your-life-big-ticket-home-gear-worth-the-splurge",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
