@@ -46,5 +46,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-07-20",
     href: "/blog/upgrade-your-life-big-ticket-home-gear-worth-the-splurge",
   },
+  {
+    slug: "hot-springs-ai-customer-questions",
+    title: "How Hot Springs Business Owners Can Use AI to Handle Customer Questions Without Hiring a Receptionist",
+    category: "Local SEO",
+    excerpt: "Too busy to answer every call and message? Here's how a simple, custom AI helper bot can act as your digital front desk — answering questions, booking jobs, and capturing leads while you work.",
+    readTime: "6 min read",
+    readMinutes: 6,
+    publishedAt: "2026-07-24",
+    href: "/blog/hot-springs-ai-customer-questions",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
