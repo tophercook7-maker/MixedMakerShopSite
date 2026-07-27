@@ -23,6 +23,7 @@ const navItems: {
   { href: "/examples", label: "Examples" },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/pay", label: "Pay" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
