@@ -18,12 +18,12 @@ const AREA_SERVED = [
 export const metadata: Metadata = {
   title: "Website Maintenance for Small Businesses | MixedMakerShop",
   description:
-    "Done-for-you website maintenance in Hot Springs, AR — content edits, security updates, off-site backups, bug fixes, and uptime monitoring from $89/mo. Text Topher; it gets done.",
+    "Done-for-you website maintenance in Hot Springs, AR — content edits, security updates, off-site backups, bug fixes, and uptime monitoring from $25/mo. Text Topher; it gets done.",
   alternates: { canonical },
   openGraph: {
     title: "Website Maintenance for Small Businesses | MixedMakerShop",
     description:
-      "Keep your website current, secure, and fast — month-to-month maintenance with a direct line to Topher. From $89/mo.",
+      "Keep your website current, secure, and fast — month-to-month maintenance with a direct line to Topher. From $25/mo.",
     url: canonical,
     type: "website",
   },
@@ -147,7 +147,7 @@ const relatedServices = [
     href: "/pricing",
     badge: "Pricing",
     title: "Pricing",
-    copy: "Hosting & support from $89/mo, plus the full breakdown of every service.",
+    copy: "Hosting & support from $25/mo, plus the full breakdown of every service.",
   },
   {
     href: "/ai-business-tools",
@@ -163,7 +163,7 @@ const serviceSchema = {
   serviceType: "Website Maintenance",
   name: "Website Maintenance for Small Businesses | MixedMakerShop",
   description:
-    "Done-for-you website maintenance — content edits, security updates, off-site backups, bug fixes, and uptime monitoring. Month-to-month from $89/mo.",
+    "Done-for-you website maintenance — content edits, security updates, off-site backups, bug fixes, and uptime monitoring. Month-to-month from $25/mo.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -180,7 +180,7 @@ const serviceSchema = {
   offers: {
     "@type": "Offer",
     name: "Hosting & Support",
-    price: "89",
+    price: "25",
     priceCurrency: "USD",
     description: "Monthly website maintenance, hosting, backups, monitoring, and content edits.",
   },

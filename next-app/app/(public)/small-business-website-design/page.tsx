@@ -144,7 +144,7 @@ const relatedServices = [
     href: "/website-maintenance",
     badge: "Ongoing",
     title: "Website Maintenance",
-    copy: "Monthly edits, updates, backups, and fixes from $89/mo — text Topher and it gets done.",
+    copy: "Monthly edits, updates, backups, and fixes from $25/mo — text Topher and it gets done.",
   },
   {
     href: "/pricing",

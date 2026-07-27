@@ -142,7 +142,7 @@ const relatedServices = [
     href: "/pricing",
     badge: "Ongoing",
     title: "Hosting & Maintenance",
-    copy: "Monthly edits, updates, backups, and fixes for $89/mo — text Topher and it gets done.",
+    copy: "Monthly edits, updates, backups, and fixes for $25/mo — text Topher and it gets done.",
   },
   {
     href: "/in-home-computer-repair",

@@ -25,7 +25,7 @@ const canonical = "https://mixedmakershop.com/pricing";
 export const metadata: Metadata = {
   title: "Web Design Pricing | MixedMakerShop",
   description:
-    "Simple pricing with no surprises — Starter SEO Site starting at $400, Hosting & Support $89/mo, Growth $900–$1,800, and custom quotes.",
+    "Simple pricing with no surprises — Starter SEO Site starting at $400, Hosting & Support $25/mo, Growth $900–$1,800, and custom quotes.",
   alternates: { canonical },
   openGraph: {
     title: "Web design pricing | MixedMakerShop",
@@ -48,7 +48,7 @@ const pricingSchema = {
   serviceType: "Web Design",
   name: "Web Design Pricing | MixedMakerShop",
   description:
-    "Simple, transparent web design pricing — Starter Setup from $400, Growth $900–$1,800, Custom quote, plus Hosting & Support from $89/mo.",
+    "Simple, transparent web design pricing — Starter Setup from $400, Growth $900–$1,800, Custom quote, plus Hosting & Support from $25/mo.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -69,7 +69,7 @@ const pricingSchema = {
       { "@type": "Offer", name: "Starter Setup", price: "400", priceCurrency: "USD" },
       { "@type": "Offer", name: "Growth Site ($900–$1,800)", price: "900", priceCurrency: "USD" },
       { "@type": "Offer", name: "Custom Build (quoted)", priceCurrency: "USD" },
-      { "@type": "Offer", name: "Hosting & Support (monthly)", price: "89", priceCurrency: "USD" },
+      { "@type": "Offer", name: "Hosting & Support (monthly)", price: "25", priceCurrency: "USD" },
     ],
   },
 };

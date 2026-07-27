@@ -74,7 +74,7 @@ const drivers = [
   {
     badge: "06 · Ongoing care",
     title: "Maintenance & hosting",
-    copy: "A site without maintenance ages quickly and gets hacked. $89/month for managed hosting, backups, security, and minor updates is the real cost.",
+    copy: "A site without maintenance ages quickly and gets hacked. $25/month for managed hosting, backups, security, and minor updates is the real cost.",
     link: { href: "/pricing", label: "the pricing page", prefix: "See " },
   },
 ] as const;
@@ -86,7 +86,7 @@ const faqs = [
   },
   {
     q: "Do I need hosting?",
-    a: "Yes. Hosting is what keeps a website online. You can host on a shared $5–10/month service if you don't mind managing it yourself, or pay for managed hosting that includes backups, monitoring, and support. MixedMakerShop's $89/month hosting & support plan covers backups, updates, monitoring, and minor content edits.",
+    a: "Yes. Hosting is what keeps a website online. You can host on a shared $5–10/month service if you don't mind managing it yourself, or pay for managed hosting that includes backups, monitoring, and support. MixedMakerShop's $25/month hosting & support plan covers backups, updates, monitoring, and minor content edits.",
   },
   {
     q: "What do you actually need from me to start?",
@@ -94,7 +94,7 @@ const faqs = [
   },
   {
     q: "Can I update my website later without calling someone?",
-    a: "Yes. We set up a simple admin so you can edit text, swap photos, change hours, and add pages. If you'd rather just text us and have it done, monthly maintenance plans handle that for $89/month.",
+    a: "Yes. We set up a simple admin so you can edit text, swap photos, change hours, and add pages. If you'd rather just text us and have it done, monthly maintenance plans handle that for $25/month.",
   },
   {
     q: "Do you build online stores?",
@@ -287,7 +287,7 @@ export default function HowMuchDoesAWebsiteCostPage() {
                 <strong>Domain renewal</strong> — $12–$20 per year forever. Mandatory. Don&apos;t let it expire.
               </li>
               <li>
-                <strong>Hosting</strong> — minimum $5–10/month for the cheapest shared plan, $89/month for managed
+                <strong>Hosting</strong> — minimum $5–10/month for the cheapest shared plan, $25/month for managed
                 hosting that includes the work to keep it secure and current.
               </li>
               <li>
@@ -315,7 +315,7 @@ export default function HowMuchDoesAWebsiteCostPage() {
               How MixedMakerShop prices
             </h2>
             <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
-              We sit at the bottom of Tier 3 — between $400 and $1,800 for the build, plus $89/month for ongoing care.
+              We sit at the bottom of Tier 3 — between $400 and $1,800 for the build, plus $25/month for ongoing care.
               Three reasons we can stay this low:
             </p>
             <ul className="small" style={{ margin: "0 0 16px 18px", color: "var(--muted)", lineHeight: 1.8 }}>

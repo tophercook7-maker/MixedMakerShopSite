@@ -55,7 +55,7 @@ const GROUPS: Group[] = [
       {
         item: "Hosting & Support",
         what: "Secure hosting, off-site backups, monitoring, minor content updates, direct support. Month-to-month, cancel anytime.",
-        price: "$89/mo",
+        price: "$25/mo",
       },
       {
         item: "Church Care Plan",
