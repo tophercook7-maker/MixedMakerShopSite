@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: MixedMakerShop
+  version: "1.0.0"
+  description: >
+    MixedMakerShop is a web design and media studio in Hot Springs, Arkansas.
+    This is a marketing site; it exposes no public data API and requires no
+    authentication. To start a project, request a free website preview, or ask a
+    question, use the contact page. Custom websites start at $150, with $25/month
+    for hosting and edits. Audiobooks and short promo videos are also offered.
+  contact:
+    name: Topher — MixedMakerShop
+    url: https://mixedmakershop.com/contact
+    email: topher.cook7@gmail.com
+servers:
+  - url: https://mixedmakershop.com
+paths:
+  /contact:
+    get:
+      summary: Contact and start a project
+      description: >
+        Human-facing page to request a free homepage preview, get a quote, or ask
+        about websites, audiobooks, and video.
+      responses:
+        "200":
+          description: The contact page (HTML).
+  /:
+    get:
+      summary: Home
+      description: MixedMakerShop home page, services, pricing, and examples.
+      responses:
+        "200":
+          description: The home page (HTML).

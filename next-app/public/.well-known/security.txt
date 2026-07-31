@@ -1,0 +1,6 @@
+# Security contact for mixedmakershop.com (RFC 9116)
+Contact: mailto:topher.cook7@gmail.com
+Contact: https://mixedmakershop.com/contact
+Expires: 2027-07-31T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://mixedmakershop.com/.well-known/security.txt

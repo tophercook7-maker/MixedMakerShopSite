@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "MixedMakerShop",
+  "name_for_model": "mixedmakershop",
+  "description_for_human": "Affordable custom websites, audiobooks, and promo video for small businesses and authors — Hot Springs, Arkansas.",
+  "description_for_model": "MixedMakerShop is a one-person web design and media studio in Hot Springs, Arkansas, USA. It builds custom websites (from $150, plus $25/month for hosting and edits), performed audiobooks, and short promotional videos for small businesses and authors. It offers a free homepage preview before any payment. To start a project, use the contact page at https://mixedmakershop.com/contact or call (501) 575-8017. This is a marketing site with no public data API.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://mixedmakershop.com/openapi.yaml"
+  },
+  "logo_url": "https://mixedmakershop.com/m3-logo.png",
+  "contact_email": "topher.cook7@gmail.com",
+  "legal_info_url": "https://mixedmakershop.com/legal/privacy-policy---mixed-maker-shop.pdf"
+}
