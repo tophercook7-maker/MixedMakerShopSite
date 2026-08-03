@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>I'm the glue — bring me your unfinished thing</title>
+<meta name="description" content="You've got something unfinished — a manuscript, your dad's letters, a business with a website from 2011. I finish things. Prices posted. I'll show you a piece of it free before you decide anything.">
+<style>
+  :root{
+    --ink:#17181c; --paper:#f7f5f0; --dim:#6b6c74;
+    --rule:#dcd8ce; --warm:#8a5a2b; --deep:#2a2c33;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font:400 19px/1.62 Georgia,'Iowan Old Style',serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:0 26px}
+  header{padding:96px 0 0}
+  h1{
+    font-size:clamp(44px,9vw,74px); line-height:.98; letter-spacing:-.028em;
+    font-weight:400;
+  }
+  h1 em{font-style:italic;color:var(--warm)}
+  .kicker{
+    font:600 13px/1 system-ui,sans-serif; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:26px;
+  }
+  .lede{font-size:23px;line-height:1.5;margin-top:30px;color:var(--deep)}
+  .lede strong{font-weight:400;box-shadow:inset 0 -.42em 0 rgba(138,90,43,.16)}
+
+  hr{border:0;border-top:1px solid var(--rule);margin:64px 0}
+
+  h2{
+    font:600 13px/1 system-ui,sans-serif; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:24px;
+  }
+  p{margin-bottom:20px}
+  .pile{margin:0 0 26px;padding:0;list-style:none}
+  .pile li{
+    padding:13px 0 13px 30px; border-bottom:1px solid var(--rule);
+    position:relative; color:var(--deep);
+  }
+  .pile li:before{
+    content:''; position:absolute; left:6px; top:24px;
+    width:7px;height:7px;border-radius:50%;background:var(--warm);opacity:.5;
+  }
+
+  .price{width:100%;border-collapse:collapse;margin:8px 0 6px}
+  .price td{padding:15px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  .price td:last-child{
+    text-align:right;white-space:nowrap;padding-left:20px;
+    font:600 17px/1.5 system-ui,sans-serif;
+  }
+  .price .what{display:block}
+  .price .note{display:block;font-size:15px;color:var(--dim);margin-top:3px}
+
+  .ask{
+    background:#fff;border:1px solid var(--rule);border-radius:3px;
+    padding:36px 34px;margin:44px 0 0;
+  }
+  .ask h3{font-size:27px;font-weight:400;letter-spacing:-.01em;margin-bottom:14px}
+  .mail{
+    display:inline-block;margin-top:12px;font:600 19px/1 system-ui,sans-serif;
+    color:var(--warm);text-decoration:none;
+    border-bottom:2px solid rgba(138,90,43,.3);padding-bottom:4px;
+  }
+  .mail:hover{border-bottom-color:var(--warm)}
+  .small{font-size:16px;color:var(--dim)}
+
+  footer{padding:60px 0 90px;color:var(--dim);font-size:16px}
+  footer a{color:var(--dim)}
+  @media(max-width:560px){
+    body{font-size:18px}
+    header{padding-top:62px}
+    .ask{padding:28px 22px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Hot Springs, Arkansas</div>
+    <h1>I'm the <em>glue</em>.</h1>
+    <p class="lede">You've got something unfinished. <strong>I finish things.</strong></p>
+  </header>
+
+  <hr>
+
+  <p>Most people carrying something unfinished aren't missing talent. They're missing
+  the one person who can hold all the pieces together at once — the cover
+  <em>and</em> the words <em>and</em> the audio <em>and</em> the page it lives on.</p>
+
+  <p>Agencies quote ten thousand dollars for that because it used to take eleven people.
+  It doesn't anymore. It takes one who knows what he's doing and won't quit halfway.</p>
+
+  <hr>
+
+  <h2>What people bring me</h2>
+  <ul class="pile">
+    <li>A manuscript that's been in a drawer for six years</li>
+    <li>A parent's letters, journals, or handwriting nobody's read since they passed</li>
+    <li>A book that's published and completely invisible</li>
+    <li>A business with a website from 2011 and no idea where to start</li>
+    <li>An idea they've carried a decade and never once said out loud</li>
+  </ul>
+  <p class="small">If it's in pieces, it's the right kind of thing.</p>
+
+  <hr>
+
+  <h2>What it costs</h2>
+  <table class="price">
+    <tr>
+      <td><span class="what">Book trailer</span>
+          <span class="note">Cinematic, narrated, scored. Vertical and widescreen.</span></td>
+      <td>$79</td>
+    </tr>
+    <tr>
+      <td><span class="what">Audiobook</span>
+          <span class="note">Performed, not robot-read. Mastered to store spec.</span></td>
+      <td>$250</td>
+    </tr>
+    <tr>
+      <td><span class="what">One-page website</span>
+          <span class="note">Built for you. Not a template.</span></td>
+      <td>$150</td>
+    </tr>
+    <tr>
+      <td><span class="what">Full custom site</span>
+          <span class="note">Written, designed and built from scratch.</span></td>
+      <td>$450</td>
+    </tr>
+    <tr>
+      <td><span class="what">The whole thing, finished</span>
+          <span class="note">Manuscript to published — cover, book, audio, trailer, page.</span></td>
+      <td>Let's talk</td>
+    </tr>
+  </table>
+  <p class="small">That's the real price. There's no call where I find out what you can
+  afford first and then tell you the number.</p>
+
+  <hr>
+
+  <h2>Before you pay anything</h2>
+  <p>Send me the thing. I'll tell you honestly what it would take — including
+  <em>don't bother</em>, if that's the truth — and I'll build you one real piece of it
+  free so you can see the quality with your own eyes instead of taking my word for it.</p>
+  <p>No call required. No form asking your income. If the free piece isn't good,
+  you've lost an email.</p>
+
+  <div class="ask">
+    <h3>Send me your unfinished thing.</h3>
+    <p class="small">Tell me what it is and where it got stuck. That's all I need to start.</p>
+    <a class="mail" href="mailto:topher.cook7@gmail.com?subject=My%20unfinished%20thing">topher.cook7@gmail.com</a>
+  </div>
+
+  <hr>
+
+  <h2>Who I am</h2>
+  <p>Topher. I write under <strong>Topher Rent</strong> — nineteen books, seven apps on
+  the App Store, and more trailers and audiobooks than I've bothered to count. I work
+  out of my father's old room. I have MS, which is why I got good at holding things
+  together while coming apart.</p>
+  <p>I'm not going to tell you I'm rich from this. I'm telling you I finish what I start,
+  and that the price above is the price.</p>
+
+  <footer>
+    <a href="https://www.youtube.com/playlist?list=PLOd0_FpdgvGA">See the work →</a>
+  </footer>
+
+</div>
+</body>
+</html>

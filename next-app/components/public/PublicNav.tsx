@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { publicFreeMockupFunnelHref, publicTopherTextHref } from "@/lib/public-brand";
-import { LENDTRACK_FUNDING_PORTAL_PATH } from "@/lib/partners/registry";
 import { trackPublicEvent } from "@/lib/public-analytics";
 
 const navItems: {
@@ -37,7 +36,6 @@ export function PublicNav() {
   const [logoFailed, setLogoFailed] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
-  const loanActive = isNavActive(pathname, LENDTRACK_FUNDING_PORTAL_PATH);
 
   useEffect(() => {
     const toggle = toggleRef.current;
@@ -90,19 +88,6 @@ export function PublicNav() {
             </Link>
           ))}
           <span className="nav-cta-divider" aria-hidden="true" />
-          <Link
-            href={LENDTRACK_FUNDING_PORTAL_PATH}
-            className={cn("pill cta nav-cta-loan", loanActive && "pill--active")}
-            onClick={() =>
-              trackPublicEvent("public_partner_resource_click", {
-                location: "nav",
-                partner_id: "lendtrack-ai",
-                target: "get_a_loan_cta",
-              })
-            }
-          >
-            Get a Loan
-          </Link>
           <a
             href={publicTopherTextHref}
             className="pill cta"

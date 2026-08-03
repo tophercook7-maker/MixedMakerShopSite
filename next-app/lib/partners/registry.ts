@@ -11,21 +11,13 @@ export type PartnerResourceEntry = {
   disclosure: string;
 };
 
-export const PARTNER_RESOURCE_ENTRIES = [
-  {
-    id: "lendtrack-ai",
-    slug: "lendtrack-ai-funding-portal",
-    title: "LendTrack AI Funding Portal",
-    description:
-      "Need funding for the right project, business move, or opportunity? LendTrack AI helps connect qualified people with investors who are ready to fund the right deal.",
-    whoItHelps:
-      "Business owners, founders, and operators exploring funding for a specific project, expansion, or opportunity — not a generic loan tracker.",
-    buttonText: "Explore Funding Options",
-    href: "https://lendtrack.ai/partner/topher",
-    disclosure:
-      "This is a partner link. I may receive a referral payout when a completed transaction qualifies.",
-  },
-] as const satisfies readonly PartnerResourceEntry[];
+/**
+ * No partner/affiliate resources are listed. The LendTrack AI funding-portal
+ * referral was removed 2026-08-02 at Topher's request: we don't send people to
+ * a lender for a payout. The plumbing stays so a genuinely useful partner could
+ * be added later — but the bar is "I'd recommend this with no cut."
+ */
+export const PARTNER_RESOURCE_ENTRIES: readonly PartnerResourceEntry[] = [];
 
 const bySlug = new Map<string, PartnerResourceEntry>(
   PARTNER_RESOURCE_ENTRIES.map((entry) => [entry.slug, entry]),
@@ -46,6 +38,3 @@ export function getPartnerResourceById(id: string): PartnerResourceEntry | undef
 export function partnerResourcePath(slug: string): string {
   return `/resources/${slug}`;
 }
-
-/** Primary LendTrack partner page — linked from nav as “Get a Loan”. */
-export const LENDTRACK_FUNDING_PORTAL_PATH = partnerResourcePath(PARTNER_RESOURCE_ENTRIES[0].slug);

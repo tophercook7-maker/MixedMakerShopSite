@@ -33,7 +33,7 @@ export const THREE_D_SCENES: ThreeDScene[] = [
     handle: "@mixedmakershop",
     location: "Hot Springs, Arkansas",
     caption:
-      "💸 A website that pays for itself? That's the MixedMakerShop way. We build sites that actually bring in customers — and we can even help you Get a Loan to fund the build. One umbrella, every service. 🌂",
+      "💸 A website that pays for itself? That's the MixedMakerShop way. We build sites that actually bring in customers — real price, posted up front, no surprises. One umbrella, every service. 🌂",
     likes: 1243,
     comments: 86,
     shares: 41,

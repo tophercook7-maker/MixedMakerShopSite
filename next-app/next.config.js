@@ -86,6 +86,15 @@ const nextConfig = {
       { source: "/api/agent/unlock", destination: "/", statusCode: 302 },
     ];
   },
+  async rewrites() {
+    return [
+      // "I'm the glue" door page. Deliberately a hand-written standalone HTML file in
+      // public/glue/ rather than an app route: it must NOT inherit the site chrome
+      // (nav, footer, umbrella styling). Rewrite (200, not redirect) so the clean
+      // /glue URL serves it directly.
+      { source: "/glue", destination: "/glue/index.html" },
+    ];
+  },
   async headers() {
     // Security headers for app-rendered (dynamic/SSR) routes. The netlify.toml
     // header rules only reach static files, so dynamic pages (home,
