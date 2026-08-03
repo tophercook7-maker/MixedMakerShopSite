@@ -20,6 +20,7 @@ const navItems: {
   { href: "/property-care", label: "Property Care" },
   { href: "/idea-lab", label: "Idea Lab" },
   { href: "/examples", label: "Examples" },
+  { href: "/portfolio/index.html", label: "Portfolio", event: { name: "public_portfolio_click", props: { location: "nav" } } },
   { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
   { href: "/pay", label: "Pay" },

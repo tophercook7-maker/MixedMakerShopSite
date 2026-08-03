@@ -84,6 +84,9 @@ const nextConfig = {
       { source: "/downloads/autonomous-desktop-agent-appcast.json", destination: "/", statusCode: 302 },
       { source: "/api/agent/checkout", destination: "/", statusCode: 302 },
       { source: "/api/agent/unlock", destination: "/", statusCode: 302 },
+      // Clean /portfolio → the static portfolio index (a rewrite loops with the static
+      // directory's trailing-slash handling, so use a redirect instead).
+      { source: "/portfolio", destination: "/portfolio/index.html", statusCode: 301 },
     ];
   },
   async rewrites() {
@@ -95,8 +98,6 @@ const nextConfig = {
       { source: "/glue", destination: "/glue/index.html" },
       // "The work" proof page — same deal: standalone HTML in public/proof/, no chrome.
       { source: "/proof", destination: "/proof/index.html" },
-      // Portfolio — standalone HTML in public/portfolio/ (all books, covers, videos, apps).
-      { source: "/portfolio", destination: "/portfolio/index.html" },
     ];
   },
   async headers() {
