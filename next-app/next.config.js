@@ -93,6 +93,8 @@ const nextConfig = {
       // (nav, footer, umbrella styling). Rewrite (200, not redirect) so the clean
       // /glue URL serves it directly.
       { source: "/glue", destination: "/glue/index.html" },
+      // "The work" proof page — same deal: standalone HTML in public/proof/, no chrome.
+      { source: "/proof", destination: "/proof/index.html" },
     ];
   },
   async headers() {

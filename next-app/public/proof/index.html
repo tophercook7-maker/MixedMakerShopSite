@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The work — everything I've actually shipped</title>
+<meta name="description" content="Eighteen books on Amazon, six apps on the App Store, and the trailers and ads I've made. Every one of them links to the real listing. Nothing here is a mockup.">
+<link rel="canonical" href="https://mixedmakershop.com/proof">
+<style>
+  :root{
+    --ink:#17181c; --paper:#f7f5f0; --dim:#6b6c74;
+    --rule:#dcd8ce; --warm:#8a5a2b; --deep:#2a2c33;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font:400 19px/1.62 Georgia,'Iowan Old Style',serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 26px}
+  .narrow{max-width:660px}
+  header{padding:96px 0 0}
+  h1{
+    font-size:clamp(44px,9vw,74px); line-height:.98; letter-spacing:-.028em;
+    font-weight:400;
+  }
+  h1 em{font-style:italic;color:var(--warm)}
+  .kicker{
+    font:600 13px/1 system-ui,sans-serif; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:26px;
+  }
+  .lede{font-size:23px;line-height:1.5;margin-top:30px;color:var(--deep)}
+  .lede strong{font-weight:400;box-shadow:inset 0 -.42em 0 rgba(138,90,43,.16)}
+
+  hr{border:0;border-top:1px solid var(--rule);margin:64px 0}
+
+  h2{
+    font:600 13px/1 system-ui,sans-serif; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:8px;
+  }
+  .count{font-size:17px;color:var(--dim);margin-bottom:28px}
+  p{margin-bottom:20px}
+  .small{font-size:16px;color:var(--dim)}
+
+  /* Books ------------------------------------------------------------ */
+  .books{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));
+    gap:26px 20px;margin-bottom:8px;
+  }
+  .books a{text-decoration:none;color:inherit;display:block}
+  .books img{
+    width:100%;aspect-ratio:438/700;object-fit:cover;display:block;
+    border:1px solid rgba(0,0,0,.12);border-radius:2px;
+    box-shadow:0 2px 8px rgba(0,0,0,.10);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .books a:hover img{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.17)}
+  .books .t{
+    font-size:14px;line-height:1.35;margin-top:9px;color:var(--deep);
+  }
+  .books .s{font-size:13px;color:var(--dim);display:block;margin-top:2px}
+
+  /* Apps -------------------------------------------------------------- */
+  .apps{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:22px;
+  }
+  .app{
+    display:flex;gap:15px;align-items:center;text-decoration:none;color:inherit;
+    background:#fff;border:1px solid var(--rule);border-radius:4px;padding:15px;
+    transition:border-color .18s ease, box-shadow .18s ease;
+  }
+  .app:hover{border-color:#c3bcac;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+  .app img{
+    width:60px;height:60px;border-radius:13px;flex:none;display:block;
+    box-shadow:0 1px 4px rgba(0,0,0,.16);
+  }
+  .app .n{font-size:17px;line-height:1.25;display:block}
+  .app .m{
+    font:500 13px/1.4 system-ui,sans-serif;color:var(--dim);
+    display:block;margin-top:4px;
+  }
+
+  /* Video ------------------------------------------------------------- */
+  .films{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:26px 22px;
+  }
+  .film{text-decoration:none;color:inherit;display:block}
+  .film .shot{
+    position:relative;display:block;width:100%;aspect-ratio:16/9;
+    background:#15161a;border-radius:3px;overflow:hidden;
+    border:1px solid rgba(0,0,0,.14);
+  }
+  .film .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .film .shot:after{
+    content:'';position:absolute;left:50%;top:50%;
+    width:0;height:0;transform:translate(-38%,-50%);
+    border-left:19px solid rgba(255,255,255,.95);
+    border-top:12px solid transparent;border-bottom:12px solid transparent;
+    filter:drop-shadow(0 1px 5px rgba(0,0,0,.6));
+  }
+  .film:hover .shot img{opacity:.82}
+  .film .t{font-size:15px;line-height:1.35;margin-top:10px;color:var(--deep)}
+  .film .s{font-size:13px;color:var(--dim);display:block;margin-top:2px}
+  video{
+    width:100%;aspect-ratio:16/9;background:#15161a;display:block;
+    border-radius:3px;border:1px solid rgba(0,0,0,.14);object-fit:cover;
+  }
+  .vertical video,.vertical .shot{aspect-ratio:9/16}
+
+  .ask{
+    background:#fff;border:1px solid var(--rule);border-radius:3px;
+    padding:36px 34px;margin:44px 0 0;
+  }
+  .ask h3{font-size:27px;font-weight:400;letter-spacing:-.01em;margin-bottom:14px}
+  .mail{
+    display:inline-block;margin-top:12px;font:600 19px/1 system-ui,sans-serif;
+    color:var(--warm);text-decoration:none;
+    border-bottom:2px solid rgba(138,90,43,.3);padding-bottom:4px;
+  }
+  .mail:hover{border-bottom-color:var(--warm)}
+
+  footer{padding:60px 0 90px;color:var(--dim);font-size:16px}
+  footer a{color:var(--warm)}
+  @media(max-width:560px){
+    body{font-size:18px}
+    header{padding-top:62px}
+    .ask{padding:28px 22px}
+    .books{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:20px 14px}
+    .books .t{font-size:13px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="narrow">
+    <div class="kicker">Receipts</div>
+    <h1>The <em>work</em>.</h1>
+    <p class="lede">Everything below is <strong>actually finished and actually for sale.</strong></p>
+  </header>
+
+  <div class="narrow">
+    <hr>
+    <p>Anybody can say they build things. So every cover, icon and thumbnail on this
+    page is a link to the real listing — Amazon, the App Store, YouTube. Click any of
+    them. Nothing here is a concept, a mockup, or a thing I'm planning to do.</p>
+    <p class="small">I write books under the name <strong>Topher Rent</strong>. The apps
+    are under my legal name, Christopher Cook. Same guy, same desk.</p>
+  </div>
+
+  <hr>
+
+  <h2>Books</h2>
+  <p class="count">18 listings on Amazon — 17 titles, one of them in paperback too. Written, edited, covered, formatted and published by me.</p>
+
+  <div class="books">
+
+    <a href="https://www.amazon.com/dp/B0H96LF4DL">
+      <img src="/proof/cover-B0H96LF4DL.jpg" alt="Cover: I'm Not Done Yet" loading="lazy">
+      <span class="t">I'm Not Done Yet<span class="s">A memoir of faith, failure, and refusing to quit</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H92HGYJT">
+      <img src="/proof/cover-B0H92HGYJT.jpg" alt="Cover: I'm the Glue" loading="lazy">
+      <span class="t">I'm the Glue<span class="s">The year everything broke, and I held it together anyway</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HC8KC757">
+      <img src="/proof/cover-B0HC8KC757.jpg" alt="Cover: The Forbidden End" loading="lazy">
+      <span class="t">The Forbidden End<span class="s">What Revelation and the lost books reveal</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HC54ZGRX">
+      <img src="/proof/cover-B0HC54ZGRX.jpg" alt="Cover: Prayers for Every Need" loading="lazy">
+      <span class="t">Prayers for Every Need<span class="s">A companion from the scriptures</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H9FVKFYW">
+      <img src="/proof/cover-B0H9FVKFYW.jpg" alt="Cover: The House of Many Endings" loading="lazy">
+      <span class="t">The House of Many Endings<span class="s">A branching mystery you play with a pencil · also in paperback</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HC8FFMBC">
+      <img src="/proof/cover-B0HC8FFMBC.jpg" alt="Cover: The Book of Enoch" loading="lazy">
+      <span class="t">The Book of Enoch<span class="s">1 Enoch · Lost Scriptures 11</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HCBWJS3R">
+      <img src="/proof/cover-B0HCBWJS3R.jpg" alt="Cover: The Book of Enoch, Lost Scriptures 10" loading="lazy">
+      <span class="t">The Book of Enoch<span class="s">1 Enoch · Lost Scriptures 10</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HC7NXW28">
+      <img src="/proof/cover-B0HC7NXW28.jpg" alt="Cover: The Secrets of Enoch" loading="lazy">
+      <span class="t">The Secrets of Enoch<span class="s">2 Enoch, the Slavonic book · Lost Scriptures 12</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0HCC5HNCV">
+      <img src="/proof/cover-B0HCC5HNCV.jpg" alt="Cover: The Book of Jubilees" loading="lazy">
+      <span class="t">The Book of Jubilees<span class="s">The Little Genesis · Lost Scriptures 13</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H8XVDZGP">
+      <img src="/proof/cover-B0H8XVDZGP.jpg" alt="Cover: The First Book of Adam and Eve" loading="lazy">
+      <span class="t">The First Book of Adam and Eve<span class="s">Lost Scriptures 3</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H8KWTDGG">
+      <img src="/proof/cover-B0H8KWTDGG.jpg" alt="Cover: The First Book of Adam and Eve, Volume 2" loading="lazy">
+      <span class="t">First Book of Adam and Eve<span class="s">Volume 2, with commentary</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H8ZV1JNF">
+      <img src="/proof/cover-B0H8ZV1JNF.jpg" alt="Cover: The First Book of Adam and Eve, Volume 4" loading="lazy">
+      <span class="t">First Book of Adam and Eve<span class="s">Volume 4, with commentary</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H95MBQSV">
+      <img src="/proof/cover-B0H95MBQSV.jpg" alt="Cover: The First Book of Adam and Eve, Volume 5" loading="lazy">
+      <span class="t">First Book of Adam and Eve<span class="s">Volume 5, with commentary</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H95FTM5J">
+      <img src="/proof/cover-B0H95FTM5J.jpg" alt="Cover: The First Book of Adam and Eve, Volume 6" loading="lazy">
+      <span class="t">First Book of Adam and Eve<span class="s">Volume 6, with commentary</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H92HSWXG">
+      <img src="/proof/cover-B0H92HSWXG.jpg" alt="Cover: The First Book of Adam and Eve, Volume 7" loading="lazy">
+      <span class="t">First Book of Adam and Eve<span class="s">Volume 7, with commentary</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H924X6VF">
+      <img src="/proof/cover-B0H924X6VF.jpg" alt="Cover: The Second Book of Adam and Eve, Volume 1" loading="lazy">
+      <span class="t">Second Book of Adam and Eve<span class="s">Volume 1 · Lost Scriptures 8</span></span>
+    </a>
+
+    <a href="https://www.amazon.com/dp/B0H92J2QGS">
+      <img src="/proof/cover-B0H92J2QGS.jpg" alt="Cover: The Second Book of Adam and Eve, Volume 2" loading="lazy">
+      <span class="t">Second Book of Adam and Eve<span class="s">Volume 2 · Lost Scriptures 9</span></span>
+    </a>
+
+  </div>
+
+  <hr>
+
+  <h2>Apps &amp; games</h2>
+  <p class="count">6 live on Apple's App Store, written and shipped solo — code, art, store listing, review submissions, all of it.</p>
+
+  <div class="apps">
+
+    <a class="app" href="https://apps.apple.com/us/app/the-hollow-gate/id6778981418">
+      <img src="/proof/app-the-hollow-gate.png" alt="The Hollow Gate app icon" loading="lazy">
+      <span><span class="n">The Hollow Gate</span><span class="m">Mac App Store · $3.99</span></span>
+    </a>
+
+    <a class="app" href="https://apps.apple.com/us/app/whispering-hollow/id6788605530">
+      <img src="/proof/app-whispering-hollow.png" alt="Whispering Hollow app icon" loading="lazy">
+      <span><span class="n">Whispering Hollow</span><span class="m">iPhone &amp; Mac · $0.99</span></span>
+    </a>
+
+    <a class="app" href="https://apps.apple.com/us/app/the-whispering-woods/id6792045883">
+      <img src="/proof/app-the-whispering-woods.png" alt="The Whispering Woods app icon" loading="lazy">
+      <span><span class="n">The Whispering Woods</span><span class="m">Mac App Store · Free</span></span>
+    </a>
+
+    <a class="app" href="https://apps.apple.com/us/app/pic-pop-word-game/id6793362978">
+      <img src="/proof/app-pic-pop-word-game.png" alt="Pic Pop Word Game app icon" loading="lazy">
+      <span><span class="n">Pic Pop Word Game</span><span class="m">iPhone · $1.99</span></span>
+    </a>
+
+    <a class="app" href="https://apps.apple.com/us/app/james-my-companion/id6786504642">
+      <img src="/proof/app-james-my-companion.png" alt="James: My Companion app icon" loading="lazy">
+      <span><span class="n">James: My Companion</span><span class="m">iPhone · Free</span></span>
+    </a>
+
+    <a class="app" href="https://apps.apple.com/us/app/caniaffordthisnow/id6758355695">
+      <img src="/proof/app-caniaffordthisnow.png" alt="CanIAffordThisNow app icon" loading="lazy">
+      <span><span class="n">CanIAffordThisNow</span><span class="m">iPhone · $4.99</span></span>
+    </a>
+
+  </div>
+
+  <hr>
+
+  <h2>Trailers, teasers &amp; ads</h2>
+  <p class="count">Written, shot, scored and cut here. The book teasers below are the exact thing I'd make for your book.</p>
+
+  <div class="films">
+
+    <a class="film" href="https://www.youtube.com/watch?v=OUljeYR3OyY">
+      <span class="shot"><img src="/proof/yt-OUljeYR3OyY.jpg" alt="The Book of Enoch teaser" loading="lazy"></span>
+      <span class="t">The Book of Enoch<span class="s">Official book teaser · 56s</span></span>
+    </a>
+
+    <a class="film" href="https://www.youtube.com/watch?v=MvxiFg1y2HI">
+      <span class="shot"><img src="/proof/yt-MvxiFg1y2HI.jpg" alt="The Book of Adam and Eve teaser" loading="lazy"></span>
+      <span class="t">The Book of Adam and Eve<span class="s">Official book teaser · 51s</span></span>
+    </a>
+
+    <a class="film" href="https://www.youtube.com/watch?v=WRino1yFx8E">
+      <span class="shot"><img src="/proof/yt-WRino1yFx8E.jpg" alt="The Book of Jubilees teaser" loading="lazy"></span>
+      <span class="t">The Book of Jubilees<span class="s">Official book teaser · 55s</span></span>
+    </a>
+
+    <a class="film" href="https://www.youtube.com/watch?v=C67V7KJMFPA">
+      <span class="shot"><img src="/proof/yt-C67V7KJMFPA.jpg" alt="The Secrets of Enoch teaser" loading="lazy"></span>
+      <span class="t">The Secrets of Enoch<span class="s">Official book teaser · 53s</span></span>
+    </a>
+
+    <div class="film">
+      <video src="/proof/vid-scarlet-oak.mp4" poster="/proof/poster-vid-scarlet-oak.jpg" controls preload="none" playsinline></video>
+      <span class="t">Scarlet Oak<span class="s">A free sample trailer, made for an author before she'd paid a cent · 20s</span></span>
+    </div>
+
+    <div class="film">
+      <video src="/proof/vid-dragon.mp4" poster="/proof/poster-vid-dragon.jpg" controls preload="none" playsinline></video>
+      <span class="t">The dragon ad<span class="s">Photoreal AI video, start to finish, for about forty cents · 11s</span></span>
+    </div>
+
+    <a class="film" href="https://www.youtube.com/watch?v=WjA3gsfYHac">
+      <span class="shot"><img src="/proof/yt-WjA3gsfYHac.jpg" alt="Whispering Hollow app trailer" loading="lazy"></span>
+      <span class="t">Whispering Hollow<span class="s">App launch trailer · 28s</span></span>
+    </a>
+
+    <a class="film" href="https://www.youtube.com/watch?v=R7LfHzLyPAU">
+      <span class="shot"><img src="/proof/yt-R7LfHzLyPAU.jpg" alt="Mixed Maker Shop video ads" loading="lazy"></span>
+      <span class="t">Made in-house<span class="s">Mixed Maker Shop ad spot</span></span>
+    </a>
+
+    <div class="film vertical">
+      <video src="/proof/vid-demo-reel.mp4" poster="/proof/poster-vid-demo-reel.jpg" controls preload="none" playsinline></video>
+      <span class="t">Demo reel<span class="s">A minute of the effects work · 28s</span></span>
+    </div>
+
+  </div>
+
+  <p class="small" style="margin-top:26px">More on the channel:
+    <a href="https://www.youtube.com/@MixedMaker" style="color:var(--warm)">youtube.com/@MixedMaker</a>
+  </p>
+
+  <hr>
+
+  <div class="narrow">
+    <h2>What this is really here for</h2>
+    <p>Not to impress you. To answer the only question that matters when you're deciding
+    whether to hand a stranger the thing you've been carrying for six years:
+    <em>can he actually finish it?</em></p>
+    <p>That's eighteen books, six apps, and a shelf of films that say yes.</p>
+
+    <div class="ask">
+      <h3>So — what's yours?</h3>
+      <p class="small">Tell me what it is and where it got stuck. I'll build you one real
+      piece of it free before you decide anything.</p>
+      <a class="mail" href="mailto:topher.cook7@gmail.com?subject=My%20unfinished%20thing">topher.cook7@gmail.com</a>
+    </div>
+
+    <footer>
+      <a href="/glue">← What I do and what it costs</a>
+    </footer>
+  </div>
+
+</div>
+</body>
+</html>
