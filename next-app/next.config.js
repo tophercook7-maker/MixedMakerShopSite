@@ -95,6 +95,8 @@ const nextConfig = {
       { source: "/glue", destination: "/glue/index.html" },
       // "The work" proof page — same deal: standalone HTML in public/proof/, no chrome.
       { source: "/proof", destination: "/proof/index.html" },
+      // Portfolio — standalone HTML in public/portfolio/ (all books, covers, videos, apps).
+      { source: "/portfolio", destination: "/portfolio/index.html" },
     ];
   },
   async headers() {
