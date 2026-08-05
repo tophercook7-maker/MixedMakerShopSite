@@ -26,6 +26,18 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "cant-afford-new-computer-99-tune-up",
+    title:
+      "Can't Afford a New Computer? Here's How $99 and a Few Simple Fixes Can Bring Yours Back to Life",
+    category: "Tech Repair",
+    excerpt:
+      "Before you drop $800 on a new machine, try a $99 clean-up and tune-up. Honest, local computer repair, SSD upgrades, and small-business help from Mixed Maker Shop in Hot Springs — no overhead, no upselling.",
+    readTime: "7 min read",
+    readMinutes: 7,
+    publishedAt: "2026-08-04",
+    href: "/blog/cant-afford-new-computer-99-tune-up",
+  },
+  {
     slug: "web-system-not-just-a-website",
     title: "Why Your Business Needs a Web System, Not Just a Website",
     category: "Web Design",
