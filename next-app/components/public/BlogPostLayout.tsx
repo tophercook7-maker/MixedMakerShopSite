@@ -140,24 +140,24 @@ export function BlogPostLayout({
             </article>
 
             <aside className="public-glass-box public-glass-box--pad mx-auto mt-12 max-w-3xl text-center">
-              <h2 className="text-xl font-bold tracking-tight text-white md:text-2xl">Ready for a mobile-friendly preview?</h2>
+              <h2 className="text-xl font-bold tracking-tight text-white md:text-2xl">Need help with a website or a practical project?</h2>
               <p className={cn("mx-auto mt-4 max-w-lg text-base leading-relaxed", mmsOnGlassSecondary)}>
-                Share your current site and get a free homepage mockup built with clear CTAs, readable type, and a path to
-                contact.
+                Whether you need a clearer website, local visibility, a custom print, or a useful digital tool, tell us
+                what you&apos;re trying to solve and we&apos;ll help you find the right next step.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/free-mockup"
+                  href="/contact"
                   className={cn(mmsBtnPrimary, "inline-flex items-center gap-2 px-6 py-3 no-underline hover:no-underline")}
                 >
-                  Get a free website mockup
+                  Start a conversation
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </Link>
                 <Link
-                  href="/website-roast"
+                  href="/free-mockup"
                   className={cn(mmsTextLinkOnGlass, "inline-flex items-center self-center px-2 py-3 text-sm")}
                 >
-                  Free Website Roast
+                  Get a free website mockup
                 </Link>
               </div>
             </aside>
