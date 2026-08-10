@@ -56,5 +56,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-07-24",
     href: "/blog/hot-springs-ai-customer-questions",
   },
+  {
+    slug: "what-mixed-maker-shop-builds",
+    title: "What Mixed Maker Shop Builds: Practical Tech Help, Websites, AI, and Maker Projects",
+    category: "Studio Updates",
+    excerpt: "A clear look at the practical services and projects under the Mixed Maker Shop umbrella: local tech help, websites, AI tools, 3D printing, and custom builds.",
+    readTime: "4 min read",
+    readMinutes: 4,
+    publishedAt: "2026-08-10",
+    href: "/blog/what-mixed-maker-shop-builds",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
