@@ -1,0 +1,45 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import LocalPageHero from "../components/LocalPageHero.astro";
+import LocalPageSections from "../components/LocalPageSections.astro";
+import LocalPageFinalCta from "../components/LocalPageFinalCta.astro";
+import LocalPageFaq from "../components/LocalPageFaq.astro";
+import RelatedLocalPages from "../components/RelatedLocalPages.astro";
+import { LOCAL_PAGES } from "../data/local-pages";
+import { getResolvedSite } from "../lib/get-site-config";
+import { getSameCityServiceLinks, getSameServiceLocationLinks } from "../lib/related-local-pages";
+import type { LocalPage } from "../types/local-seo";
+
+const site = getResolvedSite();
+
+export function getStaticPaths() {
+  return LOCAL_PAGES.map((page) => ({
+    params: { slug: page.slug },
+    props: { page },
+  }));
+}
+
+type Props = {
+  page: LocalPage;
+};
+
+const { page } = Astro.props;
+
+const sameCity = getSameCityServiceLinks(page, LOCAL_PAGES);
+const sameServiceOtherLocations = getSameServiceLocationLinks(page, LOCAL_PAGES);
+---
+
+<BaseLayout
+  title={page.metaTitle}
+  description={page.metaDescription}
+  canonicalPath={`/${page.slug}`}
+  ogTitle={page.metaTitle}
+  ogDescription={page.metaDescription}
+  site={site}
+>
+  <LocalPageHero page={page} />
+  <LocalPageSections page={page} />
+  <LocalPageFaq items={page.faq ?? []} />
+  <LocalPageFinalCta page={page} />
+  <RelatedLocalPages sameCity={sameCity} sameServiceOtherLocations={sameServiceOtherLocations} />
+</BaseLayout>

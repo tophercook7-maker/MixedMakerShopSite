@@ -1,0 +1,21 @@
+---
+import type { ResolvedSite } from "../../types/client";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+const items = site.niche.faqTemplates.slice(0, 4);
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-faq">
+  <div class="fc-shell">
+    <h2 id="home-faq" class="fc-h2">FAQ</h2>
+    <div class="fc-faq">
+      {items.map((item) => (
+        <details>
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

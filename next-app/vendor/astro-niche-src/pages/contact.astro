@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getResolvedSite } from "../lib/get-site-config";
+
+const site = getResolvedSite();
+const title = `Contact | ${site.businessName}`;
+const description = `Request an estimate or ask a question. ${site.businessName} serves ${site.serviceAreaDescription}`;
+---
+
+<BaseLayout title={title} description={description} canonicalPath="/contact" site={site}>
+  <section class="fc-section">
+    <div class="fc-shell">
+      <h1 class="fc-h1">Contact</h1>
+      <p class="fc-lead" style="margin-top: 1rem; max-width: 60ch;">
+        {site.niche.contactGoalLabel} Add your preferred form embed here (Netlify, Basin, etc.). Anchor <code>#estimate</code> is used by CTAs.
+      </p>
+
+      <div id="estimate" class="fc-card" style="margin-top: 2rem; padding: clamp(1.25rem, 3vw, 2rem); scroll-margin-top: 6rem;">
+        <h2 class="fc-h2">Request a free estimate</h2>
+        <p class="fc-lead" style="margin: 0 0 1rem;">
+          {site.estimateCtaLabel} — link target: <strong>/contact#estimate</strong>
+        </p>
+        <p class="fc-lead" style="margin: 0;">
+          Phone: <a href={`tel:${site.phone.replace(/\D/g, "")}`}>{site.phone}</a>
+          &nbsp;·&nbsp;
+          Email: <a href={`mailto:${site.email}`}>{site.email}</a>
+        </p>
+        {site.socialLinks?.length ? (
+          <p class="fc-lead" style="margin: 1rem 0 0;">
+            {site.socialLinks.map((s, i) => (
+              <span>
+                {i > 0 ? " · " : null}
+                <a href={s.href}>{s.label}</a>
+              </span>
+            ))}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

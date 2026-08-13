@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getResolvedSite } from "../lib/get-site-config";
+import HomeHero from "../components/sections/HomeHero.astro";
+import HomeServices from "../components/sections/HomeServices.astro";
+import HomeWhy from "../components/sections/HomeWhy.astro";
+import NicheProofSection from "../components/niche/NicheProofSection.astro";
+import NicheHighlights from "../components/niche/NicheHighlights.astro";
+import HomeHow from "../components/sections/HomeHow.astro";
+import HomeEstimateCta from "../components/sections/HomeEstimateCta.astro";
+import HomeFaq from "../components/sections/HomeFaq.astro";
+import HomeFinalCta from "../components/sections/HomeFinalCta.astro";
+
+const site = getResolvedSite();
+---
+
+<BaseLayout
+  title={site.homepage.metaTitle}
+  description={site.homepage.metaDescription}
+  canonicalPath="/"
+  site={site}
+>
+  <HomeHero site={site} />
+  <HomeServices site={site} />
+  <HomeWhy site={site} />
+  <NicheProofSection site={site} />
+  <NicheHighlights site={site} />
+  <HomeHow site={site} />
+  <HomeEstimateCta site={site} />
+  <HomeFaq site={site} />
+  <HomeFinalCta site={site} />
+</BaseLayout>

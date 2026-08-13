@@ -1,0 +1,17 @@
+---
+import type { ResolvedSite } from "../../types/client";
+
+type Props = { site: ResolvedSite };
+const { site } = Astro.props;
+---
+
+<section class="fc-section fc-section--tight" aria-labelledby="home-why">
+  <div class="fc-shell">
+    <h2 id="home-why" class="fc-h2">Why choose us</h2>
+    <ul class="fc-list">
+      {site.trustSellingPoints.map((line) => (
+        <li>{line}</li>
+      ))}
+    </ul>
+  </div>
+</section>

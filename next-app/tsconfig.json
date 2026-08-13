@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@astro-niche-pack/*": ["../fresh-cut-property-care/src/*"]
+      "@astro-niche-pack/*": ["./vendor/astro-niche-src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

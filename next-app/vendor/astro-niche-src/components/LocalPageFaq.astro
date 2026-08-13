@@ -1,0 +1,25 @@
+---
+import type { FaqItem } from "../types/local-seo";
+
+type Props = {
+  items: FaqItem[];
+};
+
+const { items } = Astro.props;
+---
+
+{items.length ? (
+  <section class="fc-section fc-section--tight" aria-labelledby="faq-heading">
+    <div class="fc-shell">
+      <h2 id="faq-heading" class="fc-h2">FAQ</h2>
+      <div class="fc-faq">
+        {items.map((item) => (
+          <details>
+            <summary>{item.question}</summary>
+            <p>{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+) : null}

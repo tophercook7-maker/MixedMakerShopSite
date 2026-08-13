@@ -43,6 +43,9 @@ export const publicFreeMockupFunnelHrefFreshCut = "/free-mockup?example=freshcut
 export const publicGoogleMapsSearchHref =
   "https://www.google.com/maps/search/?api=1&query=MixedMakerShop+Hot+Springs+AR";
 
+// One-tap Google review link for MixedMakerShop / Web Design (from the Business Profile).
+export const publicGoogleReviewHref = "https://g.page/r/CckpJj2hBUEuEBM/review";
+
 export const publicSectionYClass = "py-20 md:py-28";
 
 /** Section h2 — web (mint family) */

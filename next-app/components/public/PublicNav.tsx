@@ -90,6 +90,15 @@ export function PublicNav() {
           ))}
           <span className="nav-cta-divider" aria-hidden="true" />
           <a
+            href="https://voicetwin.mixedmakershop.com"
+            className="pill cta"
+            onClick={() =>
+              trackPublicEvent("public_voicetwin_click", { location: "nav" })
+            }
+          >
+            🎙️ VoiceTwin
+          </a>
+          <a
             href={publicTopherTextHref}
             className="pill cta"
             onClick={() =>
