@@ -1,3 +1,4 @@
+import { rescueLead } from "@/lib/crm/lead-rescue";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { isHardBlockEventType } from "@/lib/calendar-events";
@@ -108,7 +109,12 @@ export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return NextResponse.json({ error: "Server config missing" }, { status: 500 });
+  if (!url || !key) {
+    // CRM unavailable - still capture the booking rather than bouncing a customer.
+    const raw = await request.json().catch(() => ({}));
+    const outcome = await rescueLead({ ...raw, source: "public_booking" }, "book:missing_supabase_env");
+    return NextResponse.json({ ok: true, rescued: true, ref: outcome.ref, request_id: requestId });
+  }
   const supabase = createServiceClient(url, key);
 
   const body = (await request.json().catch(() => ({}))) as BookingPayload;

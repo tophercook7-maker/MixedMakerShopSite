@@ -17,3 +17,20 @@ enabled = true
 port = 54322
 shadow_port = 54320
 major_version = 17
+
+# Storage disabled locally: the CRM/lead loop uses Postgres + PostgREST, not file
+# storage, and the bundled storage-api image hits a migration mismatch on boot
+# ("Migration fix-optimized-search-function not found"). Re-enable if the admin
+# UI ever needs local file uploads (screenshots/mockups) and the image is fixed.
+[storage]
+enabled = false
+
+# Analytics (Logflare/Vector) not needed for a local single-operator CRM; skipping
+# it slims the stack and removes another boot-failure surface.
+[analytics]
+enabled = false
+
+# Seed is demo data (sample leads without owner_id → violates leads.owner_id NOT NULL
+# on a clean apply). A real local CRM shouldn't carry demo rows; disable seeding.
+[db.seed]
+enabled = false

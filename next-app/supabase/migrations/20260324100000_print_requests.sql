@@ -22,15 +22,26 @@ alter table public.print_requests enable row level security;
 comment on table public.print_requests is 'Inbound 3D print file/image uploads from /upload-print';
 
 -- Storage bucket for STL/3MF/images (uploads via service role; public read for shared links in email)
-insert into storage.buckets (id, name, public, file_size_limit)
-values ('print-request-uploads', 'print-request-uploads', true, 26214400)
-on conflict (id) do update set
-  public = excluded.public,
-  file_size_limit = excluded.file_size_limit;
+-- Guarded: the local single-operator stack runs with Storage disabled (no `storage`
+-- schema), and the 3D-print upload feature isn't part of the local CRM loop. In the
+-- cloud (storage present) this runs exactly as before; locally it's a clean no-op.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'storage' and table_name = 'buckets'
+  ) then
+    insert into storage.buckets (id, name, public, file_size_limit)
+    values ('print-request-uploads', 'print-request-uploads', true, 26214400)
+    on conflict (id) do update set
+      public = excluded.public,
+      file_size_limit = excluded.file_size_limit;
 
-drop policy if exists "print_request_uploads_select_public" on storage.objects;
+    drop policy if exists "print_request_uploads_select_public" on storage.objects;
 
-create policy "print_request_uploads_select_public"
-  on storage.objects for select
-  to anon, authenticated
-  using (bucket_id = 'print-request-uploads');
+    create policy "print_request_uploads_select_public"
+      on storage.objects for select
+      to anon, authenticated
+      using (bucket_id = 'print-request-uploads');
+  end if;
+end $$;

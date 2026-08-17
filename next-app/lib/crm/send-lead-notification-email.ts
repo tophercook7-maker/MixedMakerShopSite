@@ -1,5 +1,6 @@
 import type { InboundLeadSubmissionInput } from "@/lib/crm/inbound-lead-submission";
 import { leadNotifyEmail, sendResendEmail } from "@/lib/resend-config";
+import { sendViaSmtp } from "@/lib/crm/smtp-notify";
 
 export type LeadNotificationInput = {
   leadId?: string | null;
@@ -101,17 +102,25 @@ export function buildLeadNotificationSubject(submission: InboundLeadSubmissionIn
 export async function sendLeadNotificationEmail(input: LeadNotificationInput): Promise<LeadNotificationResult> {
   const to = notifyEmail();
   const text = buildText(input);
+  const subject = buildLeadNotificationSubject(input.submission);
+  const html = buildHtml(text);
 
-  const result = await sendResendEmail({
+  const viaResend = await sendResendEmail({
     to,
     replyTo: input.submission.email,
-    subject: buildLeadNotificationSubject(input.submission),
+    subject,
     text,
-    html: buildHtml(text),
+    html,
     userAgent: "mixedmakershop-lead-notify/1.0",
   });
+  if (viaResend.ok) return viaResend;
 
-  return result;
+  // Resend is unconfigured (no RESEND_API_KEY in prod) or failed — fall back to
+  // the proven Gmail-first SMTP rail so a lead notice never silently vanishes.
+  const viaSmtp = await sendViaSmtp({ to, subject, text, html, replyTo: input.submission.email });
+  if (viaSmtp.ok) return { ok: true };
+
+  return { ok: false, error: `resend(${viaResend.error}); smtp(${viaSmtp.error})` };
 }
 
 export async function sendEmergencyLeadNotificationEmail(
@@ -127,13 +136,25 @@ export async function sendEmergencyLeadNotificationEmail(
     safeJson(input.payload),
   ].join("\n");
 
-  return sendResendEmail({
-    to: notifyEmail(),
-    subject: `EMERGENCY MixedMakerShop lead save failed - ${input.requestId || "public lead"}`,
+  const to = notifyEmail();
+  const subject = `EMERGENCY MixedMakerShop lead save failed - ${input.requestId || "public lead"}`;
+  const html = buildHtml(text);
+
+  const viaResend = await sendResendEmail({
+    to,
+    subject,
     text,
-    html: buildHtml(text),
+    html,
     userAgent: "mixedmakershop-lead-emergency/1.0",
   });
+  if (viaResend.ok) return viaResend;
+
+  // An emergency notice is exactly when we cannot afford a silent Resend miss —
+  // fall back to the Gmail-first SMTP rail.
+  const viaSmtp = await sendViaSmtp({ to, subject, text, html });
+  if (viaSmtp.ok) return { ok: true };
+
+  return { ok: false, error: `resend(${viaResend.error}); smtp(${viaSmtp.error})` };
 }
 
 export async function sendTestLeadNotificationEmail(): Promise<LeadNotificationResult> {

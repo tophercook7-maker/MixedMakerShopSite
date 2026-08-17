@@ -1,3 +1,4 @@
+import { rescueLead } from "@/lib/crm/lead-rescue";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -194,7 +195,12 @@ export async function POST(request: Request) {
         hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
       });
 
-      return NextResponse.json({ error: "Server configuration error." }, { status: 500 });
+      const raw = await request.json().catch(() => ({}));
+      const outcome = await rescueLead(
+        { ...(raw as object), source: "mockup_request" },
+        "website-mockup:missing_supabase_env",
+      );
+      return NextResponse.json({ ok: true, rescued: true, ref: outcome.ref, request_id: requestId });
     }
 
     let body: unknown;

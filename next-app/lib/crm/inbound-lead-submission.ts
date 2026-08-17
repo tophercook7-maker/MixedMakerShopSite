@@ -6,6 +6,8 @@ import {
   sendEmergencyLeadNotificationEmail,
   sendLeadNotificationEmail,
 } from "@/lib/crm/send-lead-notification-email";
+import { rescueLead } from "@/lib/crm/lead-rescue";
+import { isInboundAutopilotEnabled, runInboundAutopilot } from "@/lib/crm/inbound-autopilot";
 
 const inboundSources = new Set([
   "captain_maker",
@@ -79,12 +81,17 @@ export type InboundLeadSubmissionInput = z.infer<typeof inboundLeadSubmissionSch
 export type InboundLeadSubmissionResult =
   | {
       ok: true;
-      lead_id: string;
+      /** null when the lead was rescued (delivered by email/push, no CRM row). */
+      lead_id: string | null;
       form_submission_id: string | null;
       duplicate_skipped: boolean;
       duplicate_reason?: string | null;
       notification_sent: boolean;
       notification_error?: string;
+      /** true when the CRM was unavailable and the rescue channels carried it. */
+      rescued?: boolean;
+      /** short human-quotable reference, present on rescued leads. */
+      ref?: string;
     }
   | { ok: false; status: number; error: string; details?: unknown };
 
@@ -168,6 +175,36 @@ function envPresence() {
   };
 }
 
+/**
+ * Last line of defence. Deliver the lead by email + phone push and report SUCCESS
+ * to the customer, because from their side the job is done: Topher has it.
+ * Only used when the CRM write failed for an infrastructure reason - a lead that
+ * failed *validation* still gets a 400 so the form can ask them to fix it.
+ */
+async function rescueAndSucceed(
+  body: unknown,
+  context: string,
+  requestId?: string,
+): Promise<InboundLeadSubmissionResult> {
+  const outcome = await rescueLead(body, context);
+  console.info("[inbound lead] rescued", {
+    request_id: requestId,
+    context,
+    ref: outcome.ref,
+    emailed: outcome.emailed,
+    buzzed: outcome.buzzed,
+  });
+  return {
+    ok: true,
+    lead_id: null,
+    form_submission_id: null,
+    duplicate_skipped: false,
+    notification_sent: outcome.emailed,
+    rescued: true,
+    ref: outcome.ref,
+  };
+}
+
 async function sendEmergencyAndLog(opts: {
   requestId?: string;
   error: string;
@@ -229,7 +266,10 @@ export async function handleInboundLeadSubmission(
       payload: body,
       context: "missing_supabase_env",
     });
-    return { ok: false, status: 500, error: "Server CRM configuration missing." };
+    // The CRM is optional; capturing the lead is not. Deliver it by email+push
+    // and tell the customer we got it, because bouncing a paying customer over
+    // a missing env var is the single most expensive bug this site can have.
+    return await rescueAndSucceed(body, "missing_supabase_env", requestId);
   }
 
   const data = parsed.data;
@@ -248,7 +288,7 @@ export async function handleInboundLeadSubmission(
       payload: body,
       context: "owner_lookup_failed",
     });
-    return { ok: false, status: 500, error: "CRM owner could not be resolved." };
+    return await rescueAndSucceed(body, "owner_lookup_failed", requestId);
   }
 
   const website = data.website || null;
@@ -289,7 +329,7 @@ export async function handleInboundLeadSubmission(
       payload: body,
       context: "lead_insert_failed",
     });
-    return { ok: false, status: 500, error: crm.error };
+    return await rescueAndSucceed(body, "lead_insert_failed", requestId);
   }
 
   const { data: submissionRow, error: submissionError } = await supabase
@@ -343,6 +383,21 @@ export async function handleInboundLeadSubmission(
     form_submission_id: formSubmissionId,
     notification_sent: notification.ok,
   });
+
+  // Inbound autopilot (gated by INBOUND_AUTOPILOT; default off). Fire-and-forget so
+  // it never delays or endangers the customer response: enrich → build preview
+  // mockup → auto-reply the customer their preview link. Skipped for duplicate
+  // submissions so a repeat form-fill never re-emails the same person.
+  if (isInboundAutopilotEnabled() && !crm.duplicate_skipped) {
+    void runInboundAutopilot(supabase, {
+      leadId: crm.lead_id,
+      ownerId: owner.id,
+      customerEmail: data.email,
+      customerName: data.contact_name || data.name || null,
+      businessName: data.business_name || defaultBusinessName(data, source),
+      message: data.message || data.request || notes,
+    }).catch((e) => console.error("[inbound autopilot] top-level", e));
+  }
 
   return {
     ok: true,

@@ -1,3 +1,4 @@
+import { rescueLead } from "@/lib/crm/lead-rescue";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import {
@@ -308,7 +309,9 @@ export async function POST(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    return NextResponse.json({ error: "Server configuration error." }, { status: 500 });
+    const raw = await request.json().catch(() => ({}));
+    const outcome = await rescueLead({ ...raw, source: "quote_request" }, "print-quote:missing_supabase_env");
+    return NextResponse.json({ ok: true, rescued: true, ref: outcome.ref, request_id: requestId });
   }
 
   const form = await request.formData().catch(() => null);
