@@ -2,12 +2,15 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookOpen,
+  Clapperboard,
   ExternalLink,
   FlaskConical,
+  Gamepad2,
   Globe,
   Layers,
-  Printer,
+  Leaf,
   Sparkles,
+  Wrench,
 } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import {
@@ -69,11 +72,10 @@ const chooserCards = [
     cta: "View Tools & Kits",
   },
   {
-    title: "I need something 3D printed",
-    body: "Useful and fun custom prints from GiGi’s Print Shop — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday items.",
-    href: "/3d-printing",
-    cta: "Visit GiGi’s Print Shop",
-    accent: "pink",
+    title: "I want a custom app or AI tool",
+    body: "A tool built around one real job — lead-response bots, quoting calculators, job logs, small apps you own outright instead of renting monthly.",
+    href: "/lab",
+    cta: "See What Gets Built",
   },
   {
     title: "I need lawn or property help",
@@ -116,9 +118,9 @@ const serviceCards = [
     body: "Promo graphics for events, offers, local services, social posts, and quick attention.",
   },
   {
-    title: "3D Prints & Custom Work",
+    title: "Custom Tools & Apps",
     price: "Estimate required",
-    body: "Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday custom items.",
+    body: "Small software built around one real job — calculators, intake forms, job logs, internal dashboards, and apps you own outright.",
   },
 ] as const;
 
@@ -154,57 +156,80 @@ const featuredWork = [
 ] as const;
 
 const umbrellaStudioTagline =
-  "One umbrella. Multiple branches. Everything points back to Mixed Maker Shop.";
+  "One person. One lab. Every bench runs back to the same desk.";
 
-const studioDivisions = [
+const labBenches = [
   {
-    title: "Topher's Web Design",
-    subtitle: "Website Division",
-    body: "Modern websites, landing pages, redesigns, and web systems for businesses — the dedicated web branch under Mixed Maker Shop.",
+    title: "Websites & Local SEO",
+    subtitle: "Bench 01",
+    body: "Small business sites, redesigns, landing pages, and local SEO foundations — the work that pays for the rest of the lab. Topher's Web Design is the dedicated branch.",
     href: TOPHER_WEB_DESIGN_URL,
     external: true,
     Icon: Globe,
   },
   {
-    title: "3D Printing & Maker Builds",
-    subtitle: "Maker Division",
-    body: "Custom prints, prototypes, practical parts, and maker-built solutions — including GiGi's Print Shop paths on this site.",
-    href: "/3d-printing",
+    title: "In-Home Computer Repair",
+    subtitle: "Bench 02",
+    body: "House-call diagnostics, virus removal, Wi-Fi stability, upgrades, and everyday tech fixes around Hot Springs — the same work I've done since 2000.",
+    href: "/in-home-computer-repair",
     external: false,
-    Icon: Printer,
+    Icon: Wrench,
   },
   {
-    title: "AI & Automation",
-    subtitle: "Systems Division",
-    body: "Practical AI workflows, bots with guardrails, and automation that reduces repetitive work without mystery jargon.",
+    title: "AI Tools & Automation",
+    subtitle: "Bench 03",
+    body: "Practical AI workflows, bots with guardrails, and automation that removes repetitive work — built to be owned, not rented by the month.",
     href: "/websites-tools#ai-automation",
     external: false,
     Icon: Sparkles,
   },
   {
+    title: "Apps & Games",
+    subtitle: "Bench 04",
+    body: "Real shipped software — text adventures, study tools, scanning apps, and web games. Some live on the Mac App Store, some run right in the browser.",
+    href: "/lab#apps",
+    external: false,
+    Icon: Gamepad2,
+  },
+  {
+    title: "Books & Audiobooks",
+    subtitle: "Bench 05",
+    body: "Written, edited, narrated, and published from this desk — nonfiction, memoir, and fiction, with audio produced in the same lab.",
+    href: "/lab#books",
+    external: false,
+    Icon: BookOpen,
+  },
+  {
+    title: "Music & Video",
+    subtitle: "Bench 06",
+    body: "Original music, cinematic montages, and pop-out video ads that break the frame — the scroll-stopping kind, made locally instead of licensed.",
+    href: "/3d-scenes",
+    external: false,
+    Icon: Clapperboard,
+  },
+  {
     title: "Digital Products",
-    subtitle: "Product Division",
-    body: "Templates, kits, downloads, and lightweight tools shaped around real shop problems.",
+    subtitle: "Bench 07",
+    body: "Templates, kits, checklists, and lightweight tools shaped around problems that showed up in real client work.",
     href: "/websites-tools#templates-kits",
     external: false,
     Icon: Layers,
   },
   {
-    title: "Mixed Maker Labs",
-    subtitle: "Experiment Division",
-    body: "Ideas before they become full services — vote, suggest, or see what's being tested next.",
+    title: "Property Care",
+    subtitle: "Bench 08",
+    body: "Lawn care, cleanup, and outdoor help around Hot Springs — routed through Fresh Cut Property Care, another site built in this same lab.",
+    href: "/property-care",
+    external: false,
+    Icon: Leaf,
+  },
+  {
+    title: "Experiments",
+    subtitle: "Bench 09",
+    body: "Whatever is half-finished on the bench right now — vote on it, suggest something, or watch it become a real offer.",
     href: "/idea-lab",
     external: false,
     Icon: FlaskConical,
-  },
-  {
-    title: "Story & Legacy",
-    subtitle: "Personal / Creative Archive",
-    body: "From Cook's Computer Service since 2000 to MixedMakerShop — the comeback story, lessons, and creative archive work.",
-    href: "/about#story-legacy",
-    external: false,
-    Icon: BookOpen,
-    subtitleNormalCase: true as const,
   },
 ] as const;
 
@@ -226,7 +251,7 @@ const homeVentures = [
   {
     name: "GoneFishin Keychains",
     description:
-      "GoneFishin Keychains sells vintage and 3D-printed fishing-lure keychains—small, gift-ready pieces from the maker side of the umbrella. The shop site hosts the catalog and checkout.",
+      "GoneFishin Keychains sells vintage fishing-lure keychains — small, gift-ready pieces with a shop site built in this lab. The site hosts the catalog and checkout.",
     href: "https://gonefishinkeychains.com/",
     external: true as const,
   },
@@ -241,12 +266,12 @@ const homeVentures = [
 
 const departmentBridges = [
   {
-    eyebrow: "GiGi's Print Shop",
-    title: "Custom 3D prints from the maker bench.",
-    body: "Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords, and everyday custom items.",
-    href: "/3d-printing",
-    cta: "Start a Print Request",
-    className: "border-pink-300/30 bg-gradient-to-br from-pink-500/12 via-white/8 to-orange-400/8",
+    eyebrow: "The Lab",
+    title: "Everything else that comes off this bench.",
+    body: "AI tools, custom apps and games, published books and audiobooks, original music, and pop-out video ads — one person, start to finish.",
+    href: "/lab",
+    cta: "Step Into the Lab",
+    className: "border-teal-300/30 bg-gradient-to-br from-teal-500/12 via-white/8 to-orange-400/8",
   },
   {
     eyebrow: "Property Care",
@@ -287,14 +312,14 @@ export function UmbrellaHomePage() {
           </div>
         </section>
 
-        <section className={cn(homeBackdrop)} id="studio-divisions">
+        <section className={cn(homeBackdrop)} id="lab-benches">
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
-              <p className={mmsSectionEyebrowOnGlass}>Studio map</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Divisions under the Mixed Maker Shop umbrella</h2>
+              <p className={mmsSectionEyebrowOnGlass}>The lab map</p>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Nine benches. One person at all of them.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                {MMS_LOCAL_TECH_POSITIONING} Web design, maker builds, AI &amp; automation, digital products,
-                experiments, and story work roll up here.
+                {MMS_LOCAL_TECH_POSITIONING} Websites, repair calls, AI tooling, apps and games, books and audio, music
+                and video, digital products, property care, and whatever is currently half-finished — all the same desk.
               </p>
               <p
                 className={cn(
@@ -305,7 +330,7 @@ export function UmbrellaHomePage() {
               </p>
             </div>
             <div className={cn("grid gap-5 sm:grid-cols-2 lg:grid-cols-3", mmsHomeGlassStackGap)}>
-              {studioDivisions.map((d) => {
+              {labBenches.map((d) => {
                 const Icon = d.Icon;
                 const subtitleClass =
                   "subtitleNormalCase" in d && d.subtitleNormalCase
@@ -327,7 +352,7 @@ export function UmbrellaHomePage() {
                         mmsTextLinkOnGlass,
                       )}
                     >
-                      Open division
+                      Open bench
                       {d.external ? (
                         <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
                       ) : (
@@ -371,9 +396,9 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Clear Starting Points</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Pick the build that sounds closest.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Mixed Maker Shop brings computer repair, web design, AI help, prints, and custom work together under one
-                umbrella — pick the closest fit, or start with a free homepage preview if you want to see the direction
-                before committing to anything.
+                Computer repair, web design, AI help, and custom builds all come out of the same one-man lab — pick the
+                closest fit, or start with a free homepage preview if you want to see the direction before committing to
+                anything.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6", mmsHomeGlassStackGap)}>
@@ -413,8 +438,8 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Start Here</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>What do you need help with today?</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Pick the path that matches today. Topher&apos;s Web Design is the web branch; GiGi&apos;s Print Shop is
-                the 3D printing side — Mixed Maker Shop keeps it organized in one studio.
+                Pick the path that matches today. Topher&apos;s Web Design is the dedicated web branch; the Lab is
+                everything else on the bench — same person either way.
               </p>
               <Link
                 href={publicFreeMockupFunnelHref}
@@ -477,10 +502,10 @@ export function UmbrellaHomePage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Featured Work</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Proof that the paths under MixedMakerShop are real.</h2>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Proof that what comes out of this lab is real.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                A quick proof wall before the departments: local service sites, creative platforms, app-style tools, and
-                the free preview flow — alongside Topher&apos;s Web Design for the dedicated web branch.
+                A quick proof wall before the benches: local service sites, creative platforms, app-style tools, and the
+                free preview flow — alongside Topher&apos;s Web Design for the dedicated web branch.
               </p>
             </div>
             <div className={cn("grid gap-5 md:grid-cols-2 lg:grid-cols-4", mmsHomeGlassStackGap)}>
@@ -527,9 +552,10 @@ export function UmbrellaHomePage() {
           <div className={cn(shell, mmsSectionY)}>
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={mmsSectionEyebrowOnGlass}>Ventures</p>
-              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Flagship builds under the umbrella</h2>
+              <h2 className={cn(mmsH2OnGlass, "mt-4")}>Flagship builds out of the lab</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Brands and launches that still roll up to Mixed Maker Shop — same hub as web, maker work, and labs.
+                Brands and launches that ship on their own domains but still get built, maintained, and shipped from this
+                one desk.
               </p>
               <p className={cn("mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[rgba(232,149,92,0.95)]")}>
                 {umbrellaStudioTagline}
@@ -631,8 +657,8 @@ export function UmbrellaHomePage() {
               <p className={mmsSectionEyebrowOnGlass}>Explore More</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>Important pages, easy to find.</h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Pricing, web design services, website examples, local service pages, portfolio work, builds, and print
-                requests all stay close to the homepage so you do not have to dig around.
+                Pricing, web design services, website examples, local service pages, portfolio work, builds, and the Lab
+                all stay close to the homepage so you do not have to dig around.
               </p>
             </div>
             <div className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", mmsHomeGlassStackGap)}>
@@ -652,22 +678,22 @@ export function UmbrellaHomePage() {
           </div>
         </section>
 
-        <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#111510]")} id="about-topher-gigi">
+        <section className={cn("border-t border-b", homeBackdrop, "max-md:bg-[#111510]")} id="about-topher">
           <div className={cn(shell, mmsSectionY)}>
             <div className={cn("public-glass-box public-glass-box--pad max-w-3xl")}>
-              <p className={mmsSectionEyebrowOnGlass}>About Topher &amp; GiGi</p>
+              <p className={mmsSectionEyebrowOnGlass}>About Topher</p>
               <h2 className={cn(mmsH2OnGlass, "mt-4")}>About Topher</h2>
               <p className={cn("mt-7 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
                 I&apos;m Topher — local tech help since 2000, formerly Cook&apos;s Computer Service, now rebuilding
                 through Mixed Maker Shop.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                {MMS_LOCAL_TECH_POSITIONING} Topher&apos;s Web Design is the web branch; GiGi&apos;s Print Shop covers
-                custom 3D printing — all organized under one studio instead of scattered sites.
+                {MMS_LOCAL_TECH_POSITIONING} Topher&apos;s Web Design is the dedicated web branch; the Lab is where
+                everything else gets built — organized in one place instead of scattered across a dozen sites.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 The goal is simple: build useful things that help real people — whether that is a house call for a slow
-                PC, a website that actually brings in calls, or a custom print that solves a physical problem.
+                PC, a website that actually brings in calls, or a small tool that quietly takes a chore off your plate.
               </p>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
                 <Link href="/about#story-legacy" className={cn(mmsTextLinkOnGlass, "font-semibold")}>
@@ -683,7 +709,7 @@ export function UmbrellaHomePage() {
               {[
                 "In-home computer repair and tech help for Hot Springs, Benton, Hot Springs Village, Lake Hamilton, Fountain Lake, and nearby areas.",
                 "Topher's Web Design is the dedicated branch for sites, local SEO, informational pages, and web systems.",
-                "GiGi handles most of the 3D printing side through GiGi's Print Shop.",
+                "The Lab covers everything else — AI tools, apps and games, books and audiobooks, music, and video.",
               ].map((line, i) => (
                 <div key={line} className="public-glass-box--soft public-glass-box--pad">
                   <span className={mmsStepCircleOnGlass} aria-hidden>{i + 1}</span>
@@ -736,7 +762,7 @@ export function UmbrellaHomePage() {
                 Ready to choose a path?
               </h2>
               <p className={cn("mx-auto mt-5 max-w-lg md:text-lg", mmsOnGlassPrimary)}>
-                Start with a free homepage preview, run a free website check, send GiGi a print idea, ask about property
+                Start with a free homepage preview, run a free website check, ask about a custom tool, ask about property
                 help, or suggest something new for the Idea Lab.
               </p>
               <PublicCtaRow align="center" className={cn(mmsOnGlassCtaRowWrap, "w-full justify-center")}>
@@ -783,7 +809,7 @@ export function UmbrellaHomePage() {
                 </a>
               </p>
               <p className={cn("mx-auto mt-4 max-w-lg text-sm font-medium sm:text-[15px]", mmsOnGlassSecondary)}>
-                Useful things built online, outside, and in the workshop.
+                One person. One lab. Useful things, start to finish.
               </p>
             </div>
           </div>

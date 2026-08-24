@@ -12,19 +12,19 @@ import { SITE_URL } from "@/lib/site";
 const slug = "mixed-maker-shop-guide";
 const canonical = `${SITE_URL}/blog/${slug}`;
 
-const title = "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions";
+const title = "The Mixed Maker Shop Guide: No-Nonsense Web, Tools, and AI Solutions";
 const subtitle =
-  "A glass-box look at free website previews, web design, 3D printing, AI automation, and straight-talk pricing — without agency fluff";
+  "A glass-box look at free website previews, web design, AI automation, custom tools, and straight-talk pricing — without agency fluff";
 
 export const metadata: Metadata = {
   title: blogPostTitle(title),
   description:
-    "How MixedMakerShop works — free website previews, Topher's Web Design, GiGi's Print Shop, AI automation, and clear starting prices. No synergy slides, no quote-me games.",
+    "How MixedMakerShop works — free website previews, Topher's Web Design, the Lab, AI automation, and clear starting prices. No synergy slides, no quote-me games.",
   alternates: { canonical },
   openGraph: {
     title,
     description:
-      "The practical MixedMakerShop guide: websites built for thumb reach, custom 3D prints, workflow automation, and honest pricing from a hands-on studio.",
+      "The practical MixedMakerShop guide: websites built for thumb reach, custom tools, workflow automation, and honest pricing from a one-man lab.",
     url: canonical,
   },
 };
@@ -39,7 +39,7 @@ export default function MixedMakerShopGuidePostPage() {
       subtitle={subtitle}
       heroImage={{
         src: "https://cdn.marblism.com/gbuYVfeUEgB.webp",
-        alt: "A cinematic wide shot of a creative studio combining 3D printing and digital web design in a warm workshop",
+        alt: "A cinematic wide shot of a one-man lab combining code, design, and digital builds in a warm workshop",
       }}
     >
       <p>
@@ -49,7 +49,7 @@ export default function MixedMakerShopGuidePostPage() {
       </p>
       <p>
         At <strong>Mixed Maker Shop</strong>, we don&apos;t do that. We&apos;re a small, hands-on studio that builds
-        real things for real people. Whether you need a website that actually brings in leads, a custom 3D printed part
+        real things for real people. Whether you need a website that actually brings in leads, a custom tool built for one job
         that doesn&apos;t exist in stores, or an AI tool that saves you five hours of boring work every week, we handle
         it with straight talk and clear prices.
       </p>
@@ -76,7 +76,7 @@ export default function MixedMakerShopGuidePostPage() {
       <p>
         We sit down: either virtually or in person: and look at your specific bottlenecks. Are you losing leads because
         your site is hard to use on a phone? Are you spending too much time answering the same three customer questions?
-        We identify the &quot;why&quot; before we touch a single line of code or a 3D printer. You can{" "}
+        We identify the &quot;why&quot; before we touch a single line of code. You can{" "}
         <Link href="/connect">connect with us here</Link> to find your path.
       </p>
 
@@ -120,32 +120,27 @@ export default function MixedMakerShopGuidePostPage() {
 
       <hr />
 
-      <h2>GiGi&apos;s Print Shop: Digital Ideas, Physical Reality</h2>
+      <h2>The Lab: Ideas That Turn Into Shipped Things</h2>
       <p>
-        Sometimes, the solution isn&apos;t digital: it&apos;s something you can hold in your hand.{" "}
-        <strong>GiGi&apos;s Print Shop</strong> is our 3D printing arm where we turn digital files into physical gear.
+        Sometimes the answer isn&apos;t another page on your website — it&apos;s a tool that does the job for you.{" "}
+        <strong>The Lab</strong> is the bench where those get built.
       </p>
-      <p>While big manufacturers want you to order 10,000 units, we specialize in custom, low-volume work. This is perfect for:</p>
+      <p>Big software companies want you on a subscription for a feature you use twice a month. The Lab builds small, specific things instead. That&apos;s a fit for:</p>
       <ul>
         <li>
-          <strong>Custom Branding:</strong> Branded keychains or unique bookmarks for your shop or event.
+          <strong>Custom Tools:</strong> A quoting calculator, an intake form that routes itself, a job-log app for your crew.
         </li>
         <li>
-          <strong>Cosplay &amp; Props:</strong> High-detail gear that you can&apos;t find anywhere else.
+          <strong>AI Helpers:</strong> A bot that answers the same five questions at 2:00 AM so you don&apos;t have to.
         </li>
         <li>
-          <strong>Functional Parts:</strong> Replacing a broken plastic piece that the manufacturer doesn&apos;t sell
-          anymore.
+          <strong>Apps &amp; Games:</strong> Real shipped software — including titles live on the Mac App Store.
         </li>
       </ul>
-      <BlogArticleImage
-        src="https://cdn.marblism.com/o-i-mQ2tLEp.webp"
-        alt="Macro shot of custom 3D printed keychains and high-detail cosplay gear on a dark workshop surface"
-      />
       <p>
-        We use high-resolution printers and durable materials to ensure your prints aren&apos;t just &quot;neat&quot; but
-        actually useful. Whether you have a finished file or just a rough idea on a napkin, we can help you bring it to
-        life. You can <Link href="/3d-printing">browse our 3D printing services</Link> to see what&apos;s possible.
+        We build tools that aren&apos;t just &quot;neat&quot; but actually useful. Whether you have a finished spec or
+        just a rough idea on a napkin, we can help you bring it to life. You can{" "}
+        <Link href="/lab">browse what&apos;s on the bench</Link> to see what&apos;s possible.
       </p>
 
       <hr />
@@ -191,7 +186,7 @@ export default function MixedMakerShopGuidePostPage() {
           or &quot;maintenance&quot; traps.
         </li>
         <li>
-          <strong>3D Printing:</strong> Pricing is based on material and print time. No &quot;consultation fees&quot; just
+          <strong>Custom Builds:</strong> Priced by the job, scoped up front. No &quot;consultation fees&quot; just
           to get a quote.
         </li>
         <li>
@@ -201,14 +196,14 @@ export default function MixedMakerShopGuidePostPage() {
       </ul>
       <p>
         We position ourselves as your &quot;in the trenches&quot; partner. We&apos;re building things every week, testing
-        new materials, and refining our code. When you work with us, you&apos;re talking directly to the makers: Topher
-        and the team: not an account manager who doesn&apos;t know how to open a terminal.
+        new approaches, and refining our code. When you work with us, you&apos;re talking directly to the person doing
+        the work — not an account manager who doesn&apos;t know how to open a terminal.
       </p>
 
       <h2>Why Work With Us?</h2>
       <p>
         Mixed Maker Shop is an umbrella studio because we believe the best solutions often live at the intersection of
-        different tools. Maybe your 3D printing business needs a better website. Maybe your website needs an AI bot to
+        different tools. Maybe your shop needs a better website. Maybe your website needs an AI bot to
         handle requests.
       </p>
       <p>We provide:</p>

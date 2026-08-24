@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "Mixed Maker Shop",
     "umbrella studio",
     "Topher's Web Design",
-    "3D printing",
+    "AI tools",
     "maker builds",
     "AI automation",
     "digital products",

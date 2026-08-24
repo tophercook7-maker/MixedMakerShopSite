@@ -33,7 +33,7 @@ export function WebDesignSalesPage() {
             Websites that bring in customers — built by Topher.
           </h1>
           <p className={`home-reveal mx-auto mt-6 max-w-2xl text-lg leading-relaxed md:text-xl ${body}`}>
-            I build clean, dependable websites, custom 3D printed solutions, and digital tools that help real businesses
+            I build clean, dependable websites, custom AI tools, and digital products that help real businesses
             look legit and actually get results.
           </p>
           <div className="home-reveal mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -102,25 +102,25 @@ export function WebDesignSalesPage() {
           <h2 className={`home-reveal ${h2}`}>What I Build</h2>
           <div className="home-reveal mt-14 space-y-14">
             <div>
-              <h3 className="home-reveal text-xl font-semibold text-[#e09a5a] md:text-2xl">3D Printing by Topher</h3>
+              <h3 className="home-reveal text-xl font-semibold text-[#e09a5a] md:text-2xl">AI Tools &amp; Automation</h3>
               <p className={`home-reveal mt-4 ${body} text-base md:text-[17px] leading-relaxed`}>
-                I design and print custom parts, fixes, and practical solutions. If something&apos;s broken, missing, or
-                needs to exist — I can usually make it.
+                I build the small, specific tools that take repetitive work off your plate — the kind you own outright
+                instead of renting by the month.
               </p>
               <ul className={`home-reveal mt-5 space-y-2 pl-1 text-[#9FB5AD] md:text-[15px]`}>
-                <li>• Replacement parts</li>
-                <li>• Custom mounts, clips, tools</li>
-                <li>• Prototypes and ideas</li>
+                <li>• Lead-response bots that reply while you work</li>
+                <li>• Quoting calculators and intake forms that route themselves</li>
+                <li>• Job logs, dashboards, and internal tools</li>
                 <li>• Real-world problem solving</li>
               </ul>
               <div className="home-reveal mt-6">
                 <TrackedPublicLink
-                  href="/builds#builds-3d-printing"
+                  href="/lab"
                   eventName="public_home_path_cta"
-                  eventProps={{ path: "3d_printing", label: "explore_3d_builds" }}
+                  eventProps={{ path: "lab", label: "explore_lab" }}
                   className="text-[0.9375rem] font-semibold text-[#00FFB2] hover:text-[#35ffc1] underline-offset-4 hover:underline"
                 >
-                  3D printing on Builds →
+                  Step into the Lab →
                 </TrackedPublicLink>
               </div>
             </div>
@@ -159,7 +159,7 @@ export function WebDesignSalesPage() {
           <div className={`home-reveal mt-8 space-y-5 text-base leading-relaxed md:text-[18px] ${body} text-[#E8FDF5]/88`}>
             <p>I&apos;m Topher — I build things that are actually useful.</p>
             <p>
-              MixedMakerShop is where I combine web design, 3D printing, and digital builds into one place. Some people
+              MixedMakerShop is where I combine web design, AI tools, and digital builds into one place. Some people
               come to me because they need a website. Others need something physical made. Others just have an idea they
               don&apos;t know how to bring to life yet.
             </p>

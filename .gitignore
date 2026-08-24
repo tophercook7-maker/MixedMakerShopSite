@@ -36,3 +36,6 @@ assets/captain-maker.original.glb
 logs/
 next-app/.open-next/
 next-app/.wrangler/
+
+# Retired lanes kept on disk for recovery, not shipped.
+_retired/

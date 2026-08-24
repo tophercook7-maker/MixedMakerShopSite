@@ -14,17 +14,17 @@ const canonical = `${SITE_URL}/blog/${slug}`;
 
 const title = "The Comeback: From Cook's Computer Service to the Mixed Maker Shop Revolution";
 const subtitle =
-  "Rebuilding after MS — from Cook's Computer Service since 2000 to a Hot Springs maker shop for web design, 3D printing, AI tutoring, and in-home diagnostics";
+  "Rebuilding after MS — from Cook's Computer Service since 2000 to a Hot Springs one-man lab for web design, AI tutoring, custom tools, and in-home diagnostics";
 
 export const metadata: Metadata = {
   title: blogPostTitle(title),
   description:
-    "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom 3D printing for Hot Springs, Benton, and surrounding Arkansas communities.",
+    "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom builds for Hot Springs, Benton, and surrounding Arkansas communities.",
   alternates: { canonical },
   openGraph: {
     title,
     description:
-      "Topher's comeback story: house-call tech repair, AI tutoring, local SEO websites, and GiGi's Print Shop — serving Hot Springs and neighbors with straight talk and real outcomes.",
+      "Topher's comeback story: house-call tech repair, AI tutoring, local SEO websites, and a one-man lab — serving Hot Springs and neighbors with straight talk and real outcomes.",
     url: canonical,
   },
 };
@@ -39,7 +39,7 @@ export default function MixedMakerShopComebackPostPage() {
       subtitle={subtitle}
       heroImage={{
         src: "https://cdn.marblism.com/mms-workshop-comeback-hero.webp",
-        alt: "A cinematic workshop scene with warm ambient lighting, featuring a mix of vintage computer parts and modern 3D printers on a wooden workbench, with a glowing orange highlight on a digital tablet",
+        alt: "A cinematic workshop scene with warm ambient lighting, featuring vintage computer parts and modern hardware on a wooden workbench, with a glowing orange highlight on a digital tablet",
       }}
     >
       <p>
@@ -68,7 +68,7 @@ export default function MixedMakerShopComebackPostPage() {
       </p>
       <p>
         The truth is, the world changed while I was away. Tech isn&apos;t just a beige box under your desk anymore.
-        It&apos;s in the way we market our local businesses, it&apos;s in the custom 3D-printed gear we carry, and
+        It&apos;s in the way we market our local businesses, it&apos;s in the tools we build for them, and
         it&apos;s in the AI tools that can either make our lives easier or leave us drowning in noise.
       </p>
       <p>
@@ -189,24 +189,20 @@ export default function MixedMakerShopComebackPostPage() {
         alt="A clean, modern laptop displaying a local business website with a Free Mockup offer prominently featured"
       />
 
-      <h2>GiGi&apos;s Print Shop: The Physical Side of Making</h2>
+      <h2>The Lab: Where the Rest of It Gets Built</h2>
       <p>
-        One of the coolest parts of this comeback is <strong>GiGi&apos;s Print Shop</strong>. This is our 3D printing
-        arm, where we take digital ideas and turn them into plastic reality.
+        One of the best parts of this comeback is <strong>the Lab</strong> — the bench where ideas turn into shipped
+        software, published books, and finished video instead of staying notes in a file.
       </p>
       <p>
-        Need a custom keychain for your local business? A specific bracket for a DIY project? Or maybe some cosplay gear
-        for the next local convention? We handle <Link href="/custom-3d-printing">custom 3D printing</Link> with the same
+        Need a custom tool for your local business? An app for a specific job? Or an AI helper that answers questions
+        after hours? We handle <Link href="/lab">custom builds out of the lab</Link> with the same
         &quot;builder-centric&quot; mindset we use for everything else.
       </p>
       <p>
-        We use high-quality materials and meticulous detail because if it&apos;s coming out of our shop, it has to be
-        right. It&apos;s the perfect marriage of my computer background and my love for physical craftsmanship.
+        Everything gets the same meticulous pass, because if it&apos;s coming out of this shop, it has to be right.
+        It&apos;s the perfect marriage of my computer background and my love for actually finishing things.
       </p>
-      <BlogArticleImage
-        src="https://cdn.marblism.com/3d-printer-nozzle-detail.webp"
-        alt="Close-up of a 3D printer nozzle precisely laying down layers of warm orange filament, with finished custom bookmarks and keychains on a shelf behind"
-      />
 
       <h2>Why This Matters to Me</h2>
       <p>
@@ -242,7 +238,7 @@ export default function MixedMakerShopComebackPostPage() {
           <strong>A website</strong> that actually pays for itself.
         </li>
         <li>
-          <strong>A 3D-printed</strong> solution to a physical problem.
+          <strong>A custom-built</strong> solution to a stubborn problem.
         </li>
       </ol>
       <p>I&apos;m here. I&apos;m back. And I&apos;m ready to get to work.</p>
@@ -254,8 +250,8 @@ export default function MixedMakerShopComebackPostPage() {
             Builds
           </Link>
           , check out our{" "}
-          <Link href="/3d-printing" className="font-semibold">
-            3D Printing options
+          <Link href="/lab" className="font-semibold">
+            the Lab
           </Link>
           , or request your{" "}
           <Link href={publicFreeMockupFunnelHref} className="font-semibold">

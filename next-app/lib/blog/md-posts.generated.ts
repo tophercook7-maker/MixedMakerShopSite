@@ -60,11 +60,21 @@ export const MD_POSTS: BlogIndexPost[] = [
     slug: "what-mixed-maker-shop-builds",
     title: "What Mixed Maker Shop Builds: Practical Tech Help, Websites, AI, and Maker Projects",
     category: "Studio Updates",
-    excerpt: "A clear look at the practical services and projects under the Mixed Maker Shop umbrella: local tech help, websites, AI tools, 3D printing, and custom builds.",
+    excerpt: "A clear look at the practical services and projects in the Mixed Maker Shop lab: local tech help, websites, AI tools, apps, and custom builds.",
     readTime: "4 min read",
     readMinutes: 4,
     publishedAt: "2026-08-10",
     href: "/blog/what-mixed-maker-shop-builds",
+  },
+  {
+    slug: "best-smart-home-workshop-upgrades-worth-buying-now",
+    title: "Best Smart Home & Workshop Upgrades Worth Buying Now",
+    category: "Gear",
+    excerpt: "Tired of gear that breaks or smart tech that underperforms? For those who view their workshop and home as spaces for creation, every purchase should be an\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-08-24",
+    href: "/blog/best-smart-home-workshop-upgrades-worth-buying-now",
   },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];

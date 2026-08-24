@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { getMixedMakerStructuredDataGraph } from "@/lib/structured-data";
@@ -8,13 +7,13 @@ const structuredDataJson = JSON.stringify(getMixedMakerStructuredDataGraph());
 
 const keywords = [
   "MixedMakerShop",
-  "Topher and GiGi",
-  "creative studio",
-  "practical projects",
+  "Topher Cook",
+  "one-man laboratory",
+  "web design Hot Springs AR",
   "websites and tools",
-  "3D printing",
-  "property care",
-  "handmade projects",
+  "AI automation",
+  "apps and games",
+  "books and audiobooks",
   "small business tools",
   "local services",
 ] as const;
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | MixedMakerShop",
   },
   description: metaDescription(
-    "Hot Springs AR web design, local SEO, and 3D printing for small businesses. Sites from $400, free homepage preview, founder-led — no agency layers."
+    "Hot Springs AR web design, local SEO, and AI tools from a one-man lab. Sites from $400, free homepage preview, built by one person — no agency layers."
   ),
   keywords: [...keywords],
   applicationName: "MixedMakerShop",
@@ -48,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "MixedMakerShop | Web Design & Local SEO Hot Springs AR",
     description: metaDescription(
-      "Small business websites, local SEO, and maker services in Hot Springs, Arkansas. Free preview · sites from $400 · built by Topher."
+      "Small business websites, local SEO, AI tools, apps, and books out of a one-man lab in Hot Springs, Arkansas. Free preview · sites from $400."
     ),
     url: SITE_URL,
     siteName: "MixedMakerShop",
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
         url: "/og-image",
         width: 1200,
         height: 630,
-        alt: "MixedMakerShop — practical creative studio by Topher & GiGi",
+        alt: "MixedMakerShop — Topher\u2019s one-man laboratory in Hot Springs, Arkansas",
       },
     ],
   },
@@ -92,25 +91,14 @@ export default function RootLayout({
           href="/llms.txt"
           title="LLMs.txt — guide for AI assistants"
         />
+        <link
+          rel="alternate"
+          type="text/plain"
+          href="/llms-full.txt"
+          title="LLMs full site guide"
+        />
       </head>
       <body className="min-h-screen antialiased">
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-VQ4K5GXVTE" strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-VQ4K5GXVTE');
-          `}
-        </Script>
-        <Script id="pinterest-tag" strategy="afterInteractive">
-          {`
-            !function(e){if(!window.pintrk){window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var n=window.pintrk;n.queue=[],n.version="3.0";var t=document.createElement("script");t.async=!0,t.src=e;var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
-            pintrk('load', '2614327461808');
-            pintrk('page');
-          `}
-        </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredDataJson }} />
         {children}
       </body>

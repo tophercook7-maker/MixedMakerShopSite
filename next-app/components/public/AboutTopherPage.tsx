@@ -64,7 +64,7 @@ export function AboutTopherPage() {
             <div className="space-y-6 text-base leading-relaxed text-[#354239] md:text-lg">
               <p>
                 I&apos;m Topher. MixedMakerShop is where I combine in-home computer repair, web design, AI help, local
-                business support, 3D printing, and digital builds into one place.
+                business support, AI tools, and digital builds into one place.
               </p>
               <p>
                 Some people come to me because a computer is slow, the Wi-Fi won&apos;t cooperate, or they need someone

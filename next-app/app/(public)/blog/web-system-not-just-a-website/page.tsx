@@ -38,7 +38,7 @@ export default function WebSystemNotJustAWebsitePostPage() {
       subtitle={subtitle}
       heroImage={{
         src: "https://cdn.marblism.com/p-PrF8SsN1A.webp",
-        alt: "A modern workshop desk with a laptop showing a clean business dashboard, surrounded by 3D printed gears and maker tools",
+        alt: "A modern workshop desk with a laptop showing a clean business dashboard, surrounded by maker tools",
       }}
     >
       <p>
@@ -54,7 +54,7 @@ export default function WebSystemNotJustAWebsitePostPage() {
         website. You need a <strong>Web System</strong>.
       </p>
       <p>
-        At Mixed Maker Shop, we&apos;ve spent a lot of time in the workshop: both the physical one with 3D printers and
+        At Mixed Maker Shop, we&apos;ve spent a lot of time in the workshop: both the physical one with tools on the bench and
         the digital one with code. We&apos;ve learned that the most successful businesses aren&apos;t the ones with the
         flashiest &quot;brochure&quot; sites; they&apos;re the ones with digital employees that handle the heavy lifting.
       </p>
@@ -126,7 +126,7 @@ export default function WebSystemNotJustAWebsitePostPage() {
         alt="A whimsical 3D-style squirrel character sitting on the edge of a digital browser window"
       />
       <p>
-        At Mixed Maker Shop, we love combining our <Link href="/3d-printing">3D printing and design skills</Link> with
+        At Mixed Maker Shop, we love combining our <Link href="/lab">motion and design work</Link> with
         our web work. We recently used a <strong>custom 3D squirrel animation</strong> to create a unique, interactive
         digital experience.
       </p>
@@ -169,7 +169,7 @@ export default function WebSystemNotJustAWebsitePostPage() {
       <h2>Add Details People Can Actually Feel</h2>
       <p>
         When we build a system, we think about the &quot;tactile&quot; side of digital work. Just like a{" "}
-        <Link href="/blog/custom-3d-printed-bookmarks">custom 3D-printed bookmark</Link> feels solid in your hand, your
+        <Link href="/lab">tool built for one job</Link> feels solid in your hand, your
         web system should feel solid to use.
       </p>
 

@@ -11,6 +11,7 @@ export function PublicFooter() {
       links: [
         { href: publicGoogleReviewHref, label: "⭐ Leave a Review", external: true },
         { href: "/start-here", label: "Start Here" },
+        { href: "/lab", label: "The Lab" },
         { href: "/examples", label: "Examples" },
         { href: "/idea-lab", label: "Idea Lab" },
         { href: "/contact", label: "Contact" },
@@ -35,12 +36,12 @@ export function PublicFooter() {
       links: PUBLIC_POPULAR_PAGES,
     },
     {
-      title: "GiGi’s Print Shop",
+      title: "The Lab",
       links: [
-        { href: "/3d-printing", label: "GiGi’s Print Shop" },
-        { href: "/3d-printing#print-request", label: "Start a Print Request" },
-        { href: "/3d-printing#seasonal-prints", label: "Bookmarks & Gifts" },
-        { href: "/3d-printing#what-gigi-makes", label: "Useful Prints" },
+        { href: "/lab", label: "Inside the Lab" },
+        { href: "/builds", label: "Builds & Experiments" },
+        { href: "/portfolio/index.html", label: "Books, Apps & Games" },
+        { href: "/3d-scenes", label: "Pop-Out Video Ads" },
       ],
     },
     {
@@ -80,8 +81,8 @@ export function PublicFooter() {
               MixedMakerShop
             </h2>
             <p className="small m-0 leading-[1.55] opacity-[0.92]">
-              MixedMakerShop is Topher &amp; GiGi&apos;s practical creative studio for useful things built online, outside,
-              and in the workshop.
+              MixedMakerShop is Topher&apos;s one-man laboratory — websites, AI tools, apps, books, video, and local
+              tech help, all built by one person in Hot Springs.
             </p>
             <p className="small mt-2.5">
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide

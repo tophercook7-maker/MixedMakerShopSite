@@ -116,7 +116,7 @@ export default function CleanAndQuickPcServicePostPage() {
           it&apos;s dragging, your workday is dragging.
         </li>
         <li>
-          <strong>The Creative Maker:</strong> Whether you&apos;re designing 3D prints or editing photos, you need every
+          <strong>The Creative Maker:</strong> Whether you&apos;re rendering video or editing photos, you need every
           bit of processing power you can get.
         </li>
         <li>
@@ -158,7 +158,7 @@ export default function CleanAndQuickPcServicePostPage() {
       <h2>The &quot;Gunk&quot; We Get Rid Of (And why it matters)</h2>
       <BlogArticleImage
         src="https://cdn.marblism.com/2qXkwb4PJn6.webp"
-        alt="A minimalist and clean home office desk setup, featuring a monitor and a 3D printed keychain, following a muted earthy palette"
+        alt="A minimalist and clean home office desk setup, featuring a monitor and a small desk plant, following a muted earthy palette"
       />
       <p>
         You&apos;d be surprised what accumulates on a computer after just six months of use. Here are the usual suspects

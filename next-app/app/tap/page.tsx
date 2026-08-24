@@ -17,7 +17,7 @@ const canonical = "https://mixedmakershop.com/tap";
 export const metadata: Metadata = {
   title: "Mixed Maker Shop | Tap Card",
   description:
-    "Mixed Maker Shop umbrella studio — Topher's Web Design for websites & web systems, GiGi's Print Shop for 3D printing. Contact Mixed Maker Shop in Hot Springs, AR.",
+    "Mixed Maker Shop — Topher's one-man lab for websites, web systems, AI tools, apps, and video. Contact Mixed Maker Shop in Hot Springs, AR.",
   alternates: { canonical },
 };
 
@@ -70,10 +70,10 @@ export default function TapPage() {
           <header className={cn(cardClass, "text-center")}>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/90">Mixed Maker Shop</p>
             <h1 className="mt-4 text-2xl font-bold leading-snug tracking-tight text-white sm:text-[1.65rem]">
-              Creative studio under one umbrella — web design, web systems, and custom 3D printing.
+              A one-man laboratory — web design, web systems, AI tools, apps, and video.
             </h1>
             <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/80">
-              Local builder · Hot Springs area · Topher&apos;s Web Design + GiGi&apos;s Print Shop
+              Local builder · Hot Springs area · Topher Cook, start to finish
             </p>
           </header>
 
@@ -194,10 +194,10 @@ export default function TapPage() {
             </h2>
             <div className="flex flex-col gap-4">
               <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">Mixed Maker Shop · Umbrella</h3>
+                <h3 className="text-lg font-bold text-white">Mixed Maker Shop · The Lab</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  The studio that brings web design, web systems, and custom 3D printing together — one contact, clear
-                  paths, practical help without the fluff.
+                  One person building web design, web systems, AI tools, apps, and video — one contact, clear paths,
+                  practical help without the fluff.
                 </p>
               </article>
               <article className={cardClass}>
@@ -217,10 +217,10 @@ export default function TapPage() {
                 </p>
               </article>
               <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">3D Printing · GiGi&apos;s side</h3>
+                <h3 className="text-lg font-bold text-white">The Lab · everything else</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  Useful and fun prints — keychains, bookmarks, shelf pieces, tools, fidget toys, cosplay-style swords,
-                  and everyday custom items.
+                  AI tools and automation, custom apps and games, published books and audiobooks, original music, and
+                  pop-out video ads — all built on the same bench.
                 </p>
               </article>
             </div>

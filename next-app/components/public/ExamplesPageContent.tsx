@@ -62,9 +62,9 @@ const proofWallSections = [
     href: "#real-work",
   },
   {
-    title: "GiGi’s Print Shop Examples",
-    body: "Bookmarks, useful holders, replacement parts, seasonal prints, and custom requests as the shop grows.",
-    href: "/3d-printing#what-gigi-makes",
+    title: "Lab Builds",
+    body: "AI tools, apps and games, books and audiobooks, music and video — the non-website side of the bench.",
+    href: "/lab",
   },
   {
     title: "Property Care Examples",
@@ -344,11 +344,11 @@ export function ExamplesPageContent() {
             <div className="public-glass-box public-glass-box--pad max-w-3xl">
               <p className={cn(mmsEyebrowOnGlass, "tracking-[0.18em]")}>Proof Wall</p>
               <h2 id="proof-wall-title" className={cn(mmsH2OnGlass, "mt-4")}>
-                Examples across the MixedMakerShop departments
+                Examples from across the lab
               </h2>
               <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                MixedMakerShop is an umbrella brand, so this proof wall is organized by path: websites, GiGi’s Print
-                Shop, property care, tools, ideas, and visual before-and-after work.
+                MixedMakerShop is one person with a lot of benches, so this proof wall is organized by path: websites,
+                lab builds, property care, tools, ideas, and visual before-and-after work.
               </p>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-5">

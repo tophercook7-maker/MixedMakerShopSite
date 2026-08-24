@@ -18,7 +18,7 @@ const backdrop = mmsUmbrellaSectionBackdrop;
 const faqs: { q: string; a: string }[] = [
   {
     q: "What is MixedMakerShop?",
-    a: "MixedMakerShop is Topher and GiGi's practical creative studio — one umbrella home for websites and tools, 3D printing, property-care paths, and other useful projects built online, outside, and in the workshop.",
+    a: "MixedMakerShop is Topher Cook's one-man laboratory in Hot Springs, Arkansas. One person designs, builds, and ships everything here — small business websites, local SEO, AI tools, apps and games, books and audiobooks, video ads, in-home computer repair, and property care.",
   },
   {
     q: "What is Topher's Web Design?",
@@ -30,7 +30,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: "What services are offered?",
-    a: "Under the umbrella you will find web design and digital tools, GiGi's Print Shop for custom 3D printing, property-care routing where it applies, and new experiments in the Idea Lab — all described in plain language on each path's page.",
+    a: "Web design and local SEO, in-home computer repair, AI tools and automation, custom apps and games, books and audiobooks, pop-out video ads, property-care routing, and whatever is currently on the bench in the Lab and Idea Lab — all described in plain language on each page.",
   },
   {
     q: "Who is MixedMakerShop for?",
@@ -45,8 +45,12 @@ const faqs: { q: string; a: string }[] = [
     a: "Yes. MixedMakerShop helps local businesses improve their Google presence with better website structure, local service pages, Google Business Profile cleanup, review links, and search-friendly content.",
   },
   {
-    q: "Do you offer 3D printing services?",
-    a: "Yes. MixedMakerShop offers 3D printing for replacement parts, functional prints, prototypes, custom solutions, and small-run local projects.",
+    q: "Is MixedMakerShop really just one person?",
+    a: "Yes. Topher is the whole shop — the person who answers the phone is the person who builds the site, writes the automation, and shows up for the house call. Nothing gets handed off to a junior or outsourced overseas.",
+  },
+  {
+    q: "What else comes out of the Lab besides websites?",
+    a: "AI tools and automation for small businesses, custom apps and games, published books and audiobooks, original music and video, and pop-out video ads. The Lab page lists what is shipped, what is live, and what is still on the bench.",
   },
   {
     q: "Do you work with businesses outside Hot Springs?",
@@ -54,7 +58,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: "How do I get started?",
-    a: "You can contact MixedMakerShop through the website, call 501-488-1253, or request a free mockup or estimate for your website, 3D printing, or local business project.",
+    a: "You can contact MixedMakerShop through the website, call 501-488-1253, or request a free homepage preview or estimate for your website, AI tool, or local business project.",
   },
 ];
 

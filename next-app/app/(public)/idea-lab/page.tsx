@@ -69,11 +69,11 @@ const ideasInTesting = [
     button: "Suggest / Vote",
   },
   {
-    name: "GiGi’s Seasonal Print Ideas",
+    name: "Pop-Out Video Ads",
     status: "Early product ideas",
     description:
-      "Bookmarks, Easter items, church gifts, small seasonal pieces, and useful 3D printed items from GiGi’s Print Shop.",
-    audience: "Church groups, gift buyers, families, and anyone who wants useful custom prints.",
+      "Flat business photos turned into cinematic pop-out video ads that break the frame — built for social feeds and website heroes.",
+    audience: "Local businesses, creators, and anyone who needs a scroll-stopping post.",
     button: "Ask About This",
   },
   {

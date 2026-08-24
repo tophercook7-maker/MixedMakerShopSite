@@ -214,8 +214,8 @@ export default function MobileFriendlyWebsiteDesignPostPage() {
 
       <h2>All Under One Umbrella</h2>
       <p>
-        At MixedMakerShop, we don&apos;t just do <Link href="/web-design">Web Design</Link>. We&apos;re a creative studio
-        that handles everything from <Link href="/3d-printing">Custom 3D Printing</Link> to{" "}
+        At MixedMakerShop, we don&apos;t just do <Link href="/web-design">Web Design</Link>. We&apos;re a one-man lab
+        that handles everything from <Link href="/lab">apps, books, and video</Link> to{" "}
         <Link href="/about">AI &amp; Automation</Link>.
       </p>
       <p>

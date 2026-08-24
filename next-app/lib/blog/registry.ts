@@ -82,17 +82,6 @@ const posts: BlogIndexPost[] = [
     href: "/blog/local-seo-for-electricians",
   },
   {
-    slug: "3d-printed-replacement-parts",
-    title: "Don't Toss It, Print It: How 3D Printing Saves Your 'Obsolete' Gear",
-    category: "3D Printing",
-    excerpt:
-      "When a broken plastic clip kills a perfectly good machine and the part is 'discontinued,' don't throw it away. Custom 3D printed replacement parts from GiGi's Print Shop turn 'obsolete' into a suggestion.",
-    readTime: "7 min read",
-    readMinutes: 7,
-    publishedAt: "2026-06-26",
-    href: "/blog/3d-printed-replacement-parts",
-  },
-  {
     slug: "local-seo-for-plumbers",
     title: "Flushed Away: Why Plumbers Need Local SEO to Stay Above Water",
     category: "Local SEO",
@@ -104,17 +93,6 @@ const posts: BlogIndexPost[] = [
     href: "/blog/local-seo-for-plumbers",
   },
   {
-    slug: "3d-printed-keychains-ultimate-handout",
-    title: "Beyond the Business Card: Why 3D Printed Keychains are the Ultimate Handout",
-    category: "3D Printing",
-    excerpt:
-      "Skip forgettable paper cards — bulk 3D printed keychains with embossed logos, low minimums, and daily brand visibility from GiGi's Print Shop.",
-    readTime: "8 min read",
-    readMinutes: 8,
-    publishedAt: "2026-06-20",
-    href: "/blog/3d-printed-keychains-ultimate-handout",
-  },
-  {
     slug: "local-seo-home-service-advantage",
     title: "The Local Advantage: Why SEO for Home Service Businesses is Your Secret Weapon",
     category: "Local SEO",
@@ -124,17 +102,6 @@ const posts: BlogIndexPost[] = [
     readMinutes: 8,
     publishedAt: "2026-06-19",
     href: "/blog/local-seo-home-service-advantage",
-  },
-  {
-    slug: "stop-dog-earing-3d-printed-bookmarks",
-    title: "Stop Dog-Earing Your Books: Why Custom 3D Printed Bookmarks Are the Next Big Thing",
-    category: "3D Printing",
-    excerpt:
-      "Quit folding page corners — durable custom 3D printed bookmarks with raised lettering, book club branding, and tactile details from GiGi's Print Shop.",
-    readTime: "8 min read",
-    readMinutes: 8,
-    publishedAt: "2026-06-18",
-    href: "/blog/stop-dog-earing-3d-printed-bookmarks",
   },
   {
     slug: "clean-and-quick-pc-service",
@@ -171,55 +138,11 @@ const posts: BlogIndexPost[] = [
     href: "/blog/automate-small-business-workflow",
   },
   {
-    slug: "hollow-gate",
-    title: "Step Beyond the Threshold: Unlocking The Hollow Gate",
-    category: "Idea Lab",
-    excerpt:
-      "A sensory storytelling experiment from Mixed Maker Shop — digital atmosphere, curated sound, and a threshold you step into, not scroll past.",
-    readTime: "8 min read",
-    readMinutes: 8,
-    publishedAt: "2026-06-14",
-    href: "/blog/hollow-gate",
-  },
-  {
-    slug: "business-card-3d-printed-keychain",
-    title: "Why Your Business Card Should Be a 3D Printed Keychain (and Why Bulk Matters)",
-    category: "3D Printing",
-    excerpt:
-      "Pocket-sized billboards on keys — why bulk 3D printed keychains beat paper business cards for daily impressions, durability, and local brand saturation.",
-    readTime: "9 min read",
-    readMinutes: 9,
-    publishedAt: "2026-06-13",
-    href: "/blog/business-card-3d-printed-keychain",
-  },
-  {
-    slug: "custom-3d-printed-bookmarks",
-    title: "Why Custom 3D Printed Bookmarks Stand Out",
-    category: "3D Printing",
-    excerpt:
-      "25+ creative custom 3D printed bookmark ideas for schools, libraries, businesses, and book lovers — durable, tactile keepsakes from GiGi's Print Shop.",
-    readTime: "10 min read",
-    readMinutes: 10,
-    publishedAt: "2026-06-07",
-    href: "/blog/custom-3d-printed-bookmarks",
-  },
-  {
-    slug: "3d-printed-keychains-bulk-marketing",
-    title: "Why 3D Printed Keychains in Bulk Will Change the Way You Market Your Local Business",
-    category: "3D Printing",
-    excerpt:
-      "Ditch catalog swag — how bulk 3D printed keychains, QR lead magnets, lumpy mail, and loyalty tokens help local businesses market smarter with small MOQs from GiGi's Print Shop.",
-    readTime: "8 min read",
-    readMinutes: 8,
-    publishedAt: "2026-06-12",
-    href: "/blog/3d-printed-keychains-bulk-marketing",
-  },
-  {
     slug: "mixed-maker-shop-made-simple",
-    title: "The Mixed Maker Shop Guide: Web Design, 3D Printing, and AI Automation Made Simple",
+    title: "The Mixed Maker Shop Guide: Web Design, Custom Builds, and AI Automation Made Simple",
     category: "MixedMakerShop Guide",
     excerpt:
-      "One umbrella for mobile friendly website design, bulk 3D printed keychains, local SEO, AI automation for small business, and the free homepage preview — without drowning in tabs.",
+      "One lab for mobile friendly website design, custom tools and apps, local SEO, AI automation for small business, and the free homepage preview — without drowning in tabs.",
     readTime: "9 min read",
     readMinutes: 9,
     publishedAt: "2026-06-11",
@@ -230,7 +153,7 @@ const posts: BlogIndexPost[] = [
     title: "The Mixed Maker Shop Guide: No-Nonsense Tech, Print, and AI Solutions",
     category: "MixedMakerShop Guide",
     excerpt:
-      "Topher's Web Design, GiGi's Print Shop, AI automation, free homepage previews, and straight-talk pricing — a glass-box guide to how MixedMakerShop works without agency fluff.",
+      "Topher's Web Design, the Lab, AI automation, free homepage previews, and straight-talk pricing — a glass-box guide to how MixedMakerShop works without agency fluff.",
     readTime: "8 min read",
     readMinutes: 8,
     publishedAt: "2026-06-10",
@@ -241,7 +164,7 @@ const posts: BlogIndexPost[] = [
     title: "The Comeback: From Cook's Computer Service to the Mixed Maker Shop Revolution",
     category: "Our Story",
     excerpt:
-      "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom 3D printing across Hot Springs and surrounding communities.",
+      "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom builds across Hot Springs and surrounding communities.",
     readTime: "9 min read",
     readMinutes: 9,
     publishedAt: "2026-06-09",
@@ -275,7 +198,7 @@ const posts: BlogIndexPost[] = [
     title: "The Off-Grid Brain: Why We’re Building a Solar-Powered LoRa Weather Station",
     category: "Maker Builds",
     excerpt:
-      "Solar power, LoRa radio, 3D-printed Stevenson screens, and edge AI — a weather station build with no cloud rent and data you actually own.",
+      "Solar power, LoRa radio, custom Stevenson screens, and edge AI — a weather station build with no cloud rent and data you actually own.",
     readTime: "8 min read",
     readMinutes: 8,
     publishedAt: "2026-06-06",
@@ -302,17 +225,6 @@ const posts: BlogIndexPost[] = [
     readMinutes: 7,
     publishedAt: "2026-06-04",
     href: "/blog/website-preview-generator",
-  },
-  {
-    slug: "custom-3d-printing-branding",
-    title: "Beyond Plastic: How Custom 3D Printing Services Can Level Up Your Branding",
-    category: "3D Printing",
-    excerpt:
-      "Ditch catalog swag that ends up in the junk drawer. Custom 3D printed keychains, bookmarks, and branded gear that customers actually keep — in small batches from Hot Springs.",
-    readTime: "8 min read",
-    readMinutes: 8,
-    publishedAt: "2026-06-03",
-    href: "/blog/custom-3d-printing-branding",
   },
   {
     slug: "mobile-friendly-website-design",

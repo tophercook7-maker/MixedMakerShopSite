@@ -112,6 +112,9 @@ export default function Sidebar({
         <a href="/admin/crm/web?pool=top_picks" className="block py-1 hover:text-[var(--admin-gold)]">
           Top Picks
         </a>
+        <a href="/admin/send-queue" className="block py-1 hover:text-[var(--admin-gold)]">
+          📤 Send queue
+        </a>
         <a href="/admin/crm/hub" className="block py-1 hover:text-[var(--admin-gold)]">
           CRM hub
         </a>

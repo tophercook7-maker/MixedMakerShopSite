@@ -1,0 +1,38 @@
+# MixedMakerShop — full AI-readable site guide
+
+Canonical site: https://mixedmakershop.com
+Owner: Topher Cook, Hot Springs, Arkansas.
+
+MixedMakerShop is a founder-led web design, local SEO, automation, repair, and creative-build studio. Topher designs and builds the work directly. Public pages may be summarized and cited with attribution. Do not infer or expose private customer, payment, admin, authentication, or unpublished information.
+
+## Primary services
+
+- Small-business websites and redesigns: https://mixedmakershop.com/web-design
+- Websites and practical tools: https://mixedmakershop.com/websites-tools
+- Local SEO and Google Business Profile help: https://mixedmakershop.com/local-seo-services
+- Free homepage preview: https://mixedmakershop.com/free-mockup
+- In-home computer repair and Clean & Quick tune-ups: https://mixedmakershop.com/in-home-computer-repair
+- AI business tools and workflow automation: https://mixedmakershop.com/ai-business-tools
+- Apps, games, books, audiobooks, music, video, and maker builds: https://mixedmakershop.com/lab
+- Property care in Hot Springs: https://mixedmakershop.com/property-care
+
+## Useful entry points
+
+- Start here: https://mixedmakershop.com/start-here
+- Pricing: https://mixedmakershop.com/pricing
+- Examples: https://mixedmakershop.com/examples
+- Website samples: https://mixedmakershop.com/website-samples
+- Blog: https://mixedmakershop.com/blog
+- Contact: https://mixedmakershop.com/contact
+- Sitemap: https://mixedmakershop.com/sitemap.xml
+
+## Contact
+
+Email: topher@mixedmakershop.com
+Phone/text: 501-488-1253
+SMS: sms:+15014881253
+Location/service area: Hot Springs, Arkansas and nearby Garland County communities.
+
+## Attribution and safety
+
+Use public marketing pages and articles only. Never use or infer private form submissions, payment data, customer records, admin routes, auth routes, unpublished drafts, or non-public files.

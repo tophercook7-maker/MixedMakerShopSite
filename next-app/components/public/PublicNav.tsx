@@ -14,9 +14,8 @@ const navItems: {
   event?: { name: string; props?: Record<string, string | number | boolean | undefined> };
 }[] = [
   { href: "/start-here", label: "Start Here" },
-  { href: "/hollow-gate", label: "The Hollow Gate", event: { name: "public_hollow_gate_cta_click", props: { location: "nav" } } },
+  { href: "/lab", label: "The Lab", event: { name: "public_lab_click", props: { location: "nav" } } },
   { href: "/websites-tools", label: "Websites & Tools" },
-  { href: "/3d-printing", label: "GiGi’s Print Shop" },
   { href: "/property-care", label: "Property Care" },
   { href: "/idea-lab", label: "Idea Lab" },
   { href: "/examples", label: "Examples" },
@@ -67,9 +66,9 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>Useful things built online, outside, and in the workshop</strong>
+              <strong>A one-man laboratory for useful things</strong>
             </div>
-            <div className="small nav-brand-meta">Topher &amp; GiGi · Hot Springs, Arkansas</div>
+            <div className="small nav-brand-meta">Topher Cook · Hot Springs, Arkansas</div>
           </div>
         </Link>
         <button ref={toggleRef} className="menu-toggle" type="button" aria-label="Open menu">

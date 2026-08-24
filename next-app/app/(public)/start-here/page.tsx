@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/start-here" },
   title: "Start Here | MixedMakerShop",
   description:
-    "Choose the right MixedMakerShop path: websites and tools, GiGi’s Print Shop, property care, examples, or the Idea Lab.",
+    "Choose the right MixedMakerShop path: websites and tools, the Lab, property care, examples, or the Idea Lab.",
 };
 
 const paths = [
@@ -35,10 +35,10 @@ const paths = [
     cta: "Explore Websites & Tools",
   },
   {
-    title: "Need something 3D printed?",
-    body: "Visit GiGi’s Print Shop for bookmarks, gifts, useful prints, replacement pieces, and custom requests.",
-    href: "/3d-printing",
-    cta: "Visit GiGi’s Print Shop",
+    title: "Curious what else I build?",
+    body: "Websites, AI tools, apps and games, books and audiobooks, music and video — everything on the bench, in one place.",
+    href: "/lab",
+    cta: "Step Into the Lab",
   },
   {
     title: "Need lawn or property help?",
@@ -48,13 +48,13 @@ const paths = [
   },
   {
     title: "Want to see proof?",
-    body: "Browse websites, builds, tools, prints, and project examples.",
+    body: "Browse websites, builds, tools, and project examples.",
     href: "/examples",
     cta: "See Examples",
   },
   {
     title: "Have an idea?",
-    body: "Suggest a practical tool, service, product, or print idea.",
+    body: "Suggest a practical tool, service, product, or project idea.",
     href: "/idea-lab",
     cta: "Open Idea Lab",
   },
@@ -73,8 +73,8 @@ export default function StartHerePage() {
                 Pick the MixedMakerShop path that fits.
               </h1>
               <p className={cn("mt-6 text-base leading-relaxed md:text-lg", mmsOnGlassPrimary)}>
-                MixedMakerShop is the umbrella brand for websites, tools, property care, GiGi’s 3D prints, and new ideas.
-                This page keeps the choices clear.
+                MixedMakerShop is a one-man laboratory — websites, tools, AI, apps, books, video, property care, and new
+                ideas, all built by one person. This page keeps the choices clear.
               </p>
               <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnPrimary, "mt-9 inline-flex px-8 no-underline hover:no-underline")}>
                 Get a Free Website Preview

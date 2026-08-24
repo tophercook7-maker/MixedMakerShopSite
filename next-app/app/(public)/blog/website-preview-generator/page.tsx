@@ -192,8 +192,8 @@ export default function WebsitePreviewGeneratorPostPage() {
         <Link href="/">MixedMakerShop umbrella</Link> — we&apos;re building a business asset.
       </p>
       <p>
-        We look at the whole picture. Do you need custom <Link href="/3d-printing">3D printed merch</Link> to hand out to
-        clients? Do you need an{" "}
+        We look at the whole picture. Do you need a <Link href="/lab">custom tool built in the lab</Link>? Do you need
+        an{" "}
         <Link href="/websites-tools#ai-automation">AI helper bot</Link> to answer questions at 2:00 AM?
       </p>
       <p>
@@ -202,7 +202,7 @@ export default function WebsitePreviewGeneratorPostPage() {
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/tkjhjkF_lWa.webp"
-        alt="A modern workspace featuring a 3D printer and a digital website builder interface"
+        alt="A modern workspace featuring a digital website builder interface on a wide monitor"
       />
 
       <h2>Take the Test Drive</h2>

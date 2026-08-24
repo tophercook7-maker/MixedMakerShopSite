@@ -9,12 +9,12 @@ const canonical = `${SITE_URL}/price-sheet`;
 export const metadata: Metadata = {
   title: "Price Sheet (Printable) | MixedMakerShop",
   description:
-    "Print-friendly single-page price sheet for MixedMakerShop — web design, hosting, social media posting, in-home computer repair, tutoring, 3D printing, and AI tools.",
+    "Print-friendly single-page price sheet for MixedMakerShop — web design, hosting, social media posting, in-home computer repair, tutoring, and AI tools.",
   alternates: { canonical },
   openGraph: {
     title: "MixedMakerShop Price Sheet — Printable",
     description:
-      "Every live price on one page, ready to print and study. Web design, social media, computer repair, tutoring, 3D printing.",
+      "Every live price on one page, ready to print and study. Web design, social media, computer repair, tutoring, AI tools.",
     url: canonical,
     type: "website",
   },
@@ -162,34 +162,6 @@ const GROUPS: Group[] = [
         item: "Tutoring — flat rate",
         what: "One simple price for every topic. AI tools, basics, email, Office, photos, online safety. One-hour minimum, book as many in a row as you want, no packs or contracts.",
         price: "$65/hr",
-      },
-    ],
-  },
-  {
-    title: "3D printing — GiGi's Print Shop",
-    note: "/3d-printing",
-    intro: "Quote-based, depending on size, color, material, and finishing. We always quote before printing.",
-    headers: ["Type", "Typical range", "Price"],
-    rows: [
-      {
-        item: "Small parts (keychains, brackets, small replacements)",
-        what: "Standard PLA or PETG, quick prints, common sizes.",
-        price: "$5–$15",
-      },
-      {
-        item: "Mid-size parts (figures, mid-detail prints, brackets)",
-        what: "Multi-hour prints with cleanup & finishing.",
-        price: "$15–$45",
-      },
-      {
-        item: "Large or detailed prints (multi-day, multi-color)",
-        what: "Quoted per project.",
-        price: "Quoted",
-      },
-      {
-        item: "Modeling from photo / sketch / measurements",
-        what: "When you don't have an STL. Pricing depends on complexity.",
-        price: "$20–$80",
       },
     ],
   },

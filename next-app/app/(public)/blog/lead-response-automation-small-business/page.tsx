@@ -37,13 +37,13 @@ export default function LeadResponseAutomationPostPage() {
       subtitle={subtitle}
       heroImage={{
         src: "https://cdn.marblism.com/PmpktF9iiAO.webp",
-        alt: "A professional craftsman's workshop with a smartphone showing a missed call next to a 3D printed part",
+        alt: "A professional craftsman's workshop with a smartphone showing a missed call on the bench",
       }}
     >
       <p>
         You know that sound. The one where your phone starts vibrating on the workbench, slowly vibrating its way toward
         the edge of the table while your hands are covered in grease, sawdust, or, in our case, carefully peeling support
-        material off a fresh <Link href="/custom-3d-printing">custom 3D printing</Link> project.
+        deep in the guts of a fresh <Link href="/lab">build out of the lab</Link>.
       </p>
       <p>
         By the time you wipe your hands and reach for the screen, the ringing stops. No voicemail. Just a missed call
@@ -59,7 +59,7 @@ export default function LeadResponseAutomationPostPage() {
       </p>
       <p>
         At Mixed Maker Shop, we&apos;re all about making things, whether that&apos;s a{" "}
-        <Link href="/3d-printing">durable 3D printed prototype</Link> or a website that actually does its job. But
+        <Link href="/lab">working app you can actually ship</Link> or a website that actually does its job. But
         we&apos;ve realized that the coolest product in the world doesn&apos;t matter if you&apos;re too busy working to
         actually sell it.
       </p>
@@ -152,8 +152,8 @@ export default function LeadResponseAutomationPostPage() {
 
       <h2>How We Build It (The Straight Talk Version)</h2>
       <p>
-        We apply the same &quot;maker&quot; mentality to our digital tools that we do to our{" "}
-        <Link href="/3d-printing">3D printing services</Link>. We build it to be sturdy, functional, and easy to use.
+        We apply the same &quot;maker&quot; mentality to our digital tools that we do to{" "}
+        <Link href="/lab">everything else on the bench</Link>. We build it to be sturdy, functional, and easy to use.
       </p>
 
       <h3>1. What is the product?</h3>
@@ -217,7 +217,7 @@ export default function LeadResponseAutomationPostPage() {
       </p>
       <p>
         Whether you need a new <Link href="/">website that brings you clients</Link>, a{" "}
-        <Link href="/custom-3d-printing">custom-designed 3D print</Link>, or a bot that texts your leads back while
+        <Link href="/lab">custom-built tool of your own</Link>, or a bot that texts your leads back while
         you&apos;re elbow-deep in a project, we&apos;ve got you covered.
       </p>
 

@@ -137,8 +137,8 @@ export default function LocalSeoNearMeSecretPostPage() {
       <p>
         <strong>The Mixed Maker Secret:</strong> We tell our clients to stop &quot;asking&quot; for reviews and start
         &quot;making it easy.&quot; We can actually{" "}
-        <Link href="/blog/business-card-3d-printed-keychain">
-          3D print custom keychains or QR code stands
+        <Link href="/lab">
+          Build a QR-code landing page or a one-tap review link
         </Link>{" "}
         for your truck dashboard. When you finish a job and the customer is happy, they just tap their phone to the stand,
         and your review page pops up. No more &quot;I&apos;ll do it later&quot; and then forgetting.
@@ -241,7 +241,7 @@ export default function LocalSeoNearMeSecretPostPage() {
       <p>
         At <strong>Mixed Maker Shop</strong>, we love helping local pros take back their territory. Whether you need a fresh
         website from <Link href="/web-design">Topher&apos;s Web Design</Link> or custom{" "}
-        <Link href="/3d-printing">3D printed branding</Link> to leave behind with customers, we&apos;ve got you covered.
+        <Link href="/lab">automation built in the lab</Link> to keep up with the calls, we&apos;ve got you covered.
       </p>
       <p>
         <strong>Ready to see what your business could look like online?</strong>{" "}
@@ -251,7 +251,7 @@ export default function LocalSeoNearMeSecretPostPage() {
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/S32j99kLp1A.webp"
-        alt="A maker's desk with a laptop, 3D printed tools, and a warm lamp, symbolizing the creative and technical work at Mixed Maker Shop"
+        alt="A maker's desk with a laptop, hand tools, and a warm lamp, symbolizing the creative and technical work at Mixed Maker Shop"
       />
 
       <BlogInlineCta>

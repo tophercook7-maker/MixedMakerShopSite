@@ -54,8 +54,8 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
         that act like an extra set of hands in your shop.
       </p>
       <p>
-        At <Link href="/">Mixed Maker Shop</Link>, we&apos;re builders first. Whether we&apos;re firing up the{" "}
-        <Link href="/custom-3d-printing">3D printers</Link> for a custom project or wiring up an AI bot, our goal is the
+        At <Link href="/">Mixed Maker Shop</Link>, we&apos;re builders first. Whether we&apos;re shipping a{" "}
+        <Link href="/lab">new tool out of the lab</Link> or wiring up an AI bot, the goal is the
         same: make stuff that actually works.
       </p>
       <p>
@@ -155,7 +155,7 @@ export default function AutomateSmallBusinessWorkflowPostPage() {
           system can flag them as a &quot;Hot Lead&quot; and send a text notification directly to your phone.
         </li>
         <li>
-          <strong>Automatic Routing:</strong> If someone asks about 3D printing, their info goes to the &quot;Print
+          <strong>Automatic Routing:</strong> If someone asks about a custom app, their info goes to the &quot;Build
           Shop&quot; list. If they ask about a website, they go to &quot;Web Design.&quot; No more manual sorting of your
           inbox.
         </li>

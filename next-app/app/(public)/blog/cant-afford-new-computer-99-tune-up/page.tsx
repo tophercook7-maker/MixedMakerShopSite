@@ -182,8 +182,8 @@ export default function CantAffordNewComputerPostPage() {
           calls.
         </li>
         <li>
-          <strong>Custom 3D Printing:</strong> From unique brackets and gears to{" "}
-          <Link href="/3d-printing">custom 3D printing</Link> items like keychains, merch, and replacement parts.
+          <strong>AI Tools &amp; Automation:</strong> From lead-response bots to{" "}
+          <Link href="/lab">custom tools built in the lab</Link> that take the repetitive work off your plate.
         </li>
         <li>
           <strong>Digital &amp; Creative Projects:</strong> Designing simple flyers, setting up{" "}

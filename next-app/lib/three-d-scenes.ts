@@ -93,7 +93,7 @@ export const THREE_D_SCENES: ThreeDScene[] = [
     handle: "@mixedmakershop",
     location: "Hot Springs, Arkansas",
     caption:
-      "🎉 Happy Father's Day from MixedMakerShop! Treat the maker, builder, or business owner in your life — websites, 3D printing, and local tech help, all under one umbrella. 🌂 #FathersDay",
+      "🎉 Happy Father's Day from MixedMakerShop! Treat the maker, builder, or business owner in your life — websites, AI tools, and local tech help, all from one lab. 🌂 #FathersDay",
     likes: 2104,
     comments: 147,
     shares: 95,
@@ -219,21 +219,6 @@ export const THREE_D_SCENES: ThreeDScene[] = [
     shares: 52,
   },
   {
-    id: "print",
-    title: "3D Print Glow",
-    niche: "3D printing · makers",
-    video: "/videos/scenes/print.mp4",
-    poster: "/videos/scenes/print-poster.jpg",
-    author: "GiGi's Print Shop",
-    handle: "@gigisprintshop",
-    location: "Hot Springs, Arkansas",
-    caption:
-      "🖨️ From idea to object. Need a custom part, mount, or fix? GiGi's Print Shop prints PLA on demand — and a site that ranks keeps the orders coming. #3DPrinting #HotSpringsAR",
-    likes: 876,
-    comments: 47,
-    shares: 29,
-  },
-  {
     id: "petals",
     title: "Petal Drift",
     niche: "Churches & community",
@@ -352,21 +337,6 @@ export const THREE_D_SCENES: ThreeDScene[] = [
     likes: 1124,
     comments: 73,
     shares: 41,
-  },
-  {
-    id: "print3d",
-    title: "3D Print Rise",
-    niche: "3D printing · makers",
-    video: "/videos/scenes/print3d.mp4",
-    poster: "/videos/scenes/print3d-poster.jpg",
-    author: "GiGi's Print Shop",
-    handle: "@gigisprintshop",
-    location: "Hot Springs, Arkansas",
-    caption:
-      "🖨️ Watch it come to life. From a flat screen to a finished print — GiGi's Print Shop makes custom PLA parts and figures on demand. #3DPrinting #HotSpringsAR",
-    likes: 967,
-    comments: 52,
-    shares: 33,
   },
   {
     id: "dog",

@@ -135,14 +135,14 @@ export default function LocalSeoForHvacCompaniesPostPage() {
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/WXy49iTHXhA.webp"
-        alt="A modern workspace showing a professional HVAC website design and a 3D printed tool"
+        alt="A modern workspace showing a professional HVAC website design on a laptop"
       />
 
       <h2>How Mixed Maker Shop Builds Your Digital Engine</h2>
       <p>
         We aren&apos;t a giant agency with hundreds of employees and &quot;account managers&quot; who don&apos;t know a
         wrench from a screwdriver. We&apos;re makers. We build things: whether that&apos;s a custom{" "}
-        <Link href="/3d-printing">3D printed part</Link> or a website that actually brings in leads.
+        <Link href="/lab">custom tool</Link> or a website that actually brings in leads.
       </p>
       <p>
         We handle the heavy lifting of <strong>local SEO for HVAC companies</strong> so you can stay focused on the jobs.
@@ -192,15 +192,15 @@ export default function LocalSeoForHvacCompaniesPostPage() {
       </ul>
       <BlogArticleImage
         src="https://cdn.marblism.com/vS2EJYpv5Vc.webp"
-        alt="A cinematic close-up of a 3D printer creating a custom part in a workshop"
+        alt="A cinematic close-up of a workbench with a laptop mid-build in a workshop"
       />
 
       <h2>Add Details People Can Actually Feel</h2>
       <p>
         We&apos;re a &quot;Mixed&quot; shop for a reason. While we&apos;re fixing your website, we can also help with the
-        physical side of your business. Want custom <Link href="/custom-3d-printing">3D printed keychains</Link> with
-        your logo and phone number to leave behind on every job? We can do that. It&apos;s a little detail that makes
-        sure your name is literally in their hand the next time they need a filter change.
+        rest of your operation. Want an <Link href="/lab">AI helper that texts every new lead back</Link> before your
+        competitor picks up the phone? We can do that. It&apos;s a little detail that makes sure your name is the first
+        one they hear the next time they need a filter change.
       </p>
 
       <h2>Don&apos;t Get Left Out in the Cold</h2>

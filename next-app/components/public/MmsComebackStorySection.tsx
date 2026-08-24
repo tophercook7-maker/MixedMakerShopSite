@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const MMS_LOCAL_TECH_POSITIONING =
-  "Local tech help since 2000 — now offering in-home computer repair, web design, AI help, local business support, and custom 3D printing.";
+  "Local tech help since 2000 — one person, one lab: in-home computer repair, web design, AI tools, apps, books, and video.";
 
 type MmsComebackStorySectionProps = {
   variant?: "glass" | "about";
@@ -61,8 +61,9 @@ export function MmsComebackStorySection({
           Now I&apos;m coming back through MixedMakerShop with a bigger toolbox.
         </p>
         <p className={bodyClass}>
-          Today, MixedMakerShop brings together in-home computer repair, remote tech support, web design, AI tools,
-          local business marketing help, 3D printing, and custom digital solutions under one roof.
+          Today, MixedMakerShop is a one-man laboratory: in-home computer repair, remote tech support, web design, AI
+          tools and automation, apps and games, books and audiobooks, original music and video, and custom digital
+          solutions — all designed, built, and shipped by one person.
         </p>
         <p className={bodyClass}>
           I still offer in-home computer repair and tech help in Hot Springs, Benton, Hot Springs Village, Lake

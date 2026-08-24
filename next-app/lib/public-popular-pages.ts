@@ -10,5 +10,5 @@ export const PUBLIC_POPULAR_PAGES = [
   { href: "/coffee-shop-websites-hot-springs", label: "Coffee Shop Websites Hot Springs" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/builds", label: "Builds" },
-  { href: "/upload-print", label: "Upload Print Request" },
+  { href: "/lab", label: "The Lab" },
 ] as const;

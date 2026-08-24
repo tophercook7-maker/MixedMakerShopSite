@@ -6,7 +6,7 @@ export const TERMS_LAST_UPDATED = "June 2, 2026";
 
 export const TERMS_INTRO: readonly string[] = [
   normalizeLegalBrand(
-    'Welcome to MixedMakerShop. These Terms of Service ("Terms") govern your access to and use of the website located at mixedmakershop.com (the "Site") and any services, products, or digital tools provided by MixedMakerShop, including its specialized divisions: Topher\'s Web Design, GiGi\'s Print Shop, and AI & Automation systems (collectively, the "Services").',
+    'Welcome to MixedMakerShop. These Terms of Service ("Terms") govern your access to and use of the website located at mixedmakershop.com (the "Site") and any services, products, or digital tools provided by MixedMakerShop, including its service lines: Topher\'s Web Design, the Lab, and AI & Automation systems (collectively, the "Services").',
   ),
   "By accessing our Site or engaging our Services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our Site or Services.",
 ];
@@ -17,12 +17,12 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
     title: "1. Our Services",
     paragraphs: [
       normalizeLegalBrand(
-        "MixedMakerShop is an umbrella creative studio providing a variety of digital and physical services:",
+        "MixedMakerShop is a one-person studio providing a variety of digital services:",
       ),
     ],
     list: [
       "Topher's Web Design: Development of mobile-friendly websites, landing pages, and local SEO foundations.",
-      "GiGi's Print Shop: Custom 3D printing services for prototypes, practical parts, and creative items.",
+      "Apps, Games & Media: Custom applications, published books and audiobooks, original music, and video production.",
       "AI & Automation: Implementation of AI workflows, customer-helper bots, and digital automation tools.",
       "Creative Projects: Digital products, templates, and experimental builds from MixedMakerShop Labs.",
     ],
@@ -51,20 +51,8 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
     ],
   },
   {
-    id: "printing",
-    title: "4. Custom 3D Printing (GiGi's Print Shop)",
-    list: [
-      "Custom Orders Are Final Once Printing Starts: Once we start printing a custom request, it's final. No refunds on custom work.",
-      "Design Accuracy: We print based on the specifications or files provided. We are not responsible for structural failures resulting from client-provided designs.",
-      normalizeLegalBrand(
-        "Product Use and Misuse: Our 3D prints are for personal or decorative use unless we agree otherwise in writing. Unless explicitly stated, our prints are not rated for industrial, high-heat, or safety-critical applications. MixedMakerShop is not responsible for injury, damage, or loss caused by misuse, modification, or use outside the intended purpose.",
-      ),
-      "Shipping Responsibility: We ship via standard carriers. Once your package leaves our shop, the carrier is responsible for getting it to your door (including delays, loss, or damage in transit).",
-    ],
-  },
-  {
     id: "web-design",
-    title: "5. Web Design and Digital Ownership",
+    title: "4. Web Design and Digital Ownership",
     list: [
       "Content Responsibility: You are responsible for providing all text, images, and data required for your website. You warrant that you have the right to use any materials provided to us.",
       normalizeLegalBrand(
@@ -74,7 +62,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
   },
   {
     id: "ai",
-    title: "6. AI and Automation Disclaimers",
+    title: "5. AI and Automation Disclaimers",
     list: [
       normalizeLegalBrand(
         "AI Guidance: Our AI tools and bots are designed to assist and guide users. However, AI can occasionally produce inaccurate information. MixedMakerShop does not guarantee the absolute accuracy of AI-generated content and is not responsible for decisions made based on bot interactions.",
@@ -84,7 +72,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
   },
   {
     id: "liability",
-    title: "7. Limitation of Liability",
+    title: "6. Limitation of Liability",
     paragraphs: [
       normalizeLegalBrand(
         "To the maximum extent permitted by law, MixedMakerShop and its owners shall not be liable for any indirect, incidental, or consequential damages, including loss of profits, data, or business opportunities, arising out of or in connection with the use of our Site or Services. Our total liability for any claim shall not exceed the amount paid by you for the specific service in question.",
@@ -93,21 +81,21 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
   },
   {
     id: "termination",
-    title: "8. Termination",
+    title: "7. Termination",
     paragraphs: [
       "We reserve the right to terminate or suspend access to our Services immediately, without prior notice, if you breach these Terms. Upon termination, your right to use the Services will cease, and any outstanding balances will become immediately due.",
     ],
   },
   {
     id: "governing-law",
-    title: "9. Governing Law",
+    title: "8. Governing Law",
     paragraphs: [
       "These Terms shall be governed by and construed in accordance with the laws of the State of Arkansas, without regard to its conflict of law provisions.",
     ],
   },
   {
     id: "contact",
-    title: "10. Contact Us",
+    title: "9. Contact Us",
     paragraphs: [
       "If you have any questions about these Terms, please contact us at:",
       "MixedMakerShop",

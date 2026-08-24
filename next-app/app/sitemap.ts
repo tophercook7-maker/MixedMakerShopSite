@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/lib/blog/registry";
 import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
-import { listPartnerResourceSlugs } from "@/lib/partners/registry";
 import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 import { WEBSITE_SAMPLES } from "@/lib/website-samples";
@@ -11,9 +10,7 @@ import { WEBSITE_SAMPLES } from "@/lib/website-samples";
  */
 const PUBLIC_PATHS: readonly string[] = [
   "/",
-  "/hollow-gate",
   "/llms.txt",
-  "/3d-printing",
   "/about",
   "/ad-lab",
   "/ai-business-tools",
@@ -25,7 +22,6 @@ const PUBLIC_PATHS: readonly string[] = [
   "/connect/success",
   "/contact",
   "/contact/success",
-  "/custom-3d-printing",
   "/examples",
   "/free-mockup",
   "/free-website-check",
@@ -54,10 +50,9 @@ const PUBLIC_PATHS: readonly string[] = [
   "/small-business-websites-hot-springs",
   "/social-media-takeover",
   "/start-here",
+  "/lab",
   "/tools",
-  "/tophers-recommended-tools",
   "/tophers-web-design",
-  "/upload-print",
   "/web-design",
   "/web-design-hot-springs-ar",
   "/website-maintenance",
@@ -83,7 +78,6 @@ const BLOG_ARTICLE_PATHS: readonly string[] = BLOG_POSTS.flatMap((post) => (post
 const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
   "/resources",
   ...RESOURCE_ENTRIES.map((r) => `/resources/${r.slug}`),
-  ...listPartnerResourceSlugs().map((slug) => `/resources/${slug}`),
   ...CASE_STUDY_ENTRIES.map((c) => `/proof/${c.slug}`),
 ];
 

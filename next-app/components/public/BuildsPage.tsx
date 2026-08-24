@@ -562,28 +562,28 @@ export function BuildsPage() {
           </div>
         </section>
 
-        {/* D. 3D printing (quiet) */}
-        <section id="builds-3d-printing" className={pageBand} aria-labelledby="builds-3d-heading">
+        {/* D. The Lab (everything else on the bench) */}
+        <section id="builds-lab" className={pageBand} aria-labelledby="builds-lab-heading">
           <div className={cn(shell, mmsSectionY, "max-w-3xl")}>
             <div className={cn(mmsGlassPanelDense, "p-8 sm:p-10")}>
-              <h2 id="builds-3d-heading" className={cn(mmsH2, "!text-2xl md:!text-[1.85rem]")}>
-                3D printing
+              <h2 id="builds-lab-heading" className={cn(mmsH2, "!text-2xl md:!text-[1.85rem]")}>
+                The rest of the lab
               </h2>
               <p className="mt-5 text-sm leading-relaxed text-[#354239] md:text-base">
-                Custom parts, prototypes, and practical prints live here as part of the broader build library — not the main
-                public offer, but available when you need something physical made.
+                Apps and games, published books and audiobooks, original music and video, pop-out ads, and the AI tooling
+                behind the shop — all built on the same bench as the websites, just aimed at different problems.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <Link href="/3d-printing" className={cn(mmsTextLink, "text-[15px] font-semibold")}>
-                  3D printing overview →
+                <Link href="/lab" className={cn(mmsTextLink, "text-[15px] font-semibold")}>
+                  Step into the lab →
                 </Link>
                 <TrackedPublicLink
-                  href={contactNeedHref("[Builds / 3D printing] I need a print or custom part. ")}
+                  href={contactNeedHref("[Builds / Lab] I want something custom built. Brief idea: ")}
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "builds_3d", intent: "request" }}
+                  eventProps={{ location: "builds_lab", intent: "request" }}
                   className={cn(mmsTextLink, "text-[15px] font-semibold")}
                 >
-                  Request a print
+                  Ask for something custom
                 </TrackedPublicLink>
               </div>
             </div>

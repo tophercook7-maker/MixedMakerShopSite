@@ -58,7 +58,7 @@ export default function WeekendReclaimerAiAutomationPostPage() {
       </p>
       <p>
         At <Link href="/">MixedMakerShop</Link>, we&apos;re in the trenches every day building things — whether
-        it&apos;s a custom <Link href="/custom-3d-printing">3D print</Link> or a mobile-friendly website. We&apos;ve
+        it&apos;s a custom <Link href="/lab">app out of the lab</Link> or a mobile-friendly website. We&apos;ve
         learned that the only way to grow without burning out is to automate the boring stuff so you can focus on the
         making.
       </p>
@@ -165,7 +165,7 @@ export default function WeekendReclaimerAiAutomationPostPage() {
       </ol>
       <BlogArticleImage
         src="https://cdn.marblism.com/ILGCBK1Vmft.webp"
-        alt="AI automation data nodes overlaying a 3D printing process"
+        alt="AI automation data nodes overlaying a workshop bench"
       />
 
       <h2>Let MixedMakerShop Handle the Headache</h2>
@@ -175,7 +175,7 @@ export default function WeekendReclaimerAiAutomationPostPage() {
       </p>
       <p>
         That&apos;s why we offer a <Link href="/free-mockup">free homepage preview</Link>. It helps you
-        figure out exactly what you need — whether it&apos;s a better website, a custom 3D printed solution, or an AI
+        figure out exactly what you need — whether it&apos;s a better website, a custom-built tool, or an AI
         bot — before you spend a dime.
       </p>
       <p>
@@ -195,8 +195,8 @@ export default function WeekendReclaimerAiAutomationPostPage() {
           committing.
         </li>
         <li>
-          <strong>Maker Perspective:</strong> We understand physical products and real-world services because we do them
-          too (check out <Link href="/3d-printing">GiGi&apos;s Print Shop</Link>).
+          <strong>Maker Perspective:</strong> We understand real-world services because we run them
+          too (check out <Link href="/lab">the Lab</Link>).
         </li>
       </ul>
 

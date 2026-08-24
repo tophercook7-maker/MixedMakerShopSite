@@ -83,7 +83,8 @@ export function IdeaSuggestionForm() {
             Pick one
           </option>
           <option>Website or tool</option>
-          <option>3D print</option>
+          <option>App, game, or AI tool</option>
+          <option>Book, audio, or video</option>
           <option>Property care</option>
           <option>Template or kit</option>
           <option>Something else</option>

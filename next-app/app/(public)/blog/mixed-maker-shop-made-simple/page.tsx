@@ -12,19 +12,19 @@ import { SITE_URL } from "@/lib/site";
 const slug = "mixed-maker-shop-made-simple";
 const canonical = `${SITE_URL}/blog/${slug}`;
 
-const title = "The Mixed Maker Shop Guide: Web Design, 3D Printing, and AI Automation Made Simple";
+const title = "The Mixed Maker Shop Guide: Web Design, Custom Builds, and AI Automation Made Simple";
 const subtitle =
-  "One studio for mobile-friendly websites, custom 3D prints, and small business AI automation — without drowning in tabs or agency fluff";
+  "One lab for mobile-friendly websites, custom tools, and small business AI automation — without drowning in tabs or agency fluff";
 
 export const metadata: Metadata = {
   title: blogPostTitle(title),
   description:
-    "MixedMakerShop explained simply — mobile friendly website design, 3D printed keychains in bulk, local SEO, AI automation for small business, and a free homepage preview to pick your path.",
+    "MixedMakerShop explained simply — mobile friendly website design, custom tools and apps, local SEO, AI automation for small business, and a free homepage preview to pick your path.",
   alternates: { canonical },
   openGraph: {
     title,
     description:
-      "Web design, GiGi's Print Shop, and AI automation under one umbrella — free homepage previews, thoughtful 3D prints, and workflow tools that reclaim your time.",
+      "Web design, the Lab, and AI automation from one person — free homepage previews, custom builds, and workflow tools that reclaim your time.",
     url: canonical,
   },
 };
@@ -39,18 +39,18 @@ export default function MixedMakerShopMadeSimplePostPage() {
       subtitle={subtitle}
       heroImage={{
         src: "https://cdn.marblism.com/zM3V95lE6D1.webp",
-        alt: "A modern creative workshop with a laptop showing website design beside a 3D printer with warm orange lighting",
+        alt: "A modern one-man workshop with a laptop showing website design under warm orange lighting",
       }}
     >
       <p>
         Let&apos;s be honest: running a small business or launching a creative project usually means you&apos;re drowning
-        in tabs. You&apos;ve got one tab for your website builder, another for a 3D printing service you found on Etsy,
+        in tabs. You&apos;ve got one tab for your website builder, another for some tool you found on a marketplace,
         and a third for some &quot;AI tool&quot; that promises the world but delivers a headache.
       </p>
       <p>At <strong>Mixed Maker Shop</strong>, we think that&apos;s a mess.</p>
       <p>
         We built this studio as an umbrella. Whether you need a <strong>mobile friendly website design</strong> that
-        actually converts, a batch of <strong>3D printed keychains bulk</strong> ordered for an event, or{" "}
+        actually converts, a <strong>custom tool built for one job</strong>, or{" "}
         <strong>AI automation for small business</strong> tasks that save you five hours a week, we handle it all in one
         place. No agency fluff, no &quot;corporate speak,&quot; and no hidden fees. Just real people building real
         things.
@@ -95,38 +95,34 @@ export default function MixedMakerShopMadeSimplePostPage() {
 
       <hr />
 
-      <h2>2. 3D Printing: Turning Pixels into Plastic</h2>
+      <h2>2. The Lab: Turning Ideas Into Shipped Things</h2>
       <p>
-        While we love the digital world, there&apos;s nothing quite like holding a finished product in your hand.{" "}
-        <strong>GiGi&apos;s Print Shop</strong> is where the physical magic happens. Whether it&apos;s a functional part
-        for a local contractor or high-detail gear for a cosplayer, we treat every print like a piece of craftsmanship.
+        A website is one output. <strong>The Lab</strong> is where the rest of them get made. Whether it&apos;s a small
+        tool for a local contractor or a finished app on a storefront, every build gets treated like a piece of
+        craftsmanship.
       </p>
 
-      <h3>Custom Builds and Bulk Orders</h3>
+      <h3>Custom Builds, Start to Finish</h3>
       <p>
-        Need <strong>3D printed keychains bulk</strong> produced for a corporate giveaway? Or maybe a custom set of
-        bookmarks for a local bookstore? We handle the design, the slicing, and the printing.
+        Need a quoting calculator your customers can actually use? A job log your crew will actually fill out? An app
+        with your name on the App Store? One person handles the design, the code, and the shipping.
       </p>
       <ul>
         <li>
-          <strong>Keychains &amp; Bookmarks:</strong> Durable, branded, and tactile.
+          <strong>Tools &amp; Calculators:</strong> Small, specific, and built around one real job.
         </li>
         <li>
-          <strong>Cosplay Gear:</strong> High-detail props that don&apos;t weigh a ton.
+          <strong>Apps &amp; Games:</strong> Real shipped software, including titles live on the Mac App Store.
         </li>
         <li>
-          <strong>Prototyping:</strong> Get a physical version of your idea in your hands before you go to manufacturing.
+          <strong>Books, Audio &amp; Video:</strong> Published work and finished media out of the same lab.
         </li>
       </ul>
       <p>
-        We don&apos;t just hit &quot;print&quot; and walk away. We manually review every file, optimize the orientation
-        for strength, and ensure the finish is clean. It&apos;s the &quot;manual, thoughtful approach&quot; that keeps
-        our clients coming back to <Link href="/3d-printing">Mixed Maker Shop 3D Printing</Link>.
+        We don&apos;t just hit &quot;ship&quot; and walk away. Every build gets reviewed by hand, tuned for the way it
+        will actually get used, and finished cleanly. It&apos;s the &quot;manual, thoughtful approach&quot; that keeps
+        clients coming back to <Link href="/lab">the Mixed Maker Shop lab</Link>.
       </p>
-      <BlogArticleImage
-        src="https://images.unsplash.com/photo-1631035503043-4cc816765792?q=80&w=2070&auto=format&fit=crop"
-        alt="High-quality 3D printed keychains and small gears arranged on a dark charcoal surface with cinematic lighting"
-      />
 
       <hr />
 
@@ -159,7 +155,7 @@ export default function MixedMakerShopMadeSimplePostPage() {
 
       <h2>4. Not Sure Where to Start? Start with a Free Website Preview.</h2>
       <p>
-        We realize that having a shop that does web design, 3D printing, and automation can be a little overwhelming. You
+        We realize that having one person who does web design, custom builds, and automation can be a little overwhelming. You
         might know you need <em>something</em> to change, but you&apos;re not sure which path to take.
       </p>
       <p>
@@ -192,8 +188,7 @@ export default function MixedMakerShopMadeSimplePostPage() {
           <Link href="/free-website-check">Free Website Check</Link>.
         </li>
         <li>
-          <strong>Build</strong> your physical products with our <Link href="/custom-3d-printing">Custom 3D Printing</Link>{" "}
-          service.
+          <strong>Build</strong> the rest of your stack with a <Link href="/lab">custom tool from the lab</Link>.
         </li>
         <li>
           <strong>Request</strong> a <Link href={publicFreeMockupFunnelHref}>Free Mockup</Link> to see your new website

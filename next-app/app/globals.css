@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+.noscript-fallback {
+  margin: 0.75rem auto;
+  max-width: 72rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: .75rem;
+  background: rgba(8,12,12,.92);
+  color: #fff;
+  font-size: .95rem;
+}
+.noscript-fallback p { margin: .25rem 0 0; }
+.noscript-fallback a { color: #8ee7ff; text-decoration: underline; }
+
 /* Public site — premium light system (tokens avoid collision with shadcn HSL vars below) */
 :root {
   --pub-bg: #fafafa;

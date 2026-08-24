@@ -98,7 +98,7 @@ export default function ContactPage() {
                 lineHeight: 1.65,
               }}
             >
-              MixedMakerShop is one studio — web design first, plus 3D printing and digital builds when that&apos;s what you
+              MixedMakerShop is one person — web design first, plus AI tools, apps, and digital builds when that&apos;s what you
               need. Send a short message and we&apos;ll pick the simplest next step.
             </p>
             <p className="small" style={{ margin: 0, maxWidth: "48ch", lineHeight: 1.6 }}>

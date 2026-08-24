@@ -201,16 +201,15 @@ export default function LocalSeoForElectriciansPostPage() {
         alt="Hands working on a laptop with house blueprints, showcasing the design process"
       />
 
-      <h2>Beyond the Screen: Custom Gear for Your Business</h2>
+      <h2>Beyond the Screen: Custom Tools for Your Business</h2>
       <p>
-        We aren&apos;t just a web shop. We&apos;re an umbrella studio. While Topher is busy wiring your SEO, GiGi&apos;s
-        Print Shop can be 3D printing custom gear for your business.
+        We aren&apos;t just a web shop. While the SEO is getting wired up, the Lab can be building the tool that runs
+        behind it.
       </p>
       <p>
-        Need custom keychains with your QR code to leave on a customer&apos;s new electrical panel? Or maybe durable,
-        3D-printed bookmarks to give away at home shows? We can create custom items from durable, lightweight plastic
-        that keep your name in front of your clients long after the job is done. You can see some of our creative work in
-        the <Link href="/examples">Idea Lab</Link>.
+        Need a bot that texts every new lead back before your competitor picks up the phone? A job log your crew will
+        actually use? A quoting calculator on your own site instead of a $99/month subscription? Those get built here and
+        you own them. You can see some of the creative work in the <Link href="/examples">Idea Lab</Link>.
       </p>
 
       <h2>What We Need From You to Get Started</h2>
@@ -241,7 +240,7 @@ export default function LocalSeoForElectriciansPostPage() {
       </p>
       <p>
         Whether you need a full website build or some{" "}
-        <Link href="/custom-3d-printing">custom 3D-printed gear</Link> to leave with clients, we&apos;re here to help you
+        <Link href="/lab">custom tooling out of the lab</Link>, we&apos;re here to help you
         build it.
       </p>
 

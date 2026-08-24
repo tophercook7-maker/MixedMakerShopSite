@@ -2,7 +2,6 @@
 export const STARTER_RESOURCE_TITLES = [
   "Website Starter Checklist",
   "Local Business Website Audit Sheet",
-  "3D Print Request Prep Sheet",
   "AI Workflow Starter Pack",
   "Project Idea Capture Sheet",
 ] as const;
@@ -17,10 +16,6 @@ export const STARTER_RESOURCE_ITEMS: ReadonlyArray<{ title: StarterResourceTitle
   {
     title: "Local Business Website Audit Sheet",
     body: "A structured pass over your current site or placeholder page — messaging, mobile basics, contact paths, and quick fixes that often matter most locally.",
-  },
-  {
-    title: "3D Print Request Prep Sheet",
-    body: "Helps you describe size, use case, photos, and constraints so a print quote isn't a guessing game.",
   },
   {
     title: "AI Workflow Starter Pack",

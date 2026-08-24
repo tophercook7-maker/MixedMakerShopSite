@@ -1,7 +1,6 @@
 export type ResourceCategory =
   | "website-planning"
   | "local-presence"
-  | "3d-printing"
   | "ai-workflows"
   | "project-planning";
 
@@ -57,23 +56,6 @@ export const RESOURCE_ENTRIES = [
     ],
   },
   {
-    slug: "3d-print-request-prep-sheet",
-    title: "3D Print Request Prep Sheet",
-    shortDescription:
-      "Capture dimensions, use case, tolerances, and references so a quote isn’t a guessing game — built around real print desk workflows.",
-    whoItHelps: "Makers and businesses ordering custom prints who want fewer round trips and clearer quotes.",
-    filePath: "/downloads/3d-print-request-prep-sheet.pdf",
-    category: "3d-printing",
-    analyticsId: "print_request_prep_sheet",
-    downloadPublished: true,
-    contentsBullets: [
-      "Use case and environment constraints",
-      "Size targets and fit expectations",
-      "Reference photos and must-have features",
-      "Quantity, timeline, and finish preferences",
-    ],
-  },
-  {
     slug: "ai-workflow-starter-pack",
     title: "AI Workflow Starter Pack",
     shortDescription:
@@ -125,8 +107,6 @@ export function categoryLabel(cat: ResourceCategory): string {
       return "Website planning";
     case "local-presence":
       return "Local presence";
-    case "3d-printing":
-      return "3D printing";
     case "ai-workflows":
       return "AI workflows";
     case "project-planning":

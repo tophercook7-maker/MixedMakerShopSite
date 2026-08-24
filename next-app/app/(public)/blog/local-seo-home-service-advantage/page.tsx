@@ -157,7 +157,7 @@ export default function LocalSeoHomeServiceAdvantagePostPage() {
         </li>
         <li>
           <strong>Maker Tip:</strong> We&apos;ve even helped clients create{" "}
-          <Link href="/blog/3d-printed-keychains-bulk-marketing">custom 3D-printed keychains</Link> with QR codes that lead
+          <Link href="/lab">custom QR-code landing pages</Link> that lead
           straight to their review page. It&apos;s a physical reminder of a job well done.
         </li>
       </ul>
@@ -169,7 +169,7 @@ export default function LocalSeoHomeServiceAdvantagePostPage() {
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/8NpL2wZ5Xy9.webp"
-        alt="A physical map on a rustic wooden table with small 3D printed markers showing service areas, cinematic lighting"
+        alt="A physical map on a rustic wooden table with small markers showing service areas, cinematic lighting"
       />
 
       <h2>How We Make It: The Mixed Maker Way</h2>

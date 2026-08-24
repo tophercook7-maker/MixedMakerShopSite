@@ -216,7 +216,7 @@ export default function LocalSeoHomeServicesMistakesPostPage() {
             <strong>
               <Link href="/">Browse Our Services</Link>:
             </strong>{" "}
-            From web design to <Link href="/custom-3d-printing">custom 3D printed gear</Link> for your crew, we&apos;ve
+            From web design to <Link href="/lab">custom AI tools</Link> for your crew, we&apos;ve
             got you covered.
           </li>
         </ul>

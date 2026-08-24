@@ -21,8 +21,9 @@ export const AGENT_APPCAST_PATH = "/downloads/autonomous-desktop-agent-appcast.j
 export const AGENT_PRICE_CENTS = 1900;
 
 /**
- * HMAC secret. Reuses the same resolution as the Hollow Gate so a single
- * configured secret protects both. Never expose this to the client.
+ * HMAC secret. The HOLLOW_GATE_SECRET env name is kept for backward compatibility
+ * with already-issued unlock cookies (the Hollow Gate browser game it was named for
+ * was retired 2026-08-18). Never expose this to the client.
  */
 export function agentGateSecret(): string {
   return String(

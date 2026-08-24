@@ -45,10 +45,10 @@ const serviceOfferings: { name: string; url?: string }[] = [
   },
   { name: "Website maintenance", url: `${SITE_URL}/website-maintenance` },
   { name: "AI business tools", url: `${SITE_URL}/ai-business-tools` },
-  { name: "3D printing", url: `${SITE_URL}/3d-printing` },
-  { name: "Functional prints", url: `${SITE_URL}/3d-printing` },
-  { name: "Replacement parts", url: `${SITE_URL}/3d-printing` },
-  { name: "Prototypes", url: `${SITE_URL}/3d-printing` },
+  { name: "AI automation and workflow builds", url: `${SITE_URL}/lab` },
+  { name: "Custom apps and games", url: `${SITE_URL}/lab` },
+  { name: "Book, audiobook, and video production", url: `${SITE_URL}/lab` },
+  { name: "Pop-out video ads", url: `${SITE_URL}/3d-scenes` },
   {
     name: "In-home computer repair and tutoring",
     url: `${SITE_URL}/in-home-computer-repair`,
@@ -81,7 +81,7 @@ export function getMixedMakerStructuredDataGraph() {
         email: publicTopherEmail,
         telephone: publicTopherPhoneE164,
         description:
-          "Practical creative studio by Topher & GiGi for useful things built online, outside, and in the workshop.",
+          "Topher Cook's one-man laboratory in Hot Springs, Arkansas — websites, AI tools, apps, books, video, and local tech help.",
         department: { "@id": webDesignDeptId },
         sameAs,
       },
@@ -93,7 +93,7 @@ export function getMixedMakerStructuredDataGraph() {
         telephone: publicTopherPhoneE164,
         email: publicTopherEmail,
         description:
-          "Web design, local SEO, and Google Business Profile help, plus custom 3D printing and in-home computer repair for small businesses in Hot Springs, Arkansas and Central Arkansas.",
+          "Web design, local SEO, Google Business Profile help, AI tools, and in-home computer repair for small businesses in Hot Springs, Arkansas and Central Arkansas — a one-man shop, no agency layers.",
         priceRange: "$$",
         parentOrganization: { "@id": orgId },
         address: {
@@ -155,7 +155,7 @@ export function getMixedMakerStructuredDataGraph() {
         url: SITE_URL,
         name: "MixedMakerShop",
         description:
-          "MixedMakerShop is Topher & GiGi's practical creative studio for useful things built online, outside, and in the workshop — including websites, tools, 3D printing, property care, and creative projects.",
+          "MixedMakerShop is Topher Cook's one-man laboratory — websites, AI tools, apps and games, books and audiobooks, video, property care, and experiments, all built by one person.",
         publisher: { "@id": orgId },
         inLanguage: "en-US",
       },
@@ -174,9 +174,9 @@ export function getHomeWebPageSchema() {
     "@type": "WebPage",
     "@id": webPageId,
     url: SITE_URL,
-    name: "MixedMakerShop — Web Design, Local SEO & 3D Printing in Hot Springs, AR",
+    name: "MixedMakerShop — A One-Man Laboratory in Hot Springs, AR",
     description:
-      "Practical web design, local SEO, 3D printing, and tech help for small businesses in Hot Springs, Arkansas.",
+      "Web design, local SEO, AI tools, and tech help for small businesses in Hot Springs, Arkansas — built by one person in one lab.",
     isPartOf: { "@id": websiteId },
     about: { "@id": localBusinessId },
     inLanguage: "en-US",

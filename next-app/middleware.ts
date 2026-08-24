@@ -7,6 +7,15 @@ const AGENT_API_PREFIX = "/api/agent/";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // LLM crawlers get a small, zero-JavaScript HTML surface so they can read the
+  // public business facts without waiting for the interactive app shell.
+  if (pathname === "/") {
+    const ua = request.headers.get("user-agent")?.toLowerCase() ?? "";
+    if (/gptbot|chatgpt-user|claudebot|anthropic-ai|perplexitybot|google-extended|bytespider|ccbot/.test(ua)) {
+      return NextResponse.rewrite(new URL("/llm-home.html", request.url));
+    }
+  }
+
   // Desktop Agent is unpublished — block downloads, appcast, and API entry points.
   if (pathname === AGENT_DMG_PATH || pathname === AGENT_APPCAST_PATH || pathname.startsWith(AGENT_API_PREFIX)) {
     return new NextResponse("Not Found", { status: 404 });
@@ -18,6 +27,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/admin/:path*",
     "/auth/login",
     "/downloads/Autonomous-Desktop-Agent-1.0.0.dmg",

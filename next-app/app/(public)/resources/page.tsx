@@ -23,7 +23,7 @@ const canonical = `${SITE_URL}/resources`;
 export const metadata: Metadata = {
   title: "Resource library | MixedMakerShop",
   description:
-    "Checklists and prep sheets for websites, local presence, 3D print requests, AI workflows, and project planning — download PDFs free or request through Mixed Maker Shop.",
+    "Checklists and prep sheets for websites, local presence, AI workflows, and project planning — download PDFs free or request through Mixed Maker Shop.",
   alternates: { canonical },
   openGraph: {
     title: "Resource library | MixedMakerShop",

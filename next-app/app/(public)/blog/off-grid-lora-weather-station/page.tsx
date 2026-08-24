@@ -13,12 +13,12 @@ const slug = "off-grid-lora-weather-station";
 const canonical = `${SITE_URL}/blog/${slug}`;
 
 const title = "The Off-Grid Brain: Why We’re Building a Solar-Powered LoRa Weather Station";
-const subtitle = "Solar power, LoRa radio, 3D-printed housing, and edge AI — without cloud rent or subscriptions";
+const subtitle = "Solar power, LoRa radio, custom housing, and edge AI — without cloud rent or subscriptions";
 
 export const metadata: Metadata = {
   title: blogPostTitle(title),
   description:
-    "Why MixedMakerShop is building a solar-powered LoRa weather station — radical data ownership, off-grid reliability, custom 3D printing, and lessons for real-world builds.",
+    "Why MixedMakerShop is building a solar-powered LoRa weather station — radical data ownership, off-grid reliability, custom fabrication, and lessons for real-world builds.",
   alternates: { canonical },
   openGraph: {
     title,
@@ -95,21 +95,20 @@ export default function OffGridLoraWeatherStationPostPage() {
         <Link href="/ad-lab">workflow automation tools</Link> to our custom website builds.
       </p>
 
-      <h2>The Build: Solar, Sensors, and 3D Printing</h2>
+      <h2>The Build: Solar, Sensors, and a Custom Housing</h2>
       <p>
         A project like this is the perfect intersection of what we do here. It&apos;s a physical build that requires
         digital intelligence.
       </p>
       <p>
         The housing for the station isn&apos;t something you can buy off a shelf at a big-box store. To keep the sensors
-        protected from the rain while still letting air flow through, we used our{" "}
-        <Link href="/3d-printing">custom 3D printing services</Link>. We designed a &quot;Stevenson Screen&quot; — a series
-        of louvered tiers — printed in UV-resistant PETG filament. It looks like a high-tech beehive, but its job is to
-        keep the &quot;Off-Grid Brain&quot; cool and dry.
+        protected from the rain while still letting air flow through, we fabricated a &quot;Stevenson Screen&quot; — a
+        series of louvered tiers in UV-resistant plastic. It looks like a high-tech beehive, but its job is to keep the
+        &quot;Off-Grid Brain&quot; cool and dry.
       </p>
       <BlogArticleImage
         src="https://cdn.marblism.com/LZDoHnKAnbW.webp"
-        alt="A 3D printer creating the weatherproof housing for the weather station"
+        alt="The weatherproof louvered housing built for the weather station"
       />
       <p>Inside the case, we&apos;ve packed:</p>
       <ol>
@@ -129,7 +128,7 @@ export default function OffGridLoraWeatherStationPostPage() {
       <p>
         When you combine physical craftsmanship with smart tech, you get something that&apos;s built to last. We
         don&apos;t do &quot;agency fluff&quot; here. We build things that work in the real world, whether it&apos;s a{" "}
-        <Link href="/custom-3d-printing">bespoke 3D printed part</Link> or a website that actually converts visitors into
+        <Link href="/lab">bespoke tool out of the lab</Link> or a website that actually converts visitors into
         leads.
       </p>
 
@@ -193,7 +192,7 @@ export default function OffGridLoraWeatherStationPostPage() {
 
       <h2>Why MixedMakerShop is Building This</h2>
       <p>
-        You might be wondering why a shop that builds websites and 3D prints keychains is obsessed with LoRa weather
+        You might be wondering why a shop that builds websites and AI tools is obsessed with LoRa weather
         stations.
       </p>
       <p>
@@ -206,7 +205,7 @@ export default function OffGridLoraWeatherStationPostPage() {
           <strong>Web Design:</strong> To visualize the data in a way that&apos;s &quot;glassy and calm.&quot;
         </li>
         <li>
-          <strong>3D Printing:</strong> To create the physical interface between the tech and the elements.
+          <strong>Custom Fabrication:</strong> To create the physical interface between the tech and the elements.
         </li>
         <li>
           <strong>AI &amp; Automation:</strong> To make the system smart enough to handle itself.
@@ -222,7 +221,7 @@ export default function OffGridLoraWeatherStationPostPage() {
       <h2>Let&apos;s Build Something Real</h2>
       <p>
         The Off-Grid Brain is just one of the projects currently taking up space on our workbenches. Whether we&apos;re
-        building <Link href="/3d-printing">custom 3D printing services</Link> for a local maker or setting up{" "}
+        building <Link href="/lab">a custom tool</Link> for a local maker or setting up{" "}
         <Link href="/ad-lab">AI automation for business</Link> owners who are tired of manual data entry, our goal is
         always the same: <strong>Clear, direct solutions that you actually own.</strong>
       </p>
@@ -239,7 +238,7 @@ export default function OffGridLoraWeatherStationPostPage() {
             <Link href={publicFreeMockupFunnelHref}>free website mockup</Link>.
           </li>
           <li>
-            <strong>Request</strong> a custom 3D print or automation consultation by{" "}
+            <strong>Request</strong> a custom build or automation consultation by{" "}
             <Link href="/contact">contacting us here</Link>.
           </li>
         </ul>
