@@ -16,9 +16,18 @@ mkdir -p "$APP_DIR/logs"
 echo "===== $(date) : starting local supabase stack =====" >>"$LOG" 2>&1
 
 # 1. Container runtime.
+# A hard shutdown leaves the VM disk marked "in use by instance colima" and every
+# later `colima start` dies with that, silently, forever. So: try, and if it fails,
+# clear the stale lock (force-stop + reap orphaned limactl) and try once more.
 if ! colima status >/dev/null 2>&1; then
   echo "colima not running — starting…" >>"$LOG" 2>&1
-  colima start >>"$LOG" 2>&1
+  if ! colima start >>"$LOG" 2>&1; then
+    echo "colima start FAILED — clearing stale lock and retrying…" >>"$LOG" 2>&1
+    colima stop -f >>"$LOG" 2>&1 || true
+    pkill -f limactl >>"$LOG" 2>&1 || true
+    sleep 3
+    colima start >>"$LOG" 2>&1 || echo "colima start FAILED TWICE — CRM will be down." >>"$LOG" 2>&1
+  fi
 else
   echo "colima already running." >>"$LOG" 2>&1
 fi
@@ -36,3 +45,17 @@ else
 fi
 
 echo "done: $(supabase status 2>/dev/null | grep -i 'API URL' || echo 'status unavailable')" >>"$LOG" 2>&1
+
+# 3. Prove the API actually answers. `supabase status` can look fine while the DB
+# container is still unhealthy, and a half-up stack drops leads exactly like a down
+# one — so poll the real endpoint and leave a loud line if it never comes up.
+for i in $(seq 1 30); do
+  code=$(curl -s -m 5 -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/rest/v1/ 2>/dev/null)
+  if [ "$code" != "000" ]; then
+    echo "VERIFIED: REST API answering (HTTP $code) after ~$((i * 5))s" >>"$LOG" 2>&1
+    exit 0
+  fi
+  sleep 5
+done
+echo "!!! CRM DATABASE DID NOT COME UP — inbound leads will fail to save. !!!" >>"$LOG" 2>&1
+exit 1
