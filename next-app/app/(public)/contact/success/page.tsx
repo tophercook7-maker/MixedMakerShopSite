@@ -4,7 +4,7 @@ import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 
 // Post-submission confirmation page — keep out of the search index.
 export const metadata: Metadata = {
-  title: "Message received | MixedMakerShop",
+  title: "Message received",
   robots: { index: false, follow: true },
   alternates: { canonical: "https://mixedmakershop.com/contact/success" },
 };

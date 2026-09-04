@@ -2,6 +2,7 @@ import { rescueLead } from "@/lib/crm/lead-rescue";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { isHardBlockEventType } from "@/lib/calendar-events";
+import { addDays, buildDaySlots, dayBoundsUtc, dayInTz, REVIEW_LENGTH_MINUTES } from "@/lib/booking-slots";
 import { handleInboundLeadSubmission } from "@/lib/crm/inbound-lead-submission";
 
 type BookingPayload = {
@@ -23,14 +24,10 @@ async function findNextOpening(
   fromDate: Date,
   daysAhead = 14
 ) {
-  const openHour = Number(process.env.BOOKING_OPEN_HOUR || 9);
-  const closeHour = Number(process.env.BOOKING_CLOSE_HOUR || 17);
-  const slotMinutes = Number(process.env.BOOKING_SLOT_MINUTES || 30);
+  const firstDay = dayInTz(fromDate);
   for (let dayOffset = 0; dayOffset < daysAhead; dayOffset += 1) {
-    const day = new Date(fromDate.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-    const dayIso = day.toISOString().slice(0, 10);
-    const dayStart = new Date(`${dayIso}T00:00:00.000Z`);
-    const dayEnd = new Date(`${dayIso}T23:59:59.999Z`);
+    const day = addDays(firstDay, dayOffset);
+    const { dayStart, dayEnd } = dayBoundsUtc(day);
     const { data: rows } = await supabase
       .from("calendar_events")
       .select("id,event_type,start_time,end_time")
@@ -44,23 +41,8 @@ async function findNextOpening(
         end: new Date(String(row.end_time || row.start_time || "")),
       }))
       .filter((b) => !Number.isNaN(b.start.getTime()) && !Number.isNaN(b.end.getTime()) && b.end > b.start);
-    for (let hour = openHour; hour < closeHour; hour += 1) {
-      for (let min = 0; min < 60; min += slotMinutes) {
-        const slotStart = new Date(
-          `${dayIso}T${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:00.000Z`
-        );
-        if (slotStart.getTime() < fromDate.getTime()) continue;
-        const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000);
-        if (
-          slotEnd.getUTCHours() > closeHour ||
-          (slotEnd.getUTCHours() === closeHour && slotEnd.getUTCMinutes() > 0)
-        ) {
-          continue;
-        }
-        const conflict = hardBlocks.some((block) => slotStart < block.end && slotEnd > block.start);
-        if (!conflict) return { start_time: slotStart.toISOString(), end_time: slotEnd.toISOString() };
-      }
-    }
+    const [first] = buildDaySlots(day, hardBlocks, { notBefore: fromDate });
+    if (first) return first;
   }
   return null;
 }
@@ -133,7 +115,7 @@ export async function POST(request: Request) {
   if (Number.isNaN(start.getTime())) {
     return NextResponse.json({ error: "preferred_time must be a valid datetime." }, { status: 400 });
   }
-  const end = new Date(start.getTime() + 15 * 60 * 1000);
+  const end = new Date(start.getTime() + REVIEW_LENGTH_MINUTES * 60 * 1000);
 
   const { data: ownerProfile } = await supabase.from("profiles").select("id").limit(1).single();
   const ownerId = String(ownerProfile?.id || "").trim();

@@ -49,13 +49,32 @@ echo "done: $(supabase status 2>/dev/null | grep -i 'API URL' || echo 'status un
 # 3. Prove the API actually answers. `supabase status` can look fine while the DB
 # container is still unhealthy, and a half-up stack drops leads exactly like a down
 # one — so poll the real endpoint and leave a loud line if it never comes up.
-for i in $(seq 1 30); do
-  code=$(curl -s -m 5 -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/rest/v1/ 2>/dev/null)
-  if [ "$code" != "000" ]; then
-    echo "VERIFIED: REST API answering (HTTP $code) after ~$((i * 5))s" >>"$LOG" 2>&1
-    exit 0
-  fi
-  sleep 5
-done
+wait_for_api() {
+  for i in $(seq 1 30); do
+    code=$(curl -s -m 5 -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/rest/v1/ 2>/dev/null)
+    if [ "$code" != "000" ]; then
+      echo "VERIFIED: REST API answering (HTTP $code) after ~$((i * 5))s" >>"$LOG" 2>&1
+      return 0
+    fi
+    sleep 5
+  done
+  return 1
+}
+
+wait_for_api && exit 0
+
+# 4. Self-heal (added 2026-09-04). Seen in the wild: every container "Up (healthy)",
+# `docker port kong` shows 8000->54321, Postgres :54322 forwarded fine — but Colima's
+# host-side forward for :54321 was never created after a login-time boot race, so the
+# site got "connection refused" on every DB call (booking page showed no times, leads
+# fell back to the email-only rescue path). Restarting the kong container did NOT fix
+# it; `colima restart` rebuilds all port forwards and did. Do that once, then re-check.
+echo "REST API silent on :54321 — self-heal: colima restart (rebuilds port forwards)…" >>"$LOG" 2>&1
+colima restart >>"$LOG" 2>&1 || true
+docker context use colima >>"$LOG" 2>&1 || true
+sleep 10
+supabase status >/dev/null 2>&1 || supabase start >>"$LOG" 2>&1
+wait_for_api && { echo "SELF-HEAL WORKED." >>"$LOG" 2>&1; exit 0; }
+
 echo "!!! CRM DATABASE DID NOT COME UP — inbound leads will fail to save. !!!" >>"$LOG" 2>&1
 exit 1

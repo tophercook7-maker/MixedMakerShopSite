@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 const canonical = `${SITE_URL}/privacy`;
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | MixedMakerShop",
+  title: "Privacy Policy",
   description:
     "Learn how MixedMakerShop collects, uses, and protects information for website previews, custom builds, and creative services.",
   alternates: { canonical },

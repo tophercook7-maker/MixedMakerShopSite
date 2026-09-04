@@ -7,7 +7,7 @@ import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
 import { getCaseStudyBySlug, listCaseStudySlugs } from "@/lib/case-studies/registry";
-import { SITE_URL, TOPHER_WEB_DESIGN_URL } from "@/lib/site";
+import { SITE_URL } from "@/lib/site";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -30,10 +30,10 @@ export function generateStaticParams(): { slug: string }[] {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const c = getCaseStudyBySlug(slug);
-  if (!c) return { title: "Proof | MixedMakerShop" };
+  if (!c) return { title: "Proof" };
   const canonical = `${SITE_URL}/proof/${c.slug}`;
   return {
-    title: `${c.title} | MixedMakerShop`,
+    title: c.title,
     description: c.subtitle,
     alternates: { canonical },
     openGraph: {
@@ -124,19 +124,16 @@ export default async function ProofCaseStudyPage({ params }: { params: Promise<{
             <div className="public-glass-box public-glass-box--pad mx-auto mt-12 max-w-3xl text-center">
               <p className={cn("text-sm font-semibold uppercase tracking-[0.14em]", mmsSectionEyebrowOnGlass)}>Next step</p>
               <p className={cn("mt-4 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-                Want something similar for your business? Topher&apos;s Web Design handles client-facing sites; Mixed Maker Shop
-                hosts previews and intake on the umbrella studio.
+                Want something similar for your business? Same person, same process — start with a free preview or
+                see what a site costs.
               </p>
               <PublicCtaRow className="mt-8 justify-center">
-                <a
-                  href={TOPHER_WEB_DESIGN_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/web-design"
                   className={cn(mmsBtnPrimary, "inline-flex items-center justify-center gap-2 px-8 no-underline hover:no-underline")}
                 >
-                  Topher&apos;s Web Design
-                  <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
-                </a>
+                  Web design &amp; pricing
+                </Link>
                 <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnSecondaryOnGlass, "px-8 no-underline hover:no-underline")}>
                   Get a free preview
                 </Link>

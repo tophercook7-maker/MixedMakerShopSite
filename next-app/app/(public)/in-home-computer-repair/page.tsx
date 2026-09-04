@@ -16,7 +16,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "In-Home Computer Repair & AI Tutoring Hot Springs AR | MixedMakerShop",
+  title: "In-Home Computer Repair & AI Tutoring Hot Springs AR",
   description:
     "In-home computer repair and one-on-one tutoring (including AI tools, ChatGPT, and AI assistants) in Hot Springs, Arkansas. Diagnostic $59, Tune-Up $99, tutoring flat $65/hr.",
   alternates: { canonical },

@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "restaurant";
 
 export const metadata: Metadata = {
-  title: "Sample: Restaurant & Food Truck Website | MixedMakerShop",
+  title: "Sample: Restaurant & Food Truck Website",
   description:
     "Hospitality sample for dine-in, catering, and food truck events — ordering CTAs and trust. Portfolio concept by Topher.",
 };

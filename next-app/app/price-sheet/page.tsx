@@ -7,7 +7,7 @@ import styles from "./price-sheet.module.css";
 const canonical = `${SITE_URL}/price-sheet`;
 
 export const metadata: Metadata = {
-  title: "Price Sheet (Printable) | MixedMakerShop",
+  title: "Price Sheet (Printable)",
   description:
     "Print-friendly single-page price sheet for MixedMakerShop — web design, hosting, social media posting, in-home computer repair, tutoring, and AI tools.",
   alternates: { canonical },

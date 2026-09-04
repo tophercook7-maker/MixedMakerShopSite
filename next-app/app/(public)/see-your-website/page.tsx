@@ -4,7 +4,7 @@ import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/see-your-website" },
-  title: "See Your Website Preview | MixedMakerShop",
+  title: "See Your Website Preview",
   description:
     "Enter your business info and get an instant sample website preview. Redirects to our free preview builder.",
   robots: { index: true, follow: true },

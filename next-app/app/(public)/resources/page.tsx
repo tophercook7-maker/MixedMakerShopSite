@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 const canonical = `${SITE_URL}/resources`;
 
 export const metadata: Metadata = {
-  title: "Resource library | MixedMakerShop",
+  title: "Resource library",
   description:
     "Checklists and prep sheets for websites, local presence, AI workflows, and project planning — download PDFs free or request through Mixed Maker Shop.",
   alternates: { canonical },

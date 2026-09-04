@@ -3,7 +3,7 @@ import { BuildsPage } from "@/components/public/BuildsPage";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/builds" },
-  title: "Builds | MixedMakerShop",
+  title: "Builds",
   description:
     "Full library of Topher’s work: web projects, AI tools, apps, samples, and experiments — browse and request a build.",
   openGraph: {

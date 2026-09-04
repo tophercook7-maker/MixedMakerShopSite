@@ -18,7 +18,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Hot Springs Web Design for Small Business",
+  title: "Web Design in Hot Springs, AR — Sites from $400, Free Preview First",
   description: metaDescription(
     "Affordable Hot Springs, AR web design for contractors, restaurants, and local brands. Starter sites $400 · full setups $900 · free preview. Founder-led, mobile-first."
   ),
@@ -244,7 +244,7 @@ export default function HotSpringsWebDesignPage() {
               <span className="dot" /> Hot Springs, Arkansas
             </div>
             <h1 className="h1" style={{ margin: "14px 0 14px" }}>
-              Hot Springs Web Design for Small Businesses
+              Web Design in Hot Springs, AR &mdash; Sites from $400, Free Preview First
             </h1>
             <p className="subhead" style={{ margin: "0 0 18px" }}>
               MixedMakerShop builds clean, mobile-friendly websites for Hot Springs businesses — sites that load fast,

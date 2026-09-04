@@ -29,10 +29,10 @@ export function generateStaticParams(): { slug: string }[] {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const r = getResourceBySlug(slug);
-  if (!r) return { title: "Resource | MixedMakerShop" };
+  if (!r) return { title: "Resource" };
   const canonical = `${SITE_URL}/resources/${r.slug}`;
   return {
-    title: `${r.title} | MixedMakerShop`,
+    title: r.title,
     description: r.shortDescription,
     alternates: { canonical },
     openGraph: {

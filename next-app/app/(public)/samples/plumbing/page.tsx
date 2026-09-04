@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "plumbing";
 
 export const metadata: Metadata = {
-  title: "Sample: Plumbing & HVAC Website | MixedMakerShop",
+  title: "Sample: Plumbing & HVAC Website",
   description:
     "Service-trades website sample for plumbing and HVAC — repairs, water heaters, tune-ups, emergency line. Portfolio by Topher.",
 };

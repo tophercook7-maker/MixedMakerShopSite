@@ -23,7 +23,7 @@ const PRICE_REGULAR = "$29";
 const canonical = `${SITE_URL}/autonomous-desktop-agent`;
 
 export const metadata: Metadata = {
-  title: "Autonomous Desktop Agent — macOS Automation App | MixedMakerShop",
+  title: "Autonomous Desktop Agent — macOS Automation App",
   description:
     "Describe a goal in plain English and it drives your Mac apps for you — vision-guided, dry-run by default, with a per-action approval gate. One-time $19 license, bring your own Anthropic key.",
   alternates: { canonical },

@@ -4,7 +4,7 @@ import { publicTopherPhoneDisplay, publicTopherPhoneTel } from "@/lib/public-bra
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/3docean" },
-  title: "3D Ocean Pop-Out Effect | MixedMakerShop",
+  title: "3D Ocean Pop-Out Effect",
   description:
     "Watch a real ocean wave crash across our homepage and soak the page — without smearing a single word. A live demo of the pop-out video ads we build for local businesses.",
 };

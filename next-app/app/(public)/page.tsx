@@ -8,36 +8,36 @@ import { getHomeWebPageSchema } from "@/lib/structured-data";
 const canonical = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Web Design Hot Springs AR | Small Business Websites",
+  title: "Web Design, AI, Computer Help & 3D Printing in Hot Springs AR",
   description: metaDescription(
-    "Hot Springs web design for local businesses — mobile sites from $400, full setups $900. Free homepage preview. Founder-led, fast turnaround, built for calls and leads."
+    "One guy, a lot of skills. Websites from $400 with a free preview, AI & automation, books & audiobooks, in-home computer repair, 3D printing, and family-tree research — all by one person in Hot Springs, AR."
   ),
   keywords: [
+    "MixedMakerShop",
     "Mixed Maker Shop",
-    "umbrella studio",
-    "Topher's Web Design",
-    "AI tools",
-    "maker builds",
-    "AI automation",
-    "digital products",
-    "Mixed Maker Labs",
-    "Hot Springs Arkansas",
+    "web design Hot Springs AR",
     "small business websites",
+    "AI automation",
+    "in-home computer repair Hot Springs",
+    "3D printing Hot Springs",
+    "genealogy Hot Springs Arkansas",
+    "audiobook production",
+    "Hot Springs Arkansas",
   ],
   alternates: { canonical },
   openGraph: {
-    title: "Web Design Hot Springs AR | Mixed Maker Shop",
+    title: "MixedMakerShop — One guy. A lot of skills. Hot Springs, AR",
     description: metaDescription(
-      "Affordable small business websites in Hot Springs, AR. Free preview before you buy · starter sites $400 · built for calls and trust."
+      "Websites, AI & automation, books & audio, in-home computer help, 3D printing, family history, and ideas that need building. One person, Hot Springs, AR."
     ),
     url: canonical,
     images: ["/og-image"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Web Design Hot Springs AR | Mixed Maker Shop",
+    title: "MixedMakerShop — One guy. A lot of skills.",
     description: metaDescription(
-      "Small business web design in Hot Springs — free preview, sites from $400, built for leads."
+      "Websites from $400, AI & automation, computer help, 3D printing, family history — one person in Hot Springs, AR."
     ),
     images: ["/og-image"],
   },

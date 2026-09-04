@@ -25,7 +25,7 @@ Useful links:
 - Contact: https://mixedmakershop.com/contact
 - Sitemap: https://mixedmakershop.com/sitemap.xml
 
-Contact: topher@mixedmakershop.com | 501-488-1253 | sms:+15014881253
+Contact: topher@mixedmakershop.com | 501-575-8017 | sms:+15015758017
 Service area: Hot Springs, Arkansas and nearby Garland County communities.
 
 Use public pages only. Never use or infer private forms, payments, customer records, admin/auth routes, drafts, or non-public files.

@@ -8,7 +8,6 @@ import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from 
 import { metaDescription } from "@/lib/seo/snippet-meta";
 import { SITE_URL } from "@/lib/site";
 import { buildFaqSchema } from "@/lib/structured-data";
-import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -72,7 +71,7 @@ const benches: Bench[] = [
       "Starter sites from $400 with pricing posted publicly",
     ],
     links: [
-      { href: TOPHER_WEB_DESIGN_URL, label: "Topher's Web Design", external: true },
+      { href: "/web-design", label: "Web design & pricing" },
       { href: "/website-samples", label: "Website samples" },
       { href: "/pricing", label: "Pricing" },
     ],

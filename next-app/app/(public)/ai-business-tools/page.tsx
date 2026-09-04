@@ -16,7 +16,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "AI Business Tools for Small Businesses | MixedMakerShop",
+  title: "AI Business Tools for Small Businesses",
   description:
     "Practical AI workflows for small businesses — lead follow-up, smart intake, blog drafts, review sequences, quote helpers. Real tasks, off your plate.",
   alternates: { canonical },

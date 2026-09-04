@@ -77,4 +77,4 @@ A: Basic steps (reviews, GBP) are free, but a pro can help you target high-ranki
 
 Local SEO isn't about being *the best* business — it's about being the most *visible* when someone's head is spinning from termites. Whether you operate in Hot Springs, Malvern, or Lonsdale, MixedMakerShop builds online strategies that turn late-night searches into calls.
 
-Need help? Topher Cook is just a text away. **Call 501-488-1253**, email [Topher@mixedmakershop.com](mailto:Topher@mixedmakershop.com), or grab a [free homepage mockup](https://mixedmakershop.com/free-mockup) to see how visibility works in your service area.
+Need help? Topher Cook is just a text away. **Call 501-575-8017**, email [Topher@mixedmakershop.com](mailto:Topher@mixedmakershop.com), or grab a [free homepage mockup](https://mixedmakershop.com/free-mockup) to see how visibility works in your service area.

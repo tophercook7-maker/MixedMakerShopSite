@@ -107,6 +107,7 @@ export default function BookWebsiteReviewPage() {
             type="date"
             aria-label="Choose review date"
             value={selectedDay}
+            min={new Date().toLocaleDateString("en-CA")}
             onChange={async (e) => {
               const day = e.target.value;
               setSelectedDay(day);
@@ -128,10 +129,12 @@ export default function BookWebsiteReviewPage() {
             onChange={(e) => setPreferredTime(e.target.value)}
             required
           >
-            <option value="">Select an available time</option>
+            <option value="">
+              {selectedDay && availableSlots.length === 0 ? "No openings that day — try another date" : "Select an available time"}
+            </option>
             {availableSlots.map((slot) => (
               <option key={slot.start_time} value={slot.start_time}>
-                {new Date(slot.start_time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                {new Date(slot.start_time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" })} Central
               </option>
             ))}
           </select>

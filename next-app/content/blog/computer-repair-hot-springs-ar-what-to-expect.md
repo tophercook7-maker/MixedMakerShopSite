@@ -15,7 +15,7 @@ verificationNotes: "Auto-written 2026-09-04 by mms-autoblog (gpt-oss:20b) from b
 
 # Computer Repair in Hot Springs AR: What to Expect
 
-If you’re looking for computer repair Hot Springs AR, you’ll probably want to know what a visit looks like, what can be fixed in one go, and when it’s time to toss the machine and buy a new one. I’m Topher Cook, the guy who runs MixedMakerShop from my garage in Hot Springs. I’ve been fixing computers here since 2000, first as Cook’s Computer Service and now under the MixedMakerShop name. There’s no storefront to visit; I come to you, no appointment needed if you’re in my service area.
+If you’re looking for computer repair Hot Springs AR, you’ll probably want to know what a visit looks like, what can be fixed in one go, and when it’s time to toss the machine and buy a new one. I’m Topher Cook, the guy who runs MixedMakerShop in Hot Springs. I’ve been fixing computers here since 2000, first as Cook’s Computer Service and now under the MixedMakerShop name. There’s no storefront to visit; I come to you anywhere in my service area.
 
 ## What a Home Visit Looks Like
 

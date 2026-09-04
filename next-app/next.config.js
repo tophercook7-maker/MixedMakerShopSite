@@ -7,7 +7,7 @@
  */
 const HTML_REDIRECTS = [
   ["/index.html", "/"],
-  ["/3d-printing.html", "/lab"],
+  ["/3d-printing.html", "/3d-printing"],
   ["/about.html", "/about"],
   ["/agreement.html", "/terms"],
   ["/ai-business-tools.html", "/ai-business-tools"],
@@ -16,7 +16,7 @@ const HTML_REDIRECTS = [
   ["/church-websites-hot-springs.html", "/church-websites-hot-springs"],
   ["/coffee-shop-websites-hot-springs.html", "/coffee-shop-websites-hot-springs"],
   ["/contact.html", "/contact"],
-  ["/custom-3d-printing.html", "/lab"],
+  ["/custom-3d-printing.html", "/3d-printing"],
   ["/examples.html", "/examples"],
   ["/google-business-profile-help.html", "/google-business-profile-help"],
   ["/hot-springs-web-design.html", "/web-design-hot-springs-ar"],
@@ -84,20 +84,19 @@ const nextConfig = {
       { source: "/downloads/autonomous-desktop-agent-appcast.json", destination: "/", statusCode: 302 },
       { source: "/api/agent/checkout", destination: "/", statusCode: 302 },
       { source: "/api/agent/unlock", destination: "/", statusCode: 302 },
-      // Retired 3D printing / GiGi's Print Shop lane (2026-08). Everything that used to
-      // live under those URLs now points at the Lab so indexed links keep their equity
-      // instead of 404-ing.
-      { source: "/3d-printing", destination: "/lab", statusCode: 301 },
-      { source: "/3d-printing/:path*", destination: "/lab", statusCode: 301 },
-      { source: "/custom-3d-printing", destination: "/lab", statusCode: 301 },
-      { source: "/upload-print", destination: "/lab", statusCode: 301 },
-      { source: "/blog/3d-printed-keychains-bulk-marketing", destination: "/lab", statusCode: 301 },
-      { source: "/blog/3d-printed-keychains-ultimate-handout", destination: "/lab", statusCode: 301 },
-      { source: "/blog/3d-printed-replacement-parts", destination: "/lab", statusCode: 301 },
-      { source: "/blog/business-card-3d-printed-keychain", destination: "/lab", statusCode: 301 },
-      { source: "/blog/custom-3d-printed-bookmarks", destination: "/lab", statusCode: 301 },
-      { source: "/blog/custom-3d-printing-branding", destination: "/lab", statusCode: 301 },
-      { source: "/blog/stop-dog-earing-3d-printed-bookmarks", destination: "/lab", statusCode: 301 },
+      // 3D printing came back as a service (2026-09, "Everything I Do"). /3d-printing is a
+      // live page again; the old GiGi's Print Shop sub-URLs consolidate onto it so
+      // indexed links keep their equity instead of 404-ing.
+      { source: "/3d-printing/:path+", destination: "/3d-printing", statusCode: 301 },
+      { source: "/custom-3d-printing", destination: "/3d-printing", statusCode: 301 },
+      { source: "/upload-print", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/3d-printed-keychains-bulk-marketing", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/3d-printed-keychains-ultimate-handout", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/3d-printed-replacement-parts", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/business-card-3d-printed-keychain", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/custom-3d-printed-bookmarks", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/custom-3d-printing-branding", destination: "/3d-printing", statusCode: 301 },
+      { source: "/blog/stop-dog-earing-3d-printed-bookmarks", destination: "/3d-printing", statusCode: 301 },
       // Retired affiliate lane (2026-08). The /gear affiliate storefront and the
       // affiliate-shell "recommended tools" page are gone — nothing on the site earns
       // a commission anymore. Point their URLs at real work instead of 404s.

@@ -1,6 +1,7 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { isHardBlockEventType } from "@/lib/calendar-events";
+import { BOOKING_TZ, buildDaySlots, dayBoundsUtc, isValidDay } from "@/lib/booking-slots";
 
 function resolveOwnerId(
   profileRows: Array<{ id: string }> | null,
@@ -31,15 +32,10 @@ export async function GET(request: Request) {
   );
   if (!ownerId) return NextResponse.json({ error: "No owner profile found." }, { status: 500 });
 
-  const openHour = Number(process.env.BOOKING_OPEN_HOUR || 9);
-  const closeHour = Number(process.env.BOOKING_CLOSE_HOUR || 17);
-  const slotMinutes = Number(process.env.BOOKING_SLOT_MINUTES || 30);
-
-  const dayStart = new Date(`${day}T00:00:00.000Z`);
-  const dayEnd = new Date(`${day}T23:59:59.999Z`);
-  if (Number.isNaN(dayStart.getTime())) {
+  if (!isValidDay(day)) {
     return NextResponse.json({ error: "Invalid day." }, { status: 400 });
   }
+  const { dayStart, dayEnd } = dayBoundsUtc(day);
 
   const { data: rows, error } = await supabase
     .from("calendar_events")
@@ -59,23 +55,13 @@ export async function GET(request: Request) {
     }))
     .filter((b) => !Number.isNaN(b.start.getTime()) && !Number.isNaN(b.end.getTime()) && b.end > b.start);
 
-  const slots: Array<{ start_time: string; end_time: string }> = [];
-  for (let hour = openHour; hour < closeHour; hour += 1) {
-    for (let min = 0; min < 60; min += slotMinutes) {
-      const slotStart = new Date(`${day}T${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:00.000Z`);
-      const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000);
-      if (slotEnd.getUTCHours() > closeHour || (slotEnd.getUTCHours() === closeHour && slotEnd.getUTCMinutes() > 0)) continue;
-      const conflict = hardBlocks.some((block) => slotStart < block.end && slotEnd > block.start);
-      if (!conflict) {
-        slots.push({ start_time: slotStart.toISOString(), end_time: slotEnd.toISOString() });
-      }
-    }
-  }
+  const slots = buildDaySlots(day, hardBlocks);
 
   return NextResponse.json(
     {
       owner_id: ownerId,
       day,
+      time_zone: BOOKING_TZ,
       slots,
       hard_block_count: hardBlocks.length,
     },

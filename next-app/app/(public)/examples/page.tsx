@@ -4,7 +4,7 @@ import { ExamplesPageContent } from "@/components/public/ExamplesPageContent";
 const canonical = "https://mixedmakershop.com/examples";
 
 export const metadata: Metadata = {
-  title: "Examples | MixedMakerShop",
+  title: "Examples",
   description:
     "A proof wall for MixedMakerShop: website examples, lab builds, property care examples, tools, ideas, and before-and-after work.",
   alternates: { canonical },

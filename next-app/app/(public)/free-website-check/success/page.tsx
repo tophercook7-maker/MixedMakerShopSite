@@ -5,7 +5,7 @@ import { LEAD_CONFIRMATION_MESSAGE } from "@/lib/lead-confirmation-message";
 // Post-submission confirmation page — keep out of the index and override the canonical
 // it would otherwise inherit from the free-website-check layout.
 export const metadata: Metadata = {
-  title: "Request received | MixedMakerShop",
+  title: "Request received",
   robots: { index: false, follow: true },
   alternates: { canonical: "https://mixedmakershop.com/free-website-check/success" },
 };

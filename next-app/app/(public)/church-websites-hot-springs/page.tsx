@@ -17,7 +17,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Church Website Design in Hot Springs, AR | MixedMakerShop",
+  title: "Church Website Design in Hot Springs, AR",
   description:
     "Church web design for Hot Springs, Arkansas — service times, sermons, events, first-time visitor info. Built for mobile-first, ministry-first.",
   alternates: { canonical },

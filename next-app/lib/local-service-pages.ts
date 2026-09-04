@@ -127,5 +127,5 @@ export function getLocalServiceConfig(slug: string): LocalServicePageConfig | un
 export const LOCAL_SERVICE_SLUGS = Object.keys(LOCAL_SERVICE_PAGES) as readonly string[];
 
 export function localServicePageTitle(cfg: LocalServicePageConfig): string {
-  return `${cfg.serviceTitle} in ${cfg.cityState} | MixedMakerShop`;
+  return `${cfg.serviceTitle} in ${cfg.cityState}`;
 }

@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "wellness";
 
 export const metadata: Metadata = {
-  title: "Sample: Wellness & Massage Website | MixedMakerShop",
+  title: "Sample: Wellness & Massage Website",
   description:
     "Premium wellness homepage sample — massage, yoga, and sound baths with layered sand-and-sage visuals and clear booking flow.",
 };

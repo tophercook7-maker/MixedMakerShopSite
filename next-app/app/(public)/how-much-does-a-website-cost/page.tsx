@@ -8,7 +8,7 @@ const DATE_PUBLISHED = "2026-06-12";
 const DATE_MODIFIED = "2026-06-12";
 
 export const metadata: Metadata = {
-  title: "How Much Does a Small Business Website Cost? (2026 Answer) | MixedMakerShop",
+  title: "How Much Does a Small Business Website Cost? (2026 Answer)",
   description:
     "What small business websites really cost in 2026, what drives the price, and the hidden ongoing costs nobody talks about. Real ranges from DIY to agency, with honest context.",
   alternates: { canonical },

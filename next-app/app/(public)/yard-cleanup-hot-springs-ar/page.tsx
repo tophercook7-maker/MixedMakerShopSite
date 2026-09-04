@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: config.metaDescription,
   alternates: { canonical },
   openGraph: {
-    title: localServicePageTitle(config),
+    title: `${localServicePageTitle(config)} | MixedMakerShop`,
     description: config.metaDescription,
     url: canonical,
   },

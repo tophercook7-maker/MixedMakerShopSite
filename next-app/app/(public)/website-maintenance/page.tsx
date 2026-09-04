@@ -16,7 +16,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Website Maintenance for Small Businesses | MixedMakerShop",
+  title: "Website Maintenance for Small Businesses",
   description:
     "Done-for-you website maintenance in Hot Springs, AR — content edits, security updates, off-site backups, bug fixes, and uptime monitoring from $25/mo. Text Topher; it gets done.",
   alternates: { canonical },

@@ -4,7 +4,7 @@ import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/restaurant-website-redesign" },
-  title: "Restaurant Website Redesign | MixedMakerShop",
+  title: "Restaurant Website Redesign",
   description:
     "How we redesign restaurant sites for faster loads, clearer menus, and more reservations — with live samples you can preview.",
 };

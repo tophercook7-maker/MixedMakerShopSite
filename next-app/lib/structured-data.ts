@@ -143,10 +143,11 @@ export function getMixedMakerStructuredDataGraph() {
       {
         "@type": "ProfessionalService",
         "@id": webDesignDeptId,
-        name: "Topher's Web Design",
+        name: "MixedMakerShop Web Design",
+        alternateName: "Topher's Web Design",
         url: TOPHER_WEB_DESIGN_URL,
         description:
-          "Dedicated small business web design: clean sites, redesigns, landing pages, and local SEO foundations.",
+          "Small business web design: clean sites, redesigns, landing pages, and local SEO foundations.",
         parentOrganization: { "@id": orgId },
       },
       {

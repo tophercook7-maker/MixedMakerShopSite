@@ -9,7 +9,6 @@ import {
 import { publicShellClass } from "@/lib/public-brand";
 import { SITE_URL } from "@/lib/site";
 import { buildFaqSchema } from "@/lib/structured-data";
-import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -18,19 +17,19 @@ const backdrop = mmsUmbrellaSectionBackdrop;
 const faqs: { q: string; a: string }[] = [
   {
     q: "What is MixedMakerShop?",
-    a: "MixedMakerShop is Topher Cook's one-man laboratory in Hot Springs, Arkansas. One person designs, builds, and ships everything here — small business websites, local SEO, AI tools, apps and games, books and audiobooks, video ads, in-home computer repair, and property care.",
+    a: "MixedMakerShop is Topher Cook's one-person shop in Hot Springs, Arkansas. One guy, a lot of skills: websites and apps, AI and automation, books and audiobooks, in-home computer help, 3D printing, genealogy and family history, and prototypes for ideas that need building.",
   },
   {
-    q: "What is Topher's Web Design?",
-    a: "Topher's Web Design is the focused web design service for small businesses: clean mobile-friendly websites, redesigns, landing pages, and local SEO foundations — with a calm, direct process instead of agency overhead.",
-  },
-  {
-    q: "How are MixedMakerShop and Topher's Web Design connected?",
-    a: "MixedMakerShop is the studio home base. Topher's Web Design is the dedicated web branch when you specifically need a better website, clearer service pages, or local SEO foundations — linked as a separate brand so web work stays easy to find.",
+    q: "What happened to Topher's Web Design?",
+    a: "It folded into MixedMakerShop. Same person, same web design work, one name. Old topherswebdesign.com links land here.",
   },
   {
     q: "What services are offered?",
-    a: "Web design and local SEO, in-home computer repair, AI tools and automation, custom apps and games, books and audiobooks, pop-out video ads, property-care routing, and whatever is currently on the bench in the Lab and Idea Lab — all described in plain language on each page.",
+    a: "Websites, landing pages, web apps, and custom software; AI agents, automations, and voice AI; books, ebooks, audiobooks, book trailers, logos, and graphics; in-home computer repair, setup, and tutoring; 3D printing from your file or a photo; family-tree research and Tree of Life prints; and prototypes for unusual ideas. Each has its own page with real prices.",
+  },
+  {
+    q: "Do you work with individuals, or only businesses?",
+    a: "Both. Computer help, 3D printing, family history, books, and audiobooks are mostly for individuals and families. Websites, AI, and automation are mostly for businesses. The contact form works for either.",
   },
   {
     q: "Who is MixedMakerShop for?",
@@ -58,7 +57,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: "How do I get started?",
-    a: "You can contact MixedMakerShop through the website, call 501-488-1253, or request a free homepage preview or estimate for your website, AI tool, or local business project.",
+    a: "Send a message through the contact page, text or call 501-575-8017, or email Topher@mixedmakershop.com. Say what you're working on in one sentence and you'll get a straight answer within one business day. Website projects can start with a free homepage preview.",
   },
 ];
 
@@ -74,19 +73,9 @@ export function MixedMakerBrandFaq() {
       <div className={cn(shell, mmsSectionY)}>
         <div className="public-glass-box public-glass-box--pad max-w-3xl">
           <p className={mmsSectionEyebrowOnGlass}>Questions &amp; answers</p>
-          <h2 className={cn(mmsH2OnGlass, "mt-4")}>How the studio fits together</h2>
+          <h2 className={cn(mmsH2OnGlass, "mt-4")}>Questions people ask first</h2>
           <p className={cn("mt-5 text-base leading-relaxed md:text-lg", mmsOnGlassSecondary)}>
-            Plain-language answers for people (and search tools) trying to understand{" "}
-            <a
-              href={TOPHER_WEB_DESIGN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline decoration-white/30 underline-offset-2 hover:decoration-white/60"
-            >
-              Topher&apos;s Web Design small business website services
-            </a>{" "}
-            versus the larger{" "}
-            <span className="text-white/90">MixedMakerShop creative studio</span>.
+            Plain-language answers about what MixedMakerShop is, who it&apos;s for, and how to get something started.
           </p>
         </div>
         <div className="mx-auto max-w-3xl space-y-3 pt-6 md:pt-8">

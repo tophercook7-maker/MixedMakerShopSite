@@ -3,7 +3,7 @@ import { GrowthOfferClient } from "@/components/public/GrowthOfferClient";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/offer" },
-  title: "Complete Website + SEO Offer | MixedMakerShop",
+  title: "Complete Website + SEO Offer",
   description:
     "Get a high-converting website plus ongoing SEO, Google Business optimization, and content support to help your business grow.",
   openGraph: {

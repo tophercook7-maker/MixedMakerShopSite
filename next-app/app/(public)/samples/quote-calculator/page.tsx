@@ -6,7 +6,7 @@ import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 const HERO = "/images/mixedmaker-workspace-hero.png";
 
 export const metadata: Metadata = {
-  title: "Sample: Instant Quote & Estimator Style Tools | MixedMakerShop",
+  title: "Sample: Instant Quote & Estimator Style Tools",
   description:
     "How local businesses use simple quote flows and calculators on their website — a concept sample from MixedMakerShop web design.",
 };

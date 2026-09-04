@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "landscaping";
 
 export const metadata: Metadata = {
-  title: "Sample: Landscaping & Lawn Care Website | MixedMakerShop",
+  title: "Sample: Landscaping & Lawn Care Website",
   description:
     "Evergreen lawn care and landscaping homepage sample — maintenance, mulch, trimming, seasonal trust. By Topher.",
 };

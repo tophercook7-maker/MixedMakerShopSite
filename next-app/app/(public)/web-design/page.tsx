@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 const canonical = "https://mixedmakershop.com/web-design";
 
 export const metadata: Metadata = {
-  title: "Web Design for Real Businesses | MixedMakerShop",
+  title: "Web Design for Real Businesses",
   description:
     "Practical web design by Topher — clear sites that build trust and drive calls and leads. Hot Springs, AR & nationwide. Start with a free preview.",
   alternates: { canonical },

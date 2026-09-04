@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const canonical = "https://mixedmakershop.com/pricing";
 
 export const metadata: Metadata = {
-  title: "Web Design Pricing | MixedMakerShop",
+  title: "Web Design Pricing",
   description:
     "Simple pricing with no surprises — Starter SEO Site starting at $400, Hosting & Support $25/mo, Growth $900–$1,800, and custom quotes.",
   alternates: { canonical },

@@ -7,7 +7,7 @@ const canonical = `${SITE_URL}/about`;
 
 export const metadata: Metadata = {
   alternates: { canonical },
-  title: "About Topher | MixedMakerShop",
+  title: "About Topher",
   description:
     "Topher has provided local tech help since 2000 — formerly Cook's Computer Service, now MixedMakerShop with in-home computer repair, web design, AI tools, and digital builds in Hot Springs, Arkansas.",
   openGraph: {

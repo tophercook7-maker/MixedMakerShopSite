@@ -17,7 +17,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Small Business Websites in Hot Springs, AR | MixedMakerShop",
+  title: "Small Business Websites in Hot Springs, AR",
   description:
     "Small business website design for Hot Springs, Arkansas — affordable, mobile-friendly sites for local owners, side hustlers, and service providers.",
   alternates: { canonical },

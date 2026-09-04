@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/idea-lab" },
-  title: "Idea Lab | MixedMakerShop",
+  title: "Idea Lab",
   description:
     "See active MixedMakerShop builds, final-polish projects, experiments, and future concepts. Vote, suggest, or ask about what is being built.",
 };

@@ -10,7 +10,7 @@ import { SITE_URL } from "@/lib/site";
 const canonical = `${SITE_URL}/autonomous-desktop-agent/privacy`;
 
 export const metadata: Metadata = {
-  title: "Autonomous Desktop Agent — Privacy Policy | MixedMakerShop",
+  title: "Autonomous Desktop Agent — Privacy Policy",
   description:
     "Privacy Policy for the Autonomous Desktop Agent macOS app: local-first, no backend, screenshots sent only to your own Anthropic API key (BYOK).",
   alternates: { canonical },

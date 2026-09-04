@@ -6,7 +6,7 @@ import { publicTopherPhoneDisplay, publicTopherPhoneTel } from "@/lib/public-bra
 
 export const metadata: Metadata = {
   alternates: { canonical: "https://mixedmakershop.com/3d-scenes" },
-  title: "3D Pop-Out Scenes | Scroll-Stopping Video Ads | MixedMakerShop",
+  title: "3D Pop-Out Scenes | Scroll-Stopping Video Ads",
   description:
     "A gallery of 3D pop-out video ads — water, fire, money, confetti and more bursting out of the page — built as ready-to-post Facebook & Instagram posts for local businesses.",
 };

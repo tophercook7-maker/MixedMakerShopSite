@@ -16,7 +16,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Social Media Takeover for Small Businesses | MixedMakerShop",
+  title: "Social Media Takeover for Small Businesses",
   description:
     "Done-for-you social posting across Facebook, Instagram, GBP, LinkedIn, Pinterest, X, and Threads. Posting only — your voice stays yours. From $129/mo, month-to-month.",
   alternates: { canonical },

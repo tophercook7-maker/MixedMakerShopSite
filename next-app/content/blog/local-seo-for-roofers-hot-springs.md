@@ -98,4 +98,4 @@ Fresh, high-quality reviews can improve GBP visibility surprisingly fast — oft
 
 Dominating the **map pack** and storm-season searches means combining practical SEO with hyper-local strategy. From GBP optimization to targeted keywords, the right moves can turn Google searches into real calls for your Hot Springs or Malvern-based roofers.  
 
-Need a plan that brings in calls, not just visits? [Topher Cook](https://mixedmakershop.com) helps roofers and other local businesses build websites and [Local SEO](https://mixedmakershop.com/pricing) that work. Start with a [free homepage mockup](https://mixedmakershop.com/free-mockup) or call **501-488-1253** today. Your next customer is just a search away.
+Need a plan that brings in calls, not just visits? [Topher Cook](https://mixedmakershop.com) helps roofers and other local businesses build websites and [Local SEO](https://mixedmakershop.com/pricing) that work. Start with a [free homepage mockup](https://mixedmakershop.com/free-mockup) or call **501-575-8017** today. Your next customer is just a search away.

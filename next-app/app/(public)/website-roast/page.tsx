@@ -6,7 +6,7 @@ import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 const canonical = "https://mixedmakershop.com/website-roast";
 
 export const metadata: Metadata = {
-  title: "Free Website Roast | MixedMakerShop",
+  title: "Free Website Roast",
   description:
     "A practical, human review of your site — trust, clarity, and conversions — from Topher, not a generic auto-audit.",
   alternates: { canonical },

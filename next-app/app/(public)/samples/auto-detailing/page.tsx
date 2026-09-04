@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "auto-detailing";
 
 export const metadata: Metadata = {
-  title: "Sample: Auto Detailing Website | MixedMakerShop",
+  title: "Sample: Auto Detailing Website",
   description:
     "Mobile-friendly auto detailing sample with packages, gallery, and booking-focused CTAs. Portfolio concept by Topher.",
 };

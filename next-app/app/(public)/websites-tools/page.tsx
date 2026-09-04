@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { FixedHeroMedia } from "@/components/public/FixedHeroMedia";
 import { PublicCtaRow } from "@/components/public/PublicCtaRow";
 import { publicFreeMockupFunnelHref, publicShellClass, publicTopherEmail } from "@/lib/public-brand";
-import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
 import {
   mmsBtnPrimary,
   mmsBtnSecondaryOnGlass,
@@ -24,7 +23,7 @@ import { cn } from "@/lib/utils";
 const canonical = "https://mixedmakershop.com/websites-tools";
 
 export const metadata: Metadata = {
-  title: "Websites & Tools | MixedMakerShop",
+  title: "Websites & Tools",
   description:
     "Topher's Web Design builds clean small-business websites — and MixedMakerShop hosts tools, previews, and digital helpers under one umbrella studio.",
   keywords: [
@@ -111,29 +110,25 @@ export default function WebsitesToolsPage() {
                 get more calls, bookings, and leads.
               </p>
               <PublicCtaRow className="mt-9">
-                <a
-                  href={TOPHER_WEB_DESIGN_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href={publicFreeMockupFunnelHref}
                   className={cn(
                     mmsBtnPrimary,
                     "inline-flex w-full items-center justify-center gap-2 px-8 no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Get a free website demo
-                  <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
-                </a>
-                <Link href={publicFreeMockupFunnelHref} className={cn(mmsBtnSecondaryOnGlass, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
-                  Free preview on MixedMakerShop
+                  Get a free website preview
+                </Link>
+                <Link href="/web-design" className={cn(mmsBtnSecondaryOnGlass, "w-full px-8 no-underline hover:no-underline sm:w-auto")}>
+                  Web design &amp; pricing
                 </Link>
               </PublicCtaRow>
               <p className={cn("mt-6 max-w-2xl text-sm leading-relaxed md:text-[15px]", mmsOnGlassSecondary)}>
                 Need a website for your business?{" "}
-                <a href={TOPHER_WEB_DESIGN_URL} target="_blank" rel="noopener noreferrer" className={mmsTextLinkOnGlass}>
-                  Topher&apos;s Web Design small business website services
-                </a>{" "}
-                live at topherswebdesign.com — clean, mobile-friendly websites, redesigns, landing pages, and local SEO
-                foundations for small businesses.
+                <Link href="/web-design" className={mmsTextLinkOnGlass}>
+                  Small business web design
+                </Link>{" "}
+                — clean, mobile-friendly websites, redesigns, landing pages, and local SEO foundations, starting at $400.
               </p>
             </div>
           </div>

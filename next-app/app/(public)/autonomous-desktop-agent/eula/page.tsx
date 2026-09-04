@@ -10,7 +10,7 @@ import { SITE_URL } from "@/lib/site";
 const canonical = `${SITE_URL}/autonomous-desktop-agent/eula`;
 
 export const metadata: Metadata = {
-  title: "Autonomous Desktop Agent — EULA | MixedMakerShop",
+  title: "Autonomous Desktop Agent — EULA",
   description:
     "End User License Agreement for the Autonomous Desktop Agent macOS app: free, bring-your-own-key license terms, automation risk, and disclaimers.",
   alternates: { canonical },

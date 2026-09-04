@@ -1,5 +1,7 @@
 /** Dedicated web-design branch site (external). */
-export const TOPHER_WEB_DESIGN_URL = "https://topherswebdesign.com" as const;
+import { SITE_URL } from "@/lib/site";
+/** Topher's Web Design folded into MixedMakerShop (2026-08). Old links now resolve on-site. */
+export const TOPHER_WEB_DESIGN_URL = `${SITE_URL}/web-design` as const;
 
 export const topherWebDesignSampleSites = [
   {

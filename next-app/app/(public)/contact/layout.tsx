@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const canonical = "https://mixedmakershop.com/contact";
 
 export const metadata: Metadata = {
-  title: "Contact Topher | MixedMakerShop",
+  title: { default: "Contact Topher", template: "%s | MixedMakerShop" },
   description:
     "Reach Topher at MixedMakerShop about web design, an AI tool, or a digital build — direct, low-pressure, reply within one business day.",
   alternates: { canonical },

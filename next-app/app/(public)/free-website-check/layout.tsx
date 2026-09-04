@@ -5,7 +5,7 @@ const canonical = "https://mixedmakershop.com/free-website-check";
 // Index metadata only. The /free-website-check/success child sets its own noindex
 // metadata so it does not inherit this canonical.
 export const metadata: Metadata = {
-  title: "Free Website Check | MixedMakerShop",
+  title: { default: "Free Website Check", template: "%s | MixedMakerShop" },
   description:
     "Get a free, human review of your website from Topher — trust, clarity, mobile experience, and the path to contact. No generic auto-audit, no obligation.",
   alternates: { canonical },

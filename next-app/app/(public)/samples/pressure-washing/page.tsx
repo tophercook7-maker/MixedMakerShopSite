@@ -6,7 +6,7 @@ import { PortfolioSampleClient } from "@/components/public/portfolio-sample-clie
 const SLUG = "pressure-washing";
 
 export const metadata: Metadata = {
-  title: "Sample: Pressure Washing Website | MixedMakerShop",
+  title: "Sample: Pressure Washing Website",
   description:
     "Polished demo homepage for a pressure washing business — services, trust, gallery, and quote CTAs. Portfolio sample by Topher.",
 };

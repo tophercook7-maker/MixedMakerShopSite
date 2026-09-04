@@ -2,38 +2,37 @@ import Link from "next/link";
 import { TrackedPublicLink } from "@/components/public/TrackedPublicLink";
 import { publicFreeMockupFunnelHref, publicGoogleMapsSearchHref, publicGoogleReviewHref } from "@/lib/public-brand";
 import { PUBLIC_POPULAR_PAGES } from "@/lib/public-popular-pages";
-import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
+import { publicTopherPhoneDisplay, publicTopherTextHref } from "@/lib/public-brand";
 
 export function PublicFooter() {
   const linkGroups = [
+    {
+      title: "Everything I Do",
+      links: [
+        { href: "/web-design", label: "Websites, Apps & Software" },
+        { href: "/ai-business-tools", label: "AI & Automation" },
+        { href: "/lab#books", label: "Books, Audio & Creative" },
+        { href: "/in-home-computer-repair", label: "In-Home Computer Help" },
+        { href: "/3d-printing", label: "3D Printing" },
+        { href: "/family-history", label: "Genealogy & Family History" },
+        { href: "/contact?topic=ideas", label: "Ideas, Experiments & Inventions" },
+      ],
+    },
     {
       title: "MixedMakerShop",
       links: [
         { href: publicGoogleReviewHref, label: "⭐ Leave a Review", external: true },
         { href: "/start-here", label: "Start Here" },
-        { href: "/lab", label: "The Lab" },
+        { href: "/pricing", label: "Pricing" },
+        { href: publicFreeMockupFunnelHref, label: "Free Website Preview" },
         { href: "/examples", label: "Examples" },
-        { href: "/idea-lab", label: "Idea Lab" },
+        { href: "/pay", label: "Pay an Invoice" },
         { href: "/contact", label: "Contact" },
       ],
     },
     {
-      title: "Websites & Tools",
-      links: [
-        {
-          href: TOPHER_WEB_DESIGN_URL,
-          label: "Topher's Web Design (dedicated web services)",
-          external: true,
-        },
-        { href: "/websites-tools", label: "Websites & Tools hub" },
-        { href: publicFreeMockupFunnelHref, label: "Free Website Preview" },
-        { href: "/web-design", label: "Web Design on MixedMakerShop" },
-        { href: "/tools", label: "Digital Tools" },
-      ],
-    },
-    {
-      title: "Popular Pages",
-      links: PUBLIC_POPULAR_PAGES,
+      title: "Websites",
+      links: PUBLIC_POPULAR_PAGES.filter((p) => !["/pricing", "/portfolio", "/builds", "/lab"].includes(p.href)),
     },
     {
       title: "The Lab",
@@ -42,6 +41,8 @@ export function PublicFooter() {
         { href: "/builds", label: "Builds & Experiments" },
         { href: "/portfolio/index.html", label: "Books, Apps & Games" },
         { href: "/3d-scenes", label: "Pop-Out Video Ads" },
+        { href: "/idea-lab", label: "Idea Lab" },
+        { href: "/blog", label: "Blog" },
       ],
     },
     {
@@ -81,13 +82,15 @@ export function PublicFooter() {
               MixedMakerShop
             </h2>
             <p className="small m-0 leading-[1.55] opacity-[0.92]">
-              MixedMakerShop is Topher&apos;s one-man laboratory — websites, AI tools, apps, books, video, and local
-              tech help, all built by one person in Hot Springs.
+              One guy, a lot of skills. Websites and apps, AI and automation, books and audio, in-home computer help,
+              3D printing, family history, and ideas that need building — all by one person in Hot Springs.
             </p>
             <p className="small mt-2.5">
               Hot Springs, Arkansas • Serving nearby towns and clients nationwide
             </p>
-            <p className="small mt-1.5">Topher@mixedmakershop.com</p>
+            <p className="small mt-1.5">
+              Topher@mixedmakershop.com · <a href={publicTopherTextHref}>Text {publicTopherPhoneDisplay}</a>
+            </p>
             <p className="small mt-2.5">
               <a href={publicGoogleMapsSearchHref} target="_blank" rel="noopener noreferrer">
                 Open in Google Maps

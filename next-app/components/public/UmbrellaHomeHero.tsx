@@ -11,8 +11,8 @@ import {
   mmsOnGlassSecondary,
   mmsSectionEyebrowOnGlass,
 } from "@/lib/mms-umbrella-ui";
-import { MMS_LOCAL_TECH_POSITIONING } from "@/components/public/MmsComebackStorySection";
 import { publicFreeMockupFunnelHref, publicShellClass } from "@/lib/public-brand";
+import { contactHrefForTopic } from "@/lib/what-i-do";
 import { cn } from "@/lib/utils";
 
 const shell = publicShellClass;
@@ -49,26 +49,25 @@ export function UmbrellaHomeHero() {
           )}
         >
           <p className={mmsSectionEyebrowOnGlass}>
-            Mixed Maker Shop · A one-man laboratory
+            Mixed Maker Shop · Hot Springs, Arkansas
           </p>
 
           <h1
             className={cn(mmsHeroTitleOnGlass, "mt-5 md:mt-6")}
           >
-            Mixed Maker Shop
+            Web Design, AI Tools &amp; Computer Help in Hot Springs, AR
           </h1>
 
           <p
             className={cn("mt-4 text-xl font-semibold leading-snug text-white md:text-2xl", mmsOnGlassSecondary)}
           >
-            {MMS_LOCAL_TECH_POSITIONING}
+            One guy. A lot of skills.
           </p>
           <p
             className={cn("mt-6 text-base leading-relaxed md:text-lg md:leading-relaxed", mmsOnGlassSecondary)}
           >
-            Formerly Cook&apos;s Computer Service (2000–2014). After MS forced a pause, Mixed Maker Shop is the comeback —
-            a working lab where one person builds websites, AI tools, apps and games, books and audiobooks, music and
-            video, and still makes the house call for a slow PC.
+            Websites and apps, AI and automation, books and audiobooks, in-home computer help, 3D printing, family
+            history, and ideas that need building &mdash; one person, in Hot Springs, doing local tech work since 2000.
           </p>
 
           <div
@@ -83,27 +82,27 @@ export function UmbrellaHomeHero() {
             <div className={mmsOnGlassCtaSeparator}>
               <PublicCtaRow>
                 <TrackedPublicLink
-                  href={publicFreeMockupFunnelHref}
+                  href={contactHrefForTopic("other")}
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "contact" }}
                   className={cn(
                     mmsBtnPrimary,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center gap-2 px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Free homepage mockup
+                  Tell me what you&apos;re working on
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
-                  href="/free-website-check"
+                  href={publicFreeMockupFunnelHref}
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "website_check" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "free_mockup" }}
                   className={cn(
                     mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  Free website check
+                  Free website preview
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
               </PublicCtaRow>
@@ -123,15 +122,15 @@ export function UmbrellaHomeHero() {
                   <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
                 </TrackedPublicLink>
                 <TrackedPublicLink
-                  href="#lab-benches"
+                  href="#what-i-do"
                   eventName="public_contact_cta_click"
-                  eventProps={{ location: "home_hero_umbrella", target: "lab_map" }}
+                  eventProps={{ location: "home_hero_umbrella", target: "what_i_do" }}
                   className={cn(
                     mmsBtnSecondaryOnGlass,
                     "inline-flex min-h-[3.35rem] w-full items-center justify-center px-8 py-6 text-base font-semibold no-underline hover:no-underline sm:w-auto",
                   )}
                 >
-                  See what&apos;s on the bench
+                  See everything I do
                 </TrackedPublicLink>
               </PublicCtaRow>
             </div>
@@ -142,11 +141,11 @@ export function UmbrellaHomeHero() {
                 "max-w-[48ch]",
               )}
             >
-              Free homepage mockups before you commit. Clear starting prices on common paths. The person who answers is
-              the person who builds it. Custom work scheduled after approval and deposit when required.
+              Clear starting prices on the common jobs. Free homepage previews on website projects. The person who
+              answers is the person who builds it. Custom work is scheduled after a written estimate and deposit when required.
             </p>
             <p className={cn("mt-2 max-w-[48ch] text-sm leading-relaxed", mmsOnGlassSecondary)}>
-              Not sure what you need? Start with a free homepage preview — you&apos;ll see the direction before you commit.
+              Have an idea, a problem, or something you&apos;ve been trying to figure out? Send it &mdash; one sentence is enough.
             </p>
           </div>
         </div>

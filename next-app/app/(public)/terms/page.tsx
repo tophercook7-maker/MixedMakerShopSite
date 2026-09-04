@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 const canonical = `${SITE_URL}/terms`;
 
 export const metadata: Metadata = {
-  title: "Terms of Service | MixedMakerShop",
+  title: "Terms of Service",
   description:
     "Review the terms for using MixedMakerShop services, including web design, the Lab, AI tools, deposits, refunds, and project ownership.",
   alternates: { canonical },

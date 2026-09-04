@@ -14,15 +14,13 @@ const navItems: {
   event?: { name: string; props?: Record<string, string | number | boolean | undefined> };
 }[] = [
   { href: "/start-here", label: "Start Here" },
+  { href: "/web-design", label: "Websites" },
+  { href: "/ai-business-tools", label: "AI & Automation" },
+  { href: "/in-home-computer-repair", label: "Computer Help" },
+  { href: "/3d-printing", label: "3D Printing" },
+  { href: "/family-history", label: "Family History" },
   { href: "/lab", label: "The Lab", event: { name: "public_lab_click", props: { location: "nav" } } },
-  { href: "/websites-tools", label: "Websites & Tools" },
-  { href: "/property-care", label: "Property Care" },
-  { href: "/idea-lab", label: "Idea Lab" },
-  { href: "/examples", label: "Examples" },
-  { href: "/portfolio/index.html", label: "Portfolio", event: { name: "public_portfolio_click", props: { location: "nav" } } },
-  { href: "/blog", label: "Blog" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/pay", label: "Pay" },
   { href: "/contact", label: "Contact", event: { name: "public_contact_cta_click", props: { location: "nav" } } },
 ];
 
@@ -66,7 +64,7 @@ export function PublicNav() {
           <div className="brand-title">
             <div className="name">MixedMakerShop</div>
             <div className="sub">
-              <strong>A one-man laboratory for useful things</strong>
+              <strong>One guy. A lot of skills.</strong>
             </div>
             <div className="small nav-brand-meta">Topher Cook · Hot Springs, Arkansas</div>
           </div>

@@ -17,7 +17,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Restaurant Website Design in Hot Springs, AR | MixedMakerShop",
+  title: "Restaurant Website Design in Hot Springs, AR",
   description:
     "Restaurant web design for Hot Springs, Arkansas — menus, hours, online ordering, mobile-first sites that turn searches into seated tables.",
   alternates: { canonical },
