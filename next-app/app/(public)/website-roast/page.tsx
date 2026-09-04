@@ -20,9 +20,13 @@ export const metadata: Metadata = {
 export default function WebsiteRoastPage() {
   return (
     <>
-      <section className="hero roast-hero">
+      <section className="section">
         <div className="container">
-          <h1 className="h1">Straight talk on your website — free</h1>
+          <div className="panel">
+          <div className="kicker">
+            <span className="dot" /> Free website review · Hot Springs, Arkansas
+          </div>
+          <h1 className="h1" style={{ margin: "14px 0 14px" }}>Straight talk on your website — free</h1>
           <p className="subhead">
             I&apos;ll review your site in plain language: what builds trust, what creates doubt, and what may be costing
             you leads.
@@ -51,6 +55,7 @@ export default function WebsiteRoastPage() {
             This is a personal pass from someone who builds sites every week — not a canned AI scorecard or automated
             “SEO audit” PDF.
           </p>
+          </div>
         </div>
       </section>
 

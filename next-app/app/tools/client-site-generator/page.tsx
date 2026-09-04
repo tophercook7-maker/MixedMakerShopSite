@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function ClientSiteGeneratorPage() {
-  return <ClientSiteGeneratorForm />;
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <ClientSiteGeneratorForm />
+    </main>
+  );
 }
