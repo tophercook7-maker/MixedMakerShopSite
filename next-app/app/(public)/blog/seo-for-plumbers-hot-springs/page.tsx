@@ -330,10 +330,6 @@ export default function SeoForPlumbersHotSpringsPostPage() {
         your questions to somebody else.
       </p>
       <p>
-        I have also built a system with a trained support team behind me so projects can be delivered professionally
-        without losing the direct communication that small businesses need.
-      </p>
-      <p>
         That helps me keep prices fair and practical. One guy, no overhead, and no need to sell you work that will not
         help.
       </p>
