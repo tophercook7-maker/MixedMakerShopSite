@@ -67,7 +67,7 @@ export function TopherWebDesignHomeSpotlight() {
               rel="noopener noreferrer"
               className={cn(mmsTextLinkOnGlass, "inline-flex justify-center text-sm sm:justify-start")}
             >
-              Visit topherswebdesign.com for demos &amp; local web design details
+              See web design demos &amp; local details
             </a>
           </div>
         </div>

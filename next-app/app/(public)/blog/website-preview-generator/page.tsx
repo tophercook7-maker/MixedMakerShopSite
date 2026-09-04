@@ -187,8 +187,8 @@ export default function WebsitePreviewGeneratorPostPage() {
 
       <h2>Not Just a Website: A Marketing Asset</h2>
       <p>
-        When we build a site for you — whether it&apos;s through{" "}
-        <a href="https://topherswebdesign.com/">Topher&apos;s Web Design</a> or a larger project under the{" "}
+        When we build a site for you — a simple{" "}
+        <Link href="/web-design">small-business website</Link> or a larger project under the{" "}
         <Link href="/">MixedMakerShop umbrella</Link> — we&apos;re building a business asset.
       </p>
       <p>

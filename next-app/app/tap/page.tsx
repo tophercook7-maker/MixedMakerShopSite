@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { Mail, Globe, ExternalLink } from "lucide-react";
-import { TopherWebDesignSampleSitesGrid } from "@/components/public/TopherWebDesignSampleSitesGrid";
+import { Mail, Globe, ExternalLink, Star } from "lucide-react";
 import {
   publicShellClass,
   publicTopherEmail,
   publicTopherCellDisplay,
   publicTopherCellTel,
   publicTopherCellTextHref,
+  publicGoogleReviewHref,
 } from "@/lib/public-brand";
 import { mmsUmbrellaHeroImageSrc } from "@/lib/mms-umbrella-ui";
-import { TOPHER_WEB_DESIGN_URL } from "@/lib/topher-web-design-samples";
+import { WHAT_I_DO } from "@/lib/what-i-do";
 import { cn } from "@/lib/utils";
 
 const canonical = "https://mixedmakershop.com/tap";
 
 export const metadata: Metadata = {
-  title: "Mixed Maker Shop | Tap Card",
+  title: "Tap Card",
   description:
-    "Mixed Maker Shop — Topher's one-man lab for websites, web systems, AI tools, apps, and video. Contact Mixed Maker Shop in Hot Springs, AR.",
+    "Topher Cook, MixedMakerShop, Hot Springs AR. Websites, AI and automation, in-home computer help, 3D printing, family-history research. Call, text, or save the contact.",
   alternates: { canonical },
+  robots: { index: false, follow: true },
 };
 
 export const viewport = {
@@ -68,12 +69,13 @@ export default function TapPage() {
       <div className={cn(publicShellClass, "relative z-10 py-10 pb-16 md:py-14")}>
         <div className="mx-auto flex max-w-lg flex-col gap-8 md:gap-10">
           <header className={cn(cardClass, "text-center")}>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/90">Mixed Maker Shop</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/90">MixedMakerShop</p>
             <h1 className="mt-4 text-2xl font-bold leading-snug tracking-tight text-white sm:text-[1.65rem]">
-              A one-man laboratory — web design, web systems, AI tools, apps, and video.
+              Topher Cook &mdash; one guy, a lot of skills.
             </h1>
             <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-white/80">
-              Local builder · Hot Springs area · Topher Cook, start to finish
+              Websites, AI &amp; automation, in-home computer help, 3D printing, family history &mdash; Hot Springs,
+              Arkansas, since 2000.
             </p>
           </header>
 
@@ -98,43 +100,28 @@ export default function TapPage() {
             </div>
           </section>
 
-          <section aria-labelledby="tap-twd-heading">
-            <h2 id="tap-twd-heading" className="sr-only">
-              Topher&apos;s Web Design
-            </h2>
-            <article
-              className={cn(cardClass, "border-teal-400/35 bg-teal-950/30")}
+          <section aria-labelledby="tap-services-heading">
+            <h2
+              id="tap-services-heading"
+              className="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-white/70 drop-shadow-sm"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-200/90">Topher&apos;s Web Design</p>
-              <h3 className="mt-3 text-xl font-bold text-white">The web design &amp; web systems branch</h3>
-              <p className="mt-4 text-sm leading-relaxed text-white/85">
-                Mixed Maker Shop is the umbrella studio. Topher&apos;s Web Design is the dedicated web-design side
-                — focused on 3–5 page websites, informational sites, web systems, and helpful online tools.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-white/80">
-                Topher&apos;s Web Design handles informational sites, forms, dashboards, CRM-style tools, and useful
-                online workflows — all as part of the same builder you reach through Mixed Maker Shop.
-              </p>
-              <a
-                href={TOPHER_WEB_DESIGN_URL}
-                className={cn(primaryBtn, "mt-5 justify-center")}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Visit topherswebdesign.com
-                <ExternalLink className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-              </a>
-
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-white/90">Sample Sites / Examples</h3>
-                <p className="mt-2 text-xs leading-relaxed text-white/70">
-                  Shapes of projects — no client names, no portfolio screenshots. Tap a line to ask by email.
-                </p>
-                <div className="mt-4">
-                  <TopherWebDesignSampleSitesGrid contactEmail={publicTopherEmail} variant="tap" />
-                </div>
-              </div>
-            </article>
+              What I do
+            </h2>
+            <div className="flex flex-col gap-3">
+              {WHAT_I_DO.map((cat) => (
+                <a
+                  key={cat.slug}
+                  href={cat.href}
+                  className={cn(cardClass, "block transition hover:border-teal-400/40 hover:bg-black/50")}
+                >
+                  <h3 className="text-base font-bold text-white">{cat.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/80">{cat.lead}</p>
+                  {cat.price ? (
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-teal-200/90">{cat.price}</p>
+                  ) : null}
+                </a>
+              ))}
+            </div>
           </section>
 
           <section aria-label="Website, email, and social">
@@ -142,19 +129,26 @@ export default function TapPage() {
               Links
             </h2>
             <div className="flex flex-col gap-3">
-              <a
-                href="https://mixedmakershop.com"
-                className={cn(primaryBtn, "justify-center")}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="/" className={cn(primaryBtn, "justify-center")}>
                 <Globe className="h-5 w-5 shrink-0 opacity-90" aria-hidden />
-                Visit mixedmakershop.com
-                <ExternalLink className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+                mixedmakershop.com
+              </a>
+              <a href="/pricing" className={cn(ghostBtn, "justify-center")}>
+                Pricing &amp; packages
               </a>
               <a href={`mailto:${publicTopherEmail}`} className={cn(ghostBtn, "justify-center")}>
                 <Mail className="h-5 w-5 shrink-0 text-teal-200/90" aria-hidden />
                 Email {publicTopherEmail}
+              </a>
+              <a
+                href={publicGoogleReviewHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(ghostBtn, "justify-center border-amber-300/40")}
+              >
+                <Star className="h-5 w-5 shrink-0 text-amber-300" aria-hidden />
+                Leave a Google review
+                <ExternalLink className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
               </a>
               <div className="flex flex-wrap gap-2">
                 <a
@@ -188,58 +182,18 @@ export default function TapPage() {
             </div>
           </section>
 
-          <section aria-labelledby="tap-services-heading">
-            <h2 id="tap-services-heading" className="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-white/70 drop-shadow-sm">
-              Services
-            </h2>
-            <div className="flex flex-col gap-4">
-              <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">Mixed Maker Shop · The Lab</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  One person building web design, web systems, AI tools, apps, and video — one contact, clear paths,
-                  practical help without the fluff.
-                </p>
-              </article>
-              <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">Topher&apos;s Web Design</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  The dedicated web branch: 3–5 page websites, informational sites, web systems, forms, dashboards,
-                  CRM-style tools, and workflows. Visit{" "}
-                  <a
-                    href={TOPHER_WEB_DESIGN_URL}
-                    className="font-semibold text-teal-200 underline decoration-teal-500/40 underline-offset-4 hover:text-white"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    topherswebdesign.com
-                  </a>{" "}
-                  for the web-focused site, or see Sample Sites above.
-                </p>
-              </article>
-              <article className={cardClass}>
-                <h3 className="text-lg font-bold text-white">The Lab · everything else</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/80">
-                  AI tools and automation, custom apps and games, published books and audiobooks, original music, and
-                  pop-out video ads — all built on the same bench.
-                </p>
-              </article>
-            </div>
-          </section>
-
           <section className={cn(cardClass, "border-teal-400/25 bg-teal-950/35")} aria-labelledby="tap-pricing-heading">
             <h2 id="tap-pricing-heading" className="text-sm font-bold text-teal-100">
-              Pricing
+              How pricing works
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/80">
-              Pricing depends on the project. Clear quotes are available after I know what you need. Website pricing and package
-              details are on{" "}
+              You get the number before any work starts. Websites come with a free preview first, 3D prints are quoted
+              before they print, and family-tree research is priced by how deep you want to go. Details are on the{" "}
               <a
-                href="https://mixedmakershop.com"
+                href="/pricing"
                 className="font-semibold text-teal-200 underline decoration-teal-500/40 underline-offset-4 hover:text-white"
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                MixedMakerShop.com
+                pricing page
               </a>
               .
             </p>
@@ -248,7 +202,7 @@ export default function TapPage() {
           <footer className={cn(cardClass, "text-center")}>
             <p className="text-sm font-semibold text-white">Ready when you are</p>
             <p className="mt-2 text-sm text-white/75">
-              Tap call or text and we&apos;ll line up next steps together.
+              Call or text and we&apos;ll line up next steps. The person you reach is the person doing the work.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <a href={publicTopherCellTel} className={cn(primaryBtn, "sm:w-auto sm:min-w-[11rem]", "sm:flex-initial")}>
