@@ -26,6 +26,17 @@ export function parseReadMinutes(readTime: string): number {
 
 const posts: BlogIndexPost[] = [
   {
+    slug: "seo-for-plumbers-hot-springs",
+    title: "SEO for Plumbers in Hot Springs: Get Found When Homeowners Are Searching Fast",
+    category: "Local SEO",
+    excerpt:
+      "When a pipe bursts, homeowners search fast. A working Google Business Profile, plain-language service pages, honest reviews, and a site that works on a wet phone.",
+    readTime: "8 min read",
+    readMinutes: 8,
+    publishedAt: "2026-09-04",
+    href: "/blog/seo-for-plumbers-hot-springs",
+  },
+  {
     slug: "cant-afford-new-computer-99-tune-up",
     title:
       "Can't Afford a New Computer? Here's How $99 and a Few Simple Fixes Can Bring Yours Back to Life",
