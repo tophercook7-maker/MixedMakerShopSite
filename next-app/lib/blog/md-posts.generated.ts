@@ -96,5 +96,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-05",
     href: "/blog/family-tree-research-hot-springs-arkansas",
   },
+  {
+    slug: "computer-repair-hot-springs-ar-what-to-expect",
+    title: "Computer Repair in Hot Springs AR: What to Expect",
+    category: "Computer Help",
+    excerpt: "If you’re looking for computer repair Hot Springs AR, you’ll probably want to know what a visit looks like, what can be fixed in one go, and when it’s time",
+    readTime: "6 min read",
+    readMinutes: 6,
+    publishedAt: "2026-09-04",
+    href: "/blog/computer-repair-hot-springs-ar-what-to-expect",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
