@@ -76,5 +76,25 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-08-24",
     href: "/blog/best-smart-home-workshop-upgrades-worth-buying-now",
   },
+  {
+    slug: "3d-printing-service-hot-springs-ar",
+    title: "3D Printing in Hot Springs, AR: Send a File or a Photo, Get the Part",
+    category: "3D Printing",
+    excerpt: "How local 3D printing works in Hot Springs, Arkansas: what you can send, what it costs, what people actually order, and how pickup, delivery, and shipping work.",
+    readTime: "5 min read",
+    readMinutes: 5,
+    publishedAt: "2026-09-04",
+    href: "/blog/3d-printing-service-hot-springs-ar",
+  },
+  {
+    slug: "family-tree-research-hot-springs-arkansas",
+    title: "Family Tree Research in Hot Springs, Arkansas: How It Works and What You Get",
+    category: "Family History",
+    excerpt: "What family-tree research actually involves for an Arkansas family, what records exist, what a printable Tree of Life delivers, and how Family Trees by Topher prices the work.",
+    readTime: "5 min read",
+    readMinutes: 5,
+    publishedAt: "2026-09-05",
+    href: "/blog/family-tree-research-hot-springs-arkansas",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
