@@ -236,6 +236,14 @@ const faqs = [
     a: "Yes. Everything stays on your machine. We don't copy your files to ours. If a fix requires backing up first, we use a drive you own or a folder you control.",
   },
   {
+    q: "How long have you been fixing computers in Hot Springs?",
+    a: "Since 2000. Topher ran Cook's Computer Service in Hot Springs for years before folding it into MixedMakerShop. Home users, small offices, churches, and retirees in Hot Springs Village, Benton, Malvern, and Lonsdale — the same person has been doing the work the whole time.",
+  },
+  {
+    q: "Is it cheaper to fix my computer or buy a new one?",
+    a: "Usually fix, if the machine is under about six years old and the problem is software, storage, or a clogged fan. The $59 diagnostic answers it honestly: if a new computer is the better deal, Topher says so and can set the new one up and move your files over.",
+  },
+  {
     q: "Do you remove old computers?",
     a: 'Yes — if you want. We wipe them properly (not just "delete the files") and either return them clean for donation or dispose of them responsibly. Free with any setup of the replacement.',
   },
@@ -316,6 +324,10 @@ export default function InHomeComputerRepairPage() {
               No shop drop-off, no boxes shipped anywhere, no &quot;we&apos;ll call you in 3 days.&quot; Same-day or
               next-day in most cases. Flat rates so you know the price before any work starts. Tutoring is a simple flat
               $65 an hour — same rate whether we cover email basics or hands-on AI tools.
+            </p>
+            <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
+              Topher has done local computer help in Hot Springs since 2000 &mdash; first as Cook&apos;s Computer Service,
+              now as MixedMakerShop. Same person, same phone number, one more service line on the truck.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href="/contact">
