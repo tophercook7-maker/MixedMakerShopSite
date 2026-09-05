@@ -129,13 +129,13 @@ const GROUPS: Group[] = [
     title: "One-on-one tutoring — including AI",
     note: "/in-home-computer-repair",
     intro:
-      "Patient, in-home, one-on-one. AI tools (ChatGPT, Copilot, Gemini, Claude), smartphones, tablets, email, photos, Office / Google Docs, online safety, video calls — whatever's on your list. Sessions ~1 hour.",
+      "Patient, in-home, one-on-one. AI tools (ChatGPT, Copilot, Gemini, Claude), smartphones, tablets, email, photos, Office / Google Docs, online safety, video calls — whatever's on your list. Sessions run an hour and a half.",
     headers: ["Service", "What you get", "Price"],
     rows: [
       {
         item: "Tutoring — flat rate",
-        what: "One simple price for every topic. AI tools, basics, email, Office, photos, online safety. One-hour minimum, book as many in a row as you want, no packs or contracts.",
-        price: "$65/hr",
+        what: "One simple price for every topic. AI tools, basics, email, Office, photos, online safety. One session is an hour and a half; book another when you have a longer list. No packs or contracts.",
+        price: "$100 / 90 min",
       },
     ],
   },

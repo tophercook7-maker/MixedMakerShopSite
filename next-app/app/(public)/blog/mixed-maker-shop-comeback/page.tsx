@@ -114,7 +114,7 @@ export default function MixedMakerShopComebackPostPage() {
           <strong>Bench Repair:</strong> quoted before any work starts — reinstalls, failing drives, hardware; parts at cost
         </li>
         <li>
-          <strong>Tutoring:</strong> flat $65 an hour, at your kitchen table
+          <strong>Tutoring:</strong> $100 for an hour and a half, at your kitchen table
         </li>
       </ul>
       <p>

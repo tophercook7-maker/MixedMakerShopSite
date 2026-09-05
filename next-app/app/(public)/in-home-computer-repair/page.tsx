@@ -18,12 +18,12 @@ const AREA_SERVED = [
 export const metadata: Metadata = {
   title: "In-Home Computer Repair & AI Tutoring Hot Springs AR",
   description:
-    "In-home computer repair and one-on-one tutoring (including AI tools, ChatGPT, and AI assistants) in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted, tutoring flat $65/hr.",
+    "In-home computer repair and one-on-one tutoring (including AI tools, ChatGPT, and AI assistants) in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted, tutoring $100 for an hour and a half.",
   alternates: { canonical },
   openGraph: {
     title: "In-Home Computer & AI Tutoring + Repair — Hot Springs, AR",
     description:
-      "Repair, setup, and patient one-on-one tutoring including AI tools. House calls $100 for up to 90 minutes at your kitchen table, bench repairs quoted, tutoring flat $65/hr.",
+      "Repair, setup, and patient one-on-one tutoring including AI tools. House calls $100 for up to 90 minutes at your kitchen table, bench repairs quoted, tutoring $100 for an hour and a half.",
     url: canonical,
     type: "website",
   },
@@ -198,7 +198,7 @@ const serviceSchema = {
   serviceType: "In-Home Computer Repair and Tutoring",
   name: "In-Home Computer Repair & Tutoring Hot Springs AR | MixedMakerShop",
   description:
-    "In-home computer repair and one-on-one tutoring in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted up front, tutoring flat $65/hr.",
+    "In-home computer repair and one-on-one tutoring in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted up front, tutoring $100 for an hour and a half.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -218,8 +218,7 @@ const serviceSchema = {
     itemListElement: [
       { name: "House Call (up to 90 minutes)", price: "100" },
       { name: "Bench Repair (quoted before work)", price: "0" },
-      { name: "One-on-one Tutoring (per hour)", price: "65" },
-      { name: "One-on-One Tutoring (per hour)", price: "65" },
+      { name: "One-on-One Tutoring (90-minute session)", price: "100" },
       { name: "Hourly rate (anything else)", price: "79" },
     ].map((o) => ({
       "@type": "Offer",
@@ -263,7 +262,7 @@ export default function InHomeComputerRepairPage() {
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               No shop drop-off, no boxes shipped anywhere, no &quot;we&apos;ll call you in 3 days.&quot; Same-day or
               next-day in most cases. Flat rates so you know the price before any work starts. Tutoring is a simple flat
-              $65 an hour — same rate whether we cover email basics or hands-on AI tools.
+              $100 for an hour and a half — same rate whether we cover email basics or hands-on AI tools.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Topher has done local computer help in Hot Springs since 2000 &mdash; first as Cook&apos;s Computer Service,
@@ -360,8 +359,8 @@ export default function InHomeComputerRepairPage() {
               ))}
             </div>
             <p className="small" style={{ margin: "22px 0 0", color: "var(--muted)", lineHeight: 1.6 }}>
-              Sessions run about an hour. Simple flat rate — $65 an hour — same whether we&apos;re covering email basics
-              or hands-on AI tools. Bring a list; we work through it.
+              Sessions run an hour and a half. Simple flat rate — $100 a session — same whether we&apos;re covering
+              email basics or hands-on AI tools. Bring a list; we work through it.
             </p>
           </div>
         </div>
@@ -410,11 +409,11 @@ export default function InHomeComputerRepairPage() {
               <div className="price-card">
                 <div className="tag">TUTORING · FLAT RATE</div>
                 <div className="price">
-                  $65<span style={{ fontSize: ".5em", opacity: 0.7 }}>/hr</span>
+                  $100<span style={{ fontSize: ".5em", opacity: 0.7 }}>/90 min</span>
                 </div>
                 <p className="small">
-                  One simple price for every topic. Book one hour to start, or block out a few hours in a row when
-                  you&apos;ve got a real list. Same rate whether we&apos;re covering email basics or hands-on ChatGPT,
+                  One simple price for every topic: $100 for an hour and a half at your kitchen table. Book a second
+                  session when you&apos;ve got a real list. Same rate whether we&apos;re covering email basics or hands-on ChatGPT,
                   Copilot, or Gemini.
                 </p>
                 <ul>
