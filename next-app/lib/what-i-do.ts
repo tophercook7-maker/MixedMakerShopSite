@@ -89,7 +89,7 @@ export const WHAT_I_DO: readonly WhatIDoCategory[] = [
       "Hardware upgrades and projects",
       "Helping people understand and use their technology",
     ],
-    price: "Tune-ups from $99 · house calls quoted up front",
+    price: "House calls $100 for up to 90 minutes · bench repairs quoted",
     href: "/in-home-computer-repair",
     cta: "Get computer help",
     icon: "Wrench",

@@ -12,19 +12,19 @@ const slug = "cant-afford-new-computer-99-tune-up";
 const canonical = `${SITE_URL}/blog/${slug}`;
 
 const title =
-  "Can't Afford a New Computer? Here's How $99 and a Few Simple Fixes Can Bring Yours Back to Life";
+  "Can't Afford a New Computer? Here's How a $100 House Call and a Few Simple Fixes Can Bring Yours Back to Life";
 const subtitle =
-  "Before you drop $800 on a new machine, try a $99 clean-up and tune-up — honest, local computer repair and SSD upgrades in Hot Springs, no overhead and no upselling";
+  "Before you drop $800 on a new machine, try a $100 house call and tune-up — honest, local computer repair and SSD upgrades in Hot Springs, no overhead and no upselling";
 
 export const metadata: Metadata = {
   title: blogPostTitle(title),
   description:
-    "Before you drop $800 on a new machine, try a $99 clean-up and tune-up. Honest, local computer repair, SSD upgrades, and small-business help from Mixed Maker Shop in Hot Springs — no overhead, no upselling.",
+    "Before you drop $800 on a new machine, try a $100 house call and tune-up. Honest, local computer repair, SSD upgrades, and small-business help from Mixed Maker Shop in Hot Springs — no overhead, no upselling.",
   alternates: { canonical },
   openGraph: {
     title,
     description:
-      "A slow computer usually is not dead — it is dusty, cluttered, or stuck on an old hard drive. A $99 tune-up or an SSD upgrade can make it feel brand new for a fraction of the cost.",
+      "A slow computer usually is not dead — it is dusty, cluttered, or stuck on an old hard drive. A $100 house call or an SSD upgrade can make it feel brand new for a fraction of the cost.",
     url: canonical,
   },
 };
@@ -94,14 +94,14 @@ export default function CantAffordNewComputerPostPage() {
         markups. You just pay for honest, straightforward labor.
       </p>
 
-      <h2>The $99 Clean-Up and Tune-Up Solution</h2>
+      <h2>The $100 House Call: Clean-Up and Tune-Up</h2>
       <BlogArticleImage
         src="https://cdn.marblism.com/qpAlzlXXe-E.webp"
         alt="Close-up of cleaning dust out of computer cooling fans and components"
       />
       <p>
         If your machine is bogged down by software clutter and thermal throttling, a thorough service session is often all
-        it takes. My $99 clean-up and tune-up service is designed to tackle the root causes of everyday slowdowns without
+        it takes. My $100 house call (up to an hour and a half at your place) is designed to tackle the root causes of everyday slowdowns without
         any unnecessary upselling.
       </p>
       <p>Here is what goes into a proper tune-up:</p>
@@ -213,7 +213,7 @@ export default function CantAffordNewComputerPostPage() {
         </li>
         <li>
           <strong>A Quick Conversation:</strong> Tell me what is bugging you or what goal you want to reach. I will give
-          you an honest assessment of whether a $99 tune-up will do the trick or if an SSD upgrade is the smartest move.
+          you an honest assessment of whether a $100 house call will do the trick or if an SSD upgrade is the smartest move.
         </li>
         <li>
           <strong>Zero Risk:</strong> I believe in keeping things fair. You get clear communication, a straightforward
@@ -239,7 +239,7 @@ export default function CantAffordNewComputerPostPage() {
       <BlogInlineCta>
         <p className="!mb-0">
           <Link href="/contact" className="font-semibold">
-            Book a $99 tune-up or ask about an SSD upgrade
+            Book a $100 house call or ask about an SSD upgrade
           </Link>{" "}
           — send a message or a photo of your machine and I&apos;ll tell you honestly what it needs.
         </p>

@@ -110,44 +110,18 @@ const GROUPS: Group[] = [
     title: "In-home computer repair",
     note: "/in-home-computer-repair",
     intro:
-      "Flat rates for the common stuff. Anything not on this list runs hourly at $79/hr (1-hour minimum). Travel inside Hot Springs / Hot Springs Village / Lake Hamilton is included.",
+      "One flat rate for the house call; anything bigger is quoted before work starts. Travel inside Hot Springs / Hot Springs Village / Lake Hamilton is included.",
     headers: ["Service", "What it covers", "Price"],
     rows: [
       {
-        item: "Diagnostic Visit",
-        what: "On-site assessment, written summary, honest fix-vs-replace answer. Credited toward any service done the same visit.",
-        price: "$59",
+        item: "House call",
+        what: "Up to 90 minutes on site — virus cleanup, slow-computer cleanup, updates, printer/Wi-Fi, email & logins, new-computer setup",
+        price: "$100",
       },
       {
-        item: "Clean & Quick Tune-Up",
-        em: "(most requested)",
-        what: "Startup cleanup, disk & cache cleanup, browser cleanup, basic security check, performance pass.",
-        price: "$99",
-      },
-      {
-        item: "New Computer Setup",
-        what: "Unbox, sign-in, email + browser migration, printer + Wi-Fi, file/photo transfer, optional wipe of old machine.",
-        price: "$129",
-      },
-      {
-        item: "Virus / Malware Removal",
-        what: "Full malware sweep, browser hijack removal, account & password review, hardening so it doesn't come back.",
-        price: "$149",
-      },
-      {
-        item: "Printer & Network Setup",
-        what: "Printer install, Wi-Fi / router reconnect, mobile printing, up to 3 devices reconnected.",
-        price: "$99",
-      },
-      {
-        item: "Hardware Install (labor only)",
-        what: "RAM upgrade, SSD swap, hard-drive replacement, simple internal install. Parts at cost, no markup.",
-        price: "$89",
-      },
-      {
-        item: "Hourly Support",
-        what: "Anything not on this list. 1-hour minimum.",
-        price: "$79/hr",
+        item: "Bench repair",
+        what: "OS reinstall, failing drive → SSD, hardware swaps, dead machines — taken home, brought back working; parts at cost",
+        price: "Quoted",
       },
     ],
   },

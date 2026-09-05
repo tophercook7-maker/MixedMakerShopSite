@@ -108,13 +108,13 @@ export default function MixedMakerShopComebackPostPage() {
       </p>
       <ul>
         <li>
-          <strong>Diagnostic Visit:</strong> $59 — credited toward the repair if you book it the same visit
+          <strong>House Call:</strong> $100 for up to an hour and a half at your place — most problems are fixed before I leave
         </li>
         <li>
-          <strong>Clean &amp; Quick Tune-Up:</strong> $99 (most requested)
+          <strong>Bench Repair:</strong> quoted before any work starts — reinstalls, failing drives, hardware; parts at cost
         </li>
         <li>
-          <strong>Anything else:</strong> flat-rated where possible, or $79/hr with no surprises
+          <strong>Tutoring:</strong> flat $65 an hour, at your kitchen table
         </li>
       </ul>
       <p>

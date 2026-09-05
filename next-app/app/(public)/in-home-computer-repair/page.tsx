@@ -18,12 +18,12 @@ const AREA_SERVED = [
 export const metadata: Metadata = {
   title: "In-Home Computer Repair & AI Tutoring Hot Springs AR",
   description:
-    "In-home computer repair and one-on-one tutoring (including AI tools, ChatGPT, and AI assistants) in Hot Springs, Arkansas. Diagnostic $59, Tune-Up $99, tutoring flat $65/hr.",
+    "In-home computer repair and one-on-one tutoring (including AI tools, ChatGPT, and AI assistants) in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted, tutoring flat $65/hr.",
   alternates: { canonical },
   openGraph: {
     title: "In-Home Computer & AI Tutoring + Repair — Hot Springs, AR",
     description:
-      "Repair, setup, and patient one-on-one tutoring including AI tools. Diagnostic $59, Tune-Up $99, tutoring flat $65/hr at your kitchen table.",
+      "Repair, setup, and patient one-on-one tutoring including AI tools. House calls $100 for up to 90 minutes at your kitchen table, bench repairs quoted, tutoring flat $65/hr.",
     url: canonical,
     type: "website",
   },
@@ -130,90 +130,33 @@ const tutoring = [
 
 const repairPrices = [
   {
-    tag: "DIAGNOSTIC VISIT",
-    price: "$59",
+    tag: "HOUSE CALL · MOST CALLS END HERE",
+    price: "$100",
     blurb:
-      "A real look at what's wrong, what it'll take to fix, and whether the machine is worth fixing. Credited toward any service done the same visit.",
+      "Up to an hour and a half at your place with a flash drive full of tools. Virus and adware cleanup, a slow machine cleaned out, updates, printer and Wi-Fi, email and logins, a new computer set up. Most problems are fixed before I leave.",
     bullets: [
-      "On-site assessment",
-      "Written summary of what's wrong",
+      "Up to 90 minutes on site",
+      "Virus, adware & pop-up cleanup",
+      "Slow-computer cleanup & updates",
+      "Printer, Wi-Fi, email & login fixes",
       'Honest "fix vs. replace" answer',
-      "Credit applied if you book the repair",
     ],
-    cta: "Book a Diagnostic",
+    cta: "Book a House Call",
     gold: true,
   },
   {
-    tag: "CLEAN & QUICK TUNE-UP · MOST REQUESTED",
-    price: "$99",
+    tag: "BENCH REPAIR · QUOTED BEFORE IT STARTS",
+    price: "Quoted",
     blurb:
-      "The everyday rescue: clear out the junk slowing the machine down, sort the startup items, run a real security check, get it usable again.",
+      "If the machine needs real surgery, I take it home to my bench, do the work properly, and bring it back set up and working. You get the number before anything happens. Parts are pass-through at cost.",
     bullets: [
-      "Startup & background cleanup",
-      "Disk & cache cleanup",
-      "Browser cleanup (no more pop-ups)",
-      "Basic security check",
-      "Performance sanity pass",
-    ],
-    cta: "Book a Tune-Up",
-    gold: true,
-  },
-  {
-    tag: "NEW COMPUTER SETUP",
-    price: "$129",
-    blurb:
-      "Unbox, configure, transfer your files, photos, email, printer, and bookmarks from the old machine, and lock the new one down so it stays clean.",
-    bullets: [
-      "Initial setup & account sign-in",
-      "Email & browser migration",
-      "Printer & Wi-Fi connection",
-      "File / photo transfer",
-      "Optional: wipe + prep old machine",
-    ],
-    cta: "Book a Setup",
-    gold: false,
-  },
-  {
-    tag: "VIRUS / MALWARE REMOVAL",
-    price: "$149",
-    blurb:
-      'Pop-ups, browser hijacks, scary "tech support" messages, slow-downs that won\'t quit. Cleaned up properly, not hidden behind a new antivirus icon.',
-    bullets: [
-      "Full malware sweep",
-      "Browser hijack removal",
-      "Account & password review",
-      "Plain-English explanation of how it got in",
-      "Hardening so it doesn't come back",
-    ],
-    cta: "Book a Cleanup",
-    gold: false,
-  },
-  {
-    tag: "PRINTER & NETWORK SETUP",
-    price: "$99",
-    blurb:
-      "New printer, new router, new Wi-Fi password — and now nothing talks to anything. Includes mobile printing if you want it.",
-    bullets: [
-      "Printer install & test",
-      "Wi-Fi / router reconnect",
-      "Mobile printing setup",
-      "Up to 3 devices reconnected",
-    ],
-    cta: "Book a Setup",
-    gold: false,
-  },
-  {
-    tag: "HARDWARE INSTALL · LABOR",
-    price: "$89",
-    blurb:
-      "RAM upgrade, SSD swap, hard-drive replacement, simple internal install. Parts are pass-through at cost; this is labor only.",
-    bullets: [
-      "Installation & cable management",
-      "OS configuration after install",
-      "Old drive cloning (when needed)",
+      "Operating system reinstall",
+      "Failing hard drive → SSD, data moved over",
+      "RAM upgrades & hardware swaps",
+      "Dead machines & power problems",
       "Parts at cost, no markup",
     ],
-    cta: "Book an Install",
+    cta: "Ask for a Quote",
     gold: false,
   },
 ] as const;
@@ -241,7 +184,7 @@ const faqs = [
   },
   {
     q: "Is it cheaper to fix my computer or buy a new one?",
-    a: "Usually fix, if the machine is under about six years old and the problem is software, storage, or a clogged fan. The $59 diagnostic answers it honestly: if a new computer is the better deal, Topher says so and can set the new one up and move your files over.",
+    a: "Usually fix, if the machine is under about six years old and the problem is software, storage, or a clogged fan. The $100 house call answers it honestly: if a new computer is the better deal, Topher says so and can set the new one up and move your files over.",
   },
   {
     q: "Do you remove old computers?",
@@ -255,7 +198,7 @@ const serviceSchema = {
   serviceType: "In-Home Computer Repair and Tutoring",
   name: "In-Home Computer Repair & Tutoring Hot Springs AR | MixedMakerShop",
   description:
-    "In-home computer repair and one-on-one tutoring in Hot Springs, Arkansas. Diagnostic $59, Clean & Quick Tune-Up $99, tutoring flat $65/hr.",
+    "In-home computer repair and one-on-one tutoring in Hot Springs, Arkansas. House calls $100 for up to 90 minutes, bench repairs quoted up front, tutoring flat $65/hr.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -273,12 +216,9 @@ const serviceSchema = {
     "@type": "OfferCatalog",
     name: "In-Home Computer Repair & Tutoring",
     itemListElement: [
-      { name: "Diagnostic Visit", price: "59" },
-      { name: "Clean & Quick Tune-Up", price: "99" },
-      { name: "New Computer Setup", price: "129" },
-      { name: "Virus / Malware Removal", price: "149" },
-      { name: "Printer & Network Setup", price: "99" },
-      { name: "Hardware Install (labor)", price: "89" },
+      { name: "House Call (up to 90 minutes)", price: "100" },
+      { name: "Bench Repair (quoted before work)", price: "0" },
+      { name: "One-on-one Tutoring (per hour)", price: "65" },
       { name: "One-on-One Tutoring (per hour)", price: "65" },
       { name: "Hourly rate (anything else)", price: "79" },
     ].map((o) => ({
@@ -435,9 +375,9 @@ export default function InHomeComputerRepairPage() {
               Services &amp; pricing
             </h2>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Flat rates for the common stuff. Anything not on this list runs hourly at $79/hr (1-hour minimum), or we
-              quote it before any work starts. Travel inside Hot Springs / Hot Springs Village / Lake Hamilton is
-              included; further out adds a small mileage fee — we&apos;ll tell you before we book.
+              One flat rate for the house call, and anything bigger is quoted before it starts. Travel inside Hot Springs /
+              Hot Springs Village / Lake Hamilton is included; further out adds a small mileage fee — we&apos;ll tell you
+              before we book.
             </p>
 
             <h3 className="section-heading" style={{ margin: "0 0 14px", fontSize: "1.05rem" }}>
