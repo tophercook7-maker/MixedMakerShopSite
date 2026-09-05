@@ -100,6 +100,10 @@ const nextConfig = {
       // Retired affiliate lane (2026-08). The /gear affiliate storefront and the
       // affiliate-shell "recommended tools" page are gone — nothing on the site earns
       // a commission anymore. Point their URLs at real work instead of 404s.
+      // 2026-09-05: Search Console 404s. Old loan-affiliate resource page (removed on purpose)
+      // and an old one-off page — send both somewhere useful instead of a dead end.
+      { source: "/resources/lendtrack-ai-funding-portal", destination: "/resources", statusCode: 301 },
+      { source: "/captain-maker", destination: "/lab", statusCode: 301 },
       { source: "/gear", destination: "/lab", statusCode: 301 },
       { source: "/gear/:path*", destination: "/lab", statusCode: 301 },
       { source: "/tophers-recommended-tools", destination: "/websites-tools", statusCode: 301 },
