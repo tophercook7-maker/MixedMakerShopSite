@@ -106,6 +106,11 @@ const nextConfig = {
       { source: "/captain-maker", destination: "/lab", statusCode: 301 },
       // Brand consolidated into MixedMakerShop; the legacy Topher's Web Design page now lands on /web-design.
       { source: "/tophers-web-design", destination: "/web-design", statusCode: 301 },
+      // Family Trees by Topher — short, sayable pay links (2026-09-05). 302 so the Stripe
+      // destination can be swapped without cache headaches. /pay-tree = the $100 start.
+      { source: "/pay-tree", destination: "https://buy.stripe.com/28E14g4ro3DV1pr8lg3cc0v", statusCode: 302 },
+      { source: "/pay-tree-5", destination: "https://buy.stripe.com/5kQdR29LIgqH4BD6d83cc0w", statusCode: 302 },
+      { source: "/pay-tree-10", destination: "https://buy.stripe.com/00w4gs7DA1vN0lnfNI3cc0x", statusCode: 302 },
       // Near-duplicate of the Hot Springs page; Google was crawling it and skipping it. One page, one signal.
       { source: "/small-business-website-design", destination: "/small-business-websites-hot-springs", statusCode: 301 },
       { source: "/gear", destination: "/lab", statusCode: 301 },

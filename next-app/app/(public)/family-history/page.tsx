@@ -7,6 +7,20 @@ import { contactHrefForTopic } from "@/lib/what-i-do";
 
 const canonical = `${SITE_URL}/family-history`;
 const askHref = contactHrefForTopic("family-history");
+const PAY_START = "/pay-tree";
+
+const treeStyles = [
+  { name: "Heritage", img: "/images/family-history/style-heritage.jpg", copy: "A vintage engraved oak with aged name plates on the branches — the look of an old botanical print. Roots reach to the places your family came from." },
+  { name: "Two-Tone Canopy", img: "/images/family-history/style-two-tone-canopy.jpg", copy: "An illustrated tree with the father's side in gold and the mother's side in green, so you can see both lines at a glance." },
+  { name: "Branching Chart", img: "/images/family-history/style-branching-chart.jpg", copy: "Clean branch lines, one generation per row, every name easy to read. Good for big families and for framing." },
+] as const;
+
+const tiers = [
+  { name: "Starter", price: "$100", depth: "3 generations", pay: "/pay-tree", copy: "Parents, grandparents and great-grandparents on both sides. Digital Tree of Life, written findings, every record I find. Also the deposit for any bigger project." },
+  { name: "Family Tree", price: "$195", depth: "5 generations", pay: "/pay-tree-5", copy: "Up to 31 direct ancestors, both sides. Print-ready Tree of Life, a copy of every record, findings and sources, one round of corrections." },
+  { name: "Deep Roots", price: "$390", depth: "up to 10 generations", pay: "/pay-tree-10", copy: "Everything in Family Tree, plus where each line came from, the stories behind the names, and a poster-size print master." },
+  { name: "To the Boat", price: "from $585", depth: "as far as the records go", pay: null, copy: "Every surviving line followed to its end, a full research report, and printed-poster preparation. Quoted after we talk — the $100 start holds your spot." },
+] as const;
 
 export const metadata: Metadata = {
   title: "Genealogy & Family Tree Research Hot Springs AR | Family Trees by Topher",
@@ -41,8 +55,8 @@ const whatYouGet = [
   },
   {
     badge: "04 · Tree of Life",
-    title: "A printable Tree of Life",
-    copy: "Your ancestors' names placed on an illustrated tree — paternal line on one side, maternal on the other, roots reaching to the places they came from. Digital file included; prints available.",
+    title: "A printable Tree of Life — your choice of style",
+    copy: "Your ancestors' names placed on the tree — paternal line on one side, maternal on the other, roots reaching to the places they came from. Pick Heritage, Two-Tone Canopy, or Branching Chart. Digital file included; prints available.",
   },
   {
     badge: "05 · Book",
@@ -64,8 +78,8 @@ const howItWorks = [
   },
   {
     step: "2",
-    title: "Pick how deep you want to go",
-    copy: "Five generations back is a great first tree. Ten or more if you want to keep going. The price follows the depth and the time — agreed before any research starts.",
+    title: "Pick how deep — and which style",
+    copy: "Five generations back is a great first tree. Ten or more if you want to keep going. Then choose Heritage, Two-Tone Canopy, or Branching Chart. The price follows the depth and the time — agreed before any research starts.",
   },
   {
     step: "3",
@@ -77,7 +91,7 @@ const howItWorks = [
 const faqs = [
   {
     q: "How much does it cost?",
-    a: "Family-tree projects start at $100. The final price depends on how many generations you want and how long the research takes — you'll have the number before I begin, and payment plans are fine.",
+    a: "Family-tree projects start at $100 for three generations, $195 for five, $390 for up to ten, and from $585 to go as far as the records survive. $100 starts any project; you'll have the full number before I begin, and payment plans are fine.",
   },
   {
     q: "Can you guarantee how far back you'll get?",
@@ -86,6 +100,10 @@ const faqs = [
   {
     q: "Are you a certified genealogist?",
     a: "No — I'm not a Certified Genealogist and don't claim to be. I follow the Genealogical Proof Standard, cite sources, and label every conclusion. If a line needs a specialist (overseas archives, DNA analysis), I'll say so.",
+  },
+  {
+    q: "What does the tree look like?",
+    a: "Your choice of three styles, same price: Heritage (a vintage engraved oak with name plates on the branches), Two-Tone Canopy (an illustrated tree with dad's side in gold and mom's side in green), or Branching Chart (clean branch lines, one generation per row). Samples are on this page — all three are my dad's real five-generation tree.",
   },
   {
     q: "Do I need an Ancestry or FamilySearch account?",
@@ -149,22 +167,26 @@ export default function FamilyHistoryPage() {
                 <p className="subhead" style={{ margin: "0 0 18px" }}>
                   I take on genealogy and family-history projects using real record research and Family Tree Maker. I
                   can organize the family information you already have, build the tree, research the history behind
-                  the names and relationships you know — and turn it into a Tree of Life you can hang on the wall.
+                  the names and relationships you know — and turn it into a Tree of Life you can hang on the wall, in
+                  your choice of three styles.
                 </p>
                 <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
                   I built my own family&apos;s tree first — 156 people, eight generations, lost branches recovered,
                   cousins found — then a 50-page book from it. That&apos;s the process you get.
                 </p>
                 <div className="btn-row">
-                  <Link className="btn gold btn-cta-primary" href={askHref}>
-                    Start a family tree
+                  <a className="btn gold btn-cta-primary" href={PAY_START}>
+                    Start for $100
+                  </a>
+                  <Link className="btn ghost" href={askHref}>
+                    Ask a question first
                   </Link>
-                  <a className="btn ghost" href="#fh-faq">
-                    Pricing &amp; honest answers
+                  <a className="btn ghost" href="#fh-pricing">
+                    See pricing
                   </a>
                 </div>
                 <p className="small" style={{ marginTop: 14, color: "var(--muted2)" }}>
-                  Starts at $100 · priced by how deep you want to go · payment plans welcome
+                  Starts at $100 · priced by how deep you want to go · payment plans welcome · secure card checkout
                 </p>
               </div>
               <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
@@ -209,6 +231,34 @@ export default function FamilyHistoryPage() {
         </div>
       </section>
 
+      {/* TREE STYLES */}
+      <section className="section" aria-labelledby="fh-styles-heading" id="fh-styles">
+        <div className="container">
+          <div className="panel">
+            <h2 id="fh-styles-heading" className="section-heading" style={{ margin: "0 0 14px" }}>
+              Pick your tree style — three to choose from, same price
+            </h2>
+            <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
+              Every style is built from the same researched tree, so you can change your mind before delivery. Names,
+              dates, and places are placed by hand from the records — never guessed.
+            </p>
+            <div className="grid gap-4 md:grid-cols-3">
+              {treeStyles.map((t) => (
+                <div className="card" key={t.name} style={{ display: "flex", flexDirection: "column" }}>
+                  <div className="overflow-hidden rounded-xl border border-white/10" style={{ marginBottom: 12 }}>
+                    <Image src={t.img} alt={`${t.name} tree style — sample from my dad's five-generation tree`} width={800} height={920} className="h-auto w-full" />
+                  </div>
+                  <h3 className="how-it-works-title" style={{ marginBottom: 6 }}>
+                    {t.name}
+                  </h3>
+                  <p className="how-it-works-copy">{t.copy}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* HOW IT WORKS */}
       <section className="section" aria-labelledby="fh-how-heading">
         <div className="container">
@@ -226,10 +276,54 @@ export default function FamilyHistoryPage() {
               ))}
             </div>
             <div className="btn-row" style={{ marginTop: 22 }}>
-              <Link className="btn gold btn-cta-primary" href={askHref}>
-                Start a family tree
+              <a className="btn gold btn-cta-primary" href={PAY_START}>
+                Start for $100
+              </a>
+              <Link className="btn ghost" href={askHref}>
+                Ask a question first
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section className="section" aria-labelledby="fh-pricing-heading" id="fh-pricing">
+        <div className="container">
+          <div className="panel">
+            <h2 id="fh-pricing-heading" className="section-heading" style={{ margin: "0 0 14px" }}>
+              Pricing — you pick how deep
+            </h2>
+            <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
+              $100 starts any project. Pay the rest as we go — payment plans welcome, prices negotiable. Every tier
+              includes your choice of the three tree styles. Add a family history book from $395, a private family
+              website from $350, or a printed poster.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {tiers.map((t) => (
+                <div className="card" key={t.name} style={{ display: "flex", flexDirection: "column" }}>
+                  <span className="how-it-works-badge">{t.depth}</span>
+                  <h3 className="how-it-works-title" style={{ marginBottom: 4 }}>
+                    {t.name}
+                  </h3>
+                  <div style={{ fontSize: 30, fontWeight: 700, color: "var(--gold, #e9cf7f)", marginBottom: 8 }}>{t.price}</div>
+                  <p className="how-it-works-copy" style={{ flex: 1 }}>{t.copy}</p>
+                  {t.pay ? (
+                    <a className="btn gold" href={t.pay} style={{ marginTop: 12 }}>
+                      Pay {t.price} &amp; start
+                    </a>
+                  ) : (
+                    <Link className="btn ghost" href={askHref} style={{ marginTop: 12 }}>
+                      Get a quote
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="small" style={{ margin: "18px 0 0", color: "var(--muted2)", lineHeight: 1.6 }}>
+              Checkout is handled by Stripe. After you pay, I text you within a day to get your grandparents&apos; names
+              and get started. Records vary — I never promise a number of ancestors, only honest work.
+            </p>
           </div>
         </div>
       </section>
