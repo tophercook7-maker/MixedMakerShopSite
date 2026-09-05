@@ -10,9 +10,10 @@ const askHref = contactHrefForTopic("family-history");
 const PAY_START = "/pay-tree";
 
 const treeStyles = [
-  { name: "Heritage", img: "/images/family-history/style-heritage.jpg", copy: "A vintage engraved oak with aged name plates on the branches — the look of an old botanical print. Roots reach to the places your family came from." },
-  { name: "Two-Tone Canopy", img: "/images/family-history/style-two-tone-canopy.jpg", copy: "An illustrated tree with the father's side in gold and the mother's side in green, so you can see both lines at a glance." },
-  { name: "Branching Chart", img: "/images/family-history/style-branching-chart.jpg", copy: "Clean branch lines, one generation per row, every name easy to read. Good for big families and for framing." },
+  { name: "Heritage", img: "/images/family-history/style-heritage.jpg", copy: "A vintage engraved oak on aged parchment with name plates on the branches — the look of an old botanical print." },
+  { name: "Nouveau", img: "/images/family-history/style-nouveau.jpg", copy: "An art-nouveau bookplate: flowing ornamental branches, a floral canopy, and gilt corners on ivory. Elegant and a little formal." },
+  { name: "Oil Painting", img: "/images/family-history/style-oilpainting.jpg", copy: "A magnificent solitary oak painted in warm golden light, old-master style. Rich, warm, and timeless on a wall." },
+  { name: "Gilded", img: "/images/family-history/style-gilded.jpg", copy: "Gold-leaf foliage and fine linework on deep forest green, with cream name plates. The most dramatic of the four — made for a frame." },
 ] as const;
 
 const tiers = [
@@ -56,7 +57,7 @@ const whatYouGet = [
   {
     badge: "04 · Tree of Life",
     title: "A printable Tree of Life — your choice of style",
-    copy: "Your ancestors' names placed on the tree — paternal line on one side, maternal on the other, roots reaching to the places they came from. Pick Heritage, Two-Tone Canopy, or Branching Chart. Digital file included; prints available.",
+    copy: "Your ancestors' names placed on the tree — paternal line on one side, maternal on the other, roots reaching to the places they came from. Pick Heritage, Nouveau, Oil Painting, or Gilded. Digital file included; prints available.",
   },
   {
     badge: "05 · Book",
@@ -79,7 +80,7 @@ const howItWorks = [
   {
     step: "2",
     title: "Pick how deep — and which style",
-    copy: "Five generations back is a great first tree. Ten or more if you want to keep going. Then choose Heritage, Two-Tone Canopy, or Branching Chart. The price follows the depth and the time — agreed before any research starts.",
+    copy: "Five generations back is a great first tree. Ten or more if you want to keep going. Then choose Heritage, Nouveau, Oil Painting, or Gilded. The price follows the depth and the time — agreed before any research starts.",
   },
   {
     step: "3",
@@ -103,7 +104,7 @@ const faqs = [
   },
   {
     q: "What does the tree look like?",
-    a: "Your choice of three styles, same price: Heritage (a vintage engraved oak with name plates on the branches), Two-Tone Canopy (an illustrated tree with dad's side in gold and mom's side in green), or Branching Chart (clean branch lines, one generation per row). Samples are on this page — all three are my dad's real five-generation tree.",
+    a: "Your choice of four styles, same price: Heritage (a vintage engraved oak on parchment), Nouveau (an art-nouveau bookplate with gilt corners), Oil Painting (an old-master oak in golden light), or Gilded (gold-leaf foliage on deep forest green). Samples are on this page — all four are my dad's real five-generation tree.",
   },
   {
     q: "Do I need an Ancestry or FamilySearch account?",
@@ -168,7 +169,7 @@ export default function FamilyHistoryPage() {
                   I take on genealogy and family-history projects using real record research and Family Tree Maker. I
                   can organize the family information you already have, build the tree, research the history behind
                   the names and relationships you know — and turn it into a Tree of Life you can hang on the wall, in
-                  your choice of three styles.
+                  your choice of four styles.
                 </p>
                 <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
                   I built my own family&apos;s tree first — 156 people, eight generations, lost branches recovered,
@@ -236,13 +237,13 @@ export default function FamilyHistoryPage() {
         <div className="container">
           <div className="panel">
             <h2 id="fh-styles-heading" className="section-heading" style={{ margin: "0 0 14px" }}>
-              Pick your tree style — three to choose from, same price
+              Pick your tree style — four to choose from, same price
             </h2>
             <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
               Every style is built from the same researched tree, so you can change your mind before delivery. Names,
               dates, and places are placed by hand from the records — never guessed.
             </p>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {treeStyles.map((t) => (
                 <div className="card" key={t.name} style={{ display: "flex", flexDirection: "column" }}>
                   <div className="overflow-hidden rounded-xl border border-white/10" style={{ marginBottom: 12 }}>
@@ -296,7 +297,7 @@ export default function FamilyHistoryPage() {
             </h2>
             <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
               $100 starts any project. Pay the rest as we go — payment plans welcome, prices negotiable. Every tier
-              includes your choice of the three tree styles. Add a family history book from $395, a private family
+              includes your choice of the four tree styles. Add a family history book from $395, a private family
               website from $350, or a printed poster.
             </p>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
