@@ -104,6 +104,8 @@ const nextConfig = {
       // and an old one-off page — send both somewhere useful instead of a dead end.
       { source: "/resources/lendtrack-ai-funding-portal", destination: "/resources", statusCode: 301 },
       { source: "/captain-maker", destination: "/lab", statusCode: 301 },
+      // Brand consolidated into MixedMakerShop; the legacy Topher's Web Design page now lands on /web-design.
+      { source: "/tophers-web-design", destination: "/web-design", statusCode: 301 },
       { source: "/gear", destination: "/lab", statusCode: 301 },
       { source: "/gear/:path*", destination: "/lab", statusCode: 301 },
       { source: "/tophers-recommended-tools", destination: "/websites-tools", statusCode: 301 },

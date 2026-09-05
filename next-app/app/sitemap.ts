@@ -7,10 +7,11 @@ import { WEBSITE_SAMPLES } from "@/lib/website-samples";
 
 /**
  * Marketing routes under app/(public)/ matching static page.tsx files (excludes dynamic [slug] routes).
+ * 2026-09-05: redirect-only URLs, form success pages, and llms.txt removed — Search Console flagged
+ * every redirecting sitemap entry as a "redirect error" and the rest waste crawl budget.
  */
 const PUBLIC_PATHS: readonly string[] = [
   "/",
-  "/llms.txt",
   "/about",
   "/ad-lab",
   "/ai-business-tools",
@@ -19,15 +20,11 @@ const PUBLIC_PATHS: readonly string[] = [
   "/church-websites-hot-springs",
   "/coffee-shop-websites-hot-springs",
   "/connect",
-  "/connect/success",
   "/contact",
-  "/contact/success",
   "/examples",
   "/free-mockup",
   "/free-website-check",
-  "/free-website-check/success",
   "/google-business-profile-help",
-  "/growth-offer",
   "/how-much-does-a-website-cost",
   "/idea-lab",
   "/in-home-computer-repair",
@@ -36,9 +33,8 @@ const PUBLIC_PATHS: readonly string[] = [
   "/lawn-care-hot-springs-ar",
   "/local-seo-services",
   "/offer",
-  "/portfolio",
+  "/portfolio/index.html",
   "/privacy",
-  "/privacy-policy",
   "/terms",
   "/pressure-washing-hot-springs-ar",
   "/price-sheet",
@@ -46,15 +42,12 @@ const PUBLIC_PATHS: readonly string[] = [
   "/property-care",
   "/restaurant-website-redesign",
   "/restaurant-websites-hot-springs",
-  "/see-your-website",
-  "/services",
   "/small-business-website-design",
   "/small-business-websites-hot-springs",
   "/social-media-takeover",
   "/start-here",
   "/lab",
   "/tools",
-  "/tophers-web-design",
   "/web-design",
   "/web-design-hot-springs-ar",
   "/website-maintenance",
