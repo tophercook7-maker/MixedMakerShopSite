@@ -327,7 +327,9 @@ export default function InHomeComputerRepairPage() {
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Topher has done local computer help in Hot Springs since 2000 &mdash; first as Cook&apos;s Computer Service,
-              now as MixedMakerShop. Same person, same phone number, one more service line on the truck.
+              now as MixedMakerShop. Same person, same phone number. Quick fixes like virus cleanup, updates, printers,
+              and logins get handled at your place with a flash drive. If the machine needs real surgery, he takes it
+              home to his bench and brings it back set up and working.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href="/contact">
