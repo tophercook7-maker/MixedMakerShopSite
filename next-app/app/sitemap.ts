@@ -42,7 +42,6 @@ const PUBLIC_PATHS: readonly string[] = [
   "/property-care",
   "/restaurant-website-redesign",
   "/restaurant-websites-hot-springs",
-  "/small-business-website-design",
   "/small-business-websites-hot-springs",
   "/social-media-takeover",
   "/start-here",

@@ -106,6 +106,8 @@ const nextConfig = {
       { source: "/captain-maker", destination: "/lab", statusCode: 301 },
       // Brand consolidated into MixedMakerShop; the legacy Topher's Web Design page now lands on /web-design.
       { source: "/tophers-web-design", destination: "/web-design", statusCode: 301 },
+      // Near-duplicate of the Hot Springs page; Google was crawling it and skipping it. One page, one signal.
+      { source: "/small-business-website-design", destination: "/small-business-websites-hot-springs", statusCode: 301 },
       { source: "/gear", destination: "/lab", statusCode: 301 },
       { source: "/gear/:path*", destination: "/lab", statusCode: 301 },
       { source: "/tophers-recommended-tools", destination: "/websites-tools", statusCode: 301 },
