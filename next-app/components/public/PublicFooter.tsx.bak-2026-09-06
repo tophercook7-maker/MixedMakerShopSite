@@ -107,10 +107,6 @@ export function PublicFooter() {
               </span>
               <Link href="/llms.txt">For AI assistants</Link>
             </p>
-            <p className="small mt-2 m-0 leading-[1.55] opacity-70">
-              Music and audio on this site generated with Stable Audio. Powered by
-              Stability AI.
-            </p>
             <ul className="footer-links mt-4 list-none p-0">
               {linkGroups[0].links.map((link) => (
                 <li key={`MixedMakerShop-${link.href}`}>{renderFooterLink(link)}</li>

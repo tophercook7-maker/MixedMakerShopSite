@@ -232,3 +232,10 @@ Traceback (most recent call last):
     raise URLError(err)
 urllib.error.URLError: <urlopen error [Errno 61] Connection refused>
 Discovery→CRM sync: 64 new inserted, 0 failed, 1470 unique discovered, 1413 already in CRM (skipped).
+Discovery→CRM sync: 11 new inserted, 0 failed, 1481 unique discovered, 1477 already in CRM (skipped).
+Discovery→CRM sync: 15 new inserted, 0 failed, 1496 unique discovered, 1496 already in CRM (skipped).
+Discovery→CRM sync: 12 new inserted, 0 failed, 1508 unique discovered, 1512 already in CRM (skipped).
+Discovery→CRM sync: 16 new inserted, 0 failed, 1524 unique discovered, 1523 already in CRM (skipped).
+Discovery→CRM sync: 32 new inserted, 0 failed, 1556 unique discovered, 1540 already in CRM (skipped).
+Discovery→CRM sync: 19 new inserted, 0 failed, 1575 unique discovered, 1572 already in CRM (skipped).
+Discovery→CRM sync: 16 new inserted, 0 failed, 1591 unique discovered, 1591 already in CRM (skipped).

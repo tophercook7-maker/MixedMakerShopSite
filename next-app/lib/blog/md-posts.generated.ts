@@ -116,5 +116,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-07",
     href: "/blog/how-much-does-a-website-cost-hot-springs-small-business",
   },
+  {
+    slug: "maximize-your-home-big-ticket-upgrades-that-pay-off",
+    title: "Maximize Your Home: Big-Ticket Upgrades That Pay Off",
+    category: "Gear",
+    excerpt: "If your passion is building and optimizing the perfect space, you know that sometimes the best improvements aren't the small fixes. They are the\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-09-07",
+    href: "/blog/maximize-your-home-big-ticket-upgrades-that-pay-off",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
