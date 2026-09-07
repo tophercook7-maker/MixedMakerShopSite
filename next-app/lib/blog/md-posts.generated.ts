@@ -106,5 +106,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-04",
     href: "/blog/computer-repair-hot-springs-ar-what-to-expect",
   },
+  {
+    slug: "how-much-does-a-website-cost-hot-springs-small-business",
+    title: "Website Cost Hot Springs Small Business: Starter vs Full Setup",
+    category: "Web Design",
+    excerpt: "I’ve been helping folks in Hot Springs and the surrounding areas build websites for over twenty years. The first thing most people ask is, “What’s th",
+    readTime: "5 min read",
+    readMinutes: 5,
+    publishedAt: "2026-09-07",
+    href: "/blog/how-much-does-a-website-cost-hot-springs-small-business",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
