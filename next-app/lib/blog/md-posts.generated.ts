@@ -126,5 +126,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-07",
     href: "/blog/maximize-your-home-big-ticket-upgrades-that-pay-off",
   },
+  {
+    slug: "google-business-profile-setup-hot-springs",
+    title: "Google Business Profile setup Hot Springs",
+    category: "Local SEO",
+    excerpt: "If you’re a local business owner in Hot Springs looking to get more calls, I’ve been doing Google Business Profile setup Hot Springs for years. I’ve ",
+    readTime: "4 min read",
+    readMinutes: 4,
+    publishedAt: "2026-09-10",
+    href: "/blog/google-business-profile-setup-hot-springs",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
