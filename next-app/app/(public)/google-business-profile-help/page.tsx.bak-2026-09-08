@@ -176,19 +176,12 @@ export default function GoogleBusinessProfileHelpPage() {
               Founder-led setup and ongoing care. We handle the boring tuning so you can keep running the actual
               business.
             </p>
-            {/* 2026-09-08: page previously never stated a price and had no way to buy. */}
-            <p style={{ margin: "0 0 18px", fontSize: 20, fontWeight: 600 }}>
-              $250 one-time setup
-              <span className="small" style={{ display: "block", marginTop: 4, fontWeight: 400, color: "var(--muted)" }}>
-                Created or claimed, verified, and filled in properly. Ongoing monthly care available after.
-              </span>
-            </p>
             <div className="btn-row">
-              <a className="btn gold btn-cta-primary" href="https://buy.stripe.com/8x2cMY8HE3DV0ln4503cc0A">
-                Get My Profile Set Up — $250
-              </a>
-              <Link className="btn ghost" href="/contact">
-                Ask a question first
+              <Link className="btn gold btn-cta-primary" href="/contact">
+                Get My Profile Set Up
+              </Link>
+              <Link className="btn ghost" href="/pricing">
+                See pricing
               </Link>
             </div>
             <p className="small" style={{ marginTop: 14, color: "var(--muted2)" }}>

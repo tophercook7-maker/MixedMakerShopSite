@@ -4,6 +4,7 @@ import { CASE_STUDY_ENTRIES } from "@/lib/case-studies/registry";
 import { RESOURCE_ENTRIES } from "@/lib/resources/registry";
 import { SITE_URL } from "@/lib/site";
 import { WEBSITE_SAMPLES } from "@/lib/website-samples";
+import { LIBRARY, itemSlug, isOrderable } from "@/lib/shop-library";
 
 /**
  * Marketing routes under app/(public)/ matching static page.tsx files (excludes dynamic [slug] routes).
@@ -12,6 +13,7 @@ import { WEBSITE_SAMPLES } from "@/lib/website-samples";
  */
 const PUBLIC_PATHS: readonly string[] = [
   "/",
+  "/shop",
   "/about",
   "/ad-lab",
   "/ai-business-tools",
@@ -69,6 +71,11 @@ const WEBSITE_SAMPLE_PATHS: readonly string[] = WEBSITE_SAMPLES.filter((sample) 
 
 const BLOG_ARTICLE_PATHS: readonly string[] = BLOG_POSTS.flatMap((post) => (post.href ? [post.href] : []));
 
+/** One indexable page per orderable print — each targets its own long-tail search. */
+const SHOP_PRODUCT_PATHS: readonly string[] = LIBRARY.filter(isOrderable).map(
+  (item) => `/shop/${itemSlug(item)}`,
+);
+
 const RESOURCE_AND_PROOF_PATHS: readonly string[] = [
   "/resources",
   ...RESOURCE_ENTRIES.map((r) => `/resources/${r.slug}`),
@@ -80,6 +87,7 @@ const ALL_PUBLIC_PATHS = [
   ...BLOG_ARTICLE_PATHS,
   ...WEBSITE_SAMPLE_PATHS,
   ...RESOURCE_AND_PROOF_PATHS,
+  ...SHOP_PRODUCT_PATHS,
 ];
 
 /** Real publish dates for blog posts so the sitemap reflects actual content age. */

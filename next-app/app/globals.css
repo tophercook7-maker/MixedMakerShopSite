@@ -6969,3 +6969,22 @@ details.printing-faq-details[open] {
     animation: none;
   }
 }
+
+/* ---- Weather station: quiet horizontal scrollbar ---- */
+.wx-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(242, 140, 27, 0.35) transparent;
+}
+.wx-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.wx-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.wx-scroll::-webkit-scrollbar-thumb {
+  background: rgba(242, 140, 27, 0.35);
+  border-radius: 999px;
+}
+.wx-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 140, 27, 0.6);
+}

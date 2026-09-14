@@ -1,4 +1,3 @@
-import { publicFreeMockupFunnelHref } from "@/lib/public-brand";
 import type { Metadata } from "next";
 import {
   mmsPageBg,
@@ -22,25 +21,9 @@ type PayItem = { name: string; price: string; desc: string; url: string };
 const services: PayItem[] = [
   {
     name: "Custom Website",
-    price: "$400",
-    desc: "A full small-business website, built for calls and leads.",
-    url: "https://buy.stripe.com/fZuaEQe1Y1vNc454503cc0y",
-  },
-  {
-    // 2026-09-08: this Stripe link charges $450, but /pricing advertises the site
-    // "Starting at $400". Topher's actual model is $400 for the site + $50 for the
-    // promo video. Relabelled so the button says what it charges. If he wants to
-    // sell the site alone he needs a separate $400 Stripe link.
-    name: "Custom Website + Promo Video",
     price: "$450",
-    desc: "A full small-business website built for calls and leads, plus a promo video ($400 site + $50 video).",
+    desc: "A full small-business website, built for calls and leads.",
     url: "https://buy.stripe.com/5kQeV65vsgqHecddFA3cc0f",
-  },
-  {
-    name: "Google Business Profile Setup",
-    price: "$250",
-    desc: "Create or claim your Google listing, get it verified, and set it up properly — categories, services, hours, photos.",
-    url: "https://buy.stripe.com/8x2cMY8HE3DV0ln4503cc0A",
   },
   {
     name: "Setup Help",
@@ -50,9 +33,9 @@ const services: PayItem[] = [
   },
   {
     name: "Promo Video",
-    price: "$150",
+    price: "$250",
     desc: "A cinematic promo video for your business, event, or offer.",
-    url: "https://buy.stripe.com/8x25kw9LI8Yf6JLcBw3cc0z",
+    url: "https://buy.stripe.com/6oU00c9LIa2jb0130W3cc0i",
   },
   {
     name: "Author Package",

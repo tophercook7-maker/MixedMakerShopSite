@@ -5,9 +5,11 @@ import { JsonLd } from "@/components/public/JsonLd";
 import { SITE_URL } from "@/lib/site";
 import { publicTopherEmail } from "@/lib/public-brand";
 import { contactHrefForTopic } from "@/lib/what-i-do";
+import { LIBRARY, itemSlug, LIBRARY_COUNT, LIBRARY_CATEGORIES } from "@/lib/shop-library";
 
 const canonical = `${SITE_URL}/3d-printing`;
 const askHref = contactHrefForTopic("3d-printing");
+const FEATURED_CODES = ["GB-01", "LP-01", "HW-01", "VA-02", "SH-01", "DK-01"];
 
 export const metadata: Metadata = {
   title: "3D Printing Service Hot Springs AR | Send a File or a Photo",
@@ -132,6 +134,13 @@ const faqSchema = {
 };
 
 export default function ThreeDPrintingPage() {
+  const featured = FEATURED_CODES
+    .map((c) => LIBRARY.find((i) => i.code === c))
+    .filter((i): i is (typeof LIBRARY)[number] => Boolean(i));
+  const prices = LIBRARY.map((i) => i.priceCents).filter((n) => n > 0);
+  const MIN_PRICE = Math.round(Math.min(...prices) / 100);
+  const MAX_PRICE = Math.round(Math.max(...prices) / 100);
+
   return (
     <>
       <JsonLd data={[serviceSchema, faqSchema]} />
@@ -179,6 +188,64 @@ export default function ThreeDPrintingPage() {
                   className="h-auto w-full"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SHOP THE LIBRARY */}
+      <section className="section" aria-labelledby="print-shop-heading">
+        <div className="container">
+          <div className="panel">
+            <div className="kicker">
+              <span className="dot" /> No quote needed
+            </div>
+            <h2 id="print-shop-heading" className="section-heading" style={{ margin: "12px 0 12px" }}>
+              Or just pick something off the shelf
+            </h2>
+            <p className="small" style={{ margin: "0 0 20px", color: "var(--muted)", lineHeight: 1.6, maxWidth: "62ch" }}>
+              {LIBRARY_COUNT} pieces ready to order — vases, planters, gift boxes, lamps, organizers,
+              seasonal decorations — from ${MIN_PRICE} to ${MAX_PRICE}. Printed to order in your colour,
+              delivered free around Hot Springs or shipped anywhere in the US. No back and forth, no quote.
+            </p>
+
+            <div className="grid gap-5 sm:grid-cols-3 lg:grid-cols-6" style={{ marginBottom: 22 }}>
+              {featured.map((item) => (
+                <Link
+                  key={item.code}
+                  href={`/shop/${itemSlug(item)}`}
+                  className="overflow-hidden rounded-xl border border-white/10"
+                  style={{ display: "block", textDecoration: "none" }}
+                >
+                  <div style={{ aspectRatio: "1 / 1", background: "rgba(255,255,255,.03)" }}>
+                    {item.img ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.img} alt={item.name} loading="lazy"
+                           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    ) : null}
+                  </div>
+                  <div style={{ padding: "8px 10px" }}>
+                    <div className="small" style={{ color: "var(--muted2)", fontSize: 11, letterSpacing: ".06em" }}>
+                      {item.code}
+                    </div>
+                    <div className="small" style={{ fontWeight: 600, lineHeight: 1.25 }}>{item.name}</div>
+                    <div className="small" style={{ color: "var(--muted)" }}>{item.price}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <p className="small" style={{ margin: "0 0 18px", color: "var(--muted2)", lineHeight: 1.7 }}>
+              {LIBRARY_CATEGORIES.join(" · ")}
+            </p>
+
+            <div className="btn-row">
+              <Link className="btn gold btn-cta-primary" href="/shop">
+                Browse all {LIBRARY_COUNT} pieces
+              </Link>
+              <Link className="btn ghost" href={askHref}>
+                Or send me something custom
+              </Link>
             </div>
           </div>
         </div>

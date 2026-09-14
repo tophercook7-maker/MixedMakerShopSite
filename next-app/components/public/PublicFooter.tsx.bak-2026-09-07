@@ -14,7 +14,6 @@ export function PublicFooter() {
         { href: "/lab#books", label: "Books, Audio & Creative" },
         { href: "/in-home-computer-repair", label: "In-Home Computer Help" },
         { href: "/3d-printing", label: "3D Printing" },
-        { href: "/shop", label: "Shop" },
         { href: "/family-history", label: "Genealogy & Family History" },
         { href: "/contact?topic=ideas", label: "Ideas, Experiments & Inventions" },
       ],

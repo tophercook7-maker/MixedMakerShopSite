@@ -26,7 +26,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "starter",
     title: "Starter Setup",
-    priceLabel: "Starting at $400",
+    priceLabel: "$400",  // 2026-09-08: firm price, not "starting at"
     description:
       "A clean 1-page mobile-friendly website with click-to-call, a contact form, and basic Google setup — built to bring in calls.",
     includes: [

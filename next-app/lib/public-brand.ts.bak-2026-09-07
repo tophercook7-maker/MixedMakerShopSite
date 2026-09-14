@@ -39,23 +39,9 @@ export const publicFreeMockupFunnelHref = "/free-mockup#free-mockup-start";
 /** Fresh Cut example funnel — query preserved; hash lands on intake. */
 export const publicFreeMockupFunnelHrefFreshCut = "/free-mockup?example=freshcut#free-mockup-start";
 
-/**
- * Canonical Google Business Profile ("MixedMakerShop - Web Design"), addressed by CID.
- * CID 3332951389304662473 was decoded from the profile's own g.page review key
- * (CckpJj2hBUEuEBM) on 2026-09-07, so this and `publicGoogleReviewHref` provably point
- * at the SAME profile — the one surviving duplicate cleanup.
- *
- * Prefer this over a Maps *search* URL: a search can surface competitors, and only a
- * stable profile URL is usable as a schema.org `sameAs` entity signal.
- */
-export const publicGoogleProfileHref =
-  "https://www.google.com/maps?cid=3332951389304662473";
-
-/**
- * Stable Maps link for the studio (avoids brittle share.google short links).
- * Points at the Business Profile itself as of 2026-09-07.
- */
-export const publicGoogleMapsSearchHref = publicGoogleProfileHref;
+/** Stable Maps search for the studio (avoids brittle share.google short links). */
+export const publicGoogleMapsSearchHref =
+  "https://www.google.com/maps/search/?api=1&query=MixedMakerShop+Hot+Springs+AR";
 
 // One-tap Google review link for MixedMakerShop / Web Design (from the Business Profile).
 export const publicGoogleReviewHref = "https://g.page/r/CckpJj2hBUEuEBM/review";

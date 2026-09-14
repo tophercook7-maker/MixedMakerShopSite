@@ -32,43 +32,6 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Live client/owner sites, all verified returning HTTP 200 on 2026-09-07.
- * Outbound links to real named local businesses are a local-relevance signal Google
- * can actually check — and they give a Hot Springs visitor something to click that
- * isn't a stock screenshot.
- */
-const LOCAL_WORK = [
-  {
-    name: "We Care Lawn & Landscape",
-    label: "wecarelandscapes.expert",
-    href: "https://wecarelandscapes.expert/",
-    industry: "Landscaping · Hot Springs",
-    copy: "Landscape design, lawn maintenance, and a sod farm — with an instant sod estimator and a booking assistant built into the site.",
-  },
-  {
-    name: "Fresh Cut Property Care",
-    label: "freshcutpropertycare.com",
-    href: "https://freshcutpropertycare.com/",
-    industry: "Lawn care · Hot Springs",
-    copy: "Service-area lawn and property care, quote requests straight from a phone in the yard.",
-  },
-  {
-    name: "Maureen A. Cahill, Author",
-    label: "maureenacahill.com",
-    href: "https://maureenacahill.com/",
-    industry: "Author · Arkansas",
-    copy: "A working author site: books, resources, and a contact form that actually reaches her.",
-  },
-  {
-    name: "The Car Doc",
-    label: "yourcardoc.com",
-    href: "https://yourcardoc.com/",
-    industry: "Auto · Arkansas",
-    copy: "Mobile mechanic site built to make calling the fastest thing on the page.",
-  },
-] as const;
-
 const whoFor = [
   {
     badge: "Outdoor",
@@ -363,42 +326,6 @@ export default function HotSpringsWebDesignPage() {
               Looking to go further? Pair this with{" "}
               <Link href="/google-business-profile-help">Google Business Profile setup</Link> for full local
               visibility, or check <Link href="/pricing">starting pricing</Link> for the full breakdown.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* LIVE LOCAL WORK — real sites, real Arkansas businesses, verified live 2026-09-07.
-          Only sites actually launched for a real owner go here. Unsolicited spec previews
-          are deliberately NOT listed by name on this page. */}
-      <section className="section" aria-labelledby="local-work-heading">
-        <div className="container">
-          <div className="panel">
-            <h2 id="local-work-heading" className="section-heading" style={{ margin: "0 0 14px" }}>
-              Sites already live for Arkansas businesses
-            </h2>
-            <p className="small" style={{ margin: "0 0 20px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Not mockups — these are running right now for real owners. Open any of them and see the
-              speed, the layout, and the way the phone number follows you down the page on mobile.
-            </p>
-            <div className="how-it-works-grid">
-              {LOCAL_WORK.map((w) => (
-                <div className="how-it-works-card" key={w.href}>
-                  <span className="how-it-works-badge">{w.industry}</span>
-                  <h3 className="how-it-works-title">{w.name}</h3>
-                  <p className="how-it-works-copy">
-                    {w.copy}{" "}
-                    <a href={w.href} target="_blank" rel="noopener noreferrer">
-                      Visit {w.label}
-                    </a>
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="small" style={{ margin: "22px 0 0", color: "var(--muted)", lineHeight: 1.6 }}>
-              Want to see what yours would look like before you pay anything?{" "}
-              <Link href={publicFreeMockupFunnelHref}>Get a free preview of your homepage</Link> — I build it
-              first, you decide after.
             </p>
           </div>
         </div>

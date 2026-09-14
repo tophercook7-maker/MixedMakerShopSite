@@ -27,9 +27,7 @@ const webDesignDeptId = `${TOPHER_WEB_DESIGN_URL}/#business`;
 const sameAs = [
   publicGoogleProfileHref,
   "https://www.instagram.com/mixedmakershop/",
-  // 2026-09-08: was christopher.cook.16 (his PERSONAL profile). This is the
-  // MixedMakerShop business Page, confirmed in Business Suite (asset 823608494171621).
-  "https://www.facebook.com/profile.php?id=61582864913246",
+  "https://www.facebook.com/christopher.cook.16/",
   "https://www.linkedin.com/in/chris-cook-8516a943/",
 ];
 

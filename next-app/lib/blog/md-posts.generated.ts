@@ -136,5 +136,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-10",
     href: "/blog/google-business-profile-setup-hot-springs",
   },
+  {
+    slug: "upgrade-your-home-top-big-ticket-gear-worth-every-penny",
+    title: "Upgrade Your Home: Top Big-Ticket Gear Worth Every Penny",
+    category: "Gear",
+    excerpt: "Tired of gear that falls apart after a few projects? For the dedicated maker or homeowner who values quality over cheap fixes, the bigger splurges often\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-09-14",
+    href: "/blog/upgrade-your-home-top-big-ticket-gear-worth-every-penny",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];

@@ -1,6 +1,6 @@
 import { SITE_URL, TOPHER_WEB_DESIGN_URL } from "@/lib/site";
 import {
-  publicGoogleProfileHref,
+  publicGoogleMapsSearchHref,
   publicTopherEmail,
   publicTopherPhoneE164,
 } from "@/lib/public-brand";
@@ -11,25 +11,10 @@ const websiteId = `${SITE_URL}/#website`;
 const webPageId = `${SITE_URL}/#webpage`;
 const webDesignDeptId = `${TOPHER_WEB_DESIGN_URL}/#business`;
 
-/**
- * Official profiles that already exist in the repo (tap card + vCard).
- *
- * 2026-09-07: added the Google Business Profile. `sameAs` is the standard way to tell
- * Google that this website and that Business Profile are the same entity — without it,
- * a site and its profile can be scored as two weakly-related things. This is the single
- * cheapest local-SEO signal available and it was missing.
- *
- * ⚠️ TODO (Topher): the Facebook entry below is his PERSONAL profile, not the
- * MixedMakerShop business Page (147 followers). Swap in the Page URL — a personal
- * profile is a weaker entity signal and can confuse the business/person association.
- * Paste the Page URL and this becomes a one-line change.
- */
+/** Official profiles that already exist in the repo (tap card + vCard). */
 const sameAs = [
-  publicGoogleProfileHref,
   "https://www.instagram.com/mixedmakershop/",
-  // 2026-09-08: was christopher.cook.16 (his PERSONAL profile). This is the
-  // MixedMakerShop business Page, confirmed in Business Suite (asset 823608494171621).
-  "https://www.facebook.com/profile.php?id=61582864913246",
+  "https://www.facebook.com/christopher.cook.16/",
   "https://www.linkedin.com/in/chris-cook-8516a943/",
 ];
 
@@ -122,7 +107,7 @@ export function getMixedMakerStructuredDataGraph() {
           latitude: 34.5037,
           longitude: -93.0552,
         },
-        hasMap: publicGoogleProfileHref,
+        hasMap: publicGoogleMapsSearchHref,
         areaServed,
         openingHoursSpecification: [
           {

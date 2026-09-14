@@ -10,7 +10,7 @@ status: published
 author: "Topher Cook"
 publishedAt: "2026-09-04"
 updated: "2026-09-04"
-verificationNotes: "Prices ($10–$30 typical for small library prints, custom pieces quoted first), three printers, send-a-file-or-photo intake, local delivery or shipping, few-days turnaround after approval, and service area all verified against mixedmakershop.com/3d-printing on 2026-09-04. No turnaround guarantee is made."
+verificationNotes: "Prices ($10–$30 typical for small library prints, custom pieces quoted first), three printers, send-a-file-or-photo intake, local delivery or shipping, few-days turnaround after approval, and service area all verified against mixedmakershop.com/3d-printing on 2026-09-04. No turnaround guarantee is made. 2026-09-12: added links to /shop — the $12–$48 range, the 58-piece count, print-to-order, and the named categories (hooks in fours, shelf brackets, desk and cable organizers, planters, lamps, puzzle boxes) were all checked against the live shop catalogue on that date."
 ---
 
 # 3D Printing in Hot Springs, AR: Send a File or a Photo, Get the Part
@@ -41,6 +41,8 @@ Two things drive the price more than anything else:
 2. **Modeling time.** Printing a file someone already made is quick. Designing a part from a photo takes real work, and the quote reflects that.
 
 If you want to keep costs down, the cheapest jobs are files you already have or models you found online. The most expensive jobs are large, custom-designed pieces that need several test prints to get the fit right.
+
+There is also a third option that skips the quote entirely. I keep a [shop of pieces you can just order](/shop) — vases, planters, lamps, organizers, gift boxes, seasonal decorations — at fixed prices from $12 to $48. Nothing is printed until you order it, so you pick the colour and I make yours. No back and forth, no waiting on a number.
 
 ## What people in Hot Springs actually order
 
@@ -82,8 +84,12 @@ I would rather tell you this now than after a quote. Printed plastic is not the 
 - Very large single pieces may need to be printed in sections and joined.
 - If a real replacement part exists for under $10, buy the real one.
 
-If your job falls into one of those, I will say so and point you somewhere better.
+Three of those categories — brackets and mounts, organizers, and gifts and decorations — I now keep ready to order. The [shop](/shop) has wall hooks in sets of four, shelf brackets rated to hold serious weight, desk and cable organizers, planters, lamps, and puzzle boxes you can put cash inside. If what you want is already on that page, ordering it is faster than describing it to me.
+
+If your job falls into none of those, I will say so and point you somewhere better.
 
 ## Ready when you are
 
-Have a part that broke, an idea that needs a first version, or a file you just want printed? Send it over on the [3D printing page](/3d-printing). Photo with a coin in it is enough to start.
+Have a part that broke, an idea that needs a first version, or a file you just want printed? Send it over on the [3D printing page](/3d-printing). A photo with a coin in it is enough to start.
+
+Just want something nice off the shelf? The [shop](/shop) is open — printed to order, free delivery around Hot Springs, shipped anywhere else.

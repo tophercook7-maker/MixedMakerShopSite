@@ -18,6 +18,7 @@ const navItems: {
   { href: "/ai-business-tools", label: "AI & Automation" },
   { href: "/in-home-computer-repair", label: "Computer Help" },
   { href: "/3d-printing", label: "3D Printing" },
+  { href: "/shop", label: "Shop" },
   { href: "/family-history", label: "Family History" },
   { href: "/lab", label: "The Lab", event: { name: "public_lab_click", props: { location: "nav" } } },
   { href: "/pricing", label: "Pricing" },
