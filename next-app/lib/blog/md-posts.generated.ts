@@ -146,5 +146,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-14",
     href: "/blog/upgrade-your-home-top-big-ticket-gear-worth-every-penny",
   },
+  {
+    slug: "upgrade-your-life-must-buy-home-workshop-gear-reviews",
+    title: "Upgrade Your Life: Must-Buy Home & Workshop Gear Reviews",
+    category: "Gear",
+    excerpt: "Building or improving a home demands reliability. We understand that you don't want temporary fixes; you want tools and gear that stand the test of time,\u2026",
+    readTime: "3 min read",
+    readMinutes: 3,
+    publishedAt: "2026-09-21",
+    href: "/blog/upgrade-your-life-must-buy-home-workshop-gear-reviews",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
