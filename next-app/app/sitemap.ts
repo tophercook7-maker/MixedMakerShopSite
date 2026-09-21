@@ -53,6 +53,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/web-design-hot-springs-ar",
   "/website-maintenance",
   "/website-roast",
+  "/weather",
   "/website-samples",
   "/websites-tools",
   "/yard-cleanup-hot-springs-ar",

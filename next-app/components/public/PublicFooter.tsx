@@ -43,6 +43,7 @@ export function PublicFooter() {
         { href: "/portfolio/index.html", label: "Books, Apps & Games" },
         { href: "/3d-scenes", label: "Pop-Out Video Ads" },
         { href: "/idea-lab", label: "Idea Lab" },
+        { href: "/weather", label: "Weather Station" },
         { href: "/blog", label: "Blog" },
       ],
     },
