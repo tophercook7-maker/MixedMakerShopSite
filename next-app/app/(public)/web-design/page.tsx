@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "Practical web design by Topher — clear sites that build trust and drive calls and leads. Hot Springs, AR & nationwide. Start with a free preview.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Web design for real businesses | MixedMakerShop",
     description: "Clear, conversion-focused websites — built directly by Topher, no agency layers.",
     url: canonical,

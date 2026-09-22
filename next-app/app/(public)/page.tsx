@@ -8,7 +8,7 @@ import { getHomeWebPageSchema } from "@/lib/structured-data";
 const canonical = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "Web Design, AI, Computer Help & 3D Printing in Hot Springs AR",
+  title: "Web Design & Computer Help, Hot Springs AR",
   description: metaDescription(
     "One guy, a lot of skills. Websites from $400 with a free preview, AI & automation, books & audiobooks, in-home computer repair, 3D printing, and family-tree research — all by one person in Hot Springs, AR."
   ),
@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "MixedMakerShop — One guy. A lot of skills. Hot Springs, AR",
     description: metaDescription(
       "Websites, AI & automation, books & audio, in-home computer help, 3D printing, family history, and ideas that need building. One person, Hot Springs, AR."

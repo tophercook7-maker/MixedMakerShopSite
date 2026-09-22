@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "Local SEO for home service businesses — landscaping, plumbing, cleaning, and contractors. Win the map pack, build trust in your zip code, and turn neighborhood searches into booked jobs.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "The local advantage for home service pros — practical local SEO pillars for landscaping companies, plumbers, cleaners, and contractors without agency fluff.",

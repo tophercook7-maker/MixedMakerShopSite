@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Why MixedMakerShop is building a solar-powered LoRa weather station — radical data ownership, off-grid reliability, custom fabrication, and lessons for real-world builds.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "The Off-Grid Brain: a DIY solar LoRa weather station project at MixedMakerShop — no subscriptions, local data, and maker-built hardware.",

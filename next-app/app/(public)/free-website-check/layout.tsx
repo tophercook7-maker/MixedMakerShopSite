@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     "Get a free, human review of your website from Topher — trust, clarity, mobile experience, and the path to contact. No generic auto-audit, no obligation.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Free Website Check | MixedMakerShop",
     description: "A practical, human review of your site from Topher — not a generic auto-audit.",
     url: canonical,

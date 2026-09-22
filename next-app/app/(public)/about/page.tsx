@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description:
     "Topher has provided local tech help since 2000 — formerly Cook's Computer Service, now MixedMakerShop with in-home computer repair, web design, AI tools, and digital builds in Hot Springs, Arkansas.",
   openGraph: {
+    type: "website",
     title: "About Topher | MixedMakerShop",
     url: canonical,
   },

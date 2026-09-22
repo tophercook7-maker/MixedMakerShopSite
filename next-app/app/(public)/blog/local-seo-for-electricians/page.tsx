@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "Local SEO for electricians — win Google's Local Pack, service-area pages, reviews, and a mobile-first site that turns 'emergency electrician near me' searches into phone calls.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Why local SEO is the high-voltage line that delivers your skills to customers — Local Pack, service areas, and a mobile-first website from MixedMakerShop.",

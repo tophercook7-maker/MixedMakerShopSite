@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     "Simple pricing with no surprises — Starter SEO Site starting at $400, Hosting & Support $25/mo, Growth $900–$1,800, and custom quotes.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Web design pricing | MixedMakerShop",
     description: "Clear ranges, preview before you commit — no agency games.",
     url: canonical,

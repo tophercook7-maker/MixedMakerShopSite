@@ -67,6 +67,15 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // www and apex both answered 200 independently, which splits link equity
+      // across two copies of every URL. Send www to the apex permanently; the
+      // canonical tags already point at the apex, so this makes them agree.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.mixedmakershop.com" }],
+        destination: "https://mixedmakershop.com/:path*",
+        statusCode: 301,
+      },
       // statusCode: 301 (not `permanent: true`, which emits 308) so legacy URLs return a
       // classic 301 Moved Permanently.
       ...HTML_REDIRECTS.map(([source, destination]) => ({ source, destination, statusCode: 301 })),

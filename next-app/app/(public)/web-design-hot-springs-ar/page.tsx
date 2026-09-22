@@ -18,7 +18,7 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Web Design in Hot Springs, AR — Sites from $400, Free Preview First",
+  title: "Hot Springs Web Design — Sites from $400",
   description: metaDescription(
     "Affordable Hot Springs, AR web design for contractors, restaurants, and local brands. Starter sites $400 · full setups $900 · free preview. Founder-led, mobile-first."
   ),

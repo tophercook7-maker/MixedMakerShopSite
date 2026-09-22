@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     "Win the near-me search game — how local SEO, Google Business Profile, reviews, and a mobile-friendly website keep your phone ringing while competitors stay quiet.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "The near-me secret for local service pros — proximity, relevance, prominence, and practical steps to show up when neighbors search on Google.",

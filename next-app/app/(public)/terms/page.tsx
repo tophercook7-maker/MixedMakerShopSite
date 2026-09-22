@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "Review the terms for using MixedMakerShop services, including web design, the Lab, AI tools, deposits, refunds, and project ownership.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Terms of Service | MixedMakerShop",
     description:
       "Review the terms for using MixedMakerShop services, including web design, the Lab, AI tools, deposits, refunds, and project ownership.",

@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   ),
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Free Website Preview | MixedMakerShop",
     description: metaDescription(
       "Free homepage preview for your business — see the layout, trust signals, and CTAs before you spend a dollar. ~2 minutes, no pressure."

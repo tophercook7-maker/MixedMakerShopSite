@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Local SEO for plumbers in Hot Springs, Arkansas: a working Google Business Profile, plain-language service pages, honest reviews, and a website that works on a wet phone. By Topher at Mixed Maker Shop.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "When a pipe bursts, homeowners search fast. Here is how a Hot Springs plumber gets found, trusted, and called.",

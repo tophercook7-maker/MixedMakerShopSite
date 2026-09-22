@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "A practical, human review of your site — trust, clarity, and conversions — from Topher, not a generic auto-audit.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Free website roast | MixedMakerShop",
     description: "Personal feedback on what helps and what hurts — usually within 24–48 hours.",
     url: canonical,

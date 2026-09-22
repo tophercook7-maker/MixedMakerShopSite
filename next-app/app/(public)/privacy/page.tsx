@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     "Learn how MixedMakerShop collects, uses, and protects information for website previews, custom builds, and creative services.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Privacy Policy | MixedMakerShop",
     description:
       "Learn how MixedMakerShop collects, uses, and protects information for website previews, custom builds, and creative services.",

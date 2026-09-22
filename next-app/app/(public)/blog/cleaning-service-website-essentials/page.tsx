@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "What modern cleaning service websites need in Arkansas — frictionless booking, trust signals, before-and-after proof, local SEO, and mobile-first design.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Quick Refresh guide for cleaning businesses: turn your website into a conversion machine that builds trust and books more cleans.",

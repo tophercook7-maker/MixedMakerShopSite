@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "Lead response automation for small business — when you can't pick up, an AI sidekick texts callers back in 30 seconds, qualifies the lead, and stops customers from calling your competitors.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Stop bleeding leads to missed calls. Lead response automation texts customers back instantly and keeps your speed-to-lead clock running — from MixedMakerShop.",

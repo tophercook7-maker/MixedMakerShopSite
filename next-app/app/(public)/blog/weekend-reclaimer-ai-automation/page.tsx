@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Stop your inbox from eating your weekends. How small business workflow automation and AI helpers filter noise, qualify leads, and bridge the gaps — without agency fluff.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Reclaim your weekends with small business workflow automation — customer-helper bots, lead follow-up, and glass-box AI that sounds like you.",

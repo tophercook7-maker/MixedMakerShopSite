@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description:
     "A free weather station: live conditions, minute-by-minute precipitation, and a 10-day forecast for any town you search. Built in Hot Springs, Arkansas.",
   openGraph: {
+    type: "website",
     title: "Weather Station | MixedMakerShop",
     description:
       "Live conditions, minute-by-minute precipitation, and a 10-day forecast for anywhere.",

@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "From Cook's Computer Service since 2000 to Mixed Maker Shop — rebuilding after MS with in-home repair, AI tutoring, local SEO web design, and custom builds for Hot Springs, Benton, and surrounding Arkansas communities.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Topher's comeback story: house-call tech repair, AI tutoring, local SEO websites, and a one-man lab — serving Hot Springs and neighbors with straight talk and real outcomes.",

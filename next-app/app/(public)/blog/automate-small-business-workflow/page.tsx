@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Five practical ways to use small business workflow automation and AI — from instant lead replies to smart routing — so you stop chasing paperwork and get back to real work.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Stop chasing paperwork. Five no-nonsense small business workflow automation ideas — speed to lead, auto-invoices, scheduling, lead routing, and a practical tools approach.",

@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     "Inside Topher's one-man lab in Hot Springs, AR: websites, AI tools, 6 App Store apps, 61 published books, original music and video, and in-home computer repair — all built by one person."
   ),
   openGraph: {
+    type: "website",
     title: "The Lab | MixedMakerShop",
     description: metaDescription(
       "Websites, AI tools, apps, books, music, and video — everything one person builds out of one lab in Hot Springs, Arkansas."

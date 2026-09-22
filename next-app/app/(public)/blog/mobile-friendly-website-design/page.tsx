@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "Just because your website fits on a phone does not mean it works on a phone. Seven mobile design mistakes that quietly kill conversions — and how to fix them.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Seven common mobile website design mistakes small businesses make — and practical fixes that improve phone conversions.",

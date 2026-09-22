@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "MixedMakerShop explained simply — mobile friendly website design, custom tools and apps, local SEO, AI automation for small business, and a free homepage preview to pick your path.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Web design, the Lab, and AI automation from one person — free homepage previews, custom builds, and workflow tools that reclaim your time.",

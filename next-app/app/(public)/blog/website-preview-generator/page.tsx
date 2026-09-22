@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "MixedMakerShop's free website preview generator shows your business direction before you spend. No credit card, no contract — just a clear mockup in about two minutes.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Stop buying web design blind. See a live preview of your homepage direction with MixedMakerShop's free mockup generator.",

@@ -21,6 +21,7 @@ export const metadata: Metadata = {
   ),
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Static website vs. web system: why the most successful small businesses run digital employees that handle bookings, leads, and busywork. From MixedMakerShop.",

@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     "Checklists and prep sheets for websites, local presence, AI workflows, and project planning — download PDFs free or request through Mixed Maker Shop.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Resource library | MixedMakerShop",
     description:
       "Practical PDF downloads for small businesses and makers — or request through Starter resources if you want a human touch.",

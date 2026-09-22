@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "Privacy Policy for the Autonomous Desktop Agent macOS app: local-first, no backend, screenshots sent only to your own Anthropic API key (BYOK).",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Autonomous Desktop Agent — Privacy Policy | MixedMakerShop",
     description:
       "Privacy Policy for the Autonomous Desktop Agent macOS app: local-first, no backend, screenshots sent only to your own Anthropic API key (BYOK).",

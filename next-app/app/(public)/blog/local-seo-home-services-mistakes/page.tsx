@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Seven local SEO mistakes home service businesses make — one-page services, stale Google profiles, NAP inconsistency, mobile speed, and more — plus how to fix them.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Why near-me traffic dies for contractors and how to fix local SEO for landscaping, HVAC, plumbing, and trade businesses.",

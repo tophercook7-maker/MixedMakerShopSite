@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "Before you drop $800 on a new machine, try a $100 house call and tune-up. Honest, local computer repair, SSD upgrades, and small-business help from Mixed Maker Shop in Hot Springs — no overhead, no upselling.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "A slow computer usually is not dead — it is dusty, cluttered, or stuck on an old hard drive. A $100 house call or an SSD upgrade can make it feel brand new for a fraction of the cost.",

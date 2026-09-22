@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Full library of Topher’s work: web projects, AI tools, apps, samples, and experiments — browse and request a build.",
   openGraph: {
+    type: "website",
     title: "Builds | MixedMakerShop",
     url: "https://mixedmakershop.com/builds",
   },

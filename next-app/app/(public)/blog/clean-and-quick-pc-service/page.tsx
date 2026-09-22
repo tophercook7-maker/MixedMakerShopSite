@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "Slow PC stealing your time? Mixed Maker Shop's $99 Clean & Quick service — optimization, malware removal, bloatware cleanup, and in-home computer repair with honest flat-rate pricing.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Reclaim your time with a $99 Clean & Quick PC tune-up — virus removal, startup optimization, updates, and local in-home computer repair.",

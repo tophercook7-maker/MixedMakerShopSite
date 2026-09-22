@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     "End User License Agreement for the Autonomous Desktop Agent macOS app: free, bring-your-own-key license terms, automation risk, and disclaimers.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Autonomous Desktop Agent — EULA | MixedMakerShop",
     description:
       "End User License Agreement for the Autonomous Desktop Agent macOS app: free, bring-your-own-key license terms, automation risk, and disclaimers.",

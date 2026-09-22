@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "Local SEO for plumbers — stay visible when basements flood at 2 AM. Google Business Profile, reviews, mobile-first websites, and the Captain Maker path without agency fluff.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "Why plumbers need local SEO to stay above water — map pack visibility, high-intent leads, and a digital presence that works while you're under the sink.",

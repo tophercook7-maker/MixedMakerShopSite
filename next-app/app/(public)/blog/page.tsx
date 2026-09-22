@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     "Helpful website tips for small businesses — practical advice on design, local SEO, lead generation, and marketing without tech overwhelm.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title: "MixedMakerShop Blog",
     description:
       "Simple, practical advice for business owners who want a better website, stronger online presence, and more leads.",

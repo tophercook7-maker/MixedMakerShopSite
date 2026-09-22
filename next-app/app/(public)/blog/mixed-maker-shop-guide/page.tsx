@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     "How MixedMakerShop works — free website previews, Topher's Web Design, the Lab, AI automation, and clear starting prices. No synergy slides, no quote-me games.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "The practical MixedMakerShop guide: websites built for thumb reach, custom tools, workflow automation, and honest pricing from a one-man lab.",

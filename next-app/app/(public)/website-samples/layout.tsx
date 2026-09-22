@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     "Browse MixedMakerShop website samples — coffee shop, restaurant, church, service business, and redesign concept builds showing the design direction for Hot Springs small businesses.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Website Samples & Concept Builds | MixedMakerShop",
     description:
       "Concept builds and sample layouts for local small business websites — see the design direction before you commit.",

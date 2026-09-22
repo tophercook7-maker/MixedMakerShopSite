@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     "Describe a goal in plain English and it drives your Mac apps for you — vision-guided, dry-run by default, with a per-action approval gate. One-time $19 license, bring your own Anthropic key.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Autonomous Desktop Agent — macOS Automation App | MixedMakerShop",
     description:
       "Describe a goal in plain English and it drives your Mac apps for you — vision-guided, dry-run by default, with a per-action approval gate. One-time $19 license, bring your own Anthropic key.",

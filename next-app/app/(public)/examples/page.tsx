@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     "A proof wall for MixedMakerShop: website examples, lab builds, property care examples, tools, ideas, and before-and-after work.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Examples | MixedMakerShop",
     description:
       "Website examples, lab builds, property care examples, tools, ideas, and practical projects from MixedMakerShop.",

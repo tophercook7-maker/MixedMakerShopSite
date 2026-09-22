@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     "Reach Topher at MixedMakerShop about web design, an AI tool, or a digital build — direct, low-pressure, reply within one business day.",
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Contact | MixedMakerShop",
     description: "Send a short message — Topher replies within one business day.",
     url: canonical,

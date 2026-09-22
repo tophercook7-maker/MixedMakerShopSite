@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "Local SEO for HVAC companies — rank in Google's Local Pack for 'AC repair near me,' win reviews, and build a mobile site that turns emergencies into phone calls instead of leaving you frozen out.",
   alternates: { canonical },
   openGraph: {
+    type: "article",
     title,
     description:
       "The digital tune-up your HVAC business needs — Local Pack rankings, Google Business Profile, reviews, and a site that rings your phone first. From MixedMakerShop.",

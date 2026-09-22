@@ -19,6 +19,7 @@ export async function generateMetadata({
     description: sample.desc,
     alternates: { canonical },
     openGraph: {
+      type: "website",
       title: `${sample.name} — Website Sample`,
       description: sample.desc,
       url: canonical,

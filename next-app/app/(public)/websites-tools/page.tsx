@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical },
   openGraph: {
+    type: "website",
     title: "Websites & Tools | MixedMakerShop",
     description:
       "Web design through Topher's Web Design, plus MixedMakerShop tools, previews, landing pages, and simple business systems.",
