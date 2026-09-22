@@ -30,6 +30,7 @@ const PUBLIC_PATHS: readonly string[] = [
   "/how-much-does-a-website-cost",
   "/idea-lab",
   "/in-home-computer-repair",
+  "/audiobooks-and-book-publishing",
   "/3d-printing",
   "/family-history",
   "/lawn-care-hot-springs-ar",

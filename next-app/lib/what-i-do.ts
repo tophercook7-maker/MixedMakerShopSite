@@ -73,7 +73,7 @@ export const WHAT_I_DO: readonly WhatIDoCategory[] = [
       "Digital content and creative projects",
     ],
     price: "Flyers & graphics from $50 · book trailers from $79",
-    href: "/lab#books",
+    href: "/audiobooks-and-book-publishing",
     cta: "See books & creative work",
     icon: "BookOpen",
   },
