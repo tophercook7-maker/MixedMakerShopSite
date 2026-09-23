@@ -29,12 +29,12 @@ const AREA_SERVED = [
 export const metadata: Metadata = {
   title: "Audiobooks & Self-Publishing, Hot Springs AR",
   description:
-    "Turn a finished manuscript into a published book, an ACX-ready audiobook, and a trailer that sells it. Done by one person in Hot Springs, Arkansas — 19 titles published and counting. Trailers from $79.",
+    "Turn a finished manuscript into a published book, an audiobook on Google Play and Spotify, and a trailer that sells it. One person in Hot Springs, Arkansas — 19 titles published. Trailers from $79.",
   alternates: { canonical },
   openGraph: {
     title: "Audiobooks & Self-Publishing — Hot Springs, AR | MixedMakerShop",
     description:
-      "Manuscript to published book, ACX-ready audiobook, and a trailer. One person in Hot Springs, Arkansas. 19 titles published. Trailers from $79.",
+      "Manuscript to published book, audiobook, and a trailer. One person in Hot Springs, Arkansas. 19 titles published. Trailers from $79.",
     url: canonical,
     type: "website",
   },
@@ -49,7 +49,7 @@ const whoFor = [
   {
     badge: "02 · Audio",
     title: "You want it as an audiobook",
-    copy: "Audiobooks outsell ebooks in a lot of categories and almost nobody self-publishing gets one made, because studio narration runs into the thousands. There's a cheaper road now, and it passes ACX's technical check.",
+    copy: "Audiobooks outsell ebooks in a lot of categories and almost nobody self-publishing gets one made, because studio narration runs into the thousands. There's a cheaper road now — Google Play, Spotify, Apple Books, Kobo and the libraries, though not Audible.",
   },
   {
     badge: "03 · Silent",
@@ -64,13 +64,20 @@ const whoFor = [
   {
     badge: "05 · Voice",
     title: "You want it in your own voice",
-    copy: "Authors narrate better than strangers — it's your book. If you can read it cleanly, it can be produced and mastered to broadcast spec without a studio.",
+    copy: "Authors narrate better than strangers — it's your book. If you can read it cleanly in a quiet room, it gets produced and mastered to broadcast spec without a studio.",
   },
   {
     badge: "06 · Backlist",
     title: "You have a backlist doing nothing",
     copy: "Older titles that never got an audio edition or a refreshed cover. The manuscript already exists, so this is the cheapest new revenue you have.",
   },
+];
+
+const audiobookTiers = [
+  { size: "Up to 30,000 words", hours: "about 3 hours of audio", price: "$300" },
+  { size: "30,000 – 60,000 words", hours: "about 3–6½ hours", price: "$500" },
+  { size: "60,000 – 100,000 words", hours: "about 6½–11 hours", price: "$750" },
+  { size: "Over 100,000 words", hours: "quoted from the manuscript", price: "Ask" },
 ];
 
 const steps = [
@@ -87,7 +94,7 @@ const steps = [
   {
     n: "3",
     h: "Then the audiobook",
-    p: "Chapter-by-chapter production, mastered to ACX's technical requirements — RMS between −23 and −18 dB, peaks under −3 dB, noise floor below −60 dB — then checked before submission.",
+    p: "Chapter-by-chapter production, mastered to broadcast standard — RMS between −23 and −18 dB, peaks under −3 dB, noise floor below −60 dB — and checked chapter by chapter before it goes anywhere.",
   },
   {
     n: "4",
@@ -99,15 +106,15 @@ const steps = [
 const faqs = [
   {
     q: "How much does an audiobook cost to produce?",
-    a: "It's priced per finished hour and depends on the length of the manuscript and whether you narrate it yourself. Send the manuscript and you'll have a real number the same day — not a range, a number.",
+    a: "By word count, because you know your word count: $300 up to 30,000 words, $500 to 60,000, $750 to 100,000, and quoted above that. No hourly rate to work out and no surprise at the end.",
   },
   {
     q: "Where does the audiobook get sold?",
-    a: "ACX (which feeds Audible and Amazon), Google Play Books, and Findaway Voices, which distributes to Spotify, Apple Books, Kobo and the library systems. Note that KDP's own Virtual Voice is a separate, lower-quality route that isn't used here.",
+    a: "Google Play Books, and Findaway Voices — which distributes to Spotify, Apple Books, Kobo, Barnes & Noble and the library systems. Audible's ACX is not one of them: ACX requires human narration it has approved, so an audiobook produced this way does not go there. That is worth knowing up front rather than after you have paid.",
   },
   {
     q: "Can I narrate it in my own voice?",
-    a: "Yes, and for memoir and family history it's usually the better choice — it's your book. You need a quiet room and the patience for a few takes. The production, mastering and ACX compliance are handled here.",
+    a: "Yes, and for memoir and family history it's usually the better choice — it's your book. You need a quiet room and the patience for a few takes. The production and mastering are handled here.",
   },
   {
     q: "Do you write the book for me?",
@@ -133,7 +140,7 @@ const serviceSchema = {
   serviceType: "Audiobook Production and Self-Publishing Services",
   name: "Audiobook Production & Self-Publishing Help Hot Springs AR | MixedMakerShop",
   description:
-    "Manuscript to published print book, ebook, ACX-ready audiobook and book trailer. Run by one person in Hot Springs, Arkansas, with 19 titles published.",
+    "Manuscript to published print book, ebook, audiobook distributed to Google Play, Spotify, Apple Books and libraries, and a book trailer. Run by one person in Hot Springs, Arkansas, with 19 titles published.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -154,7 +161,9 @@ const serviceSchema = {
       { name: "Book trailer", price: "79" },
       { name: "Cover art, flyers & graphics", price: "50" },
       { name: "Print & ebook formatting and publishing", price: "0" },
-      { name: "Audiobook production (priced per finished hour)", price: "0" },
+      { name: "Audiobook production — up to 30,000 words", price: "300" },
+      { name: "Audiobook production — up to 60,000 words", price: "500" },
+      { name: "Audiobook production — up to 100,000 words", price: "750" },
     ].map((o) => ({
       "@type": "Offer",
       itemOffered: { "@type": "Service", name: o.name },
@@ -191,8 +200,8 @@ export default function AudiobooksAndBookPublishingPage() {
             </h1>
             <p className="subhead" style={{ margin: "0 0 18px" }}>
               You wrote the thing. Getting it onto Amazon as a proper book, then as an audiobook people
-              can actually listen to, is a different job entirely — formatting, cover spines, ISBNs, ACX
-              audio specs. That job gets done here.
+              can actually listen to, is a different job entirely — formatting, cover spines, ISBNs,
+              audio mastering specs. That job gets done here.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Nineteen titles published end to end — written, formatted, covered, narrated and
@@ -201,9 +210,9 @@ export default function AudiobooksAndBookPublishingPage() {
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Audiobooks are the part most self-published authors skip, because studio narration runs
-              into the thousands of dollars. There is a cheaper road that still clears ACX&apos;s
-              technical bar, and it is the single best-value thing you can do with a manuscript that is
-              already finished.
+              into the thousands of dollars. There is a cheaper road — and the honest caveat is that it
+              reaches Google Play, Spotify, Apple Books, Kobo and the libraries, but not Audible, whose
+              ACX programme requires a narrator it has approved.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href="/contact">
@@ -295,12 +304,38 @@ export default function AudiobooksAndBookPublishingPage() {
                 <strong>Print &amp; ebook production — quoted from the manuscript.</strong> Formatting,
                 cover, front and back matter, and the upload.
               </li>
-              <li>
-                <strong>Audiobook production — priced per finished hour.</strong> Depends on length and
-                whether you narrate it yourself. Send the manuscript and you get a real number the same
-                day.
-              </li>
             </ul>
+
+            <h3 style={{ margin: "26px 0 10px" }}>Audiobook production</h3>
+            <p className="small" style={{ margin: "0 0 14px", color: "var(--muted)", lineHeight: 1.6 }}>
+              Priced by the length of the manuscript, because that is the number you already know.
+            </p>
+            <div className="table-wrap" style={{ overflowX: "auto" }}>
+              <table className="small" style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: "left", padding: "8px 10px", borderBottom: "1px solid var(--line, #333)" }}>
+                      Manuscript
+                    </th>
+                    <th style={{ textAlign: "left", padding: "8px 10px", borderBottom: "1px solid var(--line, #333)" }}>
+                      Finished audio
+                    </th>
+                    <th style={{ textAlign: "right", padding: "8px 10px", borderBottom: "1px solid var(--line, #333)" }}>
+                      Price
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {audiobookTiers.map((t) => (
+                    <tr key={t.size}>
+                      <td style={{ padding: "8px 10px", color: "var(--muted)" }}>{t.size}</td>
+                      <td style={{ padding: "8px 10px", color: "var(--muted2)" }}>{t.hours}</td>
+                      <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 600 }}>{t.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="btn-row" style={{ marginTop: 20 }}>
               <Link className="btn gold btn-cta-primary" href="/contact">
                 Get a number
