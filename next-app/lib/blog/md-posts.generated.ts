@@ -156,5 +156,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-21",
     href: "/blog/upgrade-your-life-must-buy-home-workshop-gear-reviews",
   },
+  {
+    slug: "slow-computer-fix-before-you-buy-a-new-one",
+    title: "How to Fix an Older Computer That's Slowing Down",
+    category: "Computer Help",
+    excerpt: "If you’re feeling like your old laptop is running slower than a sloth, you’re not alone. Many folks in Hot Springs and Central Arkansas are looking for",
+    readTime: "6 min read",
+    readMinutes: 6,
+    publishedAt: "2026-09-14",
+    href: "/blog/slow-computer-fix-before-you-buy-a-new-one",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
