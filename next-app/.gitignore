@@ -2,3 +2,4 @@
 tsconfig.tsbuildinfo
 supabase/.temp/
 .env*.local
+.next.prev/
