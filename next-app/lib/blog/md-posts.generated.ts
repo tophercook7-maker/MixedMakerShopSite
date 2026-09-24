@@ -166,5 +166,15 @@ export const MD_POSTS: BlogIndexPost[] = [
     publishedAt: "2026-09-14",
     href: "/blog/slow-computer-fix-before-you-buy-a-new-one",
   },
+  {
+    slug: "ai-tools-for-small-business-hot-springs",
+    title: "AI Tools for Small Business Arkansas: Practical Automations for Your One‑Person Shop",
+    category: "AI & Automation",
+    excerpt: "I’ve been helping folks in Hot Springs and Central Arkansas with tech since 2000. Over the years I’ve seen a lot of small businesses struggle to keep u",
+    readTime: "6 min read",
+    readMinutes: 6,
+    publishedAt: "2026-09-24",
+    href: "/blog/ai-tools-for-small-business-hot-springs",
+  },
   // BLOGFORGE:INSERT — new entries are inserted above this line
 ];
