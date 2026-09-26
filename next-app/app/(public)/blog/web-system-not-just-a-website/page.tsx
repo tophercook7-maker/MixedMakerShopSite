@@ -156,7 +156,7 @@ export default function WebSystemNotJustAWebsitePostPage() {
       </p>
       <ul>
         <li>
-          <strong>Websites/Systems</strong> start at around $400.
+          <strong>Websites/Systems</strong> start at around $850.
         </li>
         <li>
           <strong>AI Bots/Helpers</strong> can be added for $200 during your build.

@@ -211,7 +211,7 @@ export default function CoffeeShopWebsitesPage() {
               with one hand on the wheel.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Hot Springs, AR — founder-led web design starting at $400. We work with indie shops, drive-thrus,
+              Hot Springs, AR — founder-led web design starting at $850. We work with indie shops, drive-thrus,
               roasters, and breakfast/brunch spots.
             </p>
             <div className="btn-row">

@@ -69,7 +69,7 @@ const benches: Bench[] = [
     proof: [
       "Fresh Cut Property Care, Deep Well Audio, Kelsey's Kustom Kreations, and GoneFishin Keychains all run on sites built here",
       "Free homepage preview before you commit a dollar",
-      "Starter sites from $400 with pricing posted publicly",
+      "Starter sites from $850 with pricing posted publicly",
     ],
     links: [
       { href: "/web-design", label: "Web design & pricing" },

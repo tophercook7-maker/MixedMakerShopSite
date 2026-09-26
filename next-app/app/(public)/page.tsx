@@ -10,7 +10,7 @@ const canonical = SITE_URL;
 export const metadata: Metadata = {
   title: "Web Design & Computer Help, Hot Springs AR",
   description: metaDescription(
-    "One guy, a lot of skills. Websites from $400 with a free preview, AI & automation, books & audiobooks, in-home computer repair, 3D printing, and family-tree research — all by one person in Hot Springs, AR."
+    "One guy, a lot of skills. Websites from $850 with a free preview, AI & automation, books & audiobooks, in-home computer repair, 3D printing, and family-tree research — all by one person in Hot Springs, AR."
   ),
   keywords: [
     "MixedMakerShop",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MixedMakerShop — One guy. A lot of skills.",
     description: metaDescription(
-      "Websites from $400, AI & automation, computer help, 3D printing, family history — one person in Hot Springs, AR."
+      "Websites from $850, AI & automation, computer help, 3D printing, family history — one person in Hot Springs, AR."
     ),
     images: ["/og-image"],
   },

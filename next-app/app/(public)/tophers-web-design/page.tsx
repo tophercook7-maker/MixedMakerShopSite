@@ -7,7 +7,7 @@ export const metadata = {
   alternates: { canonical: "https://mixedmakershop.com/tophers-web-design" },
   title: "Topher's Web Design | Hot Springs AR",
   description: metaDescription(
-    "Simple local business websites built for calls and trust. Hot Springs AR — starter sites $400, full setups $900. Free homepage preview before you commit."
+    "Simple local business websites built for calls and trust. Hot Springs AR — starter sites $850, full setups $900. Free homepage preview before you commit."
   ),
 };
 
@@ -51,7 +51,7 @@ export default function TophersWebDesignPage() {
               more calls, not agency overhead.
             </p>
             <p className="small copy-readable" style={{ margin: "14px 0 0", color: "var(--muted)" }}>
-              Starter setups from $400 · Full business setups from $900 · Custom builds on quote
+              Starter setups from $850 · Full business setups from $900 · Custom builds on quote
             </p>
             <div className="btn-row" style={{ marginTop: 20 }}>
               <Link href={publicFreeMockupFunnelHref} className="btn gold">

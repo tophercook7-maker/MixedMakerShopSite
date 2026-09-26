@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Small Business Websites — Hot Springs, Arkansas",
     description:
-      "Affordable, mobile-first websites for Hot Springs small businesses. Local SEO baseline, Google Maps, fast loads, starter setups from $400.",
+      "Affordable, mobile-first websites for Hot Springs small businesses. Local SEO baseline, Google Maps, fast loads, starter setups from $850.",
     url: canonical,
     type: "website",
   },
@@ -99,7 +99,7 @@ const included = [
 const faqs = [
   {
     q: "How much does a Hot Springs small business website cost?",
-    a: "Starter setups begin around $400. Full small-business websites typically start at $900. Final price depends on number of pages, photos, and features. See the pricing page for the breakdown.",
+    a: "Starter setups begin around $850. Full small-business websites typically start at $900. Final price depends on number of pages, photos, and features. See the pricing page for the breakdown.",
   },
   {
     q: "Do you only work with Hot Springs businesses?",
@@ -211,7 +211,7 @@ export default function SmallBusinessWebsitesPage() {
               placeholder. This is what we do.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Hot Springs, AR — based locally, working hands-on. Starter setups from $400. Direct communication with
+              Hot Springs, AR — based locally, working hands-on. Starter setups from $850. Direct communication with
               Topher Cook from the first call.
             </p>
             <div className="btn-row">

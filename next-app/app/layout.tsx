@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | MixedMakerShop",
   },
   description: metaDescription(
-    "Hot Springs AR web design, local SEO, and AI tools from a one-man lab. Sites from $400, free homepage preview, built by one person — no agency layers."
+    "Hot Springs AR web design, local SEO, and AI tools from a one-man lab. Sites from $850, free homepage preview, built by one person — no agency layers."
   ),
   keywords: [...keywords],
   applicationName: "MixedMakerShop",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "MixedMakerShop | Web Design & Local SEO Hot Springs AR",
     description: metaDescription(
-      "Small business websites, local SEO, AI tools, apps, and books out of a one-man lab in Hot Springs, Arkansas. Free preview · sites from $400."
+      "Small business websites, local SEO, AI tools, apps, and books out of a one-man lab in Hot Springs, Arkansas. Free preview · sites from $850."
     ),
     url: SITE_URL,
     siteName: "MixedMakerShop",
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MixedMakerShop | Web Design Hot Springs AR",
     description: metaDescription(
-      "Websites from $400, local SEO, free homepage preview. Hot Springs small business web design by Topher."
+      "Websites from $850, local SEO, free homepage preview. Hot Springs small business web design by Topher."
     ),
     images: ["/og-image"],
   },

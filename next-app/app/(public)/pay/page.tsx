@@ -21,20 +21,13 @@ type PayItem = { name: string; price: string; desc: string; url: string };
 
 const services: PayItem[] = [
   {
-    name: "Custom Website",
-    price: "$400",
-    desc: "A full small-business website, built for calls and leads.",
-    url: "https://buy.stripe.com/fZuaEQe1Y1vNc454503cc0y",
-  },
-  {
-    // 2026-09-08: this Stripe link charges $450, but /pricing advertises the site
-    // "Starting at $400". Topher's actual model is $400 for the site + $50 for the
-    // promo video. Relabelled so the button says what it charges. If he wants to
-    // sell the site alone he needs a separate $400 Stripe link.
-    name: "Custom Website + Promo Video",
-    price: "$450",
-    desc: "A full small-business website built for calls and leads, plus a promo video ($400 site + $50 video).",
-    url: "https://buy.stripe.com/5kQeV65vsgqHecddFA3cc0f",
+    // 2026-09-25: bumped from the old $400/$450 split (Topher's call — the site was
+    // underpriced against market, see [[web-design-lane]]). One flat price, and it
+    // includes everything below (video, GBP setup, setup help) if the client wants it.
+    name: "Custom Website — Everything Included",
+    price: "$850",
+    desc: "A full small-business website built for calls and leads — includes the promo video, Google Business Profile setup, and account setup help, all in one price.",
+    url: "https://buy.stripe.com/aFa00cf62gqH1pr4503cc0G",
   },
   {
     name: "Google Business Profile Setup",

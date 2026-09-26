@@ -37,7 +37,7 @@ export const WHAT_I_DO: readonly WhatIDoCategory[] = [
       "AI-powered websites and tools",
       "Website improvements, redesigns and troubleshooting",
     ],
-    price: "Landing pages from $100 · sites from $400",
+    price: "Landing pages from $100 · sites from $850",
     href: "/web-design",
     cta: "See web design & pricing",
     icon: "Globe",

@@ -1,13 +1,13 @@
 /**
  * Shared short summaries for /web-design “Pricing / packages” (links to full /pricing).
  * Prices and tier names must match the canonical source of truth in lib/pricing-tiers.ts
- * (Starter $400, Growth $900–$1,800, Custom quote). Do not drift these independently.
+ * (Website — Everything Included $850, Growth $900–$1,800, Custom quote). Do not drift these independently.
  */
 export const WEB_DESIGN_PACKAGES = [
   {
-    name: "Starter Setup",
-    price: "Starting at $400",
-    blurb: "A clean, simple site to look legit and make contact easy.",
+    name: "Website — Everything Included",
+    price: "$850",
+    blurb: "Site + promo video + Google Business Profile setup + setup help, all in one price.",
   },
   {
     name: "Growth Site",

@@ -25,25 +25,23 @@ export type PricingTier = {
 export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "starter",
-    title: "Starter Setup",
-    priceLabel: "$400",  // 2026-09-08: firm price, not "starting at"
+    title: "Website — Everything Included",
+    priceLabel: "$850",  // 2026-09-25: raised from $400; now bundles the promo video + GBP setup + setup help
     description:
-      "A clean 1-page mobile-friendly website with click-to-call, a contact form, and basic Google setup — built to bring in calls.",
+      "A clean mobile-friendly website with click-to-call and a contact form, plus the promo video, full Google Business Profile setup, and account setup help — all in one flat price.",
     includes: [
-      "1-page clean website",
+      "Custom website, built for calls and leads",
       "Mobile-friendly design",
       "Click-to-call button",
       "Contact / quote form",
-      "Basic Google setup",
+      "Promo video included",
+      "Full Google Business Profile setup included",
+      "Account setup help included",
       "Live within 5 business days",
       "Monthly Hosting & Support from $89/mo",
     ],
-    strongRecommendation: {
-      title: "Google Business Profile setup",
-      price: "$250 one-time",
-    },
     bestNextStep:
-      "Pair it with Starter Visibility Support so the site and Google Business Profile do not sit untouched after launch.",
+      "Everything most small businesses need in one price — no add-ons to piece together.",
     ctaLabel: "Get My Free Preview",
     ctaHref: publicFreeMockupFunnelHref,
   },

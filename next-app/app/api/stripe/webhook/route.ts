@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { fulfillPrintCheckoutSession } from "@/lib/stripe/fulfill-print-checkout";
+import { notifyShopOrder } from "@/lib/stripe/notify-shop-order";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -89,6 +90,19 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode === "subscription") {
           console.info("[stripe webhook] ignoring subscription checkout (not used by this app)", session.id);
+          break;
+        }
+        // The /shop catalogue checkout carries kind:"shop_product" and never has a
+        // lead_id/owner_id, so it can't go through the CRM fulfill path below (that's
+        // for the /3d-printing custom-quote flow). Handle it on its own: just email
+        // Topher what was bought and where it ships, no database dependency.
+        if (session.metadata?.kind === "shop_product") {
+          const notified = await notifyShopOrder(session);
+          if (!notified.ok) {
+            console.error("[stripe webhook] shop order notify failed", notified.error, session.id);
+            return NextResponse.json({ received: false, error: notified.error }, { status: 500 });
+          }
+          console.info("[stripe webhook] shop order notified via", notified.via, session.id);
           break;
         }
         const print = await fulfillPrintCheckoutSession(supabase, session);

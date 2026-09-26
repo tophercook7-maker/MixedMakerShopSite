@@ -20,13 +20,13 @@ const AREA_SERVED = [
 export const metadata: Metadata = {
   title: "Small Business Website Design",
   description: metaDescription(
-    "Mobile-friendly small business websites built for trust and contact — starter setups $400, full sites $900. Hot Springs web design, free preview available."
+    "Mobile-friendly small business websites built for trust and contact — starter setups $850, full sites $900. Hot Springs web design, free preview available."
   ),
   alternates: { canonical },
   openGraph: {
     title: "Small Business Website Design | MixedMakerShop",
     description:
-      "Founder-led small business web design — mobile-first, fast, conversion-focused. No agency layers. Starter from $400.",
+      "Founder-led small business web design — mobile-first, fast, conversion-focused. No agency layers. Starter from $850.",
     url: canonical,
     type: "website",
   },
@@ -101,7 +101,7 @@ const included = [
 const faqs = [
   {
     q: "How much does a small business website cost?",
-    a: "Starter setups begin around $400 and full small-business websites typically start at $900. Final price depends on number of pages, photos, and features. See the pricing page for the full breakdown.",
+    a: "Starter setups begin around $850 and full small-business websites typically start at $900. Final price depends on number of pages, photos, and features. See the pricing page for the full breakdown.",
   },
   {
     q: "How long does it take to build?",
@@ -150,7 +150,7 @@ const relatedServices = [
     href: "/pricing",
     badge: "Pricing",
     title: "Pricing",
-    copy: "Starter from $400, Growth $900–$1,800, custom quote — the full breakdown.",
+    copy: "Starter from $850, Growth $900–$1,800, custom quote — the full breakdown.",
   },
   {
     href: "/ai-business-tools",
@@ -166,7 +166,7 @@ const serviceSchema = {
   serviceType: "Small Business Website Design",
   name: "Small Business Website Design | MixedMakerShop",
   description:
-    "Clean, mobile-friendly small business website design built around how customers find, trust, and contact you. Starter setups from $400, full sites from $900.",
+    "Clean, mobile-friendly small business website design built around how customers find, trust, and contact you. Starter setups from $850, full sites from $900.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -220,7 +220,7 @@ export default function SmallBusinessWebsiteDesignPage() {
               contact you. Built by a founder-led studio — no agency layers, no mystery handoffs.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Based in Hot Springs, AR — most of the work is remote-friendly. Starter setups from $400, full
+              Based in Hot Springs, AR — most of the work is remote-friendly. Starter setups from $850, full
               small-business websites from $900. Direct communication with Topher Cook from the first call to the live
               site.
             </p>

@@ -198,7 +198,7 @@ export default function HowMuchDoesAWebsiteCostPage() {
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Written by Topher Cook at MixedMakerShop in Hot Springs, AR. We build small business websites for between
-              $400 and $1,800. We&apos;re honest about where we sit in this range and why.
+              $850 and $1,800. We&apos;re honest about where we sit in this range and why.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href="/contact">
@@ -232,8 +232,8 @@ export default function HowMuchDoesAWebsiteCostPage() {
               ))}
             </div>
             <p className="small" style={{ margin: "18px 0 0", color: "var(--muted)", lineHeight: 1.6 }}>
-              <strong>MixedMakerShop sits at the bottom of Tier 3 — between $400 and $1,800.</strong> Starter setups
-              (single-page) at $400, full business sites (3–5 pages) at $900, and custom builds quoted per project.{" "}
+              <strong>MixedMakerShop sits at the bottom of Tier 3 — between $850 and $1,800.</strong> Starter setups
+              (single-page) at $850, full business sites (3–5 pages) at $900, and custom builds quoted per project.{" "}
               <Link href="/pricing">See full pricing</Link>.
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function HowMuchDoesAWebsiteCostPage() {
               How MixedMakerShop prices
             </h2>
             <p className="small" style={{ margin: "0 0 18px", color: "var(--muted)", lineHeight: 1.6 }}>
-              We sit at the bottom of Tier 3 — between $400 and $1,800 for the build, plus $25/month for ongoing care.
+              We sit at the bottom of Tier 3 — between $850 and $1,800 for the build, plus $25/month for ongoing care.
               Three reasons we can stay this low:
             </p>
             <ul className="small" style={{ margin: "0 0 16px 18px", color: "var(--muted)", lineHeight: 1.8 }}>

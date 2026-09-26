@@ -129,7 +129,7 @@ export default function WebsitesToolsPage() {
                 <Link href="/web-design" className={mmsTextLinkOnGlass}>
                   Small business web design
                 </Link>{" "}
-                — clean, mobile-friendly websites, redesigns, landing pages, and local SEO foundations, starting at $400.
+                — clean, mobile-friendly websites, redesigns, landing pages, and local SEO foundations, starting at $850.
               </p>
             </div>
           </div>

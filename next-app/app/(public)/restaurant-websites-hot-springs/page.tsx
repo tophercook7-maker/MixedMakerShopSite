@@ -115,7 +115,7 @@ const faqs = [
   },
   {
     q: "How much does a restaurant website cost?",
-    a: "Starter setups begin around $400 for single-location restaurants. Full sites with online ordering and reservations typically start at $900. See the pricing page for the full breakdown.",
+    a: "Starter setups begin around $850 for single-location restaurants. Full sites with online ordering and reservations typically start at $900. See the pricing page for the full breakdown.",
   },
 ] as const;
 
@@ -211,7 +211,7 @@ export default function RestaurantWebsitesPage() {
               sites that do exactly that.
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
-              Hot Springs, AR. Founder-led, fast turnaround, starter setups from $400. Direct communication with Topher
+              Hot Springs, AR. Founder-led, fast turnaround, starter setups from $850. Direct communication with Topher
               Cook from first call through launch.
             </p>
             <div className="btn-row">

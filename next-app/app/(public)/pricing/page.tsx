@@ -25,7 +25,7 @@ const canonical = "https://mixedmakershop.com/pricing";
 export const metadata: Metadata = {
   title: "Web Design Pricing",
   description:
-    "Simple pricing with no surprises — Starter SEO Site starting at $400, Hosting & Support $25/mo, Growth $900–$1,800, and custom quotes.",
+    "Simple pricing with no surprises — Starter SEO Site starting at $850, Hosting & Support $25/mo, Growth $900–$1,800, and custom quotes.",
   alternates: { canonical },
   openGraph: {
     type: "website",
@@ -49,7 +49,7 @@ const pricingSchema = {
   serviceType: "Web Design",
   name: "Web Design Pricing | MixedMakerShop",
   description:
-    "Simple, transparent web design pricing — Starter Setup from $400, Growth $900–$1,800, Custom quote, plus Hosting & Support from $25/mo.",
+    "Simple, transparent web design pricing — Starter Setup from $850, Growth $900–$1,800, Custom quote, plus Hosting & Support from $25/mo.",
   provider: {
     "@type": "LocalBusiness",
     name: "MixedMakerShop",
@@ -89,7 +89,7 @@ export default function PricingPage() {
               investing in a site that can help you get found locally — not just a pretty page.
             </p>
             <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-orange-100 md:text-base">
-              Starter Setup begins at $400 for a 1-page mobile-friendly website. Custom builds stay custom quoted.
+              Starter Setup begins at $850 for a 1-page mobile-friendly website. Custom builds stay custom quoted.
             </p>
           </div>
 

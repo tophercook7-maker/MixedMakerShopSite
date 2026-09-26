@@ -37,9 +37,9 @@ const GROUPS: Group[] = [
     headers: ["Item", "What you get", "Price"],
     rows: [
       {
-        item: "Starter Setup",
-        what: "1-page mobile-friendly website with click-to-call, contact form, basic Google setup. Live within 5 business days.",
-        price: "$400",
+        item: "Website — Everything Included",
+        what: "Mobile-friendly website with click-to-call, contact form, promo video, full Google Business Profile setup, and account setup help. Live within 5 business days.",
+        price: "$850",
       },
       {
         item: "Business Setup",

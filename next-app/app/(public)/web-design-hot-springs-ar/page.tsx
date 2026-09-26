@@ -18,9 +18,9 @@ const AREA_SERVED = [
 ] as const;
 
 export const metadata: Metadata = {
-  title: "Hot Springs Web Design — Sites from $400",
+  title: "Hot Springs Web Design — Sites from $850",
   description: metaDescription(
-    "Affordable Hot Springs, AR web design for contractors, restaurants, and local brands. Starter sites $400 · full setups $900 · free preview. Founder-led, mobile-first."
+    "Affordable Hot Springs, AR web design for contractors, restaurants, and local brands. Starter sites $850 · full setups $900 · free preview. Founder-led, mobile-first."
   ),
   alternates: { canonical },
   openGraph: {
@@ -144,7 +144,7 @@ const whatYouGet = [
 const faqs = [
   {
     q: "How much does a small business website cost?",
-    a: "Starter setups begin around $400 and full small-business websites typically start at $900. The final price depends on how many pages, photos, and features you need. See the pricing page for a clear breakdown.",
+    a: "Starter setups begin around $850 and full small-business websites typically start at $900. The final price depends on how many pages, photos, and features you need. See the pricing page for a clear breakdown.",
   },
   {
     q: "Can you help with Google Business Profile?",
@@ -281,7 +281,7 @@ export default function HotSpringsWebDesignPage() {
               <span className="dot" /> Hot Springs, Arkansas
             </div>
             <h1 className="h1" style={{ margin: "14px 0 14px" }}>
-              Web Design in Hot Springs, AR &mdash; Sites from $400, Free Preview First
+              Web Design in Hot Springs, AR &mdash; Sites from $850, Free Preview First
             </h1>
             <p className="subhead" style={{ margin: "0 0 18px" }}>
               MixedMakerShop builds clean, mobile-friendly websites for Hot Springs businesses — sites that load fast,
@@ -289,7 +289,7 @@ export default function HotSpringsWebDesignPage() {
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Founder-led studio in Hot Springs, AR. You work directly with Topher Cook — no agency layers, no mystery
-              handoffs. Starter setups from $400, full small-business websites from $900.
+              handoffs. Starter setups from $850, full small-business websites from $900.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href={publicFreeMockupFunnelHref}>

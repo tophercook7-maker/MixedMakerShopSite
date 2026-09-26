@@ -111,7 +111,7 @@ const faqs = [
   },
   {
     q: "How much does a church website cost?",
-    a: "Starter setups begin around $400. Full church sites with sermon archive, giving integration, and events typically start at $900. Many churches qualify for nonprofit discounts — ask about that.",
+    a: "Starter setups begin around $850. Full church sites with sermon archive, giving integration, and events typically start at $900. Many churches qualify for nonprofit discounts — ask about that.",
   },
   {
     q: "How long does it take to launch?",
@@ -212,7 +212,7 @@ export default function ChurchWebsitesPage() {
             </p>
             <p className="small" style={{ margin: "0 0 22px", color: "var(--muted)", lineHeight: 1.6 }}>
               Hot Springs, AR. Built by Topher Cook with respect for the ministry behind the site. Starter setups from
-              $400.
+              $850.
             </p>
             <div className="btn-row">
               <Link className="btn gold btn-cta-primary" href={publicFreeMockupFunnelHref}>

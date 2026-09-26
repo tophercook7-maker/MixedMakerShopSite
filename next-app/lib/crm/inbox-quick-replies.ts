@@ -22,7 +22,7 @@ export const INBOX_QUICK_REPLIES: InboxQuickReply[] = [
     id: "price",
     label: "Pricing",
     message:
-      "Good question — I keep it simple.\n\nStarter setups are $400 (clean one-page site, mobile-friendly, click-to-call, contact form).\n\nBusiness setups are $900 for 3–5 pages, service pages, stronger CTAs, and Google setup.\n\nWant me to break down what you'd get?",
+      "Good question — I keep it simple.\n\nA website is $850 flat — site, promo video, Google Business Profile setup, and account setup help, all included.\n\nBusiness setups are $900–$1,800 for 3–5 pages, service pages, and stronger CTAs, if you need more than one site can hold.\n\nWant me to break down what you'd get?",
   },
   {
     id: "follow_up",
