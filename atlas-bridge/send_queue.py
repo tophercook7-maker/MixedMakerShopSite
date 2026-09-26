@@ -161,6 +161,25 @@ def send_email(to, subject, body):
         s.send_message(msg)
 
 
+LEDGER_FILE = HERE / "sent-ledger.json"          # every address this queue has EVER emailed
+DNC_FILE = Path.home() / ".config/mailer/do-not-contact.txt"
+
+def load_ledger():
+    """Belt-and-braces: even if the CRM forgets (a sync reset it 30 days running), this file doesn't."""
+    try: led = json.loads(LEDGER_FILE.read_text())
+    except Exception: led = {}
+    # seed from the historical log so the 5 addresses already hit 30x are never touched again
+    try:
+        for line in (HERE / "send-queue.log").read_text().splitlines():
+            m = re.search(r"✓ sent .*<([^>]+)>", line)
+            if m: led.setdefault(m.group(1).strip().lower(), "seeded-from-log")
+    except Exception: pass
+    return led
+
+def do_not_contact():
+    try: return {l.strip().lower() for l in DNC_FILE.read_text().splitlines() if l.strip() and not l.startswith("#")}
+    except Exception: return set()
+
 def main():
     # --test-smtp: verify the Porkbun login works WITHOUT sending anything.
     if TEST_SMTP:
@@ -207,6 +226,7 @@ def main():
                         f"&owner_id=eq.{owner}&source=in.(atlas-outbound-preview,atlas-discovery)"
                         "&status=eq.new&order=source.desc,created_at.asc&limit=400"))
     budget = min(PER_RUN, DAILY_CAP - already)
+    ledger = load_ledger(); dnc = do_not_contact()
     sent = skipped = 0
     for lead in rows:
         if sent >= budget:
@@ -218,6 +238,9 @@ def main():
         if not valid_email(email):
             skipped += 1
             continue
+        if email.lower() in ledger or email.lower() in dnc:
+            skipped += 1
+            continue  # one email per address, ever. STOP means STOP.
         preview = preview_url_for(owner, lead)
         if not preview:
             skipped += 1
@@ -246,6 +269,8 @@ def main():
                    "message": f"Sent approved preview to {email}",
                    "metadata": {"preview": preview}})
         print(f"  ✓ sent {business} <{email}>")
+        ledger[email.lower()] = datetime.now(timezone.utc).isoformat()
+        LEDGER_FILE.write_text(json.dumps(ledger, indent=1))
         sent += 1
         if sent < budget:
             time.sleep(PACE_SECONDS)

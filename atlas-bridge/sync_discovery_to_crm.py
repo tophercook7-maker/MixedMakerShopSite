@@ -109,10 +109,15 @@ def parse_tsv(path):
             continue
         name, city, signal, flaw, website, email = (cols + [""] * 7)[:6]
         price = cols[6] if len(cols) > 6 else ""
+        # 8th col added 2026-09-24 (intent-signal redesign): which targeting found this lead —
+        # "newbiz" / "ask" / "legacy" (pre-redesign row) / "unknown" (sidecar missing). Threaded
+        # into lead_tags below so reply/bounce rates can actually be compared by signal type later,
+        # instead of every discovered lead landing in one undifferentiated bucket again.
+        intent = cols[7].strip() if len(cols) > 7 else "legacy"
         rows.append({
             "name": name.strip(), "city": city.strip(), "signal": signal.strip(),
             "flaw": flaw.strip(), "website": website.strip(), "email": email.strip(),
-            "price": price.strip(), "discovered": date_str,
+            "price": price.strip(), "discovered": date_str, "intent": intent or "legacy",
         })
     return rows
 
@@ -125,8 +130,10 @@ def build_row(owner, r):
     website = r["website"] or None
     city, state = split_city(r["city"])
     flaw = r["flaw"]
+    intent = r.get("intent") or "legacy"
     notes = "\n".join([l for l in [
         f"Atlas discovery {r['discovered']} — not yet contacted.",
+        f"Intent signal: {intent}" if intent != "legacy" else "",
         f"Site issue: {flaw}" if flaw else "",
         f"Signal: {r['signal']}" if r["signal"] else "",
         f"Suggested offer: {r['price']}" if r["price"] else "",
@@ -142,7 +149,7 @@ def build_row(owner, r):
         "source": SOURCE,
         "lead_source": SOURCE,
         "status": "new",
-        "lead_tags": ["outbound", "discovery"],
+        "lead_tags": ["outbound", "discovery", f"intent-{intent}"],
         "has_website": bool(website),
         "why_this_lead_is_here": (f"Discovered prospect — {flaw}" if flaw else "Discovered prospect (Atlas nightly scan)."),
         "recommended_next_action": "Review — discovered prospect, not yet contacted. Build a preview if worth pursuing.",

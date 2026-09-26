@@ -156,7 +156,10 @@ def main():
         existing = find_existing(owner, row["email"], row["business_name"])
         try:
             if existing:
-                rest("PATCH", "leads", body=row, params=f"?id=eq.{existing}")
+                # 2026-09-21 fix: an existing row keeps its status + tags. Overwriting them every night
+                # reset contacted leads to "new" and the send queue re-emailed the same 5 businesses
+                # for 30 days straight (one had replied STOP).
+                rest("PATCH", "leads", body={k: v for k, v in row.items() if k not in ("status", "lead_tags", "notes", "recommended_next_action")}, params=f"?id=eq.{existing}")
                 updated += 1
             else:
                 rest("POST", "leads", body={**row, "created_at": row["last_updated_at"]})
